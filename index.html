@@ -1,0 +1,215 @@
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sort Test</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&display=swap">
+<style>
+  :root {
+    --bg: #e8eaed; --panel: #ffffff; --sunk: #dcdfe4;
+    --ink: #14171c; --muted: #5d6572; --line: #c8ccd3;
+    --accent: #14171c; --accent-ink: #ffffff;
+    --good: #1e6b3a; --bad: #a81c1c;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #131519; --panel: #1c1f25; --sunk: #0e1013;
+      --ink: #eef1f5; --muted: #949dac; --line: #333944;
+      --accent: #eef1f5; --accent-ink: #131519;
+      --good: #2e9456; --bad: #d63a3a;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #131519; --panel: #1c1f25; --sunk: #0e1013;
+    --ink: #eef1f5; --muted: #949dac; --line: #333944;
+    --accent: #eef1f5; --accent-ink: #131519;
+    --good: #2e9456; --bad: #d63a3a;
+  }
+
+  /* The Artifact host injects this; nothing else does. Without it a class that
+     sets `display` beats the browser's default [hidden] rule, and .bail below
+     sets display:flex — so the stop panel would sit open over every card. */
+  [hidden] { display: none !important; }
+
+  body {
+    /* The Artifact host injects a reset, but the Pages weblayer does not. Without
+       this the browser's default 8px body margin overflows the 100dvh card
+       screen and every card scrolls. */
+    margin: 0;
+    background: var(--bg); color: var(--ink);
+    font-family: Barlow, -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+    font-size: 16px; line-height: 1.45; -webkit-text-size-adjust: 100%;
+  }
+  #app { max-width: 520px; margin: 0 auto; padding: 20px 16px 48px; }
+  .screen { display: flex; flex-direction: column; gap: 16px; }
+
+  h1 { font-size: 28px; font-weight: 700; margin: 0; letter-spacing: -0.01em; }
+  h2 { font-size: 12px; margin: 6px 0 0; text-transform: uppercase; letter-spacing: 0.12em; color: var(--muted); font-weight: 600; }
+  .sub { margin: -10px 0 0; color: var(--muted); font-size: 14px; }
+  .notice { margin: 0; color: var(--bad); font-size: 14px; font-weight: 600; }
+  .warn { margin: 0; color: var(--muted); font-size: 13px; }
+
+  .field { display: flex; flex-direction: column; gap: 6px; }
+  .field span { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.1em; font-weight: 600; }
+  input {
+    font: inherit; font-size: 18px; padding: 15px; border-radius: 12px;
+    border: 1px solid var(--line); background: var(--panel); color: var(--ink);
+  }
+  input:focus-visible, button:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+
+  button { font: inherit; cursor: pointer; border: 0; }
+  .primary {
+    background: var(--accent); color: var(--accent-ink);
+    padding: 17px; border-radius: 12px; font-size: 17px; font-weight: 600;
+  }
+  .ghost {
+    background: transparent; color: var(--ink);
+    border: 1px solid var(--line); padding: 14px; border-radius: 12px; font-size: 15px;
+  }
+  .ghost.danger { color: var(--bad); }
+
+  .decks { display: flex; flex-direction: column; gap: 10px; }
+  .deckbtn {
+    display: flex; flex-direction: column; gap: 2px; text-align: left;
+    background: var(--panel); border: 1px solid var(--line); color: var(--ink);
+    border-radius: 12px; padding: 15px 16px;
+  }
+  .deckbtn .dname { font-size: 18px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+  .dsort {
+    font-style: normal; font-size: 10px; font-weight: 700;
+    letter-spacing: 0.12em; text-transform: uppercase;
+    border: 1px solid var(--line); border-radius: 999px;
+    padding: 2px 8px; color: var(--muted);
+  }
+  .deckbtn .dblurb { font-size: 14px; color: var(--muted); }
+  .deckbtn .dmeta {
+    font-size: 11px; color: var(--muted); text-transform: uppercase;
+    letter-spacing: 0.1em; font-weight: 600; margin-top: 5px;
+  }
+  .deckbtn.locked { opacity: 0.5; border-style: dashed; cursor: default; }
+  .deckname { font-size: 13px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.1em; font-weight: 600; margin-top: -10px; }
+
+  .progress { font-size: 12px; color: var(--muted); letter-spacing: 0.1em; text-transform: uppercase; font-weight: 600; }
+  .progress-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+  .progress-row .progress { margin: 0; }
+  .stopbtn {
+    background: transparent; color: var(--muted);
+    border: 1px solid var(--line); padding: 6px 14px; border-radius: 999px;
+    font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;
+    flex-shrink: 0;
+  }
+  .stopbtn:active { color: var(--bad); border-color: var(--bad); }
+
+  /* The card fills the phone so the belt pads sit low, in thumb reach, instead
+     of floating in the upper half with dead space beneath them. */
+  .card-screen, .feedback {
+    min-height: calc(100vh - 68px);
+    min-height: calc(100dvh - 68px);
+  }
+  .card-screen { justify-content: space-between; }
+  .feedback { justify-content: center; }
+
+  .prompt { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+  /* The card is sized to the phone it is held in: every dimension scales with
+     viewport height between a small-phone floor and a large-phone ceiling, so
+     the prompt and the pads both grow to fill the screen without overflowing a
+     short one. vh first, dvh second for browsers that support it. */
+  .ring {
+    --ring: clamp(92px, 13.5vh, 118px);
+    --ring: clamp(92px, 13.5dvh, 118px);
+    width: var(--ring); height: var(--ring); border-radius: 50%;
+    display: grid; place-items: center; margin-bottom: 2px;
+    background: conic-gradient(var(--accent) 0 100%, var(--sunk) 100% 100%);
+  }
+  .ring i {
+    width: calc(var(--ring) - 15px); height: calc(var(--ring) - 15px);
+    border-radius: 50%; background: var(--bg);
+    display: grid; place-items: center; font-style: normal; font-weight: 700;
+    font-size: clamp(28px, 4.6vh, 38px);
+    font-size: clamp(28px, 4.6dvh, 38px);
+    font-variant-numeric: tabular-nums;
+  }
+  .p-line {
+    font-size: clamp(18px, 2.7vh, 23px);
+    font-size: clamp(18px, 2.7dvh, 23px);
+    letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--ink); font-weight: 700; text-align: center;
+  }
+  .p-code {
+    font-size: clamp(58px, 10.5vh, 86px);
+    font-size: clamp(58px, 10.5dvh, 86px);
+    font-weight: 700; letter-spacing: -0.015em; line-height: 1.02;
+    font-variant-numeric: tabular-nums; text-align: center;
+  }
+  .prompt.small .p-code {
+    font-size: clamp(36px, 6.4vh, 54px);
+    font-size: clamp(36px, 6.4dvh, 54px);
+  }
+
+  .options { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .belt {
+    padding: 8px; border-radius: 18px; font-weight: 700; letter-spacing: 0.05em;
+    font-size: clamp(19px, 2.9vh, 25px);
+    font-size: clamp(19px, 2.9dvh, 25px);
+    min-height: clamp(100px, 15.5vh, 146px);
+    min-height: clamp(100px, 15.5dvh, 146px);
+  }
+
+  .bail {
+    position: fixed; inset: 0; z-index: 10;
+    background: var(--bg); padding: 24px 20px;
+    display: flex; flex-direction: column; justify-content: center; gap: 12px;
+  }
+  .bail h1 { text-align: center; }
+  .bail .sub { margin: 0 0 8px; text-align: center; max-width: 34ch; align-self: center; }
+
+  .feedback { align-items: center; text-align: center; }
+  .verdict {
+    font-weight: 700;
+    font-size: clamp(26px, 3.9vh, 34px);
+    font-size: clamp(26px, 3.9dvh, 34px);
+  }
+  .feedback.good .verdict { color: var(--good); }
+  .feedback.bad .verdict { color: var(--bad); }
+  .answer {
+    padding: clamp(20px, 3.2vh, 30px); border-radius: 18px; font-weight: 700;
+    letter-spacing: 0.05em; align-self: stretch;
+    font-size: clamp(24px, 3.6vh, 32px);
+    font-size: clamp(24px, 3.6dvh, 32px);
+  }
+  .why { color: var(--muted); font-size: 14px; margin: 0; max-width: 42ch; }
+
+  .score-line { display: flex; gap: 34px; }
+  .big { font-size: 46px; font-weight: 700; letter-spacing: -0.02em; line-height: 1; font-variant-numeric: tabular-nums; }
+  .label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.12em; color: var(--muted); font-weight: 600; margin-top: 4px; }
+  .who { font-size: 18px; font-weight: 600; }
+  .clean { color: var(--good); font-weight: 600; margin: 0; }
+
+  ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+  .missed li { border-left: 3px solid var(--bad); padding: 2px 0 2px 12px; }
+  .mcard { font-weight: 700; font-size: 15px; letter-spacing: 0.02em; }
+  .mans { font-size: 14px; margin: 1px 0 4px; }
+  .mans.timeout { color: var(--muted); }
+  .logl li {
+    background: var(--panel); border: 1px solid var(--line);
+    border-radius: 12px; padding: 12px 14px;
+    display: grid; grid-template-columns: 1fr auto; gap: 2px 12px; align-items: baseline;
+  }
+  .logl .sc { font-weight: 700; font-size: 18px; font-variant-numeric: tabular-nums; }
+  .logl .when { grid-column: 1 / -1; font-size: 12px; color: var(--muted); }
+  .logmiss { grid-column: 1 / -1; margin-top: 8px; gap: 7px; }
+  .logmiss li {
+    background: none; border: 0; border-left: 3px solid var(--bad);
+    border-radius: 0; padding: 0 0 0 10px; display: block;
+  }
+  .logmiss .mcard { font-size: 14px; }
+  .logmiss .mans { font-size: 13px; margin: 0; }
+  .exportnote { margin: 0; font-size: 13px; color: var(--muted); }
+  .exportnote.bad { color: var(--bad); }
+  .logclean { grid-column: 1 / -1; font-size: 13px; color: var(--good); font-weight: 600; margin-top: 4px; }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { animation: none !important; transition: none !important; }
+  }
+</style>
+
+<main id="app"></main>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script type="module" src="src/app.js"></script>
