@@ -1,27 +1,18 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Sort Test</title>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap">
 <style>
   :root {
-    --bg: #e8eaed; --panel: #ffffff; --sunk: #dcdfe4;
-    --ink: #14171c; --muted: #5d6572; --line: #c8ccd3;
-    --accent: #14171c; --accent-ink: #ffffff;
-    --good: #1e6b3a; --bad: #a81c1c;
+    --bg: #fbfaf6; --panel: #ffffff; --sunk: #e9eee9;
+    --ink: #193042; --muted: #61717a; --line: #dbe2dd;
+    --accent: #193042; --accent-ink: #ffffff;
+    --good: #295b38; --bad: #a3332c;
   }
-  @media (prefers-color-scheme: dark) {
-    :root:not([data-theme="light"]) {
-      --bg: #131519; --panel: #1c1f25; --sunk: #0e1013;
-      --ink: #eef1f5; --muted: #949dac; --line: #333944;
-      --accent: #eef1f5; --accent-ink: #131519;
-      --good: #2e9456; --bad: #d63a3a;
-    }
-  }
-  :root[data-theme="dark"] {
-    --bg: #131519; --panel: #1c1f25; --sunk: #0e1013;
-    --ink: #eef1f5; --muted: #949dac; --line: #333944;
-    --accent: #eef1f5; --accent-ink: #131519;
-    --good: #2e9456; --bad: #d63a3a;
-  }
+  * { box-sizing: border-box; }
 
   /* The Artifact host injects this; nothing else does. Without it a class that
      sets `display` beats the browser's default [hidden] rule, and .bail below
@@ -33,14 +24,16 @@
        this the browser's default 8px body margin overflows the 100dvh card
        screen and every card scrolls. */
     margin: 0;
-    background: var(--bg); color: var(--ink);
-    font-family: Barlow, -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+    background: #e9eee9; color: var(--ink);
+    font-family: "DM Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
     font-size: 16px; line-height: 1.45; -webkit-text-size-adjust: 100%;
   }
-  #app { max-width: 520px; margin: 0 auto; padding: 20px 16px 48px; }
+  #app { margin: 0 auto; background: var(--bg); box-shadow: 0 16px 70px #1b3c4a1c; }
+  #app.quiz-page { max-width: 520px; min-height: 100dvh; padding: 20px 16px 48px; }
+  #app.lab-page { max-width: 430px; min-height: 100dvh; }
   .screen { display: flex; flex-direction: column; gap: 16px; }
 
-  h1 { font-size: 28px; font-weight: 700; margin: 0; letter-spacing: -0.01em; }
+  h1 { font-family: "Space Grotesk", sans-serif; font-size: 28px; font-weight: 700; margin: 0; letter-spacing: -0.04em; }
   h2 { font-size: 12px; margin: 6px 0 0; text-transform: uppercase; letter-spacing: 0.12em; color: var(--muted); font-weight: 600; }
   .sub { margin: -10px 0 0; color: var(--muted); font-size: 14px; }
   .notice { margin: 0; color: var(--bad); font-size: 14px; font-weight: 600; }
@@ -55,7 +48,7 @@
   .field { display: flex; flex-direction: column; gap: 6px; }
   .field span { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.1em; font-weight: 600; }
   input {
-    font: inherit; font-size: 18px; padding: 15px; border-radius: 12px;
+    font: inherit; font-size: 18px; padding: 15px; border-radius: 12px; width: 100%;
     border: 1px solid var(--line); background: var(--panel); color: var(--ink);
   }
   input:focus-visible, button:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
@@ -211,11 +204,80 @@
   .exportnote.bad { color: var(--bad); }
   .logclean { grid-column: 1 / -1; font-size: 13px; color: var(--good); font-weight: 600; margin-top: 4px; }
 
+  /* Approved Sort Lab home and study design. The timed card stays on its own
+     full-height screen so the belt buttons remain in thumb reach. */
+  .lab-shell { min-height: 100dvh; display: flex; flex-direction: column; }
+  .lab-top { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 25px 22px 18px; }
+  .lab-brand { display: flex; align-items: center; gap: 10px; font: 700 20px "Space Grotesk", sans-serif; letter-spacing: -.05em; white-space: nowrap; }
+  .lab-mark { display: grid; place-items: center; width: 34px; height: 34px; flex: none; background: var(--ink); color: #fff; border-radius: 11px; font-size: 13px; transform: rotate(-5deg); }
+  .lab-tag { color: #1d5d83; background: #e9f1f4; padding: 6px 9px; border-radius: 999px; font-size: 10px; font-weight: 800; letter-spacing: .07em; text-transform: uppercase; text-align: center; }
+  .lab-main { flex: 1; padding: 0 22px 30px; }
+  .lab-screen { display: flex; flex-direction: column; gap: 12px; }
+  .lab-eyebrow { margin: 0; color: #a04b2a; font-size: 11px; font-weight: 800; letter-spacing: .18em; text-transform: uppercase; }
+  .lab-title { font-size: clamp(34px, 9vw, 42px); line-height: 1.06; margin: 0; }
+  .lab-intro { margin: 0 0 8px; color: var(--muted); font-size: 15px; line-height: 1.5; }
+  .lab-hero { position: relative; overflow: hidden; border-radius: 25px; padding: 25px 22px 21px; background: #dfebe7; margin-bottom: 7px; }
+  .lab-hero::before { content: ""; position: absolute; width: 180px; height: 180px; border: 1px solid #a5c6bf; border-radius: 50%; right: -55px; top: -88px; box-shadow: 0 0 0 34px #cfe2dc, 0 0 0 35px #b4d0c7; }
+  .lab-hero > * { position: relative; }
+  .lab-hero .lab-eyebrow { color: #2d745f; margin-bottom: 10px; }
+  .lab-hero h1 { max-width: 310px; font-size: clamp(35px, 10vw, 46px); line-height: 1.04; margin-bottom: 14px; }
+  .lab-hero p:not(.lab-eyebrow) { max-width: 300px; margin: 0; color: #36575b; font-size: 15px; line-height: 1.5; }
+  .lab-route { display: flex; gap: 7px; margin-top: 18px; }
+  .lab-route span { height: 8px; flex: 1; border-radius: 999px; background: #e9c355; }
+  .lab-route span:nth-child(2) { background: #e77e53; }
+  .lab-route span:nth-child(3) { background: #42769d; }
+  .lab-route span:nth-child(4) { background: #9e4c76; }
+  .lab-section-heading { margin: 3px 0 0; color: var(--ink); font: 700 17px "Space Grotesk", sans-serif; letter-spacing: -.04em; text-transform: none; }
+  .lab-choice { width: 100%; display: flex; align-items: center; gap: 14px; text-align: left; border: 1px solid var(--line); border-radius: 19px; background: #fff; color: var(--ink); padding: 16px; box-shadow: 0 3px 12px #1c405208; }
+  .lab-choice-icon { display: grid; place-items: center; width: 49px; height: 49px; flex: none; border-radius: 15px; background: #e8f0ee; color: #28735e; font: 700 20px "Space Grotesk", sans-serif; }
+  .lab-choice-quiz .lab-choice-icon { background: #fff0e7; color: #bc5b30; }
+  .lab-choice strong, .lab-choice small { display: block; }
+  .lab-choice strong { font-size: 16px; }
+  .lab-choice small { color: var(--muted); margin-top: 3px; font-size: 12px; line-height: 1.35; }
+  .lab-arrow { margin-left: auto; color: #8fa6ac; font-size: 22px; }
+  .lab-log-link { display: flex; justify-content: space-between; align-items: center; padding: 11px 3px; background: none; color: #1d5d83; font-size: 14px; font-weight: 800; text-align: left; }
+  .lab-log-link span:last-child { margin-left: auto; font-size: 20px; }
+  .lab-disclaimer { border: 1px solid #e6e2d7; background: #f6f3e9; padding: 13px 14px; border-radius: 15px; color: #566165; font-size: 12px; line-height: 1.5; }
+  .lab-disclaimer strong { color: var(--ink); }
+  .lab-nav { position: sticky; bottom: 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; padding: 10px 18px max(10px, env(safe-area-inset-bottom)); background: #fbfaf6ed; backdrop-filter: blur(15px); border-top: 1px solid var(--line); }
+  .lab-nav button { border: 0; border-radius: 11px; background: transparent; color: #72818a; padding: 8px 5px; font-size: 12px; font-weight: 700; }
+  .lab-nav button[aria-current="page"] { background: #e9f0ec; color: var(--ink); }
+  .lab-nav i { display: block; margin: 0 auto 3px; font: 700 18px "Space Grotesk", sans-serif; }
+  .lab-study-sections { display: flex; flex-direction: column; gap: 10px; margin: 6px 0; }
+  .lab-study-card { border: 1px solid var(--line); border-radius: 19px; background: #fff; overflow: hidden; }
+  .lab-study-card summary { list-style: none; display: flex; align-items: center; gap: 13px; padding: 16px; cursor: pointer; }
+  .lab-study-card summary::-webkit-details-marker { display: none; }
+  .lab-study-card summary::after { content: "+"; margin-left: auto; font: 600 24px "Space Grotesk", sans-serif; color: #7f9698; }
+  .lab-study-card[open] summary::after { content: "−"; }
+  .lab-count { display: grid; place-items: center; width: 39px; height: 39px; flex: none; background: #eef1ec; border-radius: 12px; color: #557461; font: 700 14px "Space Grotesk", sans-serif; }
+  .lab-study-card summary strong, .lab-study-card summary small { display: block; }
+  .lab-study-card summary strong { font-size: 15px; }
+  .lab-study-card summary small { color: var(--muted); margin-top: 3px; font-size: 12px; line-height: 1.35; }
+  .lab-study-body { border-top: 1px solid var(--line); padding: 16px; }
+  .lab-sort-tabs { display: flex; gap: 7px; margin-bottom: 15px; }
+  .lab-sort-tabs button { border: 1px solid var(--line); border-radius: 999px; background: #fff; color: var(--ink); padding: 8px 13px; font-size: 12px; font-weight: 700; }
+  .lab-sort-tabs button[aria-pressed="true"] { background: var(--ink); border-color: var(--ink); color: #fff; }
+  .lab-study-cards { display: flex; flex-direction: column; gap: 10px; }
+  .lab-study-row { background: #f5f7f4; border-radius: 13px; padding: 14px; }
+  .lab-study-meta { color: var(--muted); font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; }
+  .lab-study-answer { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin: 5px 0; }
+  .lab-study-answer strong { font: 700 22px "Space Grotesk", sans-serif; letter-spacing: -.04em; }
+  .lab-belt-chip { min-width: 72px; padding: 9px 11px; border-radius: 10px; text-align: center; font-size: 12px; font-weight: 800; letter-spacing: .05em; }
+  .lab-study-row p { margin: 6px 0 0; color: var(--muted); font-size: 12px; line-height: 1.5; }
+  .lab-main .field { margin: 8px 0; }
+  .lab-main .decks { margin: 6px 0; }
+  .lab-main .deckbtn { border-radius: 19px; padding: 16px; box-shadow: 0 3px 12px #1c405208; }
+  .lab-main .deckbtn .dname { font-family: "Space Grotesk", sans-serif; letter-spacing: -.03em; }
+
   @media (prefers-reduced-motion: reduce) {
     * { animation: none !important; transition: none !important; }
   }
 </style>
+</head>
+<body>
 
 <main id="app"></main>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script type="module" src="src/app.js"></script>
+</body>
+</html>

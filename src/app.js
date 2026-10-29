@@ -5,6 +5,7 @@ import { CARD_SECONDS, createRun, currentCard, answerCard, timeoutCard, summariz
 import { createClock } from './clock.js';
 import { createShiftLog } from './shiftLog.js';
 import { saveWorkbook } from './exportFile.js';
+import { STUDY_SECTIONS, cardsForStudy } from './study.js';
 
 const app = document.getElementById('app');
 const log = createShiftLog(typeof localStorage === 'undefined' ? null : localStorage);
@@ -112,8 +113,34 @@ function el(html) {
 }
 
 function render(node) {
+  app.className = node.classList.contains('lab-shell') ? 'lab-page' : 'quiz-page';
   app.replaceChildren(node);
   window.scrollTo(0, 0);
+}
+
+function labPage(content, active = 'home') {
+  const view = el(`
+    <div class="lab-shell">
+      <header class="lab-top">
+        <div class="lab-brand"><span class="lab-mark">RJ</span> Sort Lab</div>
+        <span class="lab-tag">Independent practice</span>
+      </header>
+      <main class="lab-main">${content}</main>
+      <nav class="lab-nav" aria-label="Main navigation">
+        <button type="button" data-nav="home" ${active === 'home' ? 'aria-current="page"' : ''}><i aria-hidden="true">⌂</i>Home</button>
+        <button type="button" data-nav="study" ${active === 'study' ? 'aria-current="page"' : ''}><i aria-hidden="true">≡</i>Study</button>
+        <button type="button" data-nav="quiz" ${active === 'quiz' ? 'aria-current="page"' : ''}><i aria-hidden="true">◉</i>Quiz</button>
+      </nav>
+    </div>
+  `);
+  render(view);
+  view.querySelectorAll('[data-nav]').forEach((button) => button.addEventListener('click', () => {
+    if (button.dataset.nav === active) return;
+    if (button.dataset.nav === 'study') showStudy();
+    else if (button.dataset.nav === 'quiz') showNameEntry();
+    else showStart();
+  }));
+  return view;
 }
 
 function stopTick() {
@@ -126,7 +153,7 @@ function beltChip(belt, className) {
   return `<div class="${className}" style="background:${style.bg};color:${style.fg}">${belt}</div>`;
 }
 
-function showStart(notice = '') {
+function showStart() {
   clearTimeout(feedbackTimer);
   feedbackTimer = null;
   resumeTick = null;
@@ -134,26 +161,53 @@ function showStart(notice = '') {
   clock = null;
   const entries = log.all();
 
-  const view = el(`
-    <section class="screen">
-      <h1>Sort Test</h1>
-      <p class="sub">Saddle Brook Twilight &middot; Common Missorts</p>
+  const view = labPage(`
+    <section class="lab-screen">
+      <div class="lab-hero">
+        <p class="lab-eyebrow">Practice with purpose</p>
+        <h1>Test your skills and study the chart.</h1>
+        <p>Study one part of the chart, then put it to work in a timed sort quiz.</p>
+        <div class="lab-route" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
+      </div>
+      <h2 class="lab-section-heading">Where do you want to start?</h2>
+      <button id="study" class="lab-choice" type="button">
+        <span class="lab-choice-icon">01</span>
+        <span><strong>Know the chart</strong><small>Study ranges, sort changes, and exceptions in small sections.</small></span>
+        <span class="lab-arrow" aria-hidden="true">→</span>
+      </button>
+      <button id="quiz" class="lab-choice lab-choice-quiz" type="button">
+        <span class="lab-choice-icon">02</span>
+        <span><strong>Take a quiz</strong><small>Choose a test, beat the clock, and review every missort.</small></span>
+        <span class="lab-arrow" aria-hidden="true">→</span>
+      </button>
+      <button id="viewlog" class="lab-log-link" type="button">Shift log${entries.length ? ` <span>(${entries.length})</span>` : ''} <span aria-hidden="true">→</span></button>
+      ${log.available ? '' : '<p class="warn">This phone is not saving results. Each score is shown once and then gone.</p>'}
+      <aside class="lab-disclaimer" aria-label="Independent practice notice">
+        <strong>Made by RJ.</strong> Not affiliated with or endorsed by UPS. This practice
+        does not replace any required UPS test or training. Follow your current worksite chart and instructions.
+      </aside>
+    </section>
+  `, 'home');
+  view.querySelector('#study').addEventListener('click', showStudy);
+  view.querySelector('#quiz').addEventListener('click', () => showNameEntry());
+  view.querySelector('#viewlog').addEventListener('click', showLog);
+}
+
+function showNameEntry(notice = '', previousName = '') {
+  const view = labPage(`
+    <section class="lab-screen">
+      <p class="lab-eyebrow">Ready to practice?</p>
+      <h1 class="lab-title">Who is taking the test?</h1>
+      <p class="lab-intro">Enter a name or ID so the result can be found in the shift log on this phone.</p>
       ${notice ? `<p class="notice">${esc(notice)}</p>` : ''}
       <label class="field">
         <span>Name or ID</span>
-        <input id="name" type="text" autocomplete="off" autocapitalize="words" placeholder="e.g. J. Rivera">
+        <input id="name" type="text" autocomplete="off" autocapitalize="words" placeholder="e.g. J. Rivera" value="${esc(previousName)}">
       </label>
-      <button id="begin" class="primary">Continue</button>
-      <button id="viewlog" class="ghost">Shift log${entries.length ? ` (${entries.length})` : ''}</button>
-      ${log.available ? '' : '<p class="warn">This phone is not saving results. Each score is shown once and then gone.</p>'}
-      <aside class="disclaimer" aria-label="Independent practice notice">
-        <strong>Independent practice by RJ.</strong> This app is not affiliated with or endorsed by UPS.
-        Taking a quiz here does not replace any required UPS test or training.
-        Follow the current chart and instructions at your worksite.
-      </aside>
+      <button id="begin" class="primary">Pick a test</button>
+      <button id="back" class="ghost">Back to home</button>
     </section>
-  `);
-  render(view);
+  `, 'quiz');
 
   const nameInput = view.querySelector('#name');
   nameInput.focus();
@@ -161,7 +215,7 @@ function showStart(notice = '') {
   function begin() {
     const name = nameInput.value.trim();
     if (!name) {
-      showStart('Enter a name or ID first.');
+      showNameEntry('Enter a name or ID first.');
       return;
     }
     showDeckPicker(name);
@@ -171,7 +225,54 @@ function showStart(notice = '') {
   nameInput.addEventListener('keydown', (event) => {
     if (event.key === 'Enter') begin();
   });
-  view.querySelector('#viewlog')?.addEventListener('click', showLog);
+  view.querySelector('#back').addEventListener('click', showStart);
+}
+
+function studyRows(section, sort) {
+  return cardsForStudy(section, sort).map((card) => `
+    <article class="lab-study-row">
+      <div class="lab-study-meta">${esc(sort === 'Both' ? 'Preload & Twilight' : sort)} &middot; ${esc(serviceName(card.svc))} &middot; ${esc(card.state)}</div>
+      <div class="lab-study-answer"><strong>${esc(card.code)}</strong>${beltChip(card.belt, 'lab-belt-chip')}</div>
+      <p>${esc(card.why)}</p>
+    </article>
+  `).join('');
+}
+
+function showStudy() {
+  const view = labPage(`
+    <section class="lab-screen">
+      <p class="lab-eyebrow">Learn in small pieces</p>
+      <h1 class="lab-title">Know the chart</h1>
+      <p class="lab-intro">Selected routes from the current quizzes, grouped for study. Each example names its sort and service.</p>
+      <div class="lab-study-sections">
+        ${STUDY_SECTIONS.map((section, index) => `
+          <details class="lab-study-card" data-study-section="${esc(section.id)}" ${index === 0 ? 'open' : ''}>
+            <summary>
+              <span class="lab-count">${String(index + 1).padStart(2, '0')}</span>
+              <span><strong>${esc(section.title)}</strong><small>${esc(section.subtitle)}</small></span>
+            </summary>
+            <div class="lab-study-body">
+              ${section.sorts.length > 1 ? `<div class="lab-sort-tabs" role="group" aria-label="Choose sort">
+                ${section.sorts.map((sort, sortIndex) => `<button type="button" data-study-sort="${esc(sort)}" aria-pressed="${sortIndex === 0}">${esc(sort)}</button>`).join('')}
+              </div>` : ''}
+              <div class="lab-study-cards">${studyRows(section, section.sorts[0])}</div>
+            </div>
+          </details>
+        `).join('')}
+      </div>
+      <button id="study-quiz" class="primary">Ready? Take a quiz</button>
+      <aside class="lab-disclaimer"><strong>Study guide scope:</strong> these are selected routes from the practice tests, not the full chart. Your current worksite chart and instructions take priority.</aside>
+    </section>
+  `, 'study');
+
+  view.querySelectorAll('[data-study-sort]').forEach((button) => button.addEventListener('click', () => {
+    const card = button.closest('[data-study-section]');
+    const section = STUDY_SECTIONS.find((item) => item.id === card.dataset.studySection);
+    const sort = button.dataset.studySort;
+    card.querySelectorAll('[data-study-sort]').forEach((option) => option.setAttribute('aria-pressed', String(option === button)));
+    card.querySelector('.lab-study-cards').innerHTML = studyRows(section, sort);
+  }));
+  view.querySelector('#study-quiz').addEventListener('click', () => showNameEntry());
 }
 
 function showDeckPicker(name) {
@@ -179,10 +280,11 @@ function showDeckPicker(name) {
   clock = null;
   const entries = log.all();
 
-  const view = el(`
-    <section class="screen">
-      <h1>Pick a test</h1>
-      <p class="sub">${esc(name)}</p>
+  const view = labPage(`
+    <section class="lab-screen">
+      <p class="lab-eyebrow">Time to practice</p>
+      <h1 class="lab-title">Pick a test</h1>
+      <p class="lab-intro">${esc(name)} &middot; Four belt choices per card. The clock starts when the first card appears.</p>
       <div class="decks">
         ${DECKS.map((deck) => (deck.verified ? `
           <button class="deckbtn" data-deck="${deck.id}">
@@ -198,11 +300,10 @@ function showDeckPicker(name) {
           </div>
         `)).join('')}
       </div>
-      <button id="back" class="ghost">Back</button>
+      <button id="back" class="ghost">Change name</button>
       ${entries.length ? `<button id="viewlog" class="ghost">Shift log (${entries.length})</button>` : ''}
     </section>
-  `);
-  render(view);
+  `, 'quiz');
 
   view.querySelectorAll('.deckbtn[data-deck]').forEach((button) => {
     button.addEventListener('click', () => {
@@ -213,7 +314,7 @@ function showDeckPicker(name) {
       showCard();
     });
   });
-  view.querySelector('#back').addEventListener('click', () => showStart());
+  view.querySelector('#back').addEventListener('click', () => showNameEntry('', name));
   view.querySelector('#viewlog')?.addEventListener('click', showLog);
 }
 
