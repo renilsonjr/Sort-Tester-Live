@@ -122,8 +122,11 @@ function labPage(content, active = 'home') {
   const view = el(`
     <div class="lab-shell">
       <header class="lab-top">
-        <div class="lab-brand"><span class="lab-mark">RJ</span> Sort Lab</div>
-        <span class="lab-tag">Independent practice</span>
+        <div class="lab-top-row">
+          <div class="lab-brand"><span class="lab-mark">RJ</span> Sort Lab</div>
+          <span class="lab-tag">Independent practice</span>
+        </div>
+        <div class="lab-site">UPS Saddle Brook <span aria-hidden="true">·</span> Preload &amp; Twilight</div>
       </header>
       <main class="lab-main">${content}</main>
       <nav class="lab-nav" aria-label="Main navigation">
