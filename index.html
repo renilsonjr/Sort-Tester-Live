@@ -211,7 +211,7 @@
   .lab-brand { display: flex; align-items: center; gap: 10px; font: 700 20px "Space Grotesk", sans-serif; letter-spacing: -.05em; white-space: nowrap; }
   .lab-mark { display: grid; place-items: center; width: 34px; height: 34px; flex: none; background: var(--ink); color: #fff; border-radius: 11px; font-size: 13px; transform: rotate(-5deg); }
   .lab-tag { color: #1d5d83; background: #e9f1f4; padding: 6px 9px; border-radius: 999px; font-size: 10px; font-weight: 800; letter-spacing: .07em; text-transform: uppercase; text-align: center; }
-  .lab-main { flex: 1; padding: 0 22px 30px; }
+  .lab-main { flex: 1; padding: 0 22px 105px; }
   .lab-screen { display: flex; flex-direction: column; gap: 12px; }
   .lab-eyebrow { margin: 0; color: #a04b2a; font-size: 11px; font-weight: 800; letter-spacing: .18em; text-transform: uppercase; }
   .lab-title { font-size: clamp(34px, 9vw, 42px); line-height: 1.06; margin: 0; }
@@ -239,7 +239,7 @@
   .lab-log-link span:last-child { margin-left: auto; font-size: 20px; }
   .lab-disclaimer { border: 1px solid #e6e2d7; background: #f6f3e9; padding: 13px 14px; border-radius: 15px; color: #566165; font-size: 12px; line-height: 1.5; }
   .lab-disclaimer strong { color: var(--ink); }
-  .lab-nav { position: sticky; bottom: 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; padding: 10px 18px max(10px, env(safe-area-inset-bottom)); background: #fbfaf6ed; backdrop-filter: blur(15px); border-top: 1px solid var(--line); }
+  .lab-nav { position: fixed; z-index: 20; left: 50%; bottom: 0; transform: translateX(-50%); width: min(100%, 430px); display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; padding: 10px 18px max(10px, env(safe-area-inset-bottom)); background: #fbfaf6ed; backdrop-filter: blur(15px); border-top: 1px solid var(--line); }
   .lab-nav button { border: 0; border-radius: 11px; background: transparent; color: #72818a; padding: 8px 5px; font-size: 12px; font-weight: 700; }
   .lab-nav button[aria-current="page"] { background: #e9f0ec; color: var(--ink); }
   .lab-nav i { display: block; margin: 0 auto 3px; font: 700 18px "Space Grotesk", sans-serif; }
