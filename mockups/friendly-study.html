@@ -1,0 +1,223 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Sort Lab by RJ — design mock</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      font-family: "DM Sans", system-ui, sans-serif;
+      color: #193042; background: #e9eee9;
+      --ink: #193042; --quiet: #61717a; --paper: #fbfaf6;
+      --line: #dbe2dd; --blue: #1d5d83; --orange: #ef854f;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; min-width: 320px; }
+    button, a { font: inherit; }
+    button { cursor: pointer; }
+    button:focus-visible, a:focus-visible, summary:focus-visible { outline: 3px solid #ef854f; outline-offset: 3px; }
+    [hidden] { display: none !important; }
+    .shell {
+      width: min(100%, 430px); min-height: 100dvh; margin: auto;
+      background: var(--paper); box-shadow: 0 16px 70px #1b3c4a1c;
+      display: flex; flex-direction: column;
+    }
+    .top { display: flex; align-items: center; justify-content: space-between; padding: 25px 22px 18px; }
+    .brand { display: flex; align-items: center; gap: 10px; font-family: "Space Grotesk", sans-serif; font-size: 20px; font-weight: 700; letter-spacing: -.05em; }
+    .mark { display: grid; place-items: center; width: 34px; height: 34px; color: #fff; background: var(--ink); border-radius: 11px; font-size: 13px; letter-spacing: -.03em; transform: rotate(-5deg); }
+    .tag { color: var(--blue); background: #e9f1f4; padding: 6px 9px; border-radius: 999px; font-size: 10px; font-weight: 800; letter-spacing: .09em; text-transform: uppercase; }
+    main { flex: 1; padding: 0 22px 30px; }
+    .eyebrow { margin: 0 0 10px; color: #a04b2a; font-size: 11px; font-weight: 800; letter-spacing: .18em; text-transform: uppercase; }
+    h1, h2, h3, p { margin-top: 0; }
+    h1, h2, h3 { font-family: "Space Grotesk", sans-serif; letter-spacing: -.055em; }
+    h1 { font-size: clamp(35px, 10vw, 46px); line-height: 1.04; margin-bottom: 14px; }
+    h2 { font-size: 28px; line-height: 1.1; margin-bottom: 10px; }
+    h3 { font-size: 18px; margin: 0 0 5px; }
+    .lead { font-size: 15px; color: var(--quiet); line-height: 1.5; margin-bottom: 21px; }
+    .hero { position: relative; overflow: hidden; background: #dfebe7; border-radius: 25px; padding: 25px 22px 21px; margin-bottom: 15px; }
+    .hero::before { content: ""; position: absolute; width: 180px; height: 180px; border: 1px solid #a5c6bf; border-radius: 50%; right: -55px; top: -88px; box-shadow: 0 0 0 34px #cfe2dc, 0 0 0 35px #b4d0c7; }
+    .hero > * { position: relative; }
+    .hero .eyebrow { color: #2d745f; }
+    .hero h1 { max-width: 290px; }
+    .hero .lead { max-width: 290px; margin-bottom: 0; color: #36575b; }
+    .route { display: flex; gap: 7px; margin-top: 18px; }
+    .route span { height: 8px; flex: 1; border-radius: 999px; background: #e9c355; }
+    .route span:nth-child(2) { background: #e77e53; }
+    .route span:nth-child(3) { background: #42769d; }
+    .route span:nth-child(4) { background: #9e4c76; }
+    .section-title { display: flex; justify-content: space-between; align-items: end; gap: 8px; margin: 19px 1px 10px; }
+    .section-title h2 { font-size: 17px; margin: 0; }
+    .section-title span { font-size: 11px; color: var(--quiet); }
+    .choice { width: 100%; display: flex; align-items: center; gap: 14px; text-align: left; border: 1px solid var(--line); background: #fff; border-radius: 19px; padding: 16px; margin-bottom: 9px; color: var(--ink); box-shadow: 0 3px 12px #1c405208; }
+    .choice:hover { border-color: #9db9c5; transform: translateY(-1px); }
+    .choice .icon { width: 49px; height: 49px; flex: none; display: grid; place-items: center; border-radius: 15px; background: #e8f0ee; color: #28735e; font: 700 20px "Space Grotesk", sans-serif; }
+    .choice.quiz .icon { background: #fff0e7; color: #bc5b30; }
+    .choice strong { display: block; font-size: 16px; }
+    .choice small { display: block; color: var(--quiet); margin-top: 3px; font-size: 12px; line-height: 1.35; }
+    .arrow { margin-left: auto; font-size: 22px; color: #8fa6ac; }
+    .note { border: 1px solid #e6e2d7; background: #f6f3e9; padding: 13px 14px; border-radius: 15px; color: #566165; font-size: 12px; line-height: 1.5; }
+    .note strong { color: var(--ink); }
+    .subhead { color: var(--quiet); font-size: 14px; line-height: 1.45; margin-bottom: 20px; }
+    .study-card { border: 1px solid var(--line); border-radius: 19px; background: #fff; margin-bottom: 10px; overflow: hidden; }
+    summary { list-style: none; display: flex; align-items: center; gap: 13px; padding: 16px; cursor: pointer; }
+    summary::-webkit-details-marker { display: none; }
+    .count { display: grid; place-items: center; width: 39px; height: 39px; flex: none; background: #eef1ec; border-radius: 12px; color: #557461; font: 700 14px "Space Grotesk", sans-serif; }
+    summary strong { display: block; font-size: 15px; }
+    summary small { display: block; margin-top: 3px; color: var(--quiet); font-size: 12px; }
+    summary::after { content: "+"; margin-left: auto; font: 600 24px "Space Grotesk", sans-serif; color: #7f9698; }
+    details[open] summary::after { content: "−"; }
+    .study-body { border-top: 1px solid var(--line); padding: 17px; }
+    .pill-row { display: flex; gap: 7px; margin-bottom: 16px; }
+    .pill { border: 1px solid var(--line); background: #fff; padding: 8px 13px; border-radius: 999px; color: var(--ink); font-size: 12px; font-weight: 700; }
+    .pill[aria-pressed="true"] { background: var(--ink); border-color: var(--ink); color: #fff; }
+    .example { display: flex; justify-content: space-between; align-items: center; gap: 12px; background: #f5f7f4; padding: 14px; border-radius: 13px; }
+    .example small { display: block; color: var(--quiet); font-size: 11px; margin-bottom: 2px; }
+    .example b { font-family: "Space Grotesk", sans-serif; font-size: 22px; letter-spacing: -.05em; }
+    .belt-chip { border-radius: 10px; min-width: 72px; padding: 9px 11px; text-align: center; font-weight: 800; font-size: 12px; letter-spacing: .06em; background: #a81c1c; color: #fff; }
+    .belt-chip.blue { background: #1f4e9c; }
+    .belt-chip.orange { background: #b34d06; }
+    .belt-chip.gold { background: #8a6400; }
+    .study-body p { margin: 12px 1px 0; font-size: 12px; line-height: 1.5; color: var(--quiet); }
+    .sample { display: block; padding: 7px 0; border-bottom: 1px solid #edf0eb; font-size: 13px; }
+    .sample:last-child { border: 0; }
+    .sample b { color: var(--ink); }
+    .question { background: #e8f0ee; border-radius: 22px; padding: 24px; margin: 21px 0 15px; text-align: center; }
+    .question .eyebrow { color: #47786d; }
+    .question .code { display: block; font: 700 69px "Space Grotesk", sans-serif; letter-spacing: -.08em; line-height: 1; margin: 17px 0 9px; }
+    .question .service { font-size: 13px; font-weight: 700; color: #42616a; }
+    .answer-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; }
+    .answer-grid button { min-height: 92px; border: 0; border-radius: 16px; font-size: 16px; font-weight: 800; letter-spacing: .05em; }
+    .answer-grid button:disabled { opacity: .68; cursor: default; }
+    .yellow { background: #f6d33c; color: #1a1600; }
+    .pink { background: #a81f5e; color: #fff; }
+    .orange { background: #b34d06; color: #fff; }
+    .gold { background: #8a6400; color: #fff; }
+    .answer-grid button.correct { outline: 4px solid #477d4a; outline-offset: 2px; opacity: 1; }
+    .feedback { min-height: 56px; padding: 12px 14px; margin-top: 12px; border-radius: 13px; background: #edf2e9; font-size: 13px; line-height: 1.4; }
+    .feedback strong { display: block; color: #295b38; margin-bottom: 2px; }
+    .text-button { background: none; border: 0; padding: 12px 0; color: var(--blue); font-weight: 800; font-size: 13px; }
+    .nav { position: sticky; bottom: 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; padding: 10px 18px max(10px, env(safe-area-inset-bottom)); background: #fbfaf6eb; backdrop-filter: blur(15px); border-top: 1px solid var(--line); }
+    .nav button { border: 0; border-radius: 11px; background: transparent; color: #72818a; padding: 8px 5px; font-size: 12px; font-weight: 700; }
+    .nav button[aria-current="page"] { background: #e9f0ec; color: var(--ink); }
+    .nav i { display: block; margin: 0 auto 3px; font: 700 18px "Space Grotesk", sans-serif; }
+    @media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; transition: none !important; } }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <header class="top">
+      <div class="brand"><span class="mark">RJ</span> Sort Lab</div>
+      <span class="tag">Design preview</span>
+    </header>
+    <main>
+      <section data-view="home">
+        <div class="hero">
+          <p class="eyebrow">Practice with purpose</p>
+          <h1>Know the route. Trust your choice.</h1>
+          <p class="lead">Study one part of the chart, then put it to work in a quick sort quiz.</p>
+          <div class="route" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
+        </div>
+        <div class="section-title"><h2>Where do you want to start?</h2></div>
+        <button class="choice" type="button" data-go="study"><span class="icon">01</span><span><strong>Know the chart</strong><small>Small chunks for ranges, sort changes, and exceptions.</small></span><span class="arrow" aria-hidden="true">→</span></button>
+        <button class="choice quiz" type="button" data-go="quiz"><span class="icon">02</span><span><strong>Try a quiz</strong><small>Pick a belt, see why, and build confidence.</small></span><span class="arrow" aria-hidden="true">→</span></button>
+        <div class="section-title"><h2>Independent practice</h2></div>
+        <div class="note"><strong>Made by RJ.</strong> Not affiliated with or endorsed by UPS. This practice does not replace any required UPS test or training. Follow your current worksite chart and instructions.</div>
+      </section>
+
+      <section data-view="study" hidden>
+        <p class="eyebrow">Learn in small pieces</p>
+        <h2>Know the chart</h2>
+        <p class="subhead">Choose a section. Each example names its sort and service, so the exception stays clear.</p>
+        <details class="study-card" open>
+          <summary><span class="count">01</span><span><strong>New Jersey split</strong><small>Preload vs. Twilight · 2 examples</small></span></summary>
+          <div class="study-body">
+            <div class="pill-row" role="group" aria-label="Sort for New Jersey example">
+              <button class="pill" type="button" data-sort="preload" aria-pressed="true">Preload</button>
+              <button class="pill" type="button" data-sort="twilight" aria-pressed="false">Twilight</button>
+            </div>
+            <div class="example"><span><small>NJ · all services</small><b>078 4</b></span><span id="nj-belt" class="belt-chip">RED</span></div>
+            <p><strong>Why it matters:</strong> this code changes from RED on Preload to BLUE on Twilight. NJ 079 9 stays ORANGE in both.</p>
+          </div>
+        </details>
+        <details class="study-card">
+          <summary><span class="count">02</span><span><strong>New York boundaries</strong><small>Ground · Twilight · 4 ranges</small></span></summary>
+          <div class="study-body">
+            <div class="sample"><b>100–108</b> → YELLOW</div>
+            <div class="sample"><b>109</b> → ORANGE</div>
+            <div class="sample"><b>110–119</b> → PINK</div>
+            <div class="sample"><b>120–121</b> → GOLD on all services</div>
+            <p>The single 109 sits between two different belts. Check the exact digits before deciding.</p>
+          </div>
+        </details>
+        <details class="study-card">
+          <summary><span class="count">03</span><span><strong>Service exceptions</strong><small>Next Day Air · Twilight · 1 example</small></span></summary>
+          <div class="study-body">
+            <div class="example"><span><small>NY · Next Day Air</small><b>136</b></span><span class="belt-chip" style="background:#5b2d8e">PURPLE</span></div>
+            <p>NY 128–139 is GOLD on Ground, but this Next Day Air exception goes PURPLE. The service matters as much as the code.</p>
+          </div>
+        </details>
+        <div class="note">Concept preview using examples from the current quiz. Review the current worksite chart before turning this into a complete study guide.</div>
+      </section>
+
+      <section data-view="quiz" hidden>
+        <p class="eyebrow">One sample card</p>
+        <h2>Try a quiz</h2>
+        <p class="subhead">Choose the belt for this example. This preview does not record a grade.</p>
+        <div class="question"><p class="eyebrow">Where does it go?</p><span class="code">109</span><span class="service">GROUND · NEW YORK · TWILIGHT</span></div>
+        <div class="answer-grid" role="group" aria-label="Choose a belt">
+          <button class="yellow" type="button" data-answer="YELLOW">YELLOW</button>
+          <button class="pink" type="button" data-answer="PINK">PINK</button>
+          <button class="orange" type="button" data-answer="ORANGE">ORANGE</button>
+          <button class="gold" type="button" data-answer="GOLD">GOLD</button>
+        </div>
+        <div class="feedback" id="feedback" role="status" hidden></div>
+        <button class="text-button" id="retry" type="button" hidden>Try this card again →</button>
+        <div class="note">The full timed tests and shift log remain in the current live app. This is only a design mock.</div>
+      </section>
+    </main>
+    <nav class="nav" aria-label="Preview navigation">
+      <button type="button" data-go="home" aria-current="page"><i aria-hidden="true">⌂</i>Home</button>
+      <button type="button" data-go="study"><i aria-hidden="true">≡</i>Study</button>
+      <button type="button" data-go="quiz"><i aria-hidden="true">◉</i>Quiz</button>
+    </nav>
+  </div>
+  <script>
+    const views = [...document.querySelectorAll('[data-view]')];
+    function show(name) {
+      for (const view of views) view.hidden = view.dataset.view !== name;
+      for (const button of document.querySelectorAll('.nav [data-go]')) {
+        if (button.dataset.go === name) button.setAttribute('aria-current', 'page');
+        else button.removeAttribute('aria-current');
+      }
+      window.scrollTo({ top: 0, behavior: 'instant' });
+    }
+    document.querySelectorAll('[data-go]').forEach(button => button.addEventListener('click', () => show(button.dataset.go)));
+    document.querySelectorAll('[data-sort]').forEach(button => button.addEventListener('click', () => {
+      const twilight = button.dataset.sort === 'twilight';
+      document.querySelectorAll('[data-sort]').forEach(pill => pill.setAttribute('aria-pressed', String(pill === button)));
+      const belt = document.getElementById('nj-belt');
+      belt.textContent = twilight ? 'BLUE' : 'RED';
+      belt.classList.toggle('blue', twilight);
+    }));
+    document.querySelectorAll('[data-answer]').forEach(button => button.addEventListener('click', () => {
+      const correct = button.dataset.answer === 'ORANGE';
+      document.querySelectorAll('[data-answer]').forEach(option => {
+        option.disabled = true;
+        option.classList.toggle('correct', option.dataset.answer === 'ORANGE');
+      });
+      const feedback = document.getElementById('feedback');
+      feedback.innerHTML = `<strong>${correct ? 'You got it.' : 'Good try — 109 goes ORANGE.'}</strong>109 sits between 100–108 YELLOW and 110–119 PINK on Ground.`;
+      feedback.hidden = false;
+      document.getElementById('retry').hidden = false;
+    }));
+    document.getElementById('retry').addEventListener('click', () => {
+      document.querySelectorAll('[data-answer]').forEach(option => { option.disabled = false; option.classList.remove('correct'); });
+      document.getElementById('feedback').hidden = true;
+      document.getElementById('retry').hidden = true;
+    });
+  </script>
+</body>
+</html>

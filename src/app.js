@@ -146,6 +146,11 @@ function showStart(notice = '') {
       <button id="begin" class="primary">Continue</button>
       <button id="viewlog" class="ghost">Shift log${entries.length ? ` (${entries.length})` : ''}</button>
       ${log.available ? '' : '<p class="warn">This phone is not saving results. Each score is shown once and then gone.</p>'}
+      <aside class="disclaimer" aria-label="Independent practice notice">
+        <strong>Independent practice by RJ.</strong> This app is not affiliated with or endorsed by UPS.
+        Taking a quiz here does not replace any required UPS test or training.
+        Follow the current chart and instructions at your worksite.
+      </aside>
     </section>
   `);
   render(view);
