@@ -7,9 +7,14 @@ import { createShiftLog } from './shiftLog.js';
 import { saveWorkbook } from './exportFile.js';
 import { CHART, searchChart } from './study.js';
 import { selectLevelCards } from './levels.js';
+import { createLanguage } from './i18n.js';
 
 const app = document.getElementById('app');
 const log = createShiftLog(typeof localStorage === 'undefined' ? null : localStorage);
+const language = createLanguage(typeof localStorage === 'undefined' ? null : localStorage);
+const t = (source, values) => language.text(source, values);
+let studyService = 'Ground';
+let studyQuery = '';
 
 let run = null;
 let clock = null;
@@ -104,7 +109,7 @@ function esc(value) {
 }
 
 function serviceName(svc) {
-  return SERVICE_LABEL[svc] || svc;
+  return language.service(SERVICE_LABEL[svc] || svc);
 }
 
 function el(html) {
@@ -114,30 +119,48 @@ function el(html) {
 }
 
 function render(node) {
+  document.documentElement.lang = language.code;
   app.className = node.classList.contains('lab-shell') ? 'lab-page' : 'quiz-page';
   app.replaceChildren(node);
   window.scrollTo(0, 0);
 }
 
-function labPage(content, active = 'home') {
+function languageButtons() {
+  return `<div class="lab-language" role="group" aria-label="Language / Idioma">
+    <button type="button" data-language="en" aria-label="English" aria-pressed="${language.code === 'en'}"><span aria-hidden="true">🇺🇸</span><span>EN</span></button>
+    <button type="button" data-language="es" aria-label="Español" aria-pressed="${language.code === 'es'}"><span aria-hidden="true">🇪🇸</span><span>ES</span></button>
+  </div>`;
+}
+
+function wireLanguageButtons(view, rerender) {
+  view.querySelectorAll('[data-language]').forEach((button) => button.addEventListener('click', () => {
+    if (language.code === button.dataset.language) return;
+    language.set(button.dataset.language);
+    rerender();
+  }));
+}
+
+function labPage(content, active = 'home', rerender = showStart) {
   const view = el(`
     <div class="lab-shell">
       <header class="lab-top">
         <div class="lab-top-row">
           <div class="lab-brand"><span class="lab-mark">RJ</span> Sort Lab</div>
-          <span class="lab-tag">Independent practice</span>
+          ${languageButtons()}
         </div>
         <div class="lab-site">UPS Saddle Brook <span aria-hidden="true">·</span> Twilight</div>
+        <span class="lab-tag">${esc(t('Independent practice'))}</span>
       </header>
       <main class="lab-main">${content}</main>
-      <nav class="lab-nav" aria-label="Main navigation">
-        <button type="button" data-nav="home" ${active === 'home' ? 'aria-current="page"' : ''}><i aria-hidden="true">⌂</i>Home</button>
-        <button type="button" data-nav="study" ${active === 'study' ? 'aria-current="page"' : ''}><i aria-hidden="true">≡</i>Study</button>
-        <button type="button" data-nav="quiz" ${active === 'quiz' ? 'aria-current="page"' : ''}><i aria-hidden="true">◉</i>Quiz</button>
+      <nav class="lab-nav" aria-label="${esc(t('Main navigation'))}">
+        <button type="button" data-nav="home" ${active === 'home' ? 'aria-current="page"' : ''}><i aria-hidden="true">⌂</i>${esc(t('Home'))}</button>
+        <button type="button" data-nav="study" ${active === 'study' ? 'aria-current="page"' : ''}><i aria-hidden="true">≡</i>${esc(t('Study'))}</button>
+        <button type="button" data-nav="quiz" ${active === 'quiz' ? 'aria-current="page"' : ''}><i aria-hidden="true">◉</i>${esc(t('Quiz'))}</button>
       </nav>
     </div>
   `);
   render(view);
+  wireLanguageButtons(view, rerender);
   view.querySelectorAll('[data-nav]').forEach((button) => button.addEventListener('click', () => {
     if (button.dataset.nav === active) return;
     if (button.dataset.nav === 'study') showStudy();
@@ -169,28 +192,27 @@ function showStart() {
     <section class="lab-screen">
       <div class="lab-hero">
         <div class="lab-hero-copy">
-          <p class="lab-eyebrow">Sort practice, one route at a time</p>
-          <h1>Practice<br>the chart.</h1>
-          <p>Learn the belt. Then test your recall.</p>
+          <p class="lab-eyebrow">${esc(t('Sort practice, one route at a time'))}</p>
+          <h1>${esc(t('Practice'))}<br>${esc(t('the chart.'))}</h1>
+          <p>${esc(t('Learn the belt. Then test your recall.'))}</p>
         </div>
-        <img class="lab-mascot" src="assets/parcel-buddy.jpg" alt="Smiling blue character holding a cardboard package">
+        <img class="lab-mascot" src="assets/parcel-buddy.jpg" alt="${language.code === 'es' ? 'Personaje azul sonriente con una caja de cartón' : 'Smiling blue character holding a cardboard package'}">
       </div>
-      <h2 class="lab-section-heading">Where do you want to start?</h2>
+      <h2 class="lab-section-heading">${esc(t('Where do you want to start?'))}</h2>
       <button id="study" class="lab-choice" type="button">
         <span class="lab-choice-icon">01</span>
-        <span><strong>Know the chart</strong><small>Browse every service by state and ZIP range.</small></span>
+        <span><strong>${esc(t('Know the chart'))}</strong><small>${esc(t('Browse every service by state and ZIP range.'))}</small></span>
         <span class="lab-arrow" aria-hidden="true">→</span>
       </button>
       <button id="quiz" class="lab-choice lab-choice-quiz" type="button">
         <span class="lab-choice-icon">02</span>
-        <span><strong>Take a quiz</strong><small>Start with Ground, then build up to the full chart.</small></span>
+        <span><strong>${esc(t('Take a quiz'))}</strong><small>${esc(t('Start with Ground, then build up to the full chart.'))}</small></span>
         <span class="lab-arrow" aria-hidden="true">→</span>
       </button>
-      <button id="viewlog" class="lab-log-link" type="button">Shift log${entries.length ? ` <span>(${entries.length})</span>` : ''} <span aria-hidden="true">→</span></button>
-      ${log.available ? '' : '<p class="warn">This phone is not saving results. Each score is shown once and then gone.</p>'}
-      <aside class="lab-disclaimer" aria-label="Independent practice notice">
-        <strong>Made by RJ.</strong> Not affiliated with or endorsed by UPS. This practice
-        does not replace any required UPS test or training. Follow your current worksite chart and instructions.
+      <button id="viewlog" class="lab-log-link" type="button">${esc(t('Shift log'))}${entries.length ? ` <span>(${entries.length})</span>` : ''} <span aria-hidden="true">→</span></button>
+      ${log.available ? '' : `<p class="warn">${esc(t('This phone is not saving results. Each score is shown once and then gone.'))}</p>`}
+      <aside class="lab-disclaimer" aria-label="${esc(t('Independent practice'))}">
+        <strong>${esc(t('Made by RJ.'))}</strong> ${esc(t('Not affiliated with or endorsed by UPS. This practice does not replace any required UPS test or training. Follow your current worksite chart and instructions.'))}
       </aside>
     </section>
   `, 'home');
@@ -202,18 +224,18 @@ function showStart() {
 function showNameEntry(notice = '', previousName = '') {
   const view = labPage(`
     <section class="lab-screen">
-      <p class="lab-eyebrow">Ready to practice?</p>
-      <h1 class="lab-title">Who is taking the test?</h1>
-      <p class="lab-intro">Enter a name or ID so the result can be found in the shift log on this phone.</p>
-      ${notice ? `<p class="notice">${esc(notice)}</p>` : ''}
+      <p class="lab-eyebrow">${esc(t('Ready to practice?'))}</p>
+      <h1 class="lab-title">${esc(t('Who is taking the test?'))}</h1>
+      <p class="lab-intro">${esc(t('Enter a name or ID so the result can be found in the shift log on this phone.'))}</p>
+      ${notice ? `<p class="notice">${esc(t(notice))}</p>` : ''}
       <label class="field">
-        <span>Name or ID</span>
-        <input id="name" type="text" autocomplete="off" autocapitalize="words" placeholder="e.g. J. Rivera" value="${esc(previousName)}">
+        <span>${esc(t('Name or ID'))}</span>
+        <input id="name" type="text" autocomplete="off" autocapitalize="words" placeholder="${esc(t('e.g. J. Rivera'))}" value="${esc(previousName)}">
       </label>
-      <button id="begin" class="primary">Pick a test</button>
-      <button id="back" class="ghost">Back to home</button>
+      <button id="begin" class="primary">${esc(t('Pick a test'))}</button>
+      <button id="back" class="ghost">${esc(t('Back to home'))}</button>
     </section>
-  `, 'quiz');
+  `, 'quiz', () => showNameEntry(notice, view.querySelector('#name').value));
 
   const nameInput = view.querySelector('#name');
   nameInput.focus();
@@ -236,8 +258,8 @@ function showNameEntry(notice = '', previousName = '') {
 
 function chartRow([state, code, belt, detail]) {
   return `<div class="lab-chart-row">
-    <div><span class="lab-chart-state">${esc(state === '*' ? 'All states (*)' : state)}</span>
-      <strong>${esc(code)}</strong>${detail ? `<small>${esc(detail)}</small>` : ''}</div>
+    <div><span class="lab-chart-state">${esc(language.state(state))}</span>
+      <strong>${esc(code)}</strong>${detail ? `<small>${esc(language.detail(detail))}</small>` : ''}</div>
     ${beltChip(belt, 'lab-belt-chip')}
   </div>`;
 }
@@ -245,38 +267,37 @@ function chartRow([state, code, belt, detail]) {
 function showStudy() {
   const view = labPage(`
     <section class="lab-screen">
-      <p class="lab-eyebrow">Twilight study guide</p>
-      <h1 class="lab-title">Know the chart.</h1>
-      <p class="lab-intro">Choose a service, then read its states, ZIP ranges, belts, and exceptions.</p>
-      <div class="lab-service-tabs" role="group" aria-label="Choose service">
-        ${Object.keys(CHART).map((service, index) => `<button type="button" data-service="${esc(service)}" aria-pressed="${index === 0}">${esc(service)}</button>`).join('')}
+      <p class="lab-eyebrow">${esc(t('Twilight study guide'))}</p>
+      <h1 class="lab-title">${esc(t('Know the chart.'))}</h1>
+      <p class="lab-intro">${esc(t('Choose a service, then read its states, ZIP ranges, belts, and exceptions.'))}</p>
+      <div class="lab-service-tabs" role="group" aria-label="${esc(t('Choose service'))}">
+        ${Object.keys(CHART).map((service) => `<button type="button" data-service="${esc(service)}" aria-pressed="${service === studyService}">${esc(language.service(service))}</button>`).join('')}
       </div>
-      <div class="lab-chart-heading"><strong id="service-title">Ground</strong><span>Twilight chart</span></div>
+      <div class="lab-chart-heading"><strong id="service-title"></strong><span>${esc(t('Twilight chart'))}</span></div>
       <p id="chart-count" class="lab-chart-count"></p>
-      <label class="lab-search-label" for="chart-search">Find a state or number</label>
-      <input id="chart-search" class="lab-chart-search" type="search" placeholder="New Jersey, 079-9, California, 155" autocomplete="off">
+      <label class="lab-search-label" for="chart-search">${esc(t('Find a state or number'))}</label>
+      <input id="chart-search" class="lab-chart-search" type="search" placeholder="${esc(t('New Jersey, 079-9, California, 155'))}" value="${esc(studyQuery)}" autocomplete="off">
       <div id="chart-rows"></div>
-      <aside class="lab-disclaimer"><strong>Made by RJ.</strong> This study guide does not replace your current worksite chart or UPS training.</aside>
+      <aside class="lab-disclaimer"><strong>${esc(t('Made by RJ.'))}</strong> ${esc(t('This study guide does not replace your current worksite chart or UPS training.'))}</aside>
     </section>
-  `, 'study');
+  `, 'study', showStudy);
 
-  let service = 'Ground';
   const search = view.querySelector('#chart-search');
   const renderRows = () => {
-    const section = searchChart(service, search.value);
-    view.querySelector('#service-title').textContent = service;
-    view.querySelector('#chart-count').textContent = `${section.main.length + section.exceptions.length} of ${section.total} routes shown`;
+    const section = searchChart(studyService, search.value);
+    view.querySelector('#service-title').textContent = language.service(studyService);
+    view.querySelector('#chart-count').textContent = t('{shown} of {total} routes shown', { shown: section.main.length + section.exceptions.length, total: section.total });
     view.querySelector('#chart-rows').innerHTML =
-      (section.main.length ? `<h2 class="lab-chart-block">Main chart</h2>${section.main.map(chartRow).join('')}` : '') +
-      (section.exceptions.length ? `<h2 class="lab-chart-block">Exceptions and special rules</h2>${section.exceptions.map(chartRow).join('')}` : '') ||
-      '<p class="lab-intro">No matching routes in this service.</p>';
+      (section.main.length ? `<h2 class="lab-chart-block">${esc(t('Main chart'))}</h2>${section.main.map(chartRow).join('')}` : '') +
+      (section.exceptions.length ? `<h2 class="lab-chart-block">${esc(t('Exceptions and special rules'))}</h2>${section.exceptions.map(chartRow).join('')}` : '') ||
+      `<p class="lab-intro">${esc(t('No matching routes in this service.'))}</p>`;
   };
   view.querySelectorAll('[data-service]').forEach((button) => button.addEventListener('click', () => {
-    service = button.dataset.service;
+    studyService = button.dataset.service;
     view.querySelectorAll('[data-service]').forEach((option) => option.setAttribute('aria-pressed', String(option === button)));
     renderRows();
   }));
-  search.addEventListener('input', renderRows);
+  search.addEventListener('input', () => { studyQuery = search.value; renderRows(); });
   renderRows();
 }
 
@@ -287,40 +308,40 @@ function showDeckPicker(name) {
 
   const view = labPage(`
     <section class="lab-screen">
-      <p class="lab-eyebrow">Time to practice</p>
-      <h1 class="lab-title">Pick a test</h1>
-      <p class="lab-intro">${esc(name)} &middot; Four belt choices per card. The clock starts when the first card appears.</p>
-      <h2 class="lab-picker-heading">New challenge levels</h2>
+      <p class="lab-eyebrow">${esc(t('Time to practice'))}</p>
+      <h1 class="lab-title">${esc(t('Pick a test'))}</h1>
+      <p class="lab-intro">${esc(t('{name} · Four belt choices per card. The clock starts when the first card appears.', { name }))}</p>
+      <h2 class="lab-picker-heading">${esc(t('New challenge levels'))}</h2>
       <div class="decks">
         ${DECKS.filter((deck) => deck.questionCount).map((deck, index) => `
           <button class="deckbtn" data-deck="${deck.id}">
-            <span class="dname">0${index + 1} &middot; ${esc(deck.name)}<em class="dsort">Twilight</em></span>
-            <span class="dblurb">${esc(deck.blurb)}</span>
-            <span class="dmeta">${deck.questionCount} questions &middot; ${CARD_SECONDS}s each</span>
+            <span class="dname">0${index + 1} &middot; ${esc(language.deckName(deck))}<em class="dsort">Twilight</em></span>
+            <span class="dblurb">${esc(language.deckBlurb(deck))}</span>
+            <span class="dmeta">${esc(t('{count} questions · {seconds}s each', { count: deck.questionCount, seconds: CARD_SECONDS }))}</span>
           </button>
         `).join('')}
       </div>
-      <h2 class="lab-picker-heading">Current quizzes &middot; Twilight</h2>
+      <h2 class="lab-picker-heading">${esc(t('Current quizzes · Twilight'))}</h2>
       <div class="decks">
         ${DECKS.filter((deck) => !deck.questionCount).map((deck) => (deck.verified ? `
           <button class="deckbtn" data-deck="${deck.id}">
-            <span class="dname">${esc(deck.name)}<em class="dsort">${esc(deck.sort)}</em></span>
-            <span class="dblurb">${esc(deck.blurb)}</span>
-            <span class="dmeta">${deck.cards.length} cards &middot; ${CARD_SECONDS}s each</span>
+            <span class="dname">${esc(language.deckName(deck))}<em class="dsort">${esc(deck.sort)}</em></span>
+            <span class="dblurb">${esc(language.deckBlurb(deck))}</span>
+            <span class="dmeta">${esc(t('{count} cards · {seconds}s each', { count: deck.cards.length, seconds: CARD_SECONDS }))}</span>
           </button>
         ` : `
           <div class="deckbtn locked">
-            <span class="dname">${esc(deck.name)}<em class="dsort">${esc(deck.sort)}</em></span>
-            <span class="dblurb">${esc(deck.blurb)}</span>
-            <span class="dmeta">Not checked against the chart yet</span>
+            <span class="dname">${esc(language.deckName(deck))}<em class="dsort">${esc(deck.sort)}</em></span>
+            <span class="dblurb">${esc(language.deckBlurb(deck))}</span>
+            <span class="dmeta">${esc(t('Not checked against the chart yet'))}</span>
           </div>
         `)).join('')}
       </div>
-      <button id="back" class="ghost">Change name</button>
-      <button id="main-page" class="ghost">Main page</button>
-      ${entries.length ? `<button id="viewlog" class="ghost">Shift log (${entries.length})</button>` : ''}
+      <button id="back" class="ghost">${esc(t('Change name'))}</button>
+      <button id="main-page" class="ghost">${esc(t('Main page'))}</button>
+      ${entries.length ? `<button id="viewlog" class="ghost">${esc(t('Shift log'))} (${entries.length})</button>` : ''}
     </section>
-  `, 'quiz');
+  `, 'quiz', () => showDeckPicker(name));
 
   view.querySelectorAll('.deckbtn[data-deck]').forEach((button) => {
     button.addEventListener('click', () => {
@@ -368,9 +389,12 @@ function showCard() {
 
   const view = el(`
     <section class="screen card-screen">
-      <div class="progress-row">
-        <div class="progress">${activeDeck ? esc(activeDeck.sort) + ' &middot; ' : ''}Card ${run.index + 1} of ${run.cards.length}</div>
-        <button id="cancel" type="button" class="stopbtn">Cancel</button>
+      <div class="card-header">
+        <div class="progress-row">
+          <div class="progress">${activeDeck ? esc(activeDeck.sort) + ' &middot; ' : ''}${esc(t('Card {current} of {total}', { current: run.index + 1, total: run.cards.length }))}</div>
+          ${languageButtons()}
+        </div>
+        <button id="cancel" type="button" class="stopbtn">${esc(t('Cancel'))}</button>
       </div>
       <div class="prompt">
         <div class="ring" id="ring"><i id="ringNum">${run.seconds}</i></div>
@@ -384,15 +408,29 @@ function showCard() {
         }).join('')}
       </div>
       <div class="bail" id="bail" hidden>
-        <h1>Test stopped</h1>
-        <p class="sub">Nothing is saved until a test is finished, so leaving now records nothing.</p>
-        <button id="bail-stay" class="primary">Keep going</button>
-        <button id="bail-picker" class="ghost">Pick another test</button>
-        <button id="bail-main" class="ghost">Main page</button>
+        <h1>${esc(t('Test stopped'))}</h1>
+        <p class="sub">${esc(t('Nothing is saved until a test is finished, so leaving now records nothing.'))}</p>
+        <button id="bail-stay" class="primary">${esc(t('Keep going'))}</button>
+        <button id="bail-picker" class="ghost">${esc(t('Pick another test'))}</button>
+        <button id="bail-main" class="ghost">${esc(t('Main page'))}</button>
       </div>
     </section>
   `);
   render(view);
+  view.querySelectorAll('[data-language]').forEach((button) => button.addEventListener('click', () => {
+    if (language.code === button.dataset.language) return;
+    language.set(button.dataset.language);
+    document.documentElement.lang = language.code;
+    view.querySelectorAll('[data-language]').forEach((option) => option.setAttribute('aria-pressed', String(option.dataset.language === language.code)));
+    view.querySelector('.progress').textContent = `${activeDeck ? `${activeDeck.sort} · ` : ''}${t('Card {current} of {total}', { current: run.index + 1, total: run.cards.length })}`;
+    view.querySelector('#cancel').textContent = t('Cancel');
+    view.querySelector('.p-line').textContent = `${serviceName(card.svc)} · ${card.state}`;
+    view.querySelector('#bail h1').textContent = t('Test stopped');
+    view.querySelector('#bail .sub').textContent = t('Nothing is saved until a test is finished, so leaving now records nothing.');
+    view.querySelector('#bail-stay').textContent = t('Keep going');
+    view.querySelector('#bail-picker').textContent = t('Pick another test');
+    view.querySelector('#bail-main').textContent = t('Main page');
+  }));
 
   bailOpen = false;
   const durationMs = run.seconds * 1000;
@@ -474,7 +512,7 @@ function showFeedback(response) {
   resumeTick = null;
 
   const right = response.outcome === 'correct';
-  const verdict = right ? 'Correct' : response.outcome === 'timeout' ? 'Out of time' : 'Missort';
+  const verdict = t(right ? 'Correct' : response.outcome === 'timeout' ? 'Out of time' : 'Missort');
 
   const view = el(`
     <section class="screen feedback ${right ? 'good' : 'bad'}">
@@ -484,7 +522,7 @@ function showFeedback(response) {
         <div class="p-code">${esc(response.code)}</div>
       </div>
       ${beltChip(response.correctBelt, 'answer')}
-      ${right ? '' : `<p class="why">${esc(response.why)}</p>`}
+      ${right ? '' : `<p class="why">${esc(language.explanation(response))}</p>`}
     </section>
   `);
   render(view);
@@ -505,35 +543,40 @@ function showResults() {
 
   const summary = { ...summarize(run, Date.now()), deck: activeDeck ? deckLabel(activeDeck) : null };
   const saved = log.append(summary);
+  renderResults(summary, saved);
+}
 
+function renderResults(summary, saved) {
   const elapsed = clockText(summary.totalMs);
 
   const view = el(`
     <section class="screen">
+      <div class="quiz-language">${languageButtons()}</div>
       <div class="score-line">
-        <div><div class="big">${summary.correct}/${summary.total}</div><div class="label">Score</div></div>
-        <div><div class="big">${elapsed}</div><div class="label">Time</div></div>
+        <div><div class="big">${summary.correct}/${summary.total}</div><div class="label">${esc(t('Score'))}</div></div>
+        <div><div class="big">${elapsed}</div><div class="label">${esc(t('Time'))}</div></div>
       </div>
       <div class="who">${esc(summary.name)}</div>
-      ${summary.deck ? `<div class="deckname">${esc(summary.deck)}</div>` : ''}
-      ${saved ? '' : '<p class="warn">This result was not saved. This phone is not saving results.</p>'}
-      ${summary.missed.length === 0 ? '<p class="clean">No missorts.</p>' : `
-        <h2>Missed</h2>
+      ${summary.deck ? `<div class="deckname">${esc(language.deckLabel(summary.deck))}</div>` : ''}
+      ${saved ? '' : `<p class="warn">${esc(t('This result was not saved. This phone is not saving results.'))}</p>`}
+      ${summary.missed.length === 0 ? `<p class="clean">${esc(t('No missorts.'))}</p>` : `
+        <h2>${esc(t('Missed'))}</h2>
         <ul class="missed">
           ${summary.missed.map((r) => `
             <li>
               <div class="mcard">${esc(serviceName(r.svc))} &middot; ${esc(r.state)} &middot; ${esc(r.code)}</div>
-              <div class="mans${r.outcome === 'timeout' ? ' timeout' : ''}">${r.outcome === 'timeout' ? 'ran out of time' : `said ${esc(r.answered)}`} &rarr; <strong>${esc(r.correctBelt)}</strong></div>
-              <div class="why">${esc(r.why)}</div>
+              <div class="mans${r.outcome === 'timeout' ? ' timeout' : ''}">${esc(r.outcome === 'timeout' ? t('ran out of time') : t('said {answer}', { answer: r.answered }))} &rarr; <strong>${esc(r.correctBelt)}</strong></div>
+              <div class="why">${esc(language.explanation(r))}</div>
             </li>
           `).join('')}
         </ul>
       `}
-      <button id="again" class="primary">Back to main page</button>
-      <button id="viewlog" class="ghost">Shift log</button>
+      <button id="again" class="primary">${esc(t('Back to main page'))}</button>
+      <button id="viewlog" class="ghost">${esc(t('Shift log'))}</button>
     </section>
   `);
   render(view);
+  wireLanguageButtons(view, () => renderResults(summary, saved));
 
   view.querySelector('#again').addEventListener('click', () => showStart());
   view.querySelector('#viewlog')?.addEventListener('click', showLog);
@@ -544,35 +587,37 @@ function showLog() {
 
   const view = el(`
     <section class="screen">
-      <h1>Shift log</h1>
-      ${entries.length === 0 ? '<p class="sub">Nothing recorded yet.</p>' : `
+      <div class="quiz-language">${languageButtons()}</div>
+      <h1>${esc(t('Shift log'))}</h1>
+      ${entries.length === 0 ? `<p class="sub">${esc(t('Nothing recorded yet.'))}</p>` : `
         <ul class="logl">
           ${entries.map((s) => `
             <li>
               <span class="who">${esc(s.name)}</span>
               <span class="sc">${s.correct}/${s.total}</span>
-              <span class="when">${s.deck ? esc(s.deck) + ' &middot; ' : ''}${esc(new Date(s.takenAt).toLocaleString())}</span>
+              <span class="when">${s.deck ? esc(language.deckLabel(s.deck)) + ' &middot; ' : ''}${esc(new Date(s.takenAt).toLocaleString(language.code === 'es' ? 'es-US' : 'en-US'))}</span>
               ${s.missed.length ? `
                 <ul class="logmiss">
                   ${s.missed.map((r) => `
                     <li>
                       <div class="mcard">${esc(serviceName(r.svc))} &middot; ${esc(r.state)} &middot; ${esc(r.code)}</div>
-                      <div class="mans${r.outcome === 'timeout' ? ' timeout' : ''}">${r.outcome === 'timeout' ? 'ran out of time' : `said ${esc(r.answered)}`} &rarr; <strong>${esc(r.correctBelt)}</strong></div>
+                      <div class="mans${r.outcome === 'timeout' ? ' timeout' : ''}">${esc(r.outcome === 'timeout' ? t('ran out of time') : t('said {answer}', { answer: r.answered }))} &rarr; <strong>${esc(r.correctBelt)}</strong></div>
                     </li>
                   `).join('')}
                 </ul>
-              ` : '<div class="logclean">No missorts.</div>'}
+              ` : `<div class="logclean">${esc(t('No missorts.'))}</div>`}
             </li>
           `).join('')}
         </ul>
       `}
-      <button id="back" class="primary">Main page</button>
-      ${entries.length ? '<button id="export" class="ghost" hidden>Export to Excel</button>' : ''}
+      <button id="back" class="primary">${esc(t('Main page'))}</button>
+      ${entries.length ? `<button id="export" class="ghost" hidden>${esc(t('Export to Excel'))}</button>` : ''}
       <p id="exportnote" class="exportnote" hidden></p>
-      ${entries.length ? '<button id="clear" class="ghost danger">Clear log</button>' : ''}
+      ${entries.length ? `<button id="clear" class="ghost danger">${esc(t('Clear log'))}</button>` : ''}
     </section>
   `);
   render(view);
+  wireLanguageButtons(view, showLog);
 
   const exportButton = view.querySelector('#export');
   const exportNote = view.querySelector('#exportnote');
@@ -589,18 +634,18 @@ function showLog() {
 
       exportButton.addEventListener('click', async () => {
         exportButton.disabled = true;
-        note('Preparing the sheet...');
+        note(t('Preparing the sheet...'));
         try {
           const workbook = buildWorkbook(log.all());
           const stamp = new Date().toISOString().slice(0, 10);
           const result = await saveWorkbook(workbook, `sort-test-log-${stamp}.xlsx`, downloads);
-          note(result.status === 'saved' ? 'Saved.' : 'Sent.');
+          note(t(result.status === 'saved' ? 'Saved.' : 'Sent.'));
         } catch (error) {
           const code = error && error.code;
           if (code === 'declined') note('');
-          else if (code === 'rate_limited') note('Already asking. Try again in a moment.', true);
-          else if (code === 'too_large') note('The log is too big to send. Clear it and start a fresh shift.', true);
-          else note('This phone could not save the file.', true);
+          else if (code === 'rate_limited') note(t('Already asking. Try again in a moment.'), true);
+          else if (code === 'too_large') note(t('The log is too big to send. Clear it and start a fresh shift.'), true);
+          else note(t('This phone could not save the file.'), true);
         } finally {
           exportButton.disabled = false;
         }
@@ -618,10 +663,10 @@ function showLog() {
   clearButton?.addEventListener('click', () => {
     if (!armed) {
       armed = true;
-      clearButton.textContent = 'Tap again to erase every result';
+      clearButton.textContent = t('Tap again to erase every result');
       armedTimer = setTimeout(() => {
         armed = false;
-        clearButton.textContent = 'Clear log';
+        clearButton.textContent = t('Clear log');
       }, 5000);
       return;
     }

@@ -227,11 +227,23 @@
       UT:'Utah', VA:'Virginia', VT:'Vermont', WA:'Washington', WV:'West Virginia',
       WY:'Wyoming', MEX:'Mexico', CAN:'Canada', PRI:'Puerto Rico',
     };
+    export const STATE_NAMES_ES = {
+      AL:'Alabama', AK:'Alaska', AZ:'Arizona', AR:'Arkansas', CA:'California', CO:'Colorado',
+      CT:'Connecticut', DE:'Delaware', DC:'Distrito de Columbia', FL:'Florida', GA:'Georgia',
+      HI:'Hawái', ID:'Idaho', IL:'Illinois', IN:'Indiana', KS:'Kansas', KY:'Kentucky',
+      LA:'Luisiana', MA:'Massachusetts', MD:'Maryland', ME:'Maine', MI:'Míchigan',
+      MN:'Minnesota', MO:'Misuri', MS:'Misisipi', MT:'Montana', NC:'Carolina del Norte',
+      ND:'Dakota del Norte', NE:'Nebraska', NH:'Nuevo Hampshire', NJ:'Nueva Jersey', NM:'Nuevo México',
+      NV:'Nevada', NY:'Nueva York', OH:'Ohio', OK:'Oklahoma', OR:'Oregón', PA:'Pensilvania',
+      RI:'Rhode Island', SC:'Carolina del Sur', SD:'Dakota del Sur', TN:'Tennessee', TX:'Texas',
+      UT:'Utah', VA:'Virginia', VT:'Vermont', WA:'Washington', WV:'Virginia Occidental',
+      WY:'Wyoming', MEX:'México', CAN:'Canadá', PRI:'Puerto Rico',
+    };
 
 export function searchChart(service, input = '') {
   const section = CHART[service];
   if (!section) return { main: [], exceptions: [], total: 0 };
-  const normalize = value => String(value).toUpperCase().replace(/[^A-Z0-9]/g, '');
+  const normalize = value => String(value).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toUpperCase().replace(/[^A-Z0-9]/g, '');
   const query = normalize(input);
   const exactState = STATE_NAMES[query] ? query : null;
   const numericSearch = String(input).trim().match(/^(?:(.+?)\s+)?(\d{3})(?:\d{2})?$/);
@@ -243,10 +255,10 @@ export function searchChart(service, input = '') {
     const range = row[1].match(/^(\d{3})[–-](\d{3})$/);
     const stateMatches = !requestedState || row[0].split(',').some(code => {
       const state = code.trim();
-      return normalize(state) === requestedState || normalize(STATE_NAMES[state] || '').includes(requestedState);
+      return normalize(state) === requestedState || [STATE_NAMES[state], STATE_NAMES_ES[state]].some(name => normalize(name || '').includes(requestedState));
     });
     if (range && zipPrefix !== null && stateMatches && zipPrefix >= Number(range[1]) && zipPrefix <= Number(range[2])) return true;
-    const fullStates = row[0].split(',').map(code => STATE_NAMES[code.trim()] || code.trim()).join(' ');
+    const fullStates = row[0].split(',').map(code => [STATE_NAMES[code.trim()], STATE_NAMES_ES[code.trim()]].join(' ')).join(' ');
     return normalize(row.join(' ')).includes(query) || normalize(`${fullStates} ${row[1]} ${row[2]}`).includes(query);
   };
   return {
