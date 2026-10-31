@@ -1,8 +1,5 @@
-// The Saddle Brook chart is read under two different sorts, and New Jersey is
-// where they disagree. On the PRELOAD sort every code on the NJ list goes RED
-// except 079 9. On the TWILIGHT sort that list is split between RED and BLUE.
-// Everything else on the chart is the same under both, so the core cards below
-// are shared and only the NJ set swaps. See src/decks.js for how they compose.
+// The active Saddle Brook practice chart is Twilight. The updated New Jersey
+// rule sends NJ to RED except 079 9, which goes ORANGE on every service.
 
 export const SERVICE_LABEL = {
   GND: 'Ground',
@@ -17,7 +14,7 @@ export const SERVICE_LABEL = {
 // BLUE and one ending 1S goes PURPLE, whatever the chart says for that range.
 // Every other card in the app shows a bare code, which means no termination.
 //
-// Eleven traps that hold under either sort.
+// Eleven common traps from the Twilight chart.
 export const COMMON_CORE = [
   {
     id: 'ny-136-nda',
@@ -109,58 +106,46 @@ export const COMMON_CORE = [
   },
 ];
 
-// PRELOAD sort: the whole NJ list goes RED, with 079 9 the single exception.
-export const NJ_PRELOAD = [
-  {
-    id: 'nj-078-4-preload',
-    svc: 'ALL', state: 'NJ', code: '078 4',
-    belt: 'RED',
-    confusions: ['BLUE', 'CHECK', 'ORANGE'],
-    why: 'On the preload sort every code on the NJ list goes RED. The same code goes BLUE on the twilight chart.',
-    tags: ['preload', 'sort-split'],
-  },
-  {
-    id: 'nj-082-9-preload',
-    svc: 'ALL', state: 'NJ', code: '082 9',
-    belt: 'RED',
-    confusions: ['BLUE', 'CHECK', 'ORANGE'],
-    why: 'RED on preload, like the rest of the NJ list. Twilight splits that list, and this is one of the codes that moves to BLUE.',
-    tags: ['preload', 'sort-split'],
-  },
-  {
-    id: 'nj-079-9-preload',
-    svc: 'ALL', state: 'NJ', code: '079 9',
-    belt: 'ORANGE',
-    confusions: ['RED', 'BLUE', 'CHECK'],
-    why: 'The one NJ code that is not RED on preload. It is the same ORANGE on twilight, so this answer never changes.',
-    tags: ['preload', 'exception'],
-  },
-];
-
-// TWILIGHT sort: the NJ list is split between RED and BLUE.
+// Twilight NJ cards used across the two Common Missorts sets.
 export const NJ_TWILIGHT = [
   {
     id: 'nj-078-4-twilight',
     svc: 'ALL', state: 'NJ', code: '078 4',
-    belt: 'BLUE',
-    confusions: ['RED', 'CHECK', 'ORANGE'],
-    why: 'BLUE on the twilight chart. On the preload sort this same code goes RED, so the answer depends on which sort you are running.',
-    tags: ['twilight', 'sort-split'],
+    belt: 'RED',
+    confusions: ['BLUE', 'CHECK', 'ORANGE'],
+    why: 'New Jersey routes to RED on the current Twilight rule. Only 079 9 breaks to ORANGE.',
+    tags: ['twilight'],
   },
   {
     id: 'nj-082-9-twilight',
     svc: 'ALL', state: 'NJ', code: '082 9',
-    belt: 'BLUE',
-    confusions: ['RED', 'CHECK', 'ORANGE'],
-    why: 'BLUE on twilight, while 081 9 directly above it on the same list is still RED. On preload this code is RED.',
-    tags: ['twilight', 'sort-split'],
+    belt: 'RED',
+    confusions: ['BLUE', 'CHECK', 'ORANGE'],
+    why: 'New Jersey routes to RED on the current Twilight rule. Only 079 9 breaks to ORANGE.',
+    tags: ['twilight'],
   },
   {
     id: 'nj-079-9-twilight',
     svc: 'ALL', state: 'NJ', code: '079 9',
     belt: 'ORANGE',
     confusions: ['RED', 'BLUE', 'CHECK'],
-    why: 'The only ORANGE on the NJ list, and the one code that reads the same under both sorts.',
+    why: '079 9 is the single New Jersey exception: ORANGE instead of RED.',
     tags: ['twilight', 'exception'],
+  },
+  {
+    id: 'nj-070-3-twilight',
+    svc: 'ALL', state: 'NJ', code: '070 3',
+    belt: 'RED',
+    confusions: ['BLUE', 'CHECK', 'ORANGE'],
+    why: 'New Jersey routes to RED on the current Twilight rule. Only 079 9 breaks to ORANGE.',
+    tags: ['twilight'],
+  },
+  {
+    id: 'nj-083-9-twilight',
+    svc: 'ALL', state: 'NJ', code: '083 9',
+    belt: 'RED',
+    confusions: ['BLUE', 'CHECK', 'ORANGE'],
+    why: 'New Jersey routes to RED on the current Twilight rule. Only 079 9 breaks to ORANGE.',
+    tags: ['twilight'],
   },
 ];

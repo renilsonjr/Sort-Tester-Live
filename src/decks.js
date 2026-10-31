@@ -1,13 +1,11 @@
-import { COMMON_CORE, NJ_PRELOAD, NJ_TWILIGHT } from './questions.js';
+import { COMMON_CORE, NJ_TWILIGHT } from './questions.js';
+import { LEVEL_DECKS } from './levels.js';
 
 // Every deck here is transcribed from the Saddle Brook primary sort chart with
 // the SORT CHANGE sheet applied.
 //
-// Common Missorts ships twice, once per sort. The eleven core cards are shared;
-// only the New Jersey set differs, because NJ is the one place the preload and
-// twilight sorts send the same code to different belts. Every deck states which
-// sort it is asking about, and that label follows the result into the shift log
-// and the Excel export.
+// The six familiar decks remain available. The two Common Missorts sets share
+// eleven cards but use different NJ examples under one Twilight answer rule.
 //
 // New York was confirmed correct against the real sheet by the supervisor on
 // 2026-09-16. Next Day Air, 2 Day Air and 3 Day Select were unlocked on the
@@ -164,11 +162,11 @@ const NEXT_DAY_AIR = [
     tags: ['boundary'],
   },
   {
-    id: 'nda-nj-070-089',
-    svc: 'NDA', state: 'NJ', code: '070-089',
-    belt: 'CHECK',
-    confusions: ['RED', 'BLUE', 'ORANGE'],
-    why: 'New Jersey is CHECK on every service. The preload list and the 080-084 sort change override it for specific codes.',
+    id: 'nda-nj-078-4',
+    svc: 'NDA', state: 'NJ', code: '078 4',
+    belt: 'RED',
+    confusions: ['CHECK', 'BLUE', 'ORANGE'],
+    why: 'New Jersey routes to RED on the current Twilight rule. Only the single code 079 9 goes ORANGE.',
     tags: ['base-rule'],
   },
   {
@@ -348,21 +346,22 @@ const THREE_DAY_SELECT = [
 ];
 
 export const DECKS = [
+  ...LEVEL_DECKS,
   {
-    id: 'common-preload',
-    name: 'Common Missorts',
-    sort: 'Preload',
-    blurb: 'The usual traps, with New Jersey read off the preload list',
+    id: 'common-twilight-1',
+    name: 'Common Missorts · Set 1',
+    sort: 'Twilight',
+    blurb: 'The usual traps, including the updated New Jersey rule',
     verified: true,
-    cards: [...COMMON_CORE, ...NJ_PRELOAD],
+    cards: [...COMMON_CORE, ...NJ_TWILIGHT.slice(0, 3)],
   },
   {
-    id: 'common-twilight',
-    name: 'Common Missorts',
+    id: 'common-twilight-2',
+    name: 'Common Missorts · Set 2',
     sort: 'Twilight',
-    blurb: 'The same traps, with New Jersey read off the twilight chart',
+    blurb: 'A second familiar set with different New Jersey examples',
     verified: true,
-    cards: [...COMMON_CORE, ...NJ_TWILIGHT],
+    cards: [...COMMON_CORE, NJ_TWILIGHT[2], ...NJ_TWILIGHT.slice(3)],
   },
   {
     id: 'new-york',
@@ -398,7 +397,8 @@ export const DECKS = [
   },
 ];
 
-// "Common Missorts · Preload" — what a deck is called wherever it is recorded.
+// The sort and set stay in each new shift-log and Excel label. Older saved
+// results keep their historical labels and are not rewritten.
 export function deckLabel(deck) {
   return deck.sort ? `${deck.name} \u00b7 ${deck.sort}` : deck.name;
 }

@@ -5,7 +5,8 @@ import { CARD_SECONDS, createRun, currentCard, answerCard, timeoutCard, summariz
 import { createClock } from './clock.js';
 import { createShiftLog } from './shiftLog.js';
 import { saveWorkbook } from './exportFile.js';
-import { STUDY_SECTIONS, cardsForStudy } from './study.js';
+import { CHART, searchChart } from './study.js';
+import { selectLevelCards } from './levels.js';
 
 const app = document.getElementById('app');
 const log = createShiftLog(typeof localStorage === 'undefined' ? null : localStorage);
@@ -126,7 +127,7 @@ function labPage(content, active = 'home') {
           <div class="lab-brand"><span class="lab-mark">RJ</span> Sort Lab</div>
           <span class="lab-tag">Independent practice</span>
         </div>
-        <div class="lab-site">UPS Saddle Brook <span aria-hidden="true">·</span> Preload &amp; Twilight</div>
+        <div class="lab-site">UPS Saddle Brook <span aria-hidden="true">·</span> Twilight</div>
       </header>
       <main class="lab-main">${content}</main>
       <nav class="lab-nav" aria-label="Main navigation">
@@ -167,20 +168,22 @@ function showStart() {
   const view = labPage(`
     <section class="lab-screen">
       <div class="lab-hero">
-        <p class="lab-eyebrow">Practice with purpose</p>
-        <h1>Test your skills and study the chart.</h1>
-        <p>Study one part of the chart, then put it to work in a timed sort quiz.</p>
-        <div class="lab-route" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
+        <div class="lab-hero-copy">
+          <p class="lab-eyebrow">Sort practice, one route at a time</p>
+          <h1>Practice<br>the chart.</h1>
+          <p>Learn the belt. Then test your recall.</p>
+        </div>
+        <img class="lab-mascot" src="assets/parcel-buddy.jpg" alt="Smiling blue character holding a cardboard package">
       </div>
       <h2 class="lab-section-heading">Where do you want to start?</h2>
       <button id="study" class="lab-choice" type="button">
         <span class="lab-choice-icon">01</span>
-        <span><strong>Know the chart</strong><small>Study ranges, sort changes, and exceptions in small sections.</small></span>
+        <span><strong>Know the chart</strong><small>Browse every service by state and ZIP range.</small></span>
         <span class="lab-arrow" aria-hidden="true">→</span>
       </button>
       <button id="quiz" class="lab-choice lab-choice-quiz" type="button">
         <span class="lab-choice-icon">02</span>
-        <span><strong>Take a quiz</strong><small>Choose a test, beat the clock, and review every missort.</small></span>
+        <span><strong>Take a quiz</strong><small>Start with Ground, then build up to the full chart.</small></span>
         <span class="lab-arrow" aria-hidden="true">→</span>
       </button>
       <button id="viewlog" class="lab-log-link" type="button">Shift log${entries.length ? ` <span>(${entries.length})</span>` : ''} <span aria-hidden="true">→</span></button>
@@ -231,51 +234,50 @@ function showNameEntry(notice = '', previousName = '') {
   view.querySelector('#back').addEventListener('click', showStart);
 }
 
-function studyRows(section, sort) {
-  return cardsForStudy(section, sort).map((card) => `
-    <article class="lab-study-row">
-      <div class="lab-study-meta">${esc(sort === 'Both' ? 'Preload & Twilight' : sort)} &middot; ${esc(serviceName(card.svc))} &middot; ${esc(card.state)}</div>
-      <div class="lab-study-answer"><strong>${esc(card.code)}</strong>${beltChip(card.belt, 'lab-belt-chip')}</div>
-      <p>${esc(card.why)}</p>
-    </article>
-  `).join('');
+function chartRow([state, code, belt, detail]) {
+  return `<div class="lab-chart-row">
+    <div><span class="lab-chart-state">${esc(state === '*' ? 'All states (*)' : state)}</span>
+      <strong>${esc(code)}</strong>${detail ? `<small>${esc(detail)}</small>` : ''}</div>
+    ${beltChip(belt, 'lab-belt-chip')}
+  </div>`;
 }
 
 function showStudy() {
   const view = labPage(`
     <section class="lab-screen">
-      <p class="lab-eyebrow">Learn in small pieces</p>
-      <h1 class="lab-title">Know the chart</h1>
-      <p class="lab-intro">Selected routes from the current quizzes, grouped for study. Each example names its sort and service.</p>
-      <div class="lab-study-sections">
-        ${STUDY_SECTIONS.map((section, index) => `
-          <details class="lab-study-card" data-study-section="${esc(section.id)}" ${index === 0 ? 'open' : ''}>
-            <summary>
-              <span class="lab-count">${String(index + 1).padStart(2, '0')}</span>
-              <span><strong>${esc(section.title)}</strong><small>${esc(section.subtitle)}</small></span>
-            </summary>
-            <div class="lab-study-body">
-              ${section.sorts.length > 1 ? `<div class="lab-sort-tabs" role="group" aria-label="Choose sort">
-                ${section.sorts.map((sort, sortIndex) => `<button type="button" data-study-sort="${esc(sort)}" aria-pressed="${sortIndex === 0}">${esc(sort)}</button>`).join('')}
-              </div>` : ''}
-              <div class="lab-study-cards">${studyRows(section, section.sorts[0])}</div>
-            </div>
-          </details>
-        `).join('')}
+      <p class="lab-eyebrow">Twilight study guide</p>
+      <h1 class="lab-title">Know the chart.</h1>
+      <p class="lab-intro">Choose a service, then read its states, ZIP ranges, belts, and exceptions.</p>
+      <div class="lab-service-tabs" role="group" aria-label="Choose service">
+        ${Object.keys(CHART).map((service, index) => `<button type="button" data-service="${esc(service)}" aria-pressed="${index === 0}">${esc(service)}</button>`).join('')}
       </div>
-      <button id="study-quiz" class="primary">Ready? Take a quiz</button>
-      <aside class="lab-disclaimer"><strong>Study guide scope:</strong> these are selected routes from the practice tests, not the full chart. Your current worksite chart and instructions take priority.</aside>
+      <div class="lab-chart-heading"><strong id="service-title">Ground</strong><span>Twilight chart</span></div>
+      <p id="chart-count" class="lab-chart-count"></p>
+      <label class="lab-search-label" for="chart-search">Find a state or number</label>
+      <input id="chart-search" class="lab-chart-search" type="search" placeholder="New Jersey, 079-9, California, 155" autocomplete="off">
+      <div id="chart-rows"></div>
+      <aside class="lab-disclaimer"><strong>Made by RJ.</strong> This study guide does not replace your current worksite chart or UPS training.</aside>
     </section>
   `, 'study');
 
-  view.querySelectorAll('[data-study-sort]').forEach((button) => button.addEventListener('click', () => {
-    const card = button.closest('[data-study-section]');
-    const section = STUDY_SECTIONS.find((item) => item.id === card.dataset.studySection);
-    const sort = button.dataset.studySort;
-    card.querySelectorAll('[data-study-sort]').forEach((option) => option.setAttribute('aria-pressed', String(option === button)));
-    card.querySelector('.lab-study-cards').innerHTML = studyRows(section, sort);
+  let service = 'Ground';
+  const search = view.querySelector('#chart-search');
+  const renderRows = () => {
+    const section = searchChart(service, search.value);
+    view.querySelector('#service-title').textContent = service;
+    view.querySelector('#chart-count').textContent = `${section.main.length + section.exceptions.length} of ${section.total} routes shown`;
+    view.querySelector('#chart-rows').innerHTML =
+      (section.main.length ? `<h2 class="lab-chart-block">Main chart</h2>${section.main.map(chartRow).join('')}` : '') +
+      (section.exceptions.length ? `<h2 class="lab-chart-block">Exceptions and special rules</h2>${section.exceptions.map(chartRow).join('')}` : '') ||
+      '<p class="lab-intro">No matching routes in this service.</p>';
+  };
+  view.querySelectorAll('[data-service]').forEach((button) => button.addEventListener('click', () => {
+    service = button.dataset.service;
+    view.querySelectorAll('[data-service]').forEach((option) => option.setAttribute('aria-pressed', String(option === button)));
+    renderRows();
   }));
-  view.querySelector('#study-quiz').addEventListener('click', () => showNameEntry());
+  search.addEventListener('input', renderRows);
+  renderRows();
 }
 
 function showDeckPicker(name) {
@@ -288,8 +290,19 @@ function showDeckPicker(name) {
       <p class="lab-eyebrow">Time to practice</p>
       <h1 class="lab-title">Pick a test</h1>
       <p class="lab-intro">${esc(name)} &middot; Four belt choices per card. The clock starts when the first card appears.</p>
+      <h2 class="lab-picker-heading">New challenge levels</h2>
       <div class="decks">
-        ${DECKS.map((deck) => (deck.verified ? `
+        ${DECKS.filter((deck) => deck.questionCount).map((deck, index) => `
+          <button class="deckbtn" data-deck="${deck.id}">
+            <span class="dname">0${index + 1} &middot; ${esc(deck.name)}<em class="dsort">Twilight</em></span>
+            <span class="dblurb">${esc(deck.blurb)}</span>
+            <span class="dmeta">${deck.questionCount} questions &middot; ${CARD_SECONDS}s each</span>
+          </button>
+        `).join('')}
+      </div>
+      <h2 class="lab-picker-heading">Current quizzes &middot; Twilight</h2>
+      <div class="decks">
+        ${DECKS.filter((deck) => !deck.questionCount).map((deck) => (deck.verified ? `
           <button class="deckbtn" data-deck="${deck.id}">
             <span class="dname">${esc(deck.name)}<em class="dsort">${esc(deck.sort)}</em></span>
             <span class="dblurb">${esc(deck.blurb)}</span>
@@ -304,6 +317,7 @@ function showDeckPicker(name) {
         `)).join('')}
       </div>
       <button id="back" class="ghost">Change name</button>
+      <button id="main-page" class="ghost">Main page</button>
       ${entries.length ? `<button id="viewlog" class="ghost">Shift log (${entries.length})</button>` : ''}
     </section>
   `, 'quiz');
@@ -313,11 +327,12 @@ function showDeckPicker(name) {
       const deck = deckById(button.dataset.deck);
       if (!deck) return;
       activeDeck = deck;
-      run = createRun({ name, cards: deck.cards });
+      run = createRun({ name, cards: selectLevelCards(deck) });
       showCard();
     });
   });
   view.querySelector('#back').addEventListener('click', () => showNameEntry('', name));
+  view.querySelector('#main-page').addEventListener('click', showStart);
   view.querySelector('#viewlog')?.addEventListener('click', showLog);
 }
 

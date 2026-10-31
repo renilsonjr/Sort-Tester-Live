@@ -3,8 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Sort Test</title>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap">
+<title>Sort Lab · Saddle Brook Twilight</title>
 <style>
   :root {
     --bg: #fbfaf6; --panel: #ffffff; --sunk: #e9eee9;
@@ -270,6 +269,56 @@
   .lab-main .decks { margin: 6px 0; }
   .lab-main .deckbtn { border-radius: 19px; padding: 16px; box-shadow: 0 3px 12px #1c405208; }
   .lab-main .deckbtn .dname { font-family: "Space Grotesk", sans-serif; letter-spacing: -.03em; }
+
+  /* The approved Twilight redesign: a plain black and white interface with
+     the mascot's muted blue. Belt answer colors still come from BELT_STYLE. */
+  :root { --bg: #fff; --panel: #fff; --sunk: #e9edf1; --ink: #17191d; --muted: #565d67; --line: #d9dde2; --accent: #17191d; }
+  body { background: #e9edf1; color: var(--ink); font-family: Arial, Helvetica, sans-serif; }
+  h1, .lab-brand, .lab-section-heading, .lab-choice-icon, .lab-main .deckbtn .dname, .lab-nav i { font-family: Arial, Helvetica, sans-serif; }
+  #app { box-shadow: 0 12px 45px #1c2a3b18; }
+  .lab-top { padding: 20px 22px 15px; border-bottom: 1px solid var(--line); gap: 8px; }
+  .lab-brand { font-size: 19px; font-weight: 800; letter-spacing: -.035em; }
+  .lab-mark { border-radius: 5px; transform: none; }
+  .lab-tag { border: 1px solid #b7c9df; border-radius: 0; background: #eaf2fa; color: #293d56; font-size: 9px; letter-spacing: .04em; }
+  .lab-site { letter-spacing: .055em; }
+  .lab-main { padding: 20px 22px 100px; }
+  .lab-eyebrow { color: var(--ink); letter-spacing: .13em; }
+  .lab-title { font-size: 35px; font-weight: 800; letter-spacing: -.065em; }
+  .lab-hero { border: 1px solid #c8d7e7; border-radius: 0; background: #d8e5f4; padding: 0; margin: 0; }
+  .lab-hero::before { content: none; }
+  .lab-hero-copy { padding: 22px 20px 8px; }
+  .lab-hero .lab-eyebrow { color: var(--ink); margin-bottom: 10px; }
+  .lab-hero h1 { font: 800 35px/1.02 Arial, Helvetica, sans-serif; letter-spacing: -.065em; margin: 0; }
+  .lab-hero p:not(.lab-eyebrow) { margin: 12px 0 0; color: var(--ink); font-size: 14px; }
+  .lab-mascot { display: block; width: 100%; height: 225px; object-fit: cover; object-position: 50% 46%; }
+  .lab-section-heading { margin: 16px 0 1px; font-size: 20px; font-weight: 800; }
+  .lab-choice { border-radius: 0; box-shadow: none; padding: 17px 15px; }
+  .lab-choice-icon, .lab-choice-quiz .lab-choice-icon { border: 1px solid #d9e5f2; border-radius: 0; background: #edf3fa; color: var(--ink); width: 44px; height: 44px; font-size: 17px; }
+  .lab-arrow { color: var(--ink); }
+  .lab-log-link { color: #263c58; }
+  .lab-disclaimer { border-color: var(--line); border-radius: 0; background: #f5f6f7; color: var(--muted); }
+  .lab-nav { background: #fff; backdrop-filter: none; gap: 0; padding: 0 max(0px, env(safe-area-inset-right)) max(0px, env(safe-area-inset-bottom)) max(0px, env(safe-area-inset-left)); }
+  .lab-nav button { border-radius: 0; padding: 10px 5px 12px; }
+  .lab-nav button[aria-current="page"] { background: #fff; box-shadow: inset 0 3px var(--ink); }
+  .lab-main .deckbtn, .ghost, .primary, input { border-radius: 0; }
+  .lab-main .deckbtn { box-shadow: none; }
+  .lab-main .deckbtn .dname { letter-spacing: 0; }
+  .lab-picker-heading { margin: 16px 0 2px; font-size: 16px; letter-spacing: -.02em; text-transform: none; color: var(--ink); }
+  .lab-service-tabs { display: grid; grid-template-columns: repeat(2, 1fr); gap: 7px; margin: 9px 0 18px; }
+  .lab-service-tabs button { border: 1px solid var(--line); background: #fff; color: var(--ink); padding: 11px 8px; font-size: 13px; font-weight: 700; }
+  .lab-service-tabs button[aria-pressed="true"] { border-color: var(--ink); background: var(--ink); color: #fff; }
+  .lab-chart-heading { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; border-bottom: 2px solid var(--ink); padding: 8px 0; }
+  .lab-chart-heading strong { font-size: 17px; }
+  .lab-chart-heading span, .lab-chart-count { color: var(--muted); font-size: 12px; }
+  .lab-chart-count { margin: 7px 0 12px; }
+  .lab-search-label { display: block; margin-bottom: 6px; font-size: 11px; font-weight: 800; letter-spacing: .13em; text-transform: uppercase; }
+  .lab-chart-search { width: 100%; padding: 12px; margin: 0 0 12px; border: 1px solid var(--line); font-size: 15px; }
+  .lab-chart-block { margin: 22px 0 3px; font-size: 13px; font-weight: 800; letter-spacing: .07em; text-transform: uppercase; color: var(--ink); }
+  .lab-chart-row { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 8px; padding: 12px 0; border-bottom: 1px solid var(--line); }
+  .lab-chart-state, .lab-chart-row small { display: block; color: var(--muted); font-size: 12px; }
+  .lab-chart-row strong { display: block; margin-top: 2px; font-size: 17px; }
+  .lab-chart-row small { margin-top: 2px; font-size: 11px; }
+  .lab-chart-row .lab-belt-chip { min-width: 75px; border-radius: 0; padding: 7px 8px; font-size: 11px; }
 
   @media (prefers-reduced-motion: reduce) {
     * { animation: none !important; transition: none !important; }
