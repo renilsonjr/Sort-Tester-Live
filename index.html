@@ -169,6 +169,38 @@
   }
   .feedback.good .verdict { color: var(--good); }
   .feedback.bad .verdict { color: var(--bad); }
+  /* Quiz preview approved for the live card: the supplied mascot fills its
+     natural image ratio, while the timer stays between progress and Cancel. */
+  .quiz-card, .quiz-feedback { gap: 12px; min-height: calc(100dvh - 68px); }
+  .quiz-card { justify-content: space-between; }
+  .quiz-top { display: flex; flex-direction: column; gap: 7px; }
+  .quiz-topline, .quiz-actions { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+  .quiz-topline { min-height: 44px; }
+  .quiz-topline .lab-language button { width: 38px; }
+  .quiz-actions { display: grid; grid-template-columns: minmax(0,1fr) auto minmax(0,1fr); }
+  .quiz-actions .stopbtn { justify-self: end; min-height: 44px; border-radius: 22px; }
+  .quiz-step { color: var(--muted); font-size: 12px; font-weight: 800; letter-spacing: .07em; text-transform: uppercase; }
+  .quiz-timer { width: 48px; height: 48px; border: 4px solid var(--ink); border-radius: 50%; display: grid; place-items: center; background: #fff; font-size: 20px; font-weight: 800; font-variant-numeric: tabular-nums; }
+  .quiz-timer.urgent { border-color: var(--bad); color: var(--bad); }
+  .quiz-avatar { display: block; width: 100%; height: auto; aspect-ratio: 1712 / 1152; object-fit: cover; }
+  .quiz-route { display: flex; flex-direction: column; align-items: center; text-align: center; }
+  .quiz-route .p-line { font-size: clamp(16px, 2.4dvh, 21px); }
+  .quiz-route .p-code { font-size: clamp(48px, 10dvh, 72px); font-weight: 800; letter-spacing: -.04em; }
+  .quiz-cue { margin: 0; font-size: 11px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; }
+  .quiz-card .options { gap: 9px; }
+  .quiz-card .belt { min-height: clamp(76px, 12dvh, 104px); border-radius: 12px; }
+  .quiz-feedback .verdict { line-height: 1.05; letter-spacing: -.04em; text-align: left; align-self: stretch; }
+  .quiz-feedback.good .verdict { color: var(--good); }
+  .quiz-feedback.bad .verdict { color: var(--bad); }
+  .quiz-feedback .answer-compare { align-self: stretch; display: grid; gap: 8px; padding: 12px; border: 1px solid var(--line); background: #f3f7fb; }
+  .quiz-feedback .answer-row { display: flex; justify-content: space-between; align-items: center; gap: 8px; font-size: 13px; }
+  .quiz-feedback .answer-row strong { font-size: 15px; }
+  .quiz-feedback .answer-row .answer { min-width: 96px; padding: 7px 10px; border-radius: 5px; font-size: 14px; text-align: center; align-self: auto; }
+  .quiz-feedback .why { align-self: stretch; max-width: none; border-left: 3px solid var(--ink); padding-left: 10px; color: #343b45; }
+  .quiz-feedback .primary { width: 100%; border-radius: 0; min-height: 52px; }
+  .quiz-auto { margin: 0; align-self: center; color: var(--muted); font-size: 12px; text-align: center; }
+  @media (max-width: 340px) { .quiz-step { font-size: 10px; letter-spacing: .02em; white-space: nowrap; } .quiz-actions .stopbtn { padding-inline: 12px; } }
+  @media (max-height: 700px) { .quiz-card, .quiz-feedback { gap: 9px; } .quiz-card .belt { min-height: 76px; } }
   .answer {
     padding: clamp(20px, 3.2vh, 30px); border-radius: 18px; font-weight: 700;
     letter-spacing: 0.05em; align-self: stretch;
@@ -338,6 +370,6 @@
 
 <main id="app"></main>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-<script type="module" src="src/app.js"></script>
+<script type="module" src="src/app.js?v=review-15s"></script>
 </body>
 </html>

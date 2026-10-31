@@ -23,6 +23,7 @@ const ES = {
   'Not affiliated with or endorsed by UPS. This practice does not replace any required UPS test or training. Follow your current worksite chart and instructions.': 'No está afiliado a UPS ni cuenta con su aprobación. Esta práctica no reemplaza ninguna prueba ni capacitación obligatoria de UPS. Sigue la tabla y las instrucciones vigentes en tu lugar de trabajo.',
   'Ready to practice?': '¿Listo para practicar?',
   'Who is taking the test?': '¿Quién hará la prueba?',
+  'Quiz yourself': 'Ponte a prueba',
   'A name or ID is optional. If you leave it blank, your result appears as Guest in the shift log on this phone.': 'El nombre o ID es opcional. Si lo dejas en blanco, tu resultado aparecerá como Invitado en el registro de este teléfono.',
   'Name or ID (optional)': 'Nombre o ID (opcional)',
   'Guest': 'Invitado',
@@ -51,14 +52,27 @@ const ES = {
   'Edit name (optional)': 'Editar nombre (opcional)',
   'Main page': 'Página principal',
   'Card {current} of {total}': 'Tarjeta {current} de {total}',
+  'Question {current} of {total}': 'Pregunta {current} de {total}',
+  'Time to choose': 'Tiempo para elegir',
+  'Where does this go?': '¿A qué color va?',
+  'Blue mascot thinking with a question mark': 'Personaje azul pensando con un signo de interrogación',
+  'Happy blue mascot': 'Personaje azul feliz',
+  'Sad blue mascot': 'Personaje azul triste',
   'Cancel': 'Cancelar',
   'Test stopped': 'Prueba detenida',
   'Nothing is saved until a test is finished, so leaving now records nothing.': 'No se guarda nada hasta terminar la prueba. Si sales ahora, no se registrará ningún resultado.',
   'Keep going': 'Continuar',
   'Pick another test': 'Elegir otra prueba',
   'Correct': 'Correcto',
+  'Correct!': '¡Correcto!',
   'Out of time': 'Se acabó el tiempo',
   'Missort': 'Clasificación incorrecta',
+  'Review this route': 'Revisa esta ruta',
+  'Your choice': 'Tu respuesta',
+  'Correct belt': 'Color correcto',
+  'No choice': 'Sin respuesta',
+  'Continue': 'Continuar',
+  'Next question starts automatically': 'La siguiente pregunta empieza automáticamente',
   'Score': 'Puntuación',
   'Time': 'Tiempo',
   'This result was not saved. This phone is not saving results.': 'Este resultado no se guardó. Este teléfono no está guardando resultados.',
@@ -106,7 +120,7 @@ const DETAIL_ES = {
   '376–378 is BLUE': '376–378 va a BLUE',
   'Exception survives sort change': 'La excepción sigue vigente tras el cambio',
   'Ground exception': 'Excepción de Ground',
-  'Ground, 2 Day Air, 3 Day Select only': 'Solo Ground, 2 Day Air y 3 Day Select',
+  'Ground, 2 Day Air, 3 Day Select only': 'Solo terrestre, aéreo de 2 días y Select de 3 días',
   'NJ list': 'Lista de Nueva Jersey',
   'Only orange NJ code': 'Único código de NJ que va a ORANGE',
   'Single-code exception': 'Excepción de un solo código',
@@ -161,9 +175,10 @@ export function createLanguage(storage) {
       if (response.state === 'NJ') return response.code === '079 9'
         ? '079 9 es la excepción de Nueva Jersey: ORANGE en lugar de RED.'
         : 'Nueva Jersey va a RED. Solo 079 9 va a ORANGE.';
-      const service = { GND: 'Ground', GRD: 'Ground', NDA: 'Next Day Air', '2DA': '2 Day Air', '3DS': '3 Day Select' }[response.svc];
+      const service = { GND: 'Ground', GRD: 'Ground', NDA: 'Next Day Air', '2DA': '2 Day Air', '3DS': '3 Day Select', ALL: 'All Services' }[response.svc];
       const normalize = value => String(value).replace(/[^A-Z0-9]/gi, '').toUpperCase();
-      const row = service && [...CHART[service].main, ...CHART[service].exceptions].find(([state, route]) =>
+      const section = CHART[service];
+      const row = section && [...section.main, ...section.exceptions].find(([state, route]) =>
         normalize(state === '*' ? 'All states' : state) === normalize(response.state) && normalize(route) === normalize(response.code));
       const detail = row?.[3] ? `${DETAIL_ES[row[3]] ?? row[3]}. ` : '';
       return `${detail}En Twilight, ${this.service(service ?? response.svc)} · ${response.state} · ${response.code} va a ${response.correctBelt}.`;

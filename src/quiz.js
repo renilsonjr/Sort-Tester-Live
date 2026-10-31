@@ -1,6 +1,6 @@
 import { BELTS } from './belts.js';
 
-export const CARD_SECONDS = 10;
+export const CARD_SECONDS = 15;
 
 export function shuffle(items, rand = Math.random) {
   const out = items.slice();

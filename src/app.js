@@ -1,13 +1,13 @@
 import { BELT_STYLE } from './belts.js';
 import { SERVICE_LABEL } from './questions.js';
 import { DECKS, deckById, deckLabel } from './decks.js';
-import { CARD_SECONDS, createRun, currentCard, answerCard, timeoutCard, summarize } from './quiz.js';
+import { CARD_SECONDS, createRun, currentCard, answerCard, timeoutCard, summarize } from './quiz.js?v=review-15s';
 import { createClock } from './clock.js';
 import { createShiftLog } from './shiftLog.js';
 import { saveWorkbook } from './exportFile.js';
 import { CHART, searchChart } from './study.js';
 import { selectLevelCards } from './levels.js';
-import { createLanguage } from './i18n.js';
+import { createLanguage } from './i18n.js?v=review-15s';
 
 const app = document.getElementById('app');
 const log = createShiftLog(typeof localStorage === 'undefined' ? null : localStorage);
@@ -229,7 +229,7 @@ function showNameEntry(previousName = '') {
   const view = labPage(`
     <section class="lab-screen">
       <p class="lab-eyebrow">${esc(t('Ready to practice?'))}</p>
-      <h1 class="lab-title">${esc(t('Who is taking the test?'))}</h1>
+      <h1 class="lab-title">${esc(t('Quiz yourself'))}</h1>
       <p class="lab-intro">${esc(t('A name or ID is optional. If you leave it blank, your result appears as Guest in the shift log on this phone.'))}</p>
       <label class="field">
         <span>${esc(t('Name or ID (optional)'))}</span>
@@ -370,6 +370,79 @@ function leaveRun() {
   activeDeck = null;
 }
 
+function quizAvatar(mood) {
+  const label = mood === 'thinking' ? 'Blue mascot thinking with a question mark'
+    : mood === 'happy' ? 'Happy blue mascot' : 'Sad blue mascot';
+  return `<img class="quiz-avatar" src="assets/quiz-${mood}.jpg" alt="${esc(t(label))}">`;
+}
+
+function quizHeader(cardNumber, total, withTimer = false) {
+  return `<div class="quiz-top">
+    <div class="quiz-topline"><span class="progress">${activeDeck ? esc(activeDeck.sort) : 'Twilight'}</span>${languageButtons()}</div>
+    <div class="quiz-actions">
+      <span id="quiz-count" class="quiz-step" tabindex="-1">${esc(t('Question {current} of {total}', { current: cardNumber, total }))}</span>
+      ${withTimer ? `<div id="ring" class="quiz-timer" role="timer" aria-label="${esc(t('Time to choose'))}: ${run.seconds}" aria-live="off"><span id="ringNum">${run.seconds}</span></div>` : '<span aria-hidden="true"></span>'}
+      <button id="cancel" type="button" class="stopbtn">${esc(t('Cancel'))}</button>
+    </div>
+  </div>`;
+}
+
+function stopPanelHtml() {
+  return `<div class="bail" id="bail" role="dialog" aria-modal="true" aria-labelledby="stop-title" hidden>
+    <h1 id="stop-title">${esc(t('Test stopped'))}</h1>
+    <p class="sub">${esc(t('Nothing is saved until a test is finished, so leaving now records nothing.'))}</p>
+    <button id="bail-stay" class="primary">${esc(t('Keep going'))}</button>
+    <button id="bail-picker" class="ghost">${esc(t('Pick another test'))}</button>
+    <button id="bail-main" class="ghost">${esc(t('Main page'))}</button>
+  </div>`;
+}
+
+function wireStopPanel(view, { canStop = () => true, pause = () => {}, resume = () => {} } = {}) {
+  const bail = view.querySelector('#bail');
+  const sorterName = run.name;
+  bail.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape') {
+      event.preventDefault();
+      view.querySelector('#bail-stay').click();
+    } else if (event.key === 'Tab') {
+      const buttons = [...bail.querySelectorAll('button')];
+      const first = buttons[0];
+      const last = buttons[buttons.length - 1];
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    }
+  });
+  view.querySelector('#cancel').addEventListener('click', () => {
+    if (!view.isConnected || bailOpen || !canStop()) return;
+    bailOpen = true;
+    pause();
+    bail.hidden = false;
+    view.querySelector('#bail-stay').focus();
+  });
+  view.querySelector('#bail-stay').addEventListener('click', () => {
+    if (!view.isConnected || !bailOpen) return;
+    bailOpen = false;
+    bail.hidden = true;
+    resume();
+    view.querySelector('#cancel').focus();
+  });
+  view.querySelector('#bail-picker').addEventListener('click', () => {
+    if (!view.isConnected) return;
+    leaveRun();
+    showDeckPicker(sorterName);
+  });
+  view.querySelector('#bail-main').addEventListener('click', () => {
+    if (!view.isConnected) return;
+    leaveRun();
+    showStart();
+  });
+}
+
 function showCard() {
   clearTimeout(feedbackTimer);
   feedbackTimer = null;
@@ -387,43 +460,36 @@ function showCard() {
   const cardIndex = run.index;
 
   const view = el(`
-    <section class="screen card-screen">
-      <div class="card-header">
-        <div class="progress-row">
-          <div class="progress">${activeDeck ? esc(activeDeck.sort) + ' &middot; ' : ''}${esc(t('Card {current} of {total}', { current: run.index + 1, total: run.cards.length }))}</div>
-          ${languageButtons()}
-        </div>
-        <button id="cancel" type="button" class="stopbtn">${esc(t('Cancel'))}</button>
-      </div>
-      <div class="prompt">
-        <div class="ring" id="ring"><i id="ringNum">${run.seconds}</i></div>
+    <section class="screen quiz-card">
+      ${quizHeader(cardIndex + 1, run.cards.length, true)}
+      ${quizAvatar('thinking')}
+      <div class="quiz-route">
         <div class="p-line">${esc(serviceName(card.svc))} &middot; ${esc(card.state)}</div>
         <div class="p-code">${esc(card.code)}</div>
       </div>
+      <p class="quiz-cue">${esc(t('Where does this go?'))}</p>
       <div class="options">
         ${options.map((belt) => {
           const style = BELT_STYLE[belt];
           return `<button class="belt" data-belt="${belt}" style="background:${style.bg};color:${style.fg}">${belt}</button>`;
         }).join('')}
       </div>
-      <div class="bail" id="bail" hidden>
-        <h1>${esc(t('Test stopped'))}</h1>
-        <p class="sub">${esc(t('Nothing is saved until a test is finished, so leaving now records nothing.'))}</p>
-        <button id="bail-stay" class="primary">${esc(t('Keep going'))}</button>
-        <button id="bail-picker" class="ghost">${esc(t('Pick another test'))}</button>
-        <button id="bail-main" class="ghost">${esc(t('Main page'))}</button>
-      </div>
+      ${stopPanelHtml()}
     </section>
   `);
   render(view);
+  view.querySelector('#quiz-count').focus();
   view.querySelectorAll('[data-language]').forEach((button) => button.addEventListener('click', () => {
     if (language.code === button.dataset.language) return;
     language.set(button.dataset.language);
     document.documentElement.lang = language.code;
     view.querySelectorAll('[data-language]').forEach((option) => option.setAttribute('aria-pressed', String(option.dataset.language === language.code)));
-    view.querySelector('.progress').textContent = `${activeDeck ? `${activeDeck.sort} · ` : ''}${t('Card {current} of {total}', { current: run.index + 1, total: run.cards.length })}`;
+    view.querySelector('#quiz-count').textContent = t('Question {current} of {total}', { current: cardIndex + 1, total: run.cards.length });
     view.querySelector('#cancel').textContent = t('Cancel');
     view.querySelector('.p-line').textContent = `${serviceName(card.svc)} · ${card.state}`;
+    view.querySelector('.quiz-cue').textContent = t('Where does this go?');
+    view.querySelector('.quiz-avatar').alt = t('Blue mascot thinking with a question mark');
+    view.querySelector('#ring').setAttribute('aria-label', `${t('Time to choose')}: ${Math.ceil(clock.remaining() / 1000)}`);
     view.querySelector('#bail h1').textContent = t('Test stopped');
     view.querySelector('#bail .sub').textContent = t('Nothing is saved until a test is finished, so leaving now records nothing.');
     view.querySelector('#bail-stay').textContent = t('Keep going');
@@ -439,43 +505,17 @@ function showCard() {
 
   const ring = view.querySelector('#ring');
   const ringNum = view.querySelector('#ringNum');
-
-  // window.confirm is blocked in the artifact's sandboxed frame — it returns
-  // false without ever showing a dialog, which made the old Cancel do nothing.
-  // The panel below is the confirmation instead.
-  const bail = view.querySelector('#bail');
-  const sorterName = run.name;
-
-  view.querySelector('#cancel').addEventListener('click', () => {
-    if (run.finished || run.index !== cardIndex || !bail.hidden) return;
-    bailOpen = true;
-    clock.pause();
-    stopTick();
-    bail.hidden = false;
-  });
-
-  view.querySelector('#bail-stay').addEventListener('click', () => {
-    bailOpen = false;
-    bail.hidden = true;
-    clock.resume();
-    resumeTick?.();
-  });
-
-  view.querySelector('#bail-picker').addEventListener('click', () => {
-    leaveRun();
-    showDeckPicker(sorterName);
-  });
-
-  view.querySelector('#bail-main').addEventListener('click', () => {
-    leaveRun();
-    showStart();
+  wireStopPanel(view, {
+    canStop: () => !run.finished && run.index === cardIndex,
+    pause: () => { clock.pause(); stopTick(); },
+    resume: () => { clock.resume(); resumeTick?.(); },
   });
 
   view.querySelectorAll('.belt').forEach((button) => {
     button.addEventListener('click', () => {
-      if (run.finished || run.index !== cardIndex) return;
+      if (!view.isConnected || bailOpen || run.finished || run.index !== cardIndex) return;
       stopTick();
-      showFeedback(answerCard(run, button.dataset.belt, clock.elapsed()));
+      showFeedback(clock.expired() ? timeoutCard(run) : answerCard(run, button.dataset.belt, clock.elapsed()));
     });
   });
 
@@ -486,9 +526,9 @@ function showCard() {
     }
 
     const remaining = clock.remaining();
-    const pct = (remaining / durationMs) * 100;
-    ring.style.background = `conic-gradient(var(--accent) 0 ${pct}%, var(--sunk) ${pct}% 100%)`;
+    ring.classList.toggle('urgent', remaining <= 5000);
     ringNum.textContent = Math.ceil(remaining / 1000);
+    ring.setAttribute('aria-label', `${t('Time to choose')}: ${ringNum.textContent}`);
 
     if (clock.expired()) {
       stopTick();
@@ -510,27 +550,45 @@ function showFeedback(response) {
   clock = null;
   resumeTick = null;
 
+  clearTimeout(feedbackTimer);
+  feedbackTimer = null;
+  bailOpen = false;
   const right = response.outcome === 'correct';
-  const verdict = t(right ? 'Correct' : response.outcome === 'timeout' ? 'Out of time' : 'Missort');
-
+  const verdict = right ? 'Correct!' : response.outcome === 'timeout' ? 'Out of time' : 'Review this route';
   const view = el(`
-    <section class="screen feedback ${right ? 'good' : 'bad'}">
-      <div class="verdict">${verdict}</div>
-      <div class="prompt small">
+    <section class="screen quiz-feedback ${right ? 'good' : 'bad'}">
+      ${quizHeader(run.index, run.cards.length)}
+      ${quizAvatar(right ? 'happy' : 'sad')}
+      <h1 class="verdict" id="verdict" tabindex="-1">${esc(t(verdict))}</h1>
+      <div class="quiz-route">
         <div class="p-line">${esc(serviceName(response.svc))} &middot; ${esc(response.state)}</div>
         <div class="p-code">${esc(response.code)}</div>
       </div>
-      ${beltChip(response.correctBelt, 'answer')}
-      ${right ? '' : `<p class="why">${esc(language.explanation(response))}</p>`}
+      <div class="answer-compare">
+        <div class="answer-row"><span>${esc(t('Your choice'))}</span>${response.answered ? beltChip(response.answered, 'answer') : `<strong>${esc(t('No choice'))}</strong>`}</div>
+        <div class="answer-row"><span>${esc(t('Correct belt'))}</span>${beltChip(response.correctBelt, 'answer')}</div>
+      </div>
+      <p class="why">${esc(language.explanation(response))}</p>
+      ${right ? `<p class="quiz-auto">${esc(t('Next question starts automatically'))}…</p>` : `<button id="continue" class="primary" type="button">${esc(t('Continue'))}</button>`}
+      ${stopPanelHtml()}
     </section>
   `);
   render(view);
+  view.querySelector('#verdict').focus();
 
-  feedbackTimer = setTimeout(() => {
+  const advance = () => {
+    if (!view.isConnected || bailOpen || !run) return;
     feedbackTimer = null;
     if (run.finished) showResults();
     else showCard();
-  }, right ? 900 : 2400);
+  };
+  if (right) feedbackTimer = setTimeout(advance, 2100);
+  view.querySelector('#continue')?.addEventListener('click', advance);
+  wireLanguageButtons(view, () => showFeedback(response));
+  wireStopPanel(view, {
+    pause: () => { clearTimeout(feedbackTimer); feedbackTimer = null; },
+    resume: () => { if (right) feedbackTimer = setTimeout(advance, 2100); },
+  });
 }
 
 function showResults() {
