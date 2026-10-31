@@ -64,7 +64,7 @@ function buildWorkbook(entries) {
   const missortHeaders = ['Name', 'Test', 'Taken', 'Service', 'State', 'Routing code', 'Answered', 'Correct belt', 'Outcome'];
 
   const results = entries.map((s) => ({
-    Name: s.name,
+    Name: s.name || 'Guest',
     Test: s.deck || '',
     Score: `${s.correct}/${s.total}`,
     Correct: s.correct,
@@ -78,7 +78,7 @@ function buildWorkbook(entries) {
   for (const s of entries) {
     for (const r of s.missed || []) {
       missorts.push({
-        Name: s.name,
+        Name: s.name || 'Guest',
         Test: s.deck || '',
         Taken: new Date(s.takenAt).toLocaleString(),
         Service: serviceName(r.svc),
@@ -110,6 +110,10 @@ function esc(value) {
 
 function serviceName(svc) {
   return language.service(SERVICE_LABEL[svc] || svc);
+}
+
+function displayName(name) {
+  return name || t('Guest');
 }
 
 function el(html) {
@@ -221,31 +225,26 @@ function showStart() {
   view.querySelector('#viewlog').addEventListener('click', showLog);
 }
 
-function showNameEntry(notice = '', previousName = '') {
+function showNameEntry(previousName = '') {
   const view = labPage(`
     <section class="lab-screen">
       <p class="lab-eyebrow">${esc(t('Ready to practice?'))}</p>
       <h1 class="lab-title">${esc(t('Who is taking the test?'))}</h1>
-      <p class="lab-intro">${esc(t('Enter a name or ID so the result can be found in the shift log on this phone.'))}</p>
-      ${notice ? `<p class="notice">${esc(t(notice))}</p>` : ''}
+      <p class="lab-intro">${esc(t('A name or ID is optional. If you leave it blank, your result appears as Guest in the shift log on this phone.'))}</p>
       <label class="field">
-        <span>${esc(t('Name or ID'))}</span>
+        <span>${esc(t('Name or ID (optional)'))}</span>
         <input id="name" type="text" autocomplete="off" autocapitalize="words" placeholder="${esc(t('e.g. J. Rivera'))}" value="${esc(previousName)}">
       </label>
       <button id="begin" class="primary">${esc(t('Pick a test'))}</button>
       <button id="back" class="ghost">${esc(t('Back to home'))}</button>
     </section>
-  `, 'quiz', () => showNameEntry(notice, view.querySelector('#name').value));
+  `, 'quiz', () => showNameEntry(view.querySelector('#name').value));
 
   const nameInput = view.querySelector('#name');
   nameInput.focus();
 
   function begin() {
     const name = nameInput.value.trim();
-    if (!name) {
-      showNameEntry('Enter a name or ID first.');
-      return;
-    }
     showDeckPicker(name);
   }
 
@@ -310,7 +309,7 @@ function showDeckPicker(name) {
     <section class="lab-screen">
       <p class="lab-eyebrow">${esc(t('Time to practice'))}</p>
       <h1 class="lab-title">${esc(t('Pick a test'))}</h1>
-      <p class="lab-intro">${esc(t('{name} · Four belt choices per card. The clock starts when the first card appears.', { name }))}</p>
+      <p class="lab-intro">${esc(t('{name} · Four belt choices per card. The clock starts when the first card appears.', { name: displayName(name) }))}</p>
       <h2 class="lab-picker-heading">${esc(t('New challenge levels'))}</h2>
       <div class="decks">
         ${DECKS.filter((deck) => deck.questionCount).map((deck, index) => `
@@ -337,7 +336,7 @@ function showDeckPicker(name) {
           </div>
         `)).join('')}
       </div>
-      <button id="back" class="ghost">${esc(t('Change name'))}</button>
+      <button id="back" class="ghost">${esc(t('Edit name (optional)'))}</button>
       <button id="main-page" class="ghost">${esc(t('Main page'))}</button>
       ${entries.length ? `<button id="viewlog" class="ghost">${esc(t('Shift log'))} (${entries.length})</button>` : ''}
     </section>
@@ -352,7 +351,7 @@ function showDeckPicker(name) {
       showCard();
     });
   });
-  view.querySelector('#back').addEventListener('click', () => showNameEntry('', name));
+  view.querySelector('#back').addEventListener('click', () => showNameEntry(name));
   view.querySelector('#main-page').addEventListener('click', showStart);
   view.querySelector('#viewlog')?.addEventListener('click', showLog);
 }
@@ -556,7 +555,7 @@ function renderResults(summary, saved) {
         <div><div class="big">${summary.correct}/${summary.total}</div><div class="label">${esc(t('Score'))}</div></div>
         <div><div class="big">${elapsed}</div><div class="label">${esc(t('Time'))}</div></div>
       </div>
-      <div class="who">${esc(summary.name)}</div>
+      <div class="who">${esc(displayName(summary.name))}</div>
       ${summary.deck ? `<div class="deckname">${esc(language.deckLabel(summary.deck))}</div>` : ''}
       ${saved ? '' : `<p class="warn">${esc(t('This result was not saved. This phone is not saving results.'))}</p>`}
       ${summary.missed.length === 0 ? `<p class="clean">${esc(t('No missorts.'))}</p>` : `
@@ -593,7 +592,7 @@ function showLog() {
         <ul class="logl">
           ${entries.map((s) => `
             <li>
-              <span class="who">${esc(s.name)}</span>
+              <span class="who">${esc(displayName(s.name))}</span>
               <span class="sc">${s.correct}/${s.total}</span>
               <span class="when">${s.deck ? esc(language.deckLabel(s.deck)) + ' &middot; ' : ''}${esc(new Date(s.takenAt).toLocaleString(language.code === 'es' ? 'es-US' : 'en-US'))}</span>
               ${s.missed.length ? `
