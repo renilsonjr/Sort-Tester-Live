@@ -1,13 +1,13 @@
 import { BELT_STYLE } from './belts.js';
-import { SERVICE_LABEL } from './questions.js';
-import { DECKS, deckById, deckLabel } from './decks.js';
+import { SERVICE_LABEL } from './questions.js?v=ny-140-gold-20261102';
+import { DECKS, deckById, deckLabel } from './decks.js?v=ny-140-gold-20261102';
 import { CARD_SECONDS, createRun, currentCard, answerCard, timeoutCard, summarize } from './quiz.js?v=review-15s';
 import { createClock } from './clock.js';
 import { createShiftLog } from './shiftLog.js';
 import { saveWorkbook } from './exportFile.js';
-import { CHART, searchChart } from './study.js';
-import { selectLevelCards } from './levels.js';
-import { createLanguage } from './i18n.js?v=review-15s';
+import { CHART, searchChart } from './study.js?v=ny-140-gold-20261102';
+import { selectLevelCards } from './levels.js?v=ny-140-gold-20261102';
+import { createLanguage } from './i18n.js?v=ny-140-gold-20261102';
 
 const app = document.getElementById('app');
 const log = createShiftLog(typeof localStorage === 'undefined' ? null : localStorage);
@@ -202,6 +202,17 @@ function showStart() {
         </div>
         <img class="lab-mascot" src="assets/parcel-buddy.jpg" alt="${language.code === 'es' ? 'Personaje azul sonriente con una caja de cartón' : 'Smiling blue character holding a cardboard package'}">
       </div>
+      <section class="lab-change" aria-labelledby="sort-change-title">
+        <p class="lab-change-kicker">${esc(t('Recent sort changes'))}</p>
+        <div class="lab-change-row">
+          <div>
+            <h2 id="sort-change-title">NY 140–147</h2>
+            <p>${esc([language.service('Ground'), language.service('2 Day Air'), language.service('3 Day Select')].join(' · '))}</p>
+          </div>
+          ${beltChip('GOLD', 'lab-belt-chip')}
+        </div>
+        <p class="lab-change-note">${esc(t('Next Day Air stays PURPLE. NY 148–149 stays ORANGE, except 148 1 goes GOLD.'))}</p>
+      </section>
       <h2 class="lab-section-heading">${esc(t('Where do you want to start?'))}</h2>
       <button id="study" class="lab-choice" type="button">
         <span class="lab-choice-icon">01</span>

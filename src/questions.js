@@ -29,7 +29,7 @@ export const COMMON_CORE = [
     svc: 'GND', state: 'NY', code: '148 1',
     belt: 'GOLD',
     confusions: ['ORANGE', 'PURPLE', 'PINK'],
-    why: 'All of 140-149 is ORANGE on Ground, 2 Day Air and 3 Day Select. The single code 148 1 is the one pulled out to GOLD.',
+    why: '148 1 stays GOLD inside the ORANGE 148-149 block on Ground, 2 Day Air and 3 Day Select. The preceding 140-147 block is now GOLD too.',
     tags: ['sort-change', 'exception'],
   },
   {
@@ -37,7 +37,7 @@ export const COMMON_CORE = [
     svc: 'NDA', state: 'NY', code: '140-149',
     belt: 'PURPLE',
     confusions: ['ORANGE', 'GOLD', 'PINK'],
-    why: 'Ground, 2 Day Air and 3 Day Select all say ORANGE for this whole range. Only Next Day Air is PURPLE.',
+    why: 'Next Day Air keeps all of 140-149 PURPLE. Ground, 2 Day Air and 3 Day Select split it: 140-147 is now GOLD; 148-149 is ORANGE except 148 1 GOLD.',
     tags: ['service-split'],
   },
   {

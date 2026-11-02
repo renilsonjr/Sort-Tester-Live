@@ -1,5 +1,5 @@
-import { COMMON_CORE, NJ_TWILIGHT } from './questions.js';
-import { LEVEL_DECKS } from './levels.js';
+import { COMMON_CORE, NJ_TWILIGHT } from './questions.js?v=ny-140-gold-20261102';
+import { LEVEL_DECKS } from './levels.js?v=ny-140-gold-20261102';
 
 // Every deck here is transcribed from the Saddle Brook primary sort chart with
 // the SORT CHANGE sheet applied.
@@ -51,15 +51,15 @@ const NEW_YORK = [
     svc: 'GND', state: 'NY', code: '128-139',
     belt: 'GOLD',
     confusions: ['ORANGE', 'PURPLE', 'PINK'],
-    why: 'GOLD on Ground, with ORANGE on both sides. On Next Day Air the single code 136 breaks out to PURPLE.',
+    why: 'GOLD on Ground. The new GOLD block at 140-147 continues above it, while 122-127 below it is ORANGE. On Next Day Air the single code 136 is PURPLE.',
     tags: ['boundary'],
   },
   {
     id: 'ny-140-147-gnd',
     svc: 'GND', state: 'NY', code: '140-147',
-    belt: 'ORANGE',
-    confusions: ['GOLD', 'PURPLE', 'PINK'],
-    why: 'ORANGE, and 148-149 above it is ORANGE too. The whole run to 149 is one belt apart from a single code.',
+    belt: 'GOLD',
+    confusions: ['ORANGE', 'PURPLE', 'PINK'],
+    why: 'The recent sort change sends 140-147 to GOLD on Ground, 2 Day Air and 3 Day Select. The next block, 148-149, is ORANGE except 148 1.',
     tags: ['sort-change', 'boundary'],
   },
   {
@@ -67,7 +67,7 @@ const NEW_YORK = [
     svc: 'GND', state: 'NY', code: '148-149',
     belt: 'ORANGE',
     confusions: ['GOLD', 'PURPLE', 'PINK'],
-    why: 'ORANGE on Ground, 2 Day Air and 3 Day Select, the same as 140-147 below it. Only the single code 148 1 breaks out.',
+    why: 'ORANGE on Ground, 2 Day Air and 3 Day Select. The preceding 140-147 block is now GOLD, and the single code 148 1 is GOLD too.',
     tags: ['boundary'],
   },
   {
@@ -75,7 +75,7 @@ const NEW_YORK = [
     svc: 'GND', state: 'NY', code: '148 1',
     belt: 'GOLD',
     confusions: ['ORANGE', 'PURPLE', 'PINK'],
-    why: 'The one code the sort change pulled out of the ORANGE 140-149 run. Everything around it, 148-149 included, is still ORANGE.',
+    why: 'This single code remains GOLD inside the ORANGE 148-149 block. The preceding 140-147 block is also GOLD on Ground, 2 Day Air and 3 Day Select.',
     tags: ['sort-change', 'exception'],
   },
   {
@@ -91,7 +91,7 @@ const NEW_YORK = [
     svc: 'NDA', state: 'NY', code: '140-149',
     belt: 'PURPLE',
     confusions: ['ORANGE', 'GOLD', 'PINK'],
-    why: 'Ground, 2 Day Air and 3 Day Select all say ORANGE across 140-149. Next Day Air takes the whole range PURPLE.',
+    why: 'Next Day Air keeps the whole 140-149 range PURPLE. Ground, 2 Day Air and 3 Day Select now split it: 140-147 GOLD, then 148-149 ORANGE except 148 1 GOLD.',
     tags: ['service-split'],
   },
 ];

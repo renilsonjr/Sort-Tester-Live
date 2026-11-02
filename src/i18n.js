@@ -1,4 +1,4 @@
-import { CHART, STATE_NAMES_ES } from './chart.js';
+import { CHART, STATE_NAMES_ES } from './chart.js?v=ny-140-gold-20261102';
 
 const KEY = 'sortTest.language.v1';
 
@@ -12,6 +12,8 @@ const ES = {
   'Practice': 'Practica',
   'the chart.': 'la tabla.',
   'Learn the belt. Then test your recall.': 'Aprende el color. Luego comprueba lo que recuerdas.',
+  'Recent sort changes': 'Cambios recientes de clasificación',
+  'Next Day Air stays PURPLE. NY 148–149 stays ORANGE, except 148 1 goes GOLD.': 'Aéreo 1 día sigue en PURPLE. NY 148–149 sigue en ORANGE, excepto 148 1, que va a GOLD.',
   'Where do you want to start?': '¿Por dónde quieres empezar?',
   'Know the chart': 'Conoce la tabla',
   'Browse every service by state and ZIP range.': 'Consulta cada servicio por estado y rango de ZIP.',

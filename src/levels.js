@@ -1,5 +1,5 @@
 import { BELTS } from './belts.js';
-import { CHART } from './chart.js';
+import { CHART } from './chart.js?v=ny-140-gold-20261102';
 
 const SERVICE_CODES = {
   Ground: 'GND',

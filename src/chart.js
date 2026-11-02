@@ -19,7 +19,7 @@
       NY|120–121|GOLD|Sort change
       NY|122–127|ORANGE
       NY|128–139|GOLD
-      NY|140–147|ORANGE
+      NY|140–147|GOLD|Sort change
       NY|148–149|ORANGE|148 1 is GOLD
       PA|150–167|GREEN
       PA|168–178|GREEN
