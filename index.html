@@ -5,6 +5,13 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Sort Lab · Saddle Brook Twilight</title>
 <style>
+  @font-face {
+    font-family: Nunito;
+    src: url("assets/nunito-variable.ttf") format("truetype");
+    font-style: normal;
+    font-weight: 200 1000;
+    font-display: swap;
+  }
   :root {
     --bg: #fbfaf6; --panel: #ffffff; --sunk: #e9eee9;
     --ink: #193042; --muted: #61717a; --line: #dbe2dd;
@@ -360,6 +367,83 @@
   .lab-chart-row strong { display: block; margin-top: 2px; font-size: 17px; }
   .lab-chart-row small { margin-top: 2px; font-size: 11px; }
   .lab-chart-row .lab-belt-chip { min-width: 75px; border-radius: 0; padding: 7px 8px; font-size: 11px; }
+
+  /* Friendly study concept: softer learning surfaces and a stronger reading
+     hierarchy. The answer buttons and chart chips keep BELT_STYLE colors. */
+  :root {
+    --bg: #fffdf9; --panel: #fff; --sunk: #e9edff;
+    --ink: #17233f; --muted: #657085; --line: #e6e8f0;
+    --accent: #343ca2; --accent-ink: #fff;
+  }
+  body { background: #e7ebf5; color: var(--ink); font-family: Nunito, "Trebuchet MS", sans-serif; font-weight: 600; }
+  h1, h2, .lab-brand, .lab-section-heading, .lab-choice-icon,
+  .lab-main .deckbtn .dname, .lab-nav i { font-family: Nunito, "Trebuchet MS", sans-serif; }
+  h1 { font-weight: 900; letter-spacing: -.055em; }
+  h2 { font-weight: 900; }
+  #app { background: var(--bg); box-shadow: 0 20px 80px #1b28682b; }
+  .lab-top { border: 0; padding: 20px 20px 18px; }
+  .lab-brand { font-size: 21px; font-weight: 900; letter-spacing: -.05em; }
+  .lab-mark { width: 37px; height: 37px; border-radius: 13px; background: var(--accent); transform: rotate(-5deg); }
+  .lab-site { margin-left: 46px; color: var(--muted); font-weight: 900; letter-spacing: .09em; }
+  .lab-tag { margin-left: 46px; border: 0; border-radius: 99px; padding: 5px 9px; background: #e9edff; color: var(--accent); font-weight: 900; }
+  .lab-language button { border-radius: 13px; }
+  .lab-language button[aria-pressed="true"] { border-color: var(--accent); background: #eff1ff; }
+  .lab-main { padding: 0 20px 100px; }
+  .lab-eyebrow { color: var(--accent); font-weight: 900; letter-spacing: .13em; }
+  .lab-title { font-size: clamp(34px, 9vw, 43px); font-weight: 900; letter-spacing: -.055em; }
+  .lab-hero { overflow: hidden; margin: 0; border: 0; border-radius: 26px; background: #dce8f8; box-shadow: 0 12px 30px #25336a12; }
+  .lab-hero-copy { padding: 24px 22px 4px; }
+  .lab-hero .lab-eyebrow { color: var(--accent); }
+  .lab-hero h1 { font: 900 clamp(34px, 9vw, 43px)/1.06 Nunito, "Trebuchet MS", sans-serif; letter-spacing: -.055em; }
+  .lab-hero p:not(.lab-eyebrow) { color: #344767; font-size: 15px; }
+  .lab-mascot { height: 209px; object-position: center 52%; }
+  .lab-section-heading { margin: 23px 0 11px; font-size: 20px; font-weight: 900; letter-spacing: -.035em; }
+  .lab-choice { margin-bottom: 10px; border-radius: 20px; padding: 15px; box-shadow: 0 5px 18px #1924530a; }
+  .lab-choice-icon, .lab-choice-quiz .lab-choice-icon { width: 49px; height: 49px; border: 0; border-radius: 16px; background: #dff2e8; color: var(--ink); font-size: 20px; font-weight: 900; }
+  .lab-choice-quiz .lab-choice-icon { background: #ffdfcf; }
+  .lab-choice strong { font-size: 17px; font-weight: 900; }
+  .lab-choice small { color: var(--muted); }
+  .lab-arrow, .lab-log-link { color: var(--accent); }
+  .lab-log-link { padding: 15px 3px; font-weight: 900; }
+  .lab-disclaimer { border: 0; border-radius: 17px; background: #f2f2f9; color: #4e5770; }
+  .lab-nav { gap: 5px; padding: 7px 12px max(8px, env(safe-area-inset-bottom)); background: #fffdf9f5; backdrop-filter: blur(12px); }
+  .lab-nav button { min-height: 54px; border-radius: 13px; font-size: 11px; font-weight: 900; padding: 6px 5px; }
+  .lab-nav button[aria-current="page"] { box-shadow: none; background: #e9edff; color: var(--accent); }
+  .lab-nav i { font-size: 20px; }
+  .lab-service-tabs { display: flex; flex-wrap: wrap; gap: 7px; }
+  .lab-service-tabs button { min-height: 40px; border-radius: 999px; padding: 9px 13px; font-size: 12px; font-weight: 900; }
+  .lab-service-tabs button[aria-pressed="true"] { border-color: var(--accent); background: var(--accent); }
+  .lab-chart-search, .lab-main input { border-radius: 14px; background: #fff; }
+  .lab-chart-heading { border-color: var(--accent); }
+  .lab-chart-row { margin: 0 0 8px; padding: 13px 14px; border: 1px solid var(--line); border-radius: 17px; background: #fff; }
+  .lab-chart-row strong { font-size: 20px; font-weight: 900; letter-spacing: -.03em; }
+  .lab-chart-row .lab-belt-chip { min-width: 84px; min-height: 38px; border-radius: 11px; padding: 7px 10px; font-size: 12px; }
+  .lab-main .deckbtn { margin-bottom: 9px; border-radius: 19px; box-shadow: 0 4px 14px #19245309; }
+  .lab-main .deckbtn .dname { font-size: 17px; font-weight: 900; }
+  .lab-picker-heading { margin: 23px 0 11px; font-size: 20px; font-weight: 900; }
+  .lab-main .primary, .lab-main .ghost, .primary, .ghost { border-radius: 14px; font-weight: 900; }
+  .primary { background: var(--accent); }
+  .quiz-card, .quiz-feedback { color: var(--ink); }
+  .quiz-card .quiz-avatar, .quiz-feedback .quiz-avatar { border-radius: 17px; }
+  .quiz-actions .stopbtn { color: var(--accent); border-color: var(--line); font-family: inherit; }
+  .quiz-timer { border-color: var(--accent); font-weight: 900; }
+  .quiz-route .p-code { font-weight: 900; }
+  .quiz-card .belt { border-radius: 14px; font-family: inherit; font-weight: 900; }
+  .quiz-feedback .answer-compare { border: 0; border-radius: 17px; background: #eff2ff; }
+  .quiz-feedback .answer-row .answer { border-radius: 11px; }
+  .quiz-feedback .why { border-color: var(--accent); }
+  .quiz-feedback .primary { border-radius: 14px; }
+  .logl li { border-radius: 17px; }
+  .bail { background: var(--bg); }
+  @media (max-width: 345px) {
+    .lab-top { padding-inline: 15px; }
+    .lab-main { padding-inline: 15px; }
+    .lab-site, .lab-tag { margin-left: 0; }
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .lab-choice, .lab-main .deckbtn { transition: transform .18s, box-shadow .18s; }
+    .lab-choice:hover, .lab-main .deckbtn:hover { transform: translateY(-2px); box-shadow: 0 12px 30px #25336a12; }
+  }
 
   @media (prefers-reduced-motion: reduce) {
     * { animation: none !important; transition: none !important; }
