@@ -108,6 +108,14 @@ function esc(value) {
   ));
 }
 
+function renderRoutingCode(value) {
+  const code = String(value);
+  const range = code.match(/^([\d ]+)[–-]([\d ]+)$/);
+  if (!range) return esc(code);
+  const [, start, end] = range;
+  return `<span class="sr-only">${esc(start)} to ${esc(end)}</span><span class="range-display" aria-hidden="true"><span class="range-number">${esc(start)}</span><span class="range-dash"></span><span class="range-number">${esc(end)}</span></span>`;
+}
+
 function serviceName(svc) {
   return language.service(SERVICE_LABEL[svc] || svc);
 }
@@ -269,7 +277,7 @@ function showNameEntry(previousName = '') {
 function chartRow([state, code, belt, detail]) {
   return `<div class="lab-chart-row">
     <div><span class="lab-chart-state">${esc(language.state(state))}</span>
-      <strong>${esc(code)}</strong>${detail ? `<small>${esc(language.detail(detail))}</small>` : ''}</div>
+      <strong>${renderRoutingCode(code)}</strong>${detail ? `<small>${esc(language.detail(detail))}</small>` : ''}</div>
     ${beltChip(belt, 'lab-belt-chip')}
   </div>`;
 }
@@ -476,7 +484,7 @@ function showCard() {
       ${quizAvatar('thinking')}
       <div class="quiz-route">
         <div class="p-line">${esc(serviceName(card.svc))} &middot; ${esc(card.state)}</div>
-        <div class="p-code">${esc(card.code)}</div>
+        <div class="p-code">${renderRoutingCode(card.code)}</div>
       </div>
       <p class="quiz-cue">${esc(t('Where does this go?'))}</p>
       <div class="options">
@@ -573,7 +581,7 @@ function showFeedback(response) {
       <h1 class="verdict" id="verdict" tabindex="-1">${esc(t(verdict))}</h1>
       <div class="quiz-route">
         <div class="p-line">${esc(serviceName(response.svc))} &middot; ${esc(response.state)}</div>
-        <div class="p-code">${esc(response.code)}</div>
+        <div class="p-code">${renderRoutingCode(response.code)}</div>
       </div>
       <div class="answer-compare">
         <div class="answer-row"><span>${esc(t('Your choice'))}</span>${response.answered ? beltChip(response.answered, 'answer') : `<strong>${esc(t('No choice'))}</strong>`}</div>
@@ -632,7 +640,7 @@ function renderResults(summary, saved) {
         <ul class="missed">
           ${summary.missed.map((r) => `
             <li>
-              <div class="mcard">${esc(serviceName(r.svc))} &middot; ${esc(r.state)} &middot; ${esc(r.code)}</div>
+              <div class="mcard">${esc(serviceName(r.svc))} &middot; ${esc(r.state)} &middot; ${renderRoutingCode(r.code)}</div>
               <div class="mans${r.outcome === 'timeout' ? ' timeout' : ''}">${esc(r.outcome === 'timeout' ? t('ran out of time') : t('said {answer}', { answer: r.answered }))} &rarr; <strong>${esc(r.correctBelt)}</strong></div>
               <div class="why">${esc(language.explanation(r))}</div>
             </li>
@@ -668,7 +676,7 @@ function showLog() {
                 <ul class="logmiss">
                   ${s.missed.map((r) => `
                     <li>
-                      <div class="mcard">${esc(serviceName(r.svc))} &middot; ${esc(r.state)} &middot; ${esc(r.code)}</div>
+                      <div class="mcard">${esc(serviceName(r.svc))} &middot; ${esc(r.state)} &middot; ${renderRoutingCode(r.code)}</div>
                       <div class="mans${r.outcome === 'timeout' ? ' timeout' : ''}">${esc(r.outcome === 'timeout' ? t('ran out of time') : t('said {answer}', { answer: r.answered }))} &rarr; <strong>${esc(r.correctBelt)}</strong></div>
                     </li>
                   `).join('')}
