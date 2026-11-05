@@ -161,7 +161,6 @@ function labPage(content, active = 'home', rerender = showStart) {
           ${languageButtons()}
         </div>
         <div class="lab-site">UPS Saddle Brook <span aria-hidden="true">·</span> Twilight</div>
-        <span class="lab-tag">${esc(t('Independent practice'))}</span>
       </header>
       <main class="lab-main">${content}</main>
       <nav class="lab-nav" aria-label="${esc(t('Main navigation'))}">
@@ -204,9 +203,7 @@ function showStart() {
     <section class="lab-screen">
       <div class="lab-hero">
         <div class="lab-hero-copy">
-          <p class="lab-eyebrow">${esc(t('Sort practice, one route at a time'))}</p>
           <h1>${esc(t('Practice'))}<br>${esc(t('the chart.'))}</h1>
-          <p>${esc(t('Learn the belt. Then test your recall.'))}</p>
         </div>
         <img class="lab-mascot" src="assets/parcel-buddy.jpg" alt="${language.code === 'es' ? 'Personaje azul sonriente con una caja de cartón' : 'Smiling blue character holding a cardboard package'}">
       </div>
@@ -247,9 +244,7 @@ function showStart() {
 function showNameEntry(previousName = '') {
   const view = labPage(`
     <section class="lab-screen">
-      <p class="lab-eyebrow">${esc(t('Ready to practice?'))}</p>
       <h1 class="lab-title">${esc(t('Quiz yourself'))}</h1>
-      <p class="lab-intro">${esc(t('A name or ID is optional. If you leave it blank, your result appears as Guest in the shift log on this phone.'))}</p>
       <label class="field">
         <span>${esc(t('Name or ID (optional)'))}</span>
         <input id="name" type="text" autocomplete="off" autocapitalize="words" placeholder="${esc(t('e.g. J. Rivera'))}" value="${esc(previousName)}">
@@ -326,10 +321,7 @@ function showDeckPicker(name) {
 
   const view = labPage(`
     <section class="lab-screen">
-      <p class="lab-eyebrow">${esc(t('Time to practice'))}</p>
       <h1 class="lab-title">${esc(t('Pick a test'))}</h1>
-      <p class="lab-intro">${esc(t('{name} · Four belt choices per card. The clock starts when the first card appears.', { name: displayName(name) }))}</p>
-      <h2 class="lab-picker-heading">${esc(t('New challenge levels'))}</h2>
       <div class="decks">
         ${DECKS.filter((deck) => deck.questionCount).map((deck, index) => `
           <button class="deckbtn" data-deck="${deck.id}">
