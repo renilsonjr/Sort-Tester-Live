@@ -109,6 +109,7 @@ const DECK_ES = {
   'level-hard': ['Difícil', 'Toda la tabla, diferencias entre servicios y excepciones'],
   'common-twilight-1': ['Errores comunes · Serie 1', 'Rutas que suelen confundirse, con la regla actual de Nueva Jersey'],
   'common-twilight-2': ['Errores comunes · Serie 2', 'Una segunda serie con otros ejemplos de Nueva Jersey'],
+  'mixed-missorts': ['Errores comunes · Mixto', 'Aéreo 2 días en IN/OH/MI/IL, NY 128-147, MA 025-026, CA 900-935/936-961 y NH'],
   'new-york': ['Nueva York', 'Rangos, límites y excepciones de Nueva York'],
   'next-day-air': ['Aéreo 1 día', 'El servicio con más excepciones'],
   'two-day-air': ['Aéreo 2 días', 'Rutas que cambian con respecto al servicio terrestre'],
@@ -156,6 +157,7 @@ export function createLanguage(storage) {
       const names = {
         'Common Missorts · Set 1 · Twilight': 'Errores comunes · Serie 1 · Twilight',
         'Common Missorts · Set 2 · Twilight': 'Errores comunes · Serie 2 · Twilight',
+        'Common Missorts · Mixed · Twilight': 'Errores comunes · Mixto · Twilight',
         'Basic · Twilight': 'Básico · Twilight',
         'Medium · Twilight': 'Intermedio · Twilight',
         'Hard · Twilight': 'Difícil · Twilight',

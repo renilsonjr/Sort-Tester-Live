@@ -239,10 +239,10 @@ const TWO_DAY_AIR = [
   {
     id: '2da-il-600-608',
     svc: '2DA', state: 'IL', code: '600-608',
-    belt: 'YELLOW',
-    confusions: ['ORANGE', 'BLUE', 'PURPLE'],
-    why: 'YELLOW only to 608. 609-629 right above it is ORANGE.',
-    tags: ['boundary'],
+    belt: 'PURPLE',
+    confusions: ['YELLOW', 'ORANGE', 'BLUE'],
+    why: 'The 2 Day Air chart sends IL 600-619 to PURPLE. Ground and 3 Day Select send 600-608 to YELLOW.',
+    tags: ['boundary', 'service-split'],
   },
   {
     id: '2da-ga-300-319',
@@ -345,6 +345,48 @@ const THREE_DAY_SELECT = [
   },
 ];
 
+const mixed = (id, svc, state, code, belt, confusions, why) => ({
+  id: `mixed-${id}`, svc, state, code, belt, confusions, why,
+  tags: ['service-split', 'boundary'],
+});
+
+// A fixed mixed set for the routes selected by the supervisor. Service is part
+// of every card because the same state/range can change belt by service.
+const MIXED_MISSORTS = [
+  mixed('in-2da', '2DA', 'IN', '460-479', 'PURPLE', ['ORANGE', 'BLUE', 'GOLD'],
+    'Indiana is ORANGE on Ground, but PURPLE on 2 Day Air.'),
+  mixed('oh-2da', '2DA', 'OH', '430-459', 'ORANGE', ['PURPLE', 'YELLOW', 'BROWN'],
+    'Ohio stays ORANGE on 2 Day Air; do not carry Indiana’s PURPLE rule across the state line.'),
+  mixed('mi-2da', '2DA', 'MI', '480-497', 'ORANGE', ['PURPLE', 'YELLOW', 'BROWN'],
+    'Michigan stays ORANGE on 2 Day Air, while Indiana immediately before it is PURPLE.'),
+  mixed('il-600-619-2da', '2DA', 'IL', '600-619', 'PURPLE', ['YELLOW', 'ORANGE', 'BLUE'],
+    'Illinois 600-619 is PURPLE on 2 Day Air. Ground and 3 Day Select use different belts within this span.'),
+  mixed('il-620-629-2da', '2DA', 'IL', '620-629', 'ORANGE', ['PURPLE', 'YELLOW', 'BLUE'],
+    'Illinois changes from PURPLE to ORANGE at 620 on 2 Day Air.'),
+  mixed('ny-128-139-gnd', 'GND', 'NY', '128-139', 'GOLD', ['ORANGE', 'PURPLE', 'PINK'],
+    'NY 128-139 is GOLD on Ground. Next Day Air has a single-code PURPLE exception at 136.'),
+  mixed('ny-136-nda', 'NDA', 'NY', '136', 'PURPLE', ['GOLD', 'ORANGE', 'PINK'],
+    'NY 136 stays PURPLE on Next Day Air inside the surrounding GOLD range.'),
+  mixed('ny-140-147-gnd', 'GND', 'NY', '140-147', 'GOLD', ['ORANGE', 'PURPLE', 'PINK'],
+    'The recent sort change moved NY 140-147 to GOLD on Ground, 2 Day Air and 3 Day Select.'),
+  mixed('ny-140-147-nda', 'NDA', 'NY', '140-147', 'PURPLE', ['GOLD', 'ORANGE', 'PINK'],
+    'Next Day Air keeps NY 140-149 PURPLE, including 140-147.'),
+  mixed('ma-025-gnd', 'GND', 'MA', '025', 'BLUE', ['GOLD', 'PURPLE', 'GREEN'],
+    'MA 025 and 026 are BLUE on Ground, between GOLD ranges.'),
+  mixed('ma-026-gnd', 'GND', 'MA', '026', 'BLUE', ['GOLD', 'PURPLE', 'GREEN'],
+    'MA 026 is the second BLUE code in this Ground block; Next Day Air sends it PURPLE.'),
+  mixed('ca-900-935-gnd', 'GND', 'CA', '900-935', 'RED', ['BROWN', 'PURPLE', 'ORANGE'],
+    'California stays RED through 935 on Ground. The BROWN range begins at 936.'),
+  mixed('ca-936-961-gnd', 'GND', 'CA', '936-961', 'BROWN', ['RED', 'PURPLE', 'ORANGE'],
+    'California changes to BROWN at 936 on Ground; 935 is still RED.'),
+  mixed('nh-030-033-gnd', 'GND', 'NH', '030-033', 'BLUE', ['GOLD', 'PURPLE', 'ORANGE'],
+    'NH 030-033 is BLUE on Ground. The next listed code, 034 0, is GOLD.'),
+  mixed('nh-034-0-gnd', 'GND', 'NH', '034 0', 'GOLD', ['BLUE', 'PURPLE', 'ORANGE'],
+    'NH 034 0 is GOLD between BLUE ranges on Ground.'),
+  mixed('nh-030-033-nda', 'NDA', 'NH', '030-033', 'PURPLE', ['BLUE', 'GOLD', 'ORANGE'],
+    'Next Day Air sends NH 030-033 to PURPLE, while Ground sends it BLUE.'),
+];
+
 export const DECKS = [
   ...LEVEL_DECKS,
   {
@@ -362,6 +404,14 @@ export const DECKS = [
     blurb: 'A second familiar set with different New Jersey examples',
     verified: true,
     cards: [...COMMON_CORE, NJ_TWILIGHT[2], ...NJ_TWILIGHT.slice(3)],
+  },
+  {
+    id: 'mixed-missorts',
+    name: 'Common Missorts · Mixed',
+    sort: 'Twilight',
+    blurb: '2 Day IN/OH/MI/IL, NY 128-147, MA 025-026, CA 900-935/936-961, and NH',
+    verified: true,
+    cards: MIXED_MISSORTS,
   },
   {
     id: 'new-york',

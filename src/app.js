@@ -1,13 +1,13 @@
 import { BELT_STYLE } from './belts.js';
 import { SERVICE_LABEL } from './questions.js?v=tn-370-brown-20261105';
-import { DECKS, deckById, deckLabel } from './decks.js?v=tn-370-brown-20261105';
+import { DECKS, deckById, deckLabel } from './decks.js?v=mixed-missorts-20261105';
 import { CARD_SECONDS, createRun, currentCard, answerCard, timeoutCard, summarize } from './quiz.js?v=review-15s';
 import { createClock } from './clock.js';
 import { createShiftLog } from './shiftLog.js';
 import { saveWorkbook } from './exportFile.js';
 import { CHART, searchChart } from './study.js?v=tn-370-brown-20261105';
 import { selectLevelCards } from './levels.js?v=tn-370-brown-20261105';
-import { createLanguage } from './i18n.js?v=tn-370-brown-20261105';
+import { createLanguage } from './i18n.js?v=mixed-missorts-20261105';
 
 const app = document.getElementById('app');
 const log = createShiftLog(typeof localStorage === 'undefined' ? null : localStorage);
