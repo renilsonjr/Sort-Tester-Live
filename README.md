@@ -53,6 +53,11 @@ For a manual check, open the local app, search the study chart, complete a Pract
 
 ## Development and publishing
 
+The development branch adds a minimal FastAPI health endpoint. Its [Windows
+backend guide](backend/README.md) covers environment setup, startup, shutdown,
+and tests. This backend is not yet connected to the Practice website and is not
+hosted by GitHub Pages.
+
 GitHub Pages currently serves the root of the `main` branch. A push to a feature branch does not publish that branch. Review and verify changes before merging to `main`, because that merge updates the website. A new backend will need its own hosting; GitHub Pages serves static files.
 
 The current practice questions and answers are browser-visible. Do not place passwords, database credentials, employee records, or private reference documents in this public repository or in browser assets. Future ranked answers and point adjustments must be validated by the backend.
