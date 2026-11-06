@@ -3,6 +3,24 @@
 Run these commands from the repository root in PowerShell. Use the virtual
 environment's Python directly; PowerShell activation is not required.
 
+## Set up a fresh environment
+
+Use an installed Python 3.14 interpreter and confirm its version first. The
+hosted Windows check used Python 3.14.10. From a fresh clone, run:
+
+```powershell
+python --version
+python -m venv backend\.venv
+& backend\.venv\Scripts\python.exe -m pip install -r backend\requirements.txt
+& backend\.venv\Scripts\python.exe -m pip check
+```
+
+Continue only when each command succeeds and the dependency check reports no
+broken requirements. These are the same environment-creation and installation
+steps exercised by the Windows CI job. An existing working environment can be
+used directly; recreating it is not necessary for every server start. Each
+computer needs its own virtual environment.
+
 ## Start the API on this computer only
 
 ```powershell
