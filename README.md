@@ -42,10 +42,10 @@ No npm installation or build step is needed for the current static app. Excel ex
 The repository has a focused security regression check. With Node.js installed, run:
 
 ```sh
-node --test tests/security.test.mjs
+node --test tests/security.test.mjs tests/health-client.test.mjs
 ```
 
-This checks saved-score and name rendering with passive markup probes. It is not a full browser or quiz regression suite. There is still no package manifest or release-builder script; broader checks belong to the backend foundation issue.
+This checks saved-score/name rendering with passive markup probes and the development API client's success, validation, timeout, and failure behavior. It is not a full browser or quiz regression suite. No npm installation is needed.
 
 GitHub Actions runs these checks on every pull request and on main-branch updates. See [PR checks and branch protection](docs/security/branch-protection.md) for the proposed protection settings and when to make the check required.
 
@@ -53,10 +53,13 @@ For a manual check, open the local app, search the study chart, complete a Pract
 
 ## Development and publishing
 
-The development branch adds a minimal FastAPI health endpoint. Its [Windows
+The backend has a minimal FastAPI health endpoint. Its [Windows
 backend guide](backend/README.md) covers environment setup, startup, shutdown,
-and tests. This backend is not yet connected to the Practice website and is not
-hosted by GitHub Pages.
+tests, and a separate local browser connection exercise. The development page
+uses an ignored local configuration file and an explicit development CORS
+origin. Practice remains independent of the API. GitHub Pages does not host
+Python; committed development resources are public but the test page refuses
+to make requests when opened there.
 
 GitHub Pages currently serves the root of the `main` branch. A push to a feature branch does not publish that branch. Review and verify changes before merging to `main`, because that merge updates the website. A new backend will need its own hosting; GitHub Pages serves static files.
 
