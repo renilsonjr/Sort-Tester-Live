@@ -28,3 +28,75 @@ jobs:
 
       - name: Check score and name rendering
         run: node --test tests/security.test.mjs
+
+  backend-windows:
+    name: Windows backend tests
+    runs-on: windows-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        shell: pwsh
+    steps:
+      - name: Check out the proposed changes
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up Python 3.14
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: '3.14'
+
+      - name: Create fresh environment and record Python version
+        run: |
+          python -m venv backend/.venv
+          $python = 'backend/.venv/Scripts/python.exe'
+          $version = & $python -VV
+          Write-Output $version
+          "Python used: $version" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
+
+      - name: Install and check backend dependencies
+        run: |
+          $python = 'backend/.venv/Scripts/python.exe'
+          & $python -m pip install -r backend/requirements.txt
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          & $python -m pip check
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+      - name: Run backend unit tests
+        run: |
+          & backend/.venv/Scripts/python.exe -m unittest discover -s backend/tests -v
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+      - name: Check live health response on loopback
+        run: |
+          $listener = [System.Net.Sockets.TcpListener]::new([System.Net.IPAddress]::Loopback, 0)
+          $listener.Start()
+          $port = $listener.LocalEndpoint.Port
+          $listener.Stop()
+          $python = (Resolve-Path 'backend/.venv/Scripts/python.exe').Path
+          $stdout = Join-Path $env:RUNNER_TEMP 'uvicorn-stdout.log'
+          $stderr = Join-Path $env:RUNNER_TEMP 'uvicorn-stderr.log'
+          $server = Start-Process -FilePath $python -ArgumentList @('-m', 'uvicorn', 'backend.main:app', '--host', '127.0.0.1', '--port', "$port") -PassThru -WindowStyle Hidden -RedirectStandardOutput $stdout -RedirectStandardError $stderr
+          try {
+            $response = $null
+            for ($attempt = 0; $attempt -lt 30; $attempt++) {
+              if ($server.HasExited) { throw 'Uvicorn exited before responding.' }
+              try {
+                $response = Invoke-WebRequest "http://127.0.0.1:$port/health" -TimeoutSec 2
+                break
+              } catch {
+                Start-Sleep -Milliseconds 500
+              }
+            }
+            if ($null -eq $response) { throw 'Uvicorn did not respond within 15 seconds.' }
+            if ($response.StatusCode -ne 200) { throw "Expected HTTP 200, got $($response.StatusCode)." }
+            if ($response.Content.Trim() -ne '{"status":"ok"}') { throw "Unexpected health response: $($response.Content)" }
+            Write-Output "GET /health returned HTTP 200 and $($response.Content)"
+          } finally {
+            if (-not $server.HasExited) {
+              Stop-Process -Id $server.Id -Force
+              Wait-Process -Id $server.Id -ErrorAction SilentlyContinue
+            }
+            Get-Content $stdout, $stderr -ErrorAction SilentlyContinue
+          }
