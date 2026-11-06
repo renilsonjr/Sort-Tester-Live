@@ -662,7 +662,7 @@ function showLog() {
           ${entries.map((s) => `
             <li>
               <span class="who">${esc(displayName(s.name))}</span>
-              <span class="sc">${s.correct}/${s.total}</span>
+              <span class="sc">${esc(s.correct)}/${esc(s.total)}</span>
               <span class="when">${s.deck ? esc(language.deckLabel(s.deck)) + ' &middot; ' : ''}${esc(new Date(s.takenAt).toLocaleString(language.code === 'es' ? 'es-US' : 'en-US'))}</span>
               ${s.missed.length ? `
                 <ul class="logmiss">
