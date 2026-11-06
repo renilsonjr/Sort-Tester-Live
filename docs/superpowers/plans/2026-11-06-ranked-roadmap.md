@@ -8,7 +8,7 @@
 
 Open the [parent roadmap](https://github.com/renilsonjr/Sort-Tester-Live/issues/1). Each child issue contains its goal, build steps, decisions, acceptance checks, and native GitHub blocking dependencies. Work on one small deliverable at a time. Ask the owner one decision question at a time where a rule remains open.
 
-This is the live application repository and the confirmed home for this expansion. Its main branch publishes through GitHub Pages; development branches do not. The current checkout has no backend, test suite, or build script. Establish the missing development/test foundations rather than copying private repository instructions blindly.
+This is the live application repository and the confirmed home for this expansion. Its main branch publishes through GitHub Pages; development branches do not. The current checkout has no backend or release-builder script. A focused security regression suite now runs locally and in GitHub Actions; broader Practice and backend checks remain part of the foundation work. Establish those foundations using the actual files in this repository.
 
 The foundation, rule-decision, and shared navigation design issues can begin now. Do not treat the entire pilot as one coding task. A branch is source isolation; separate environment configuration and database data provide runtime isolation.
 
