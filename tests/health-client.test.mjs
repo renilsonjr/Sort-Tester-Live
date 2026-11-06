@@ -1,7 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { setTimeout as delay } from 'node:timers/promises';
-import { checkHealth, readConfig } from '../dev/health-client.mjs';
+import { readFileSync } from 'node:fs';
+import { runInNewContext } from 'node:vm';
+import { checkHealth, isDevelopmentOrigin, readConfig } from '../dev/health-client.mjs';
 
 const local = { pageOrigin: 'http://127.0.0.1:8000', apiBaseUrl: 'http://127.0.0.1:18765' };
 const jsonResponse = (value, status = 200) => new Response(JSON.stringify(value), {
@@ -110,4 +112,56 @@ test('missing or malformed local configuration gives setup instructions', async 
     jsonResponse({ apiBaseUrl: local.apiBaseUrl, password: 'do-not-use' })]) {
     await assert.rejects(readConfig(response), /config\.example\.json.*config\.local\.json/);
   }
+});
+
+// Run the actual page controller with only DOM/network/clock boundaries supplied.
+// The shared client remains real, so a second full API deadline breaks this test.
+function pageHarness({ fetchImpl, clock }) {
+  let click;
+  const button = { disabled: true, addEventListener: (_event, handler) => { click = handler; } };
+  const status = { dataset: {}, textContent: '' };
+  const source = readFileSync(new URL('../dev/page.mjs', import.meta.url), 'utf8').replace(/^import .+;\r?\n/, '');
+  runInNewContext(source, {
+    document: { getElementById: id => id === 'check-api' ? button : status },
+    window: { location: { origin: local.pageOrigin } },
+    performance: { now: clock }, AbortSignal,
+    fetch: fetchImpl, readConfig, isDevelopmentOrigin,
+    checkHealth: options => checkHealth({ ...options, fetchImpl }),
+  });
+  return { button, status, click };
+}
+
+test('the page shares one deadline across config and the API, then permits retry', async () => {
+  let now = 0;
+  const page = pageHarness({ clock: () => now, fetchImpl: async url => {
+    if (url === './config.local.json') {
+      now = 4900; // Config has consumed almost all of the five-second budget.
+      return jsonResponse({ apiBaseUrl: local.apiBaseUrl });
+    }
+    return new Promise(() => {});
+  } });
+  const started = performance.now();
+  await page.click();
+  assert.equal(page.status.dataset.kind, 'unavailable');
+  assert.match(page.status.textContent, /timed out/i);
+  assert.equal(page.button.disabled, false);
+  assert.ok(performance.now() - started < 2000, 'the API must not get another full five seconds');
+});
+
+test('configuration that exhausts the budget reports timeout without calling the API', async () => {
+  let now = 0;
+  let apiCalls = 0;
+  const page = pageHarness({ clock: () => now, fetchImpl: async url => {
+    if (url === './config.local.json') {
+      now = 5100;
+      throw new DOMException('Timeout', 'TimeoutError');
+    }
+    apiCalls++;
+    return jsonResponse({ status: 'ok' });
+  } });
+  await page.click();
+  assert.equal(page.status.dataset.kind, 'unavailable');
+  assert.match(page.status.textContent, /timed out/i);
+  assert.equal(apiCalls, 0);
+  assert.equal(page.button.disabled, false);
 });

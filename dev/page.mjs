@@ -16,15 +16,25 @@ if (!isDevelopmentOrigin(window.location.origin)) {
     if (button.disabled) return;
     button.disabled = true;
     show('loading', 'Checking…');
+    const deadline = performance.now() + 5000;
+    const configSignal = AbortSignal.timeout(5000);
     try {
       const response = await fetch('./config.local.json', {
-        cache: 'no-store', credentials: 'omit', redirect: 'error', signal: AbortSignal.timeout(5000),
+        cache: 'no-store', credentials: 'omit', redirect: 'error', signal: configSignal,
       });
       const config = await readConfig(response);
-      const result = await checkHealth({ pageOrigin: window.location.origin, apiBaseUrl: config.apiBaseUrl });
+      const remaining = deadline - performance.now();
+      if (remaining <= 0) throw new DOMException('Deadline reached', 'TimeoutError');
+      const result = await checkHealth({
+        pageOrigin: window.location.origin, apiBaseUrl: config.apiBaseUrl, timeoutMs: remaining,
+      });
       show(result.kind, result.message);
-    } catch {
-      show('configuration', 'Could not load local configuration. Copy config.example.json to config.local.json with only apiBaseUrl set to http://127.0.0.1:18765. Check that the page server is running. Never add secrets.');
+    } catch (error) {
+      if (configSignal.aborted || performance.now() >= deadline || error.name === 'TimeoutError') {
+        show('unavailable', 'Request timed out. Check that the page server and API are running, then retry.');
+      } else {
+        show('configuration', 'Could not load local configuration. Copy config.example.json to config.local.json with only apiBaseUrl set to http://127.0.0.1:18765. Check that the page server is running. Never add secrets.');
+      }
     } finally {
       button.disabled = false;
     }
