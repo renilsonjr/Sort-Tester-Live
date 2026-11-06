@@ -47,6 +47,8 @@ node --test tests/security.test.mjs
 
 This checks saved-score and name rendering with passive markup probes. It is not a full browser or quiz regression suite. There is still no package manifest or release-builder script; broader checks belong to the backend foundation issue.
 
+GitHub Actions runs these checks on every pull request and on main-branch updates. See [PR checks and branch protection](docs/security/branch-protection.md) for the proposed protection settings and when to make the check required.
+
 For a manual check, open the local app, search the study chart, complete a Practice quiz, check feedback and the 15-second timer, reload the shift log, and export a workbook. Test English and Spanish, cancellation, and a narrow phone screen. Local test results remain in that browser's storage until cleared.
 
 ## Development and publishing
