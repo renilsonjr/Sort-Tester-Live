@@ -57,8 +57,93 @@ Stop the server with **Ctrl+C** in the PowerShell window running it.
 
 ```powershell
 & backend\.venv\Scripts\python.exe -m unittest discover -s backend\tests -v
-node --test tests\security.test.mjs
+node --test tests/security.test.mjs tests/health-client.test.mjs
 ```
 
-The first command checks the health response and an unknown route. The second
-rechecks the existing browser security regressions.
+The first command checks health, unknown routes, and development CORS settings.
+The second checks browser request handling and existing security regressions.
+
+## Check the API from a development browser page
+
+This exercise uses two PowerShell windows, both at the repository root.
+It runs locally on this computer; it is not the phone/LAN exercise above.
+
+In **window 1**, allow the exact development page origin and start FastAPI:
+
+```powershell
+$env:SORT_TEST_DEV_ORIGINS = 'http://127.0.0.1:8000'
+& backend\.venv\Scripts\python.exe -m uvicorn backend.main:app --host 127.0.0.1 --port 18765
+```
+
+The environment variable belongs in the same window that starts the API.
+Unset or blank means no cross-origin reading is authorized. Wildcards and
+malformed origins stop startup with an error. Multiple explicit origins may
+be comma-separated, but this exercise needs only the one above. This follows
+[FastAPI's CORS setup](https://fastapi.tiangolo.com/tutorial/cors/).
+
+In **window 2**, create local configuration if it does not already exist,
+then serve only the development folder:
+
+```powershell
+if (-not (Test-Path dev\config.local.json)) {
+    Copy-Item dev\config.example.json dev\config.local.json
+}
+& backend\.venv\Scripts\python.exe -m http.server 8000 --bind 127.0.0.1 --directory dev
+```
+
+The local JSON file must contain only:
+
+```json
+{"apiBaseUrl":"http://127.0.0.1:18765"}
+```
+
+Git ignores `dev/config.local.json`; each computer creates its own copy.
+It is browser-readable configuration, **never a place for passwords, tokens,
+employee data, or database connection strings**. This milestone accepts only
+the loopback API URL shown above.
+
+Open **http://127.0.0.1:8000** and select **Check API**:
+
+- During the request: Checking… and a disabled button.
+- Working API: API responded: ok (HTTP 200).
+- Stopped API or blocked request: a message asking you to check the server,
+  address, and CORS settings. Browsers cannot reliably distinguish those causes.
+- Unexpected HTTP status or JSON: an unexpected-response message.
+- Missing/invalid local file: instructions to copy the config example.
+- No response within five seconds: timeout, followed by an enabled retry button.
+
+Use `127.0.0.1` exactly. `localhost`, a different port, and HTTPS are different
+origins. CORS lets the browser read a cross-origin response; it is not a login,
+firewall, or general access-control mechanism. No credentials are sent.
+
+Only clicking the button starts the config/API check. The page refuses to run
+outside `http://127.0.0.1:8000`. Because GitHub Pages publishes the repository
+root with `.nojekyll`, committed development files are publicly retrievable
+after merging, but this check is disabled there. There is no link to it from
+the employee interface. No public backend is configured.
+
+### Verify failure and independent Practice
+
+1. Confirm success with both servers running.
+2. In window 1, stop the API with **Ctrl+C**. Click Check API again; confirm the
+   useful unavailable message and that you can retry.
+3. In a third repository-root PowerShell window, serve the existing Practice app:
+
+   ```powershell
+   & backend\.venv\Scripts\python.exe -m http.server 8001 --bind 127.0.0.1
+   ```
+
+4. Open http://127.0.0.1:8001 with the API still stopped. Enter as a guest,
+   complete a Practice quiz, check feedback/results, then reload and check the
+   local shift log. Use fictional data. Results are stored separately for each
+   browser origin, so port 8001 does not share port 8000's saved results.
+5. Stop both page servers with **Ctrl+C** in their windows. In the API window,
+   clear the development setting after stopping the API:
+
+   ```powershell
+   Remove-Item Env:SORT_TEST_DEV_ORIGINS -ErrorAction SilentlyContinue
+   ```
+
+If a port is already occupied, stop the earlier test server you started before
+retrying. Do not kill unfamiliar processes or change firewall/router settings
+for this loopback exercise.

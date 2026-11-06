@@ -26,8 +26,8 @@ jobs:
           node-version: '24'
           package-manager-cache: false
 
-      - name: Check score and name rendering
-        run: node --test tests/security.test.mjs
+      - name: Check browser security and development API requests
+        run: node --test tests/*.test.mjs
 
   backend-windows:
     name: Windows backend tests
