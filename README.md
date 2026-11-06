@@ -39,7 +39,15 @@ No npm installation or build step is needed for the current static app. Excel ex
 
 ## Check the current app
 
-This repository does not yet contain an automated test suite, package manifest, or release-builder script. Establishing regression checks belongs to the backend foundation issue; do not run commands for files that are not present here.
+The repository has a focused security regression check. With Node.js installed, run:
+
+```sh
+node --test tests/security.test.mjs
+```
+
+This checks saved-score and name rendering with passive markup probes. It is not a full browser or quiz regression suite. There is still no package manifest or release-builder script; broader checks belong to the backend foundation issue.
+
+GitHub Actions runs these checks on every pull request and on main-branch updates. See [PR checks and branch protection](docs/security/branch-protection.md) for the proposed protection settings and when to make the check required.
 
 For a manual check, open the local app, search the study chart, complete a Practice quiz, check feedback and the 15-second timer, reload the shift log, and export a workbook. Test English and Spanish, cancellation, and a narrow phone screen. Local test results remain in that browser's storage until cleared.
 
@@ -75,3 +83,5 @@ Read the [ordered issue roadmap](docs/superpowers/plans/2026-11-06-ranked-roadma
 ## Working agreements
 
 Make one small change, explain it, run it, and verify the result before continuing. Tell the owner before changing an existing file. Keep future development and pilot databases separate. Resolve open product decisions in their owning issue rather than silently choosing behavior while coding.
+
+Local environments, credentials, databases, backups, and employee exports are excluded by `.gitignore`. Ignore rules do not remove files already committed or make a public Pages file private. See the [scoped security review](docs/security/2026-11-06-static-review.md) for checks, fixes, and remaining limits.

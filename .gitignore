@@ -1,0 +1,50 @@
+# Local configuration and credentials (sanitized templates may be committed)
+.env
+.env.*
+!.env.example
+!.env.*.example
+*.key
+*.pem
+*.p12
+*.pfx
+.ssh/
+id_rsa
+id_ed25519
+
+# Python environments, caches, and local databases
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+*.sqlite
+*.sqlite3
+*.db
+
+# Dependencies and generated development output
+node_modules/
+dist/
+coverage/
+playwright-report/
+test-results/
+
+# Database backups, logs, and local employee exports
+backups/
+pgdata/
+postgres-data/
+*.dump
+*.backup
+*.log
+sort-test-log-*.xlsx
+
+# Local editor, OS, and assistant state
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+.claude/
+.superpowers/
