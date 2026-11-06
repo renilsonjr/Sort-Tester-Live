@@ -3,6 +3,7 @@
 .env.*
 !.env.example
 !.env.*.example
+/dev/config.local.json
 *.key
 *.pem
 *.p12

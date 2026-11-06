@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Sort Tester · Development API check</title>
+  <style>
+    :root { color-scheme: light; font: 1rem/1.6 system-ui, sans-serif; color: #172838; background: #f3f5f6; }
+    body { margin: 0; padding: 4rem 1.25rem; }
+    main { max-width: 38rem; margin: auto; }
+    h1 { line-height: 1.2; font-size: clamp(1.8rem, 5vw, 2.5rem); }
+    .label { font-size: .8rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; }
+    button { font: inherit; font-weight: 600; padding: .65rem 1.15rem; border: 0; border-radius: .3rem; color: white; background: #174b70; cursor: pointer; }
+    button:focus-visible { outline: 3px solid #995000; outline-offset: 4px; }
+    button:disabled { opacity: .65; cursor: default; }
+    #status { padding: 1rem; margin-top: 1.25rem; background: white; border: 1px solid #ccd4d9; border-left: 4px solid #566674; overflow-wrap: anywhere; }
+    #status[data-kind="success"] { border-left-color: #20683a; }
+    code { overflow-wrap: anywhere; }
+  </style>
+</head>
+<body>
+  <main>
+    <p class="label">Sort Tester · Development only</p>
+    <h1>Development API check</h1>
+    <p>This page checks whether the local Python server responds. It does not check a database or save quiz results.</p>
+    <p>Page: <code>http://127.0.0.1:8000</code><br>API: <code>http://127.0.0.1:18765</code></p>
+    <button id="check-api" type="button" disabled>Check API</button>
+    <p id="status" role="status" aria-live="polite" aria-atomic="true">Loading the development check…</p>
+    <noscript>JavaScript must be enabled to run this check.</noscript>
+  </main>
+  <script type="module" src="./page.mjs"></script>
+</body>
+</html>
