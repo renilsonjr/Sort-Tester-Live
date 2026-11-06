@@ -10,7 +10,7 @@ Open the [parent roadmap](https://github.com/renilsonjr/Sort-Tester-Live/issues/
 
 This is the live application repository and the confirmed home for this expansion. Its main branch publishes through GitHub Pages; development branches do not. The current checkout has no backend, test suite, or build script. Establish the missing development/test foundations rather than copying private repository instructions blindly.
 
-The foundation and rule-decision issues can begin now. Do not treat the entire pilot as one coding task. A branch is source isolation; separate environment configuration and database data provide runtime isolation.
+The foundation, rule-decision, and shared navigation design issues can begin now. Do not treat the entire pilot as one coding task. A branch is source isolation; separate environment configuration and database data provide runtime isolation.
 
 ## Ordered issues
 
@@ -23,16 +23,33 @@ The foundation and rule-decision issues can begin now. Do not treat the entire p
 | [05 · Persist users, question assignments, attempts, and ranking history](https://github.com/renilsonjr/Sort-Tester-Live/issues/6) | [#2](https://github.com/renilsonjr/Sort-Tester-Live/issues/2), [#4](https://github.com/renilsonjr/Sort-Tester-Live/issues/4), [#5](https://github.com/renilsonjr/Sort-Tester-Live/issues/5) |
 | [06 · Add employee registration, sessions, and account access controls](https://github.com/renilsonjr/Sort-Tester-Live/issues/7) | [#6](https://github.com/renilsonjr/Sort-Tester-Live/issues/6) |
 | [07 · Implement the server-authoritative ranked attempt engine](https://github.com/renilsonjr/Sort-Tester-Live/issues/8) | [#3](https://github.com/renilsonjr/Sort-Tester-Live/issues/3), [#4](https://github.com/renilsonjr/Sort-Tester-Live/issues/4), [#5](https://github.com/renilsonjr/Sort-Tester-Live/issues/5), [#6](https://github.com/renilsonjr/Sort-Tester-Live/issues/6), [#7](https://github.com/renilsonjr/Sort-Tester-Live/issues/7) |
-| [08 · Apply ranked scores, caps, promotions, and demotions exactly once](https://github.com/renilsonjr/Sort-Tester-Live/issues/9) | [#8](https://github.com/renilsonjr/Sort-Tester-Live/issues/8), [#4](https://github.com/renilsonjr/Sort-Tester-Live/issues/4) |
-| [09 · Build public entry, separate modes, and the employee profile](https://github.com/renilsonjr/Sort-Tester-Live/issues/10) | [#3](https://github.com/renilsonjr/Sort-Tester-Live/issues/3), [#7](https://github.com/renilsonjr/Sort-Tester-Live/issues/7), [#9](https://github.com/renilsonjr/Sort-Tester-Live/issues/9) |
+| [08 · Apply ranked scores, caps, promotions, and demotions exactly once](https://github.com/renilsonjr/Sort-Tester-Live/issues/9) | [#4](https://github.com/renilsonjr/Sort-Tester-Live/issues/4), [#8](https://github.com/renilsonjr/Sort-Tester-Live/issues/8) |
+| [09 · Build public entry, separate modes, and the employee profile](https://github.com/renilsonjr/Sort-Tester-Live/issues/10) | [#3](https://github.com/renilsonjr/Sort-Tester-Live/issues/3), [#7](https://github.com/renilsonjr/Sort-Tester-Live/issues/7), [#9](https://github.com/renilsonjr/Sort-Tester-Live/issues/9), [#15](https://github.com/renilsonjr/Sort-Tester-Live/issues/15), [#16](https://github.com/renilsonjr/Sort-Tester-Live/issues/16), [#17](https://github.com/renilsonjr/Sort-Tester-Live/issues/17) |
 | [10 · Add administrator account management and performance review](https://github.com/renilsonjr/Sort-Tester-Live/issues/11) | [#7](https://github.com/renilsonjr/Sort-Tester-Live/issues/7), [#9](https://github.com/renilsonjr/Sort-Tester-Live/issues/9) |
-| [11 · Display leaderboard totals and current rank badges](https://github.com/renilsonjr/Sort-Tester-Live/issues/12) | [#9](https://github.com/renilsonjr/Sort-Tester-Live/issues/9), [#10](https://github.com/renilsonjr/Sort-Tester-Live/issues/10) |
+| [11 · Display leaderboard totals and current rank badges](https://github.com/renilsonjr/Sort-Tester-Live/issues/12) | [#9](https://github.com/renilsonjr/Sort-Tester-Live/issues/9), [#10](https://github.com/renilsonjr/Sort-Tester-Live/issues/10), [#16](https://github.com/renilsonjr/Sort-Tester-Live/issues/16) |
 | [12 · Validate the Windows server and prepare the 30-player pilot](https://github.com/renilsonjr/Sort-Tester-Live/issues/13) | [#10](https://github.com/renilsonjr/Sort-Tester-Live/issues/10), [#11](https://github.com/renilsonjr/Sort-Tester-Live/issues/11), [#12](https://github.com/renilsonjr/Sort-Tester-Live/issues/12) |
+
+## Collaborative design track
+
+| Design deliverable | Blocked by | Used by |
+| --- | --- | --- |
+| [Public entry, navigation, and shared visual style](https://github.com/renilsonjr/Sort-Tester-Live/issues/15) | None — can start now | Screen implementation |
+| [Employee profile and leaderboard mockups](https://github.com/renilsonjr/Sort-Tester-Live/issues/16) | Shared navigation design | Profile and leaderboard implementation |
+| [Ranked, promotion, feedback, and results mockups](https://github.com/renilsonjr/Sort-Tester-Live/issues/17) | Shared navigation design and ranked rule decisions for final states | Ranked screen implementation |
+
+Review mobile mockups together using fictional data and record owner choices in each issue. Begin from the current app's visual style; agree on any changes before implementation. These issues produce reviewed design references, not production features. Backend foundation does not depend on aesthetic choices.
 
 ## Intended dependency flow
 
 ```mermaid
 flowchart TD
+    V[Entry and shared visual design] --> VP[Profile and leaderboard mockups]
+    V --> VR[Ranked flow mockups]
+    R --> VR
+    V --> U
+    VP --> U
+    VR --> U
+    VP --> L
     F[Backend foundation] --> B[Browser API bridge]
     R[Ranked rule decisions] --> Q[Reviewed question bank]
     F --> D[PostgreSQL persistence]
