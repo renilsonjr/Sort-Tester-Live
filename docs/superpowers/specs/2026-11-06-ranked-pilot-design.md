@@ -6,7 +6,7 @@
 
 ## Approved rule source
 
-Read [[2026-11-07-ranked-decision-record]] for the current owner decisions, examples, superseded proposals and decision-status register Q1–Q13. It controls wherever older planning wording differs. Open questions/recommendations are not implementation permission. Keep #4 open until affected cases are resolved.
+Read [[2026-11-07-ranked-decision-record]] for the current owner decisions, examples, superseded proposals and decision-status register Q1–Q14. It controls wherever older planning wording differs. Open questions/recommendations are not implementation permission. Keep #4 open until affected cases are resolved.
 
 The repository is `renilsonjr/Sort-Tester-Live`. Continue on shared `codex/ranked-mode`; main publishes static assets through GitHub Pages, not the Python server.
 
@@ -16,7 +16,7 @@ The repository is `renilsonjr/Sort-Tester-Live`. Continue on shared `codex/ranke
 - Normal Ranked: solo, 15 questions, five per difficulty, ten seconds each, server-owned assignments/deadlines and once-only settlement; immediate answer feedback.
 - Easy +10/-15, Medium +20/-10, Hard +30/-5; timeout wrong. Raw regular range -150 through +300. Negative totals allowed.
 - One balance, overflow discarded, perfect promotions and mandatory re-promotion after demotion. Correct promotion answers add zero; mistakes/timeouts deduct normally.
-- Q7 entry settled: Promotion entry uses an explicit “Start promotion” action. Show that a perfect 15/15 quiz is required before the player starts. Reaching the current badge cap makes promotion available but does not automatically create or start a promotion attempt; merely opening the promotion information does not start the quiz or its question timer. The player chooses when to initiate the attempt. Existing promotion scoring, cap+1 success, demotion/re-promotion, one-active-attempt and season-admission rules remain unchanged. Q7 remains partly open only for whether regular Ranked quizzes remain available while a player is at the cap and eligible for promotion. Do not silently choose that mode-availability policy; Practice remains unchanged.
+- Q7 entry settled: Promotion entry uses an explicit “Start promotion” action. Show that a perfect 15/15 quiz is required before the player starts. Reaching the current badge cap makes promotion available but does not automatically create or start a promotion attempt; merely opening the promotion information does not start the quiz or its question timer. The player chooses when to initiate the attempt. Existing promotion scoring, cap+1 success, demotion/re-promotion, one-active-attempt and season-admission rules remain unchanged. At a capped badge’s settled point cap (Iron 1,000, Bronze 2,000, Silver 3,000, Gold 4,000), Start promotion is the only Ranked entry option; ordinary Ranked quizzes cannot start. Practice remains available unchanged. Below that badge’s cap, ordinary Ranked quizzes remain available under existing season/active-attempt rules. Challenger is uncapped and has no promotion gate. Apply this gate when starting a new attempt using current server state; do not interrupt an existing quiz or cap individual answers. A failed promotion that settles below the cap returns the player to ordinary Ranked until eligible again.
 
 | Rank | Points / cap | Perfect promotion result |
 | --- | --- | --- |
