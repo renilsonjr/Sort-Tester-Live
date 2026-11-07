@@ -69,11 +69,11 @@ The current practice questions and answers are browser-visible. Do not place pas
 
 The public home page retains sort-change announcements and offers **Log in** or **Continue as guest**. Guests retain current Practice and study features. Logged-in employees get separate Practice and Ranked flows plus their profile. Practice retains its existing 15-second timer and local results. Ranked uses employee accounts, a server, 15 questions, and 10 seconds per question.
 
-The first pilot is **Peak Season — Sort Test**, ending when the owner decides. Candidate hosting is a Windows 11 computer with 16 GB RAM. The target is 30 simultaneous players; suitability must be demonstrated through testing before employee rollout.
+Pre-Season runs until the owner manually launches the first official season; its start date is undecided. Official closing is **December 31, 2026 at 11:59 p.m. Eastern (America/New_York)**. Launch resets current points/rank to 0/Iron while preserving accounts/history. Candidate hosting is a Windows 11 computer with 16 GB RAM; the 30-player target needs measured validation before rollout.
 
 ## Build roadmap
 
-Read the [ordered issue roadmap](docs/superpowers/plans/2026-11-06-ranked-roadmap.md) and [ranked pilot rules](docs/superpowers/specs/2026-11-06-ranked-pilot-design.md). Issues contain small deliverables, owner decisions, acceptance checks, and blocking dependencies. The leaderboard comes after verified scoring.
+Read the [settled decisions and visible open questions](docs/superpowers/specs/2026-11-07-ranked-decision-record.md), [ordered issue roadmap](docs/superpowers/plans/2026-11-06-ranked-roadmap.md), and [ranked pilot overview](docs/superpowers/specs/2026-11-06-ranked-pilot-design.md). Issues contain small deliverables, owner decisions, acceptance checks, and blocking dependencies. The leaderboard comes after verified scoring.
 
 ## Repository guide
 
