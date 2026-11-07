@@ -95,11 +95,11 @@ Use server-confirmed events and timestamps, not client reports alone. Reset sequ
 - Five Hard questions per round, five seconds each, same set for all players in that round. Correct +1, wrong/timeout 0; total 0–5. Seasonal points stay frozen.
 - Asynchronous play; first deadline is season close +24 hours, not settlement completion +24 hours. Tie-breaks begin after eligible season attempts settle. One attempt per player per round.
 - Completed attempts rank ahead of incomplete/nonparticipants. Compare completed players' scores; all incomplete attempts and nonparticipants use who reached the tied final seasonal score first (exact event semantics Q6).
-- Still tied: fresh five-question sets, shared within the new round, and a new 24-hour window when that round opens. Preserve resolved positions/earlier completed rounds. Ultimate fallback/limits and question exhaustion are Q3.
+- Still tied: fresh five-question sets, shared within the new round, and a new 24-hour window when that round opens. Preserve resolved positions/earlier completed rounds. Q3 settled: at most three valid rounds including the first. If still tied after round three, or a needed fresh set is unavailable, order the remaining tied players by who reached the tied final seasonal score first. Outage-voided rounds do not count toward the three-round limit. Exact fallback event semantics remain Q6.
 - Disconnect: original-session 15-second grace; current five-second question timer continues, no next question while disconnected. Expiry → incomplete/no same-round retry. No seasonal adjustment.
 - Intentional Quit: warning, immediate incomplete, no same-round retry, no seasonal -10.
 - Confirmed server outage interrupting an attempt restarts the whole current round for all participants, even those already finished, with fresh questions and a fresh 24-hour window. Earlier completed rounds stay valid. This is the approved exception to the normal first-round deadline.
-- Tie-break feedback is Q4. Normal Ranked immediate answer feedback is not automatically approved for asynchronous same-question tie-breaks. Do not promise finite unique-winner resolution before Q3/Q5/Q6 are answered.
+- Tie-break feedback is Q4. Normal Ranked immediate answer feedback is not automatically approved for asynchronous same-question tie-breaks. Q3 bounds valid rounds; it does not remove outage restart windows. Prize eligibility and exact fallback ordering still require Q5/Q6 decisions before implementation.
 
 ## Decision 11 — schedule
 
@@ -165,13 +165,13 @@ Logged-in Ranked landing page is the main season display: Pre-Season with no inv
 
 ## Decision status and visible open-question register
 
-Q1 and Q2 are settled below. Resolve Q3–Q13 individually before affected implementation; keep their IDs stable. #4 remains open; recording settled decisions does not settle every boundary.
+Q1, Q2 and Q3 are settled below. Resolve Q4–Q13 individually before affected implementation; keep their IDs stable. #4 remains open; recording settled decisions does not settle every boundary.
 
 | ID | Unresolved question | Affected work |
 | --- | --- | --- |
 | Q1 — SETTLED | Apply the intentional Quit penalty before the rank cap. Iron 990 +100 -10 → 1,000 using the approved Q2 net-settlement cap; overflow can absorb the visible penalty. | #4/#9; warning wording #17 |
 | Q2 — SETTLED | Apply the cap once when the attempt ends, after calculating its full result and any Quit penalty. Do not cap individual answers. Identical accepted answers produce the same regular adjustment regardless of order; promotion exceptions remain unchanged. | #4/#9 |
-| Q3 | Ultimate fallback/limit for repeated completed ties or exhaustion of fresh reviewed questions? | #4/#5/#24 |
+| Q3 — SETTLED | Maximum three valid rounds including the first; remaining ties after round three, or lack of a needed fresh set, use first-reached-final-score fallback. Outage-voided rounds do not consume the limit; preserve resolved positions. Exact event semantics remain Q6. | #4/#5/#12/#24 |
 | Q4 | Tie-break answer/correctness/review timing? Withholding until round closes is only a recommendation. | #4/#24/#17 |
 | Q5 | Prize eligibility for unused zero-point accounts, completion requirement and private verification? | #4/#12/#24 |
 | Q6 | First-ever attainment versus latest return to final score; unique order for simultaneous server events? | #4/#12/#24 |
