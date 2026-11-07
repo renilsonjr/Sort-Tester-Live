@@ -10,7 +10,9 @@ Use parent roadmap [#1](https://github.com/renilsonjr/Sort-Tester-Live/issues/1)
 
 Closed foundations #2/#3 include health/CORS, local Windows startup/LAN/browser checks and 10 backend/23 Node tests. They do not prove accounts, PostgreSQL persistence or Ranked rules are implemented. Do not reopen them for this planning expansion.
 
-Issue #4 remains open. Resolve Q1–Q7/Q13 and any affected Q8 policy individually before affected implementation. Do not treat a recommendation or a new issue as an approved answer. Preliminary design can label pending states; final affected behavior waits for its rule.
+Issue #4 remains open for its executable rule examples and reviewed protocol acceptance. Owner competition decisions are in [[2026-11-07-ranked-decision-record]]; reviewable technical defaults and per-issue verification gates are in [[2026-11-07-ranked-security-operations-design]]. Candidate counts and the unresolved content conflict are in [[2026-11-07-ranked-question-bank-review]]. Do not turn proposed defaults, candidate content, unprovisioned services or future test targets into completion claims.
+
+No new issue is needed for this wrap-up. Existing issues cover authentication/recovery/deletion (#7), question approval (#5), connection/delivery (#8/#25), email (#27), and hosting/backup/load (#13). All remaining implementation stays open; closed foundations remain closed. Mockups still need owner review before screen work. Keep the official start date intentionally undecided.
 
 ## Issues and native blockers
 
@@ -46,7 +48,7 @@ This table records issue-completion dependencies. Work can be developed in small
 3. Add season orchestration #23 and connection events/flags #25 using core contracts. Finalize profile/Ranked/tie-break designs #16/#17 from approved policy.
 4. Integrate reviewed entry/profile/season UI #10; player Support #26 and administrative account/incident tools #11 are separately verified increments.
 5. Implement prize tie-break rounds #24 and final leaderboard integration #12. Basic standings can be tested earlier, but final prizes need both lifecycle and tie-break outcomes.
-6. Deliver launch reminders #27 using verified-email/consent and season contracts. Provider and uncertain-delivery handling remain explicit decisions. Any launch-scope deferral needs owner approval.
+6. Deliver launch reminders #27 using verified-email/consent and season contracts. Use the proposed provider/outbox contracts; prove actual idempotency and deletion behavior before real mail. Any launch-scope deferral needs owner approval.
 7. Complete hosting/recovery/backup/access and 30-player validation in #13 before employee rollout; public publication is a separate reviewed step.
 
 ## Dependency boundaries
@@ -79,7 +81,7 @@ The table/native relationships are the complete dependency list; the diagram is 
 ## Work and verification rules
 
 - Explain the next small change before editing existing files. Keep the owner's learning pace and use one focused decision question at a time.
-- Use [[2026-11-07-ranked-decision-record]] as the settled source; preserve its Q1–Q13 register and explicit superseded proposals.
+- Use [[2026-11-07-ranked-decision-record]] as the settled source; preserve its Q1–Q14 register and explicit superseded proposals.
 - Preserve current guest Practice, timing, local results and export. No routine administrator point editing, hidden MMR, extra achievements or separate points balance.
 - Use reviewed fictional-data mockups in #15/#16/#17; do not implement visual assumptions as if approved.
 - Test meaningful normal/failure/race/boundary cases and record exactly what ran on Mac, Windows, browser and hosted CI. Do not call a future rule implemented because foundation tests pass.
