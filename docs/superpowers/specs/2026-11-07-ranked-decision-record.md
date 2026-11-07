@@ -27,7 +27,7 @@ This record controls where earlier planning text differs. Only settled rules are
 | Gold | 3,001–4,000 | 4,001 / Challenger |
 | Challenger | 4,001 upward, uncapped | No further promotion |
 
-One balance controls rank and seasonal standings. Discard overflow, never bank it; positive points cannot bypass promotion. Example: Iron 950 + regular raw +300 → 1,000, discard 250; perfect promotion → 1,001. Cap granularity and Quit-penalty order are still Q1/Q2.
+One balance controls rank and seasonal standings. Discard overflow, never bank it; positive points cannot bypass promotion. Example: Iron 950 + regular raw +300 → 1,000, discard 250; perfect promotion → 1,001. Quit penalty is applied before the rank cap (Q1 settled). Cap granularity remains Q2.
 
 ## Decision 2 — unexpected disconnection
 
@@ -39,9 +39,9 @@ Grace expiry ends permanently and applies partial score under regular/promotion 
 
 **KEEP EXISTING.** Owners: #4/#8/#9/#17.
 
-Normal Ranked Quit applies partial score plus -10 and ends permanently. Away from caps: +80 → +70 adjustment; -40 → -50. Cap interaction stays open in Q1/Q2.
+Normal Ranked Quit applies partial score plus -10 and ends permanently. Apply the -10 penalty BEFORE the rank cap (Q1 settled by the owner). Away from caps: +80 → +70 adjustment; -40 → -50. Under net-score capping, Iron 990 with partial +100 calculates 990 +100 -10 =1,080, capped to 1,000: overflow can absorb the visible effect of the penalty. This example is conditional on net capping; Q2 cap granularity remains open.
 
-Confirmation: “Quit this ranked quiz? Your current score will count, and you’ll lose an additional 10 points. You cannot resume this attempt.” Continue quiz / Quit quiz. The question timer continues while confirmation is open. Browser-close warnings are best-effort; browser closing/network loss cannot reliably establish intent.
+Confirmation: “Quit this ranked quiz? Your current score will count, and you’ll lose an additional 10 points. You cannot resume this attempt.” Continue quiz / Quit quiz. The question timer continues while confirmation is open. The previously agreed warning needs wording review in #17: describe the 10-point calculation before capping without promising a visible 10-point total decrease when overflow absorbs it. Browser-close warnings are best-effort; browser closing/network loss cannot reliably establish intent.
 
 ## Decision 4 — promotions, demotions and re-promotion
 
@@ -163,13 +163,13 @@ Logged-in Ranked landing page is the main season display: Pre-Season with no inv
 | Automatic Support ticket / 90-day closed retention | Player-requested ticket / 15 days after closure |
 | Phone/SMS, extra achievements, January season start | Deferred/unapproved |
 
-## Visible open-question register
+## Decision status and visible open-question register
 
-Resolve individually before affected implementation. #4 remains open; recording settled decisions does not settle every boundary.
+Q1 is settled below. Resolve Q2–Q13 individually before affected implementation; keep their IDs stable. #4 remains open; recording settled decisions does not settle every boundary.
 
 | ID | Unresolved question | Affected work |
 | --- | --- | --- |
-| Q1 | Quit penalty before/after cap? Iron 990, partial +100, Quit → 1,000 using cap(net-10), or 990 using cap(net) then -10. Neither approved. | #4/#9 |
+| Q1 — SETTLED | Apply the intentional Quit penalty before the rank cap. Under net capping, Iron 990 +100 -10 → 1,000; overflow can absorb the visible penalty. Net versus per-answer cap granularity remains Q2. | #4/#9; warning wording #17 |
 | Q2 | Cap net settlement or each answer? Iron 990, Hard correct then Easy wrong → 1,000 with net capping, 985 with per-answer capping. | #4/#9 |
 | Q3 | Ultimate fallback/limit for repeated completed ties or exhaustion of fresh reviewed questions? | #4/#5/#24 |
 | Q4 | Tie-break answer/correctness/review timing? Withholding until round closes is only a recommendation. | #4/#24/#17 |

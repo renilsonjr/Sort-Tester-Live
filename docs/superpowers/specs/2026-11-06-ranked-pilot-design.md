@@ -6,7 +6,7 @@
 
 ## Approved rule source
 
-Read [[2026-11-07-ranked-decision-record]] for the current owner decisions, examples, superseded proposals and open questions Q1–Q13. It controls wherever older planning wording differs. Open questions/recommendations are not implementation permission. Keep #4 open until affected cases are resolved.
+Read [[2026-11-07-ranked-decision-record]] for the current owner decisions, examples, superseded proposals and decision-status register Q1–Q13. It controls wherever older planning wording differs. Open questions/recommendations are not implementation permission. Keep #4 open until affected cases are resolved.
 
 The repository is `renilsonjr/Sort-Tester-Live`. Continue on shared `codex/ranked-mode`; main publishes static assets through GitHub Pages, not the Python server.
 
@@ -25,7 +25,7 @@ The repository is `renilsonjr/Sort-Tester-Live`. Continue on shared `codex/ranke
 | Gold | 3,001–4,000 | 4,001 / Challenger |
 | Challenger | 4,001 upward, uncapped | None |
 
-- One active attempt per account, including original-session 15-second grace. Current timer continues; no unseen next question while disconnected. Grace expiry settles partial score; Quit adds -10 under unresolved cap-order Q1/Q2. Terminal attempts never resume.
+- One active attempt per account, including original-session 15-second grace. Current timer continues; no unseen next question while disconnected. Grace expiry settles partial score; Quit applies a -10 adjustment before the rank cap (Q1 settled); cap granularity remains Q2. Terminal attempts never resume.
 - Confirmed server-wide outage voids affected normal attempts. Tie-break outage policy instead restarts the current round for all participants. No reliable intent/hardware-device detection claim.
 - Case-insensitive unique usernames, permanent unique six-character uppercase letter/number tags, optional private email, no required real name/employee ID or phone collection.
 - Non-punitive server connection flags, player-requested private Support → Tickets, 15-day closed descriptions/event retention, open-case/score-history preservation. Routine admins cannot change points.
