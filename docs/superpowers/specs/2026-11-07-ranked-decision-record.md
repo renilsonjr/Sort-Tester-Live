@@ -91,7 +91,7 @@ Use server-confirmed events and timestamps, not client reports alone. Reset sequ
 
 **REVISE — dense ranking superseded for prize positions.** Owners: #12/#24/#5/#16/#17.
 
-- Three prize positions, one UPS hat per winner, three hats total. Ties affecting prizes use a separate sort-work-methods quiz. Prize eligibility remains Q5; non-prize shared-position display is not explicitly settled.
+- Three prize positions, one UPS hat per winner, three hats total. Ties affecting prizes use a separate sort-work-methods quiz. Q5 participation minimum settled: at least one valid completed Ranked quiz credited to the official season is required for prizes. A valid completion in the approved five-minute finishing window counts; a negative completed score still qualifies. Pre-Season, void, incomplete, or tie-break attempts alone do not satisfy this minimum. This eligibility condition does not change existing points or partial-score rules. Eligible population, private verification, one-person/prize policy and display of ineligible accounts remain open in Q5; non-prize shared-position display is not explicitly settled.
 - Five Hard questions per round, five seconds each, same set for all players in that round. Correct +1, wrong/timeout 0; total 0–5. Seasonal points stay frozen.
 - Asynchronous play; first deadline is season close +24 hours, not settlement completion +24 hours. Tie-breaks begin after eligible season attempts settle. One attempt per player per round.
 - Completed attempts rank ahead of incomplete/nonparticipants. Compare completed players' scores; all incomplete attempts and nonparticipants use who reached the tied final seasonal score first (exact event semantics Q6).
@@ -99,7 +99,7 @@ Use server-confirmed events and timestamps, not client reports alone. Reset sequ
 - Disconnect: original-session 15-second grace; current five-second question timer continues, no next question while disconnected. Expiry → incomplete/no same-round retry. No seasonal adjustment.
 - Intentional Quit: warning, immediate incomplete, no same-round retry, no seasonal -10.
 - Confirmed server outage interrupting an attempt restarts the whole current round for all participants, even those already finished, with fresh questions and a fresh 24-hour window. Earlier completed rounds stay valid. This is the approved exception to the normal first-round deadline.
-- Q4 settled: after a tie-break attempt show “Attempt submitted”; hide scores, correct answers, per-question correctness and detailed review until that round's 24-hour window closes. Enforce release in player-facing API responses, not only UI. Use the current round deadline after any approved outage restart. Normal Ranked keeps immediate feedback. This reduces answer sharing but cannot prevent players sharing question text. Q3 bounds valid rounds; it does not remove outage restart windows. Prize eligibility and exact fallback ordering still require Q5/Q6 decisions before implementation.
+- Q4 settled: after a tie-break attempt show “Attempt submitted”; hide scores, correct answers, per-question correctness and detailed review until that round's 24-hour window closes. Enforce release in player-facing API responses, not only UI. Use the current round deadline after any approved outage restart. Normal Ranked keeps immediate feedback. This reduces answer sharing but cannot prevent players sharing question text. Q3 bounds valid rounds; it does not remove outage restart windows. Remaining prize eligibility and exact fallback ordering still require Q5/Q6 decisions before affected implementation.
 
 ## Decision 11 — schedule
 
@@ -165,7 +165,7 @@ Logged-in Ranked landing page is the main season display: Pre-Season with no inv
 
 ## Decision status and visible open-question register
 
-Q1–Q4 are settled below. Resolve Q5–Q13 individually before affected implementation; keep their IDs stable. #4 remains open; recording settled decisions does not settle every boundary.
+Q1–Q4 are settled below; Q5 participation minimum is settled but its remaining eligibility questions stay open. Resolve those and Q6–Q13 individually before affected implementation; keep their IDs stable. #4 remains open; recording settled decisions does not settle every boundary.
 
 | ID | Unresolved question | Affected work |
 | --- | --- | --- |
@@ -173,7 +173,7 @@ Q1–Q4 are settled below. Resolve Q5–Q13 individually before affected impleme
 | Q2 — SETTLED | Apply the cap once when the attempt ends, after calculating its full result and any Quit penalty. Do not cap individual answers. Identical accepted answers produce the same regular adjustment regardless of order; promotion exceptions remain unchanged. | #4/#9 |
 | Q3 — SETTLED | Maximum three valid rounds including the first; remaining ties after round three, or lack of a needed fresh set, use first-reached-final-score fallback. Outage-voided rounds do not consume the limit; preserve resolved positions. Exact event semantics remain Q6. | #4/#5/#12/#24 |
 | Q4 — SETTLED | Show submission confirmation only; withhold tie-break scores, correct answers, correctness and detailed review until the round's 24-hour window closes. Normal Ranked immediate feedback stays unchanged. | #4/#24/#17 |
-| Q5 | Prize eligibility for unused zero-point accounts, completion requirement and private verification? | #4/#12/#24 |
+| Q5 — PARTLY SETTLED | Require one valid completed Ranked quiz credited to the official season; negative scores and eligible finishing-window completion count. Unused accounts, Pre-Season, void/incomplete/tie-break attempts alone do not qualify. Eligible population, private verification, one-person/prize policy and ineligible-account display remain open; points/partial-score policy unchanged. | #4/#12/#24; design #16 |
 | Q6 | First-ever attainment versus latest return to final score; unique order for simultaneous server events? | #4/#12/#24 |
 | Q7 | Automatic promotion entry or explicit action; remaining entry/acceptance boundaries? | #4/#8/#17 |
 | Q8 | Server loss/outage signals, grace start/cadence, feedback pacing and original-session refresh/token definition? No reliable physical-device/intent claim. | #8/#25; affected policy in #4 |
