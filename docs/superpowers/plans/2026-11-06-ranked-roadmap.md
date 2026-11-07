@@ -10,7 +10,7 @@ Use parent roadmap [#1](https://github.com/renilsonjr/Sort-Tester-Live/issues/1)
 
 Closed foundations #2/#3 include health/CORS, local Windows startup/LAN/browser checks and 10 backend/23 Node tests. They do not prove accounts, PostgreSQL persistence or Ranked rules are implemented. Do not reopen them for this planning expansion.
 
-Issue #4 remains open. Q1 is settled: Quit penalty precedes the rank cap. Resolve Q2–Q7/Q13 and any affected Q8 policy individually before affected implementation. Do not treat a recommendation or a new issue as an approved answer. Preliminary design can label pending states; final affected behavior waits for its rule.
+Issue #4 remains open. Q1/Q2 are settled: calculate the final attempt result and Quit penalty, then apply the cap once, not per answer. Resolve Q3–Q7/Q13 and any affected Q8 policy individually before affected implementation. Do not treat a recommendation or a new issue as an approved answer. Preliminary design can label pending states; final affected behavior waits for its rule.
 
 ## Issues and native blockers
 
