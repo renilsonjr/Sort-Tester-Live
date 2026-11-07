@@ -94,8 +94,8 @@ Use server-confirmed events and timestamps, not client reports alone. Reset sequ
 - Three prize positions, one UPS hat per winner, three hats total. Ties affecting prizes use the separate sort-work-methods quiz below. Q5 eligibility is settled in its dedicated section.
 - Five Hard questions per round, five seconds each, same set for all players in that round. Correct +1, wrong/timeout 0; total 0–5. Seasonal points stay frozen.
 - Asynchronous play; first deadline is season close +24 hours, not settlement completion +24 hours. Tie-breaks begin after eligible season attempts settle. One attempt per player per round.
-- Completed attempts rank ahead of incomplete/nonparticipants. Compare completed players' scores; all incomplete attempts and nonparticipants use who reached the tied final seasonal score first (exact event semantics Q6).
-- Still tied: fresh five-question sets, shared within the new round, and a new 24-hour window when that round opens. Preserve resolved positions/earlier completed rounds. Q3 settled: at most three valid rounds including the first. If still tied after round three, or a needed fresh set is unavailable, order the remaining tied players by who reached the tied final seasonal score first. Outage-voided rounds do not count toward the three-round limit. Exact fallback event semantics remain Q6.
+- Completed attempts rank ahead of incomplete/nonparticipants. Compare completed players' scores; for tied Challenger players only (4,001+), incomplete/nonparticipants use who reached the tied final seasonal Challenger score first (exact event semantics Q6). The corresponding lower-rank outcome is open in Q3; do not extend this fallback to lower badges.
+- Still tied: fresh five-question sets, shared within the new round, and a new 24-hour window when that round opens. Preserve resolved positions/earlier completed rounds. Q3 round limit remains settled: at most three valid rounds including the first, with outage-voided rounds excluded. The owner clarified Q6 scope: after round three or unavailable fresh questions, the first-reached-seasonal-score fallback is ONLY for tied Challenger players (4,001+), never lower badges or tie-break quiz scores. Lower-rank terminal/exhaustion/no-show outcomes are now open in Q3; exact Challenger timestamp/event semantics remain Q6. No fourth round, alternate fallback or new prize-rank minimum is approved.
 - Disconnect: original-session 15-second grace; current five-second question timer continues, no next question while disconnected. Expiry → incomplete/no same-round retry. No seasonal adjustment.
 - Intentional Quit: warning, immediate incomplete, no same-round retry, no seasonal -10.
 - Confirmed server outage interrupting an attempt restarts the whole current round for all participants, even those already finished, with fresh questions and a fresh 24-hour window. Earlier completed rounds stay valid. This is the approved exception to the normal first-round deadline.
@@ -168,7 +168,7 @@ Logged-in Ranked landing page is the main season display: Pre-Season with no inv
 | Zero-impact personal disconnect or Quit-only -10 | Rejected: partial score applies; intentional Quit adds -10 |
 | Normal positive scoring during failed promotion | Correct +0, usual mistake/timeout deductions |
 | Immediate terminal disconnection | 15-second grace; terminal attempts still never resume |
-| Dense prize ranking / duplicate full prizes | Three hats; tie-breaks/fallback for unique prize positions |
+| Dense prize ranking / duplicate full prizes | Three hats; prize tie-break phases retained. First-reached-score fallback later restricted to Challenger only; lower-rank final fallback is unresolved |
 | Indefinite official competition/no reset | Owner-controlled Pre-Season; official close/reset defined |
 | Count four ended quizzes | Count distinct server-observed losses within an attempt |
 | Automatic Support ticket / 90-day closed retention | Player-requested ticket / 15 days after closure |
@@ -176,16 +176,16 @@ Logged-in Ranked landing page is the main season display: Pre-Season with no inv
 
 ## Decision status and visible open-question register
 
-Q1–Q5 are settled below. Resolve Q6–Q13 individually before affected implementation; keep their IDs stable. #4 remains open. Non-prize tie-position numbering also remains open in #12/#16; recording settled decisions does not settle every boundary.
+Q1/Q2/Q4/Q5 are settled; Q3 keeps its three-valid-round limit but lower-rank fallback is unresolved after the Challenger-only clarification. Q6 scope is partly settled; resolve its timing and Q7–Q13 individually before affected implementation; keep their IDs stable. #4 remains open. Non-prize tie-position numbering also remains open in #12/#16; recording settled decisions does not settle every boundary.
 
 | ID | Decision / open question | Affected work |
 | --- | --- | --- |
 | Q1 — SETTLED | Apply the intentional Quit penalty before the rank cap. Iron 990 +100 -10 → 1,000 using the approved Q2 net-settlement cap; overflow can absorb the visible penalty. | #4/#9; warning wording #17 |
 | Q2 — SETTLED | Apply the cap once when the attempt ends, after calculating its full result and any Quit penalty. Do not cap individual answers. Identical accepted answers produce the same regular adjustment regardless of order; promotion exceptions remain unchanged. | #4/#9 |
-| Q3 — SETTLED | Maximum three valid rounds including the first; remaining ties after round three, or lack of a needed fresh set, use first-reached-final-score fallback. Outage-voided rounds do not consume the limit; preserve resolved positions. Exact event semantics remain Q6. | #4/#5/#12/#24 |
+| Q3 — PARTLY SETTLED | Maximum three valid rounds, excluding outage-voided rounds. First-reached seasonal-score fallback is Challenger-only. Lower-rank outcomes after round three, missing fresh sets or unresolved no-show ties need a decision; do not invent another round/fallback or remove their prize eligibility. | #4/#5/#12/#24 |
 | Q4 — SETTLED | Show submission confirmation only; withhold tie-break scores, correct answers, correctness and detailed review until the round's 24-hour window closes. Normal Ranked immediate feedback stays unchanged. | #4/#24/#17 |
 | Q5 — SETTLED | Eligible-only official leaderboard: owner-approved Primary Sort/Twilight/Saddle Brook sorters, one fixed account/hat per person, approval before closing, one valid completed official-season Ranked quiz (eligible finishing-window/negative completion counts). Ineligible players may play/view own profile, without competition positions. See the dedicated Q5 section for full rules. | #4/#7/#11/#12/#24; design #16 |
-| Q6 | First-ever attainment versus latest return to final score; unique order for simultaneous server events? | #4/#12/#24 |
+| Q6 — PARTLY SETTLED | Score type/scope: tied final seasonal Challenger points (4,001+), not tie-break quiz scores and not lower-rank totals. Still open: first-ever attainment versus latest return, exact/threshold attainment and unique simultaneous-event order. Existing prize eligibility and prior tie-break phases remain unchanged. | #4/#12/#24 |
 | Q7 | Automatic promotion entry or explicit action; remaining entry/acceptance boundaries? | #4/#8/#17 |
 | Q8 | Server loss/outage signals, grace start/cadence, feedback pacing and original-session refresh/token definition? No reliable physical-device/intent claim. | #8/#25; affected policy in #4 |
 | Q9 | Deletion of shared detailed events when another linked case remains open? | #26/#11 |

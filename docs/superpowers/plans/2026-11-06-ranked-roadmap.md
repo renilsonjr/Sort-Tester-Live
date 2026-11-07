@@ -10,7 +10,7 @@ Use parent roadmap [#1](https://github.com/renilsonjr/Sort-Tester-Live/issues/1)
 
 Closed foundations #2/#3 include health/CORS, local Windows startup/LAN/browser checks and 10 backend/23 Node tests. They do not prove accounts, PostgreSQL persistence or Ranked rules are implemented. Do not reopen them for this planning expansion.
 
-Issue #4 remains open. Q1–Q5 are settled in [[2026-11-07-ranked-decision-record]]: single final-result cap after Quit penalty; bounded tie-breaks/fallback; delayed tie-break feedback; and the full prize-eligibility/eligible-only leaderboard policy. Resolve Q6/Q7/Q13 and affected Q8 policy individually before implementation. Remaining Q9–Q12 decisions stay with their owning issues. Non-prize tie-position numbering remains open in #12/#16. Recommendations are not approved rules; preliminary design may label pending states, but final affected behavior waits for its decision.
+Issue #4 remains open. Read [[2026-11-07-ranked-decision-record]]: Q1/Q2/Q4/Q5 are settled. Q3 keeps the three-valid-round limit, but the Q6 clarification limits first-reached seasonal-score fallback to Challenger (4,001+) only; lower-rank final/exhaustion/no-show ties remain open. Do not change their prize eligibility, add extra rounds or apply an unapproved fallback. Resolve that Q3 case, remaining Q6 timing, Q7/Q13 and affected Q8 policy before implementation. Remaining Q9–Q12 decisions stay with their owning issues. Non-prize tie-position numbering remains open in #12/#16. Recommendations are not approved rules; preliminary design may label pending states, but final affected behavior waits for its decision.
 
 ## Issues and native blockers
 
