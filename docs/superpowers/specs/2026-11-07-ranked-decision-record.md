@@ -119,7 +119,7 @@ Use server-confirmed events and timestamps, not client reports alone. Reset sequ
 - Also require one valid completed Ranked quiz credited to the official season. Already-approved players may satisfy this minimum through an eligible finishing-window completion; negative completed scores qualify. Pre-Season, void, unfinished or tie-break attempts alone do not qualify.
 - The official competition leaderboard includes only players meeting those eligibility criteria. Ineligible accounts receive no competition position but may still play and see their own points/badge in their profile. Login is still required to view the leaderboard.
 - Eligibility never changes point/partial-score rules or blocks registration/play. Approval contracts are owned by #7, admin UI by #11, standings by #12 and tie-break entry by #24; #16 reviews the screens.
-- Non-prize tie-position numbering remains open under #12/#16; settling eligibility does not silently choose that ordering policy.
+- Unique final prize placements are required only for the top three. Numbering/display of tied non-prize places is a routine presentation detail, not an unresolved competition-policy decision or implementation blocker. Do not run extra tie-break quizzes solely to distinguish places below the prize top three. No specific shared-place/dense/skipped-number format was selected. If a previously non-prize tie later affects a prize through approved withdrawal/backfill, apply the existing prize tie-break rules and replacement-round windows. Preserve valid earlier relative tie-break order and the approved leaderboard eligibility/visibility rules.
 
 ## Decision 11 — schedule
 
@@ -201,7 +201,7 @@ Logged-in Ranked landing page is the main season display: Pre-Season with no inv
 
 ## Decision status and visible open-question register
 
-Q1–Q7 are settled. Q3 fixes the lower-rank maximum at five valid rounds with owner selection for ties remaining afterward; fresh-question exhaustion also goes to owner selection. Lower-rank unresolved noncompletion/no-show places use owner selection below completed attempts. Q6 automatically excludes Challenger incomplete/no-shows from top-three prizes at the valid round deadline. Q14 is also settled. Q9 is also settled. Q13 is also settled, including the “pre season history” profile tab. Resolve remaining Q8 and Q10–Q12 individually before affected implementation; keep their IDs stable. #4 remains open. Non-prize tie-position numbering also remains open in #12/#16; recording settled decisions does not settle every boundary.
+Q1–Q7 are settled. Q3 fixes the lower-rank maximum at five valid rounds with owner selection for ties remaining afterward; fresh-question exhaustion also goes to owner selection. Lower-rank unresolved noncompletion/no-show places use owner selection below completed attempts. Q6 automatically excludes Challenger incomplete/no-shows from top-three prizes at the valid round deadline. Q14 is also settled. Q9 is also settled. Q13 is also settled, including the “pre season history” profile tab. Resolve remaining Q8 and Q10–Q12 individually before affected implementation; keep their IDs stable. #4 remains open. Non-prize tied-place numbering is a routine presentation detail, not a competition-policy blocker; only top-three prize placements require uniqueness. Remaining Q8/Q10–Q12 decisions remain explicit implementation gates.
 
 | ID | Decision / open question | Affected work |
 | --- | --- | --- |
