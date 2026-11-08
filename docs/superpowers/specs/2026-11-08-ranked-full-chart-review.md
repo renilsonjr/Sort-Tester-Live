@@ -9,7 +9,7 @@
 - Active source: `twilight-2026-11-08-r2`, including owner corrections.
 - 283 source rows; hold four broad NJ CHECK rows without inventing belt answers. Retain listed NJ preload exceptions.
 - 279 belt-bearing source rows plus four NY109 destination+1 service contexts =283 review entries.
-- The original 17 owner-approved labels and bilingual explanations are preserved. Another 120 labels are approved, for 137 approved labels and 146 remaining difficulty proposals. Those additional labels still need wording/explanation review. Source rows are not a proven final unique-scenario count.
+- The original 17 owner-approved labels and bilingual explanations are preserved. Another 128 labels are approved, for 145 approved labels and 138 remaining difficulty proposals. Those additional labels still need wording/explanation review. Source rows are not a proven final unique-scenario count.
 - Question wording, exception exclusions, wildcard coverage and compound final-digit shorthand still need review for new entries. A suggestion of Easy never removes an applicable exception.
 - The game still selects15 questions, five per difficulty; expanding the bank increases the possible selections. No17-question runtime limit or fixed-ten-question repetition design remains.
 - Only the work-methods tie-question content is deferred; other tie-break policies remain unchanged.
@@ -17,11 +17,11 @@
 | Service | Approved difficulty labels | New difficulty proposals |
 | --- | --- | --- |
 | Ground | 89 | 0 |
-| 3 Day Select | 43 | 42 |
+| 3 Day Select | 51 | 34 |
 | 2 Day Air | 5 | 60 |
 | Next Day Air | 0 | 44 |
 
-Proposed-label totals for remaining entries: Easy 14, Medium 70, Hard 62. These are draft classifications requiring owner review, not settled counts.
+Proposed-label totals for remaining entries: Easy 13, Medium 64, Hard 61. These are draft classifications requiring owner review, not settled counts.
 
 ## Previously approved — do not rank again
 
@@ -169,6 +169,14 @@ Proposed-label totals for remaining entries: Easy 14, Medium 70, Hard 62. These 
 | S38 | `3dayselect-main-moks-630-674` | 3 Day Select | MO, KS 630–674 | BLUE | Medium |
 | S39 | `3dayselect-main-ks-675-679` | 3 Day Select | KS 675–679 | ORANGE | Medium |
 | S40 | `3dayselect-main-ne-680-689` | 3 Day Select | NE 680–689 | BLUE | Medium |
+| S41 | `3dayselect-main-ne-690-699` | 3 Day Select | NE 690–699 | ORANGE | Medium |
+| S42 | `3dayselect-main-all-700-734` | 3 Day Select | * 700–734 | BLUE | Medium |
+| S43 | `3dayselect-main-ok-735-749` | 3 Day Select | OK 735–749 | ORANGE | Medium |
+| S44 | `3dayselect-main-tx-7690` | 3 Day Select | TX 769 0 | PURPLE | Hard |
+| S45 | `3dayselect-main-tx-785-799` | 3 Day Select | TX 785–799 | PURPLE | Medium |
+| S46 | `3dayselect-main-co-800-810` | 3 Day Select | CO 800–810 | ORANGE | Medium |
+| S47 | `3dayselect-main-all-811-999` | 3 Day Select | * 811–999 | PURPLE | Medium |
+| S48 | `3dayselect-exceptions-nj-0703` | 3 Day Select | NJ 070 3 | RED | Easy |
 
 ## Ground — new proposals only
 
@@ -179,14 +187,6 @@ Proposed-label totals for remaining entries: Easy 14, Medium 70, Hard 62. These 
 
 | Source review ID | State / route | Answer | Proposed difficulty | Review note |
 | --- | --- | --- | --- | --- |
-| `3dayselect-main-ne-690-699` | NE 690–699 | ORANGE | Medium | Check applicable exceptions and effective coverage before approving broad-range wording. |
-| `3dayselect-main-all-700-734` | * 700–734 | BLUE | Medium | Check applicable exceptions and effective coverage before approving broad-range wording. Wildcard fallback: explicitly exclude specific overrides; not a duplicate of a named-state row by text alone. |
-| `3dayselect-main-ok-735-749` | OK 735–749 | ORANGE | Medium | Check applicable exceptions and effective coverage before approving broad-range wording. |
-| `3dayselect-main-tx-7690` | TX 769 0 | PURPLE | Hard | Specific exception, exact-code qualifier, suffix, or destination modifier. |
-| `3dayselect-main-tx-785-799` | TX 785–799 | PURPLE | Medium | Check applicable exceptions and effective coverage before approving broad-range wording. |
-| `3dayselect-main-co-800-810` | CO 800–810 | ORANGE | Medium | Check applicable exceptions and effective coverage before approving broad-range wording. |
-| `3dayselect-main-all-811-999` | * 811–999 | PURPLE | Medium | Check applicable exceptions and effective coverage before approving broad-range wording. Wildcard fallback: explicitly exclude specific overrides; not a duplicate of a named-state row by text alone. |
-| `3dayselect-exceptions-nj-0703` | NJ 070 3 | RED | Easy | Assistant proposal informed by owner feedback on Ground NJ preloads: RED codes Easy, ORANGE079 9 Medium. Approval for this service remains pending. |
 | `3dayselect-exceptions-nj-0709` | NJ 070 9 | RED | Easy | Assistant proposal informed by owner feedback on Ground NJ preloads: RED codes Easy, ORANGE079 9 Medium. Approval for this service remains pending. |
 | `3dayselect-exceptions-nj-0759` | NJ 075 9 | RED | Easy | Assistant proposal informed by owner feedback on Ground NJ preloads: RED codes Easy, ORANGE079 9 Medium. Approval for this service remains pending. |
 | `3dayselect-exceptions-nj-0769` | NJ 076 9 | RED | Easy | Assistant proposal informed by owner feedback on Ground NJ preloads: RED codes Easy, ORANGE079 9 Medium. Approval for this service remains pending. |
@@ -347,4 +347,4 @@ Proposed-label totals for remaining entries: Easy 14, Medium 70, Hard 62. These 
 
 ## Read-only inventory validation
 
-Validated all283 fixture IDs are accounted for exactly once as a source entry or held CHECK row; the four+1 contexts are additional explicit entries. All17 prior review references map exactly once with their original answer, difficulty and approval status preserved. The initial 266 new-label proposals now contain 120 owner-approved labels and 146 remaining proposals. There are no duplicate review IDs. Counts are inventory evidence, not executable-bank validation, content approval, hosted CI or deployment.
+Validated all283 fixture IDs are accounted for exactly once as a source entry or held CHECK row; the four+1 contexts are additional explicit entries. All17 prior review references map exactly once with their original answer, difficulty and approval status preserved. The initial 266 new-label proposals now contain 128 owner-approved labels and 138 remaining proposals. There are no duplicate review IDs. Counts are inventory evidence, not executable-bank validation, content approval, hosted CI or deployment.
