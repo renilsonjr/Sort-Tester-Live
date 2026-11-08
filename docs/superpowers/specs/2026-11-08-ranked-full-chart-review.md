@@ -9,19 +9,19 @@
 - Active source: `twilight-2026-11-08-r2`, including owner corrections.
 - 283 source rows; hold four broad NJ CHECK rows without inventing belt answers. Retain listed NJ preload exceptions.
 - 279 belt-bearing source rows plus four NY109 destination+1 service contexts =283 review entries.
-- The original17 owner-approved labels and bilingual explanations are preserved. Eight more labels are approved, for25 approved labels and258 remaining difficulty proposals. The new eight still need wording/explanation review. Existing source rows are not a proven final unique-scenario count.
+- The original17 owner-approved labels and bilingual explanations are preserved. Sixteen additional labels are approved, for33 approved labels and250 remaining difficulty proposals. The additional16 still need wording/explanation review. Existing source rows are not a proven final unique-scenario count.
 - Question wording, exception exclusions, wildcard coverage and compound final-digit shorthand still need review for new entries. A suggestion of Easy never removes an applicable exception.
 - The game still selects15 questions, five per difficulty; expanding the bank increases the possible selections. No17-question runtime limit or fixed-ten-question repetition design remains.
 - Only the work-methods tie-question content is deferred; other tie-break policies remain unchanged.
 
 | Service | Approved difficulty labels | New difficulty proposals |
 | --- | --- | --- |
-| Ground | 17 | 72 |
+| Ground | 25 | 64 |
 | 3 Day Select | 3 | 82 |
 | 2 Day Air | 5 | 60 |
 | Next Day Air | 0 | 44 |
 
-Proposed-label totals for new entries: Easy40, Medium117, Hard101. These are draft classifications requiring owner review, not new settled counts.
+Proposed-label totals for new entries: Easy36, Medium113, Hard101. These are draft classifications requiring owner review, not new settled counts.
 
 ## Previously approved — do not rank again
 
@@ -57,19 +57,19 @@ Proposed-label totals for new entries: Easy40, Medium117, Hard101. These are dra
 | G06 | `ground-main-ny-109` | Ground | NY 109 | ORANGE | Medium |
 | G07 | `ground-main-ny-110-119` | Ground | NY 110–119 | PINK | Medium |
 | G08 | `ground-main-ny-120-121` | Ground | NY 120–121 | GOLD | Medium |
+| G09 | `ground-main-ny-122-127` | Ground | NY 122–127 | ORANGE | Medium |
+| G10 | `ground-main-ny-128-139` | Ground | NY 128–139 | GOLD | Medium |
+| G11 | `ground-main-ny-140-147` | Ground | NY 140–147 | GOLD | Medium |
+| G12 | `ground-main-ny-148-149` | Ground | NY 148–149 | ORANGE | Medium |
+| G13 | `ground-main-pa-150-167` | Ground | PA 150–167 | GREEN | Easy |
+| G14 | `ground-main-pa-168-178` | Ground | PA 168–178 | GREEN | Easy |
+| G15 | `ground-main-pa-179-189` | Ground | PA 179–189 | GREEN | Easy |
+| G16 | `ground-main-pa-190-194` | Ground | PA 190–194 | ORANGE | Easy |
 
 ## Ground — new proposals only
 
 | Source review ID | State / route | Answer | Proposed difficulty | Review note |
 | --- | --- | --- | --- | --- |
-| `ground-main-ny-122-127` | NY 122–127 | ORANGE | Medium | Check applicable exceptions and effective coverage before approving broad-range wording. |
-| `ground-main-ny-128-139` | NY 128–139 | GOLD | Medium | Check applicable exceptions and effective coverage before approving broad-range wording. |
-| `ground-main-ny-140-147` | NY 140–147 | GOLD | Medium | Check applicable exceptions and effective coverage before approving broad-range wording. |
-| `ground-main-ny-148-149` | NY 148–149 | ORANGE | Medium | Check applicable exceptions and effective coverage before approving broad-range wording. |
-| `ground-main-pa-150-167` | PA 150–167 | GREEN | Easy | Check applicable exceptions and effective coverage before approving broad-range wording. |
-| `ground-main-pa-168-178` | PA 168–178 | GREEN | Easy | Check applicable exceptions and effective coverage before approving broad-range wording. |
-| `ground-main-pa-179-189` | PA 179–189 | GREEN | Easy | Check applicable exceptions and effective coverage before approving broad-range wording. |
-| `ground-main-pa-190-194` | PA 190–194 | ORANGE | Easy | Check applicable exceptions and effective coverage before approving broad-range wording. |
 | `ground-main-pade-195-199` | PA, DE 195–199 | GREEN | Easy | Check applicable exceptions and effective coverage before approving broad-range wording. |
 | `ground-main-dcmd-200-219` | DC, MD 200–219 | GREEN | Easy | Check applicable exceptions and effective coverage before approving broad-range wording. |
 | `ground-main-va-220-238` | VA 220–238 | YELLOW | Easy | Check applicable exceptions and effective coverage before approving broad-range wording. |
@@ -347,4 +347,4 @@ Proposed-label totals for new entries: Easy40, Medium117, Hard101. These are dra
 
 ## Read-only inventory validation
 
-Validated all283 fixture IDs are accounted for exactly once as a source entry or held CHECK row; the four+1 contexts are additional explicit entries. All17 prior review references map exactly once with their original answer, difficulty and approval status preserved. The initial266 new-label proposals now contain eight owner-approved labels and258 remaining proposals. There are no duplicate review IDs. Counts are inventory evidence, not executable-bank validation, content approval, hosted CI or deployment.
+Validated all283 fixture IDs are accounted for exactly once as a source entry or held CHECK row; the four+1 contexts are additional explicit entries. All17 prior review references map exactly once with their original answer, difficulty and approval status preserved. The initial266 new-label proposals now contain 16 owner-approved labels and250 remaining proposals. There are no duplicate review IDs. Counts are inventory evidence, not executable-bank validation, content approval, hosted CI or deployment.
