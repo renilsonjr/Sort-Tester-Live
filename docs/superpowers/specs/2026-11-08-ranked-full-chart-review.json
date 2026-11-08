@@ -2,12 +2,12 @@
   "status": "Review-only inventory; not an executable or owner-approved full Ranked bank",
   "sourceRevision": "twilight-2026-11-08-r2",
   "existingApprovalsPreserved": 17,
-  "remainingDifficultyReviews": 202,
+  "remainingDifficultyReviews": 194,
   "scopeNote": "Every source row plus four explicit NY109 destination+1 service contexts. Raw review entries can require canonical merges/splits or clarified exception scope; not a proven unique-question count.",
   "countsByService": {
     "Ground": {
-      "owner-approved": 73,
-      "proposed": 16
+      "owner-approved": 81,
+      "proposed": 8
     },
     "3 Day Select": {
       "proposed": 82,
@@ -1342,11 +1342,12 @@
       "provenance": "owner-override-3",
       "destinationModifier": null,
       "difficulty": "Medium",
-      "difficultyStatus": "proposed",
-      "difficultyReason": "Assistant revised this proposal after the owner rated the preceding NJ batch Easy; ORANGE079 9 is proposed Medium. This is not owner approval.",
+      "difficultyStatus": "owner-approved",
+      "difficultyReason": "Owner explicitly approved this recorded difficulty; question wording, explanations and any ambiguous source notation remain pending.",
       "wordingStatus": "not-yet-reviewed",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
-      "reviewNotes": []
+      "reviewNotes": [],
+      "approvedReview": "G65"
     },
     {
       "id": "ground-exceptions-nj-0819",
@@ -1358,11 +1359,12 @@
       "provenance": "photo",
       "destinationModifier": null,
       "difficulty": "Easy",
-      "difficultyStatus": "proposed",
-      "difficultyReason": "Assistant revised this proposal after the owner rated the preceding NJ batch Easy; ORANGE079 9 is proposed Medium. This is not owner approval.",
+      "difficultyStatus": "owner-approved",
+      "difficultyReason": "Owner explicitly approved this recorded difficulty; question wording, explanations and any ambiguous source notation remain pending.",
       "wordingStatus": "not-yet-reviewed",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
-      "reviewNotes": []
+      "reviewNotes": [],
+      "approvedReview": "G66"
     },
     {
       "id": "ground-exceptions-nj-0829",
@@ -1374,11 +1376,12 @@
       "provenance": "owner-override-3",
       "destinationModifier": null,
       "difficulty": "Easy",
-      "difficultyStatus": "proposed",
-      "difficultyReason": "Assistant revised this proposal after the owner rated the preceding NJ batch Easy; ORANGE079 9 is proposed Medium. This is not owner approval.",
+      "difficultyStatus": "owner-approved",
+      "difficultyReason": "Owner explicitly approved this recorded difficulty; question wording, explanations and any ambiguous source notation remain pending.",
       "wordingStatus": "not-yet-reviewed",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
-      "reviewNotes": []
+      "reviewNotes": [],
+      "approvedReview": "G67"
     },
     {
       "id": "ground-exceptions-nj-0839",
@@ -1390,11 +1393,12 @@
       "provenance": "owner-override-3",
       "destinationModifier": null,
       "difficulty": "Easy",
-      "difficultyStatus": "proposed",
-      "difficultyReason": "Assistant revised this proposal after the owner rated the preceding NJ batch Easy; ORANGE079 9 is proposed Medium. This is not owner approval.",
+      "difficultyStatus": "owner-approved",
+      "difficultyReason": "Owner explicitly approved this recorded difficulty; question wording, explanations and any ambiguous source notation remain pending.",
       "wordingStatus": "not-yet-reviewed",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
-      "reviewNotes": []
+      "reviewNotes": [],
+      "approvedReview": "G68"
     },
     {
       "id": "ground-exceptions-nj-0860",
@@ -1406,11 +1410,12 @@
       "provenance": "photo",
       "destinationModifier": null,
       "difficulty": "Easy",
-      "difficultyStatus": "proposed",
-      "difficultyReason": "Assistant revised this proposal after the owner rated the preceding NJ batch Easy; ORANGE079 9 is proposed Medium. This is not owner approval.",
+      "difficultyStatus": "owner-approved",
+      "difficultyReason": "Owner explicitly approved this recorded difficulty; question wording, explanations and any ambiguous source notation remain pending.",
       "wordingStatus": "not-yet-reviewed",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
-      "reviewNotes": []
+      "reviewNotes": [],
+      "approvedReview": "G69"
     },
     {
       "id": "ground-exceptions-nj-0871",
@@ -1422,11 +1427,12 @@
       "provenance": "photo",
       "destinationModifier": null,
       "difficulty": "Easy",
-      "difficultyStatus": "proposed",
-      "difficultyReason": "Assistant revised this proposal after the owner rated the preceding NJ batch Easy; ORANGE079 9 is proposed Medium. This is not owner approval.",
+      "difficultyStatus": "owner-approved",
+      "difficultyReason": "Owner explicitly approved this recorded difficulty; question wording, explanations and any ambiguous source notation remain pending.",
       "wordingStatus": "not-yet-reviewed",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
-      "reviewNotes": []
+      "reviewNotes": [],
+      "approvedReview": "G70"
     },
     {
       "id": "ground-exceptions-nj-0889",
@@ -1438,11 +1444,12 @@
       "provenance": "photo",
       "destinationModifier": null,
       "difficulty": "Easy",
-      "difficultyStatus": "proposed",
-      "difficultyReason": "Assistant revised this proposal after the owner rated the preceding NJ batch Easy; ORANGE079 9 is proposed Medium. This is not owner approval.",
+      "difficultyStatus": "owner-approved",
+      "difficultyReason": "Owner explicitly approved this recorded difficulty; question wording, explanations and any ambiguous source notation remain pending.",
       "wordingStatus": "not-yet-reviewed",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
-      "reviewNotes": []
+      "reviewNotes": [],
+      "approvedReview": "G71"
     },
     {
       "id": "ground-exceptions-nj-0899",
@@ -1454,11 +1461,12 @@
       "provenance": "photo",
       "destinationModifier": null,
       "difficulty": "Easy",
-      "difficultyStatus": "proposed",
-      "difficultyReason": "Assistant revised this proposal after the owner rated the preceding NJ batch Easy; ORANGE079 9 is proposed Medium. This is not owner approval.",
+      "difficultyStatus": "owner-approved",
+      "difficultyReason": "Owner explicitly approved this recorded difficulty; question wording, explanations and any ambiguous source notation remain pending.",
       "wordingStatus": "not-yet-reviewed",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
-      "reviewNotes": []
+      "reviewNotes": [],
+      "approvedReview": "G72"
     },
     {
       "id": "ground-exceptions-ne-5753-6",
@@ -5038,5 +5046,5 @@
       "holdReason": "CHECK does not establish a belt; use listed NJ preload exceptions, do not invent an unlisted answer."
     }
   ],
-  "approvedDifficultyCount": 81
+  "approvedDifficultyCount": 89
 }
