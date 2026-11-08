@@ -23,8 +23,8 @@ The following labels were individually reviewed in chat; these rows do not appro
 | Ground | FL320–349 → PINK | Easy |
 | Ground | VT050–059 → GOLD | Easy |
 | Ground | CT060–069 → GOLD | Easy |
-| 2 Day Air | IL600–608 → YELLOW | Medium previously approved; owner subsequently requested Hard Illinois content, exact range scope awaiting confirmation |
-| 2 Day Air | IL609–629 → ORANGE | Medium previously approved; same pending Hard clarification |
+| 2 Day Air | IL600–608 → YELLOW | Hard; owner explicitly reclassified this range from Medium |
+| 2 Day Air | IL609–629 → ORANGE | Hard; owner explicitly reclassified this range from Medium |
 | 3 Day Select | TX770–784 → BLUE | Medium |
 | 2 Day Air | NY140–147 → ORANGE | Medium |
 | 3 Day Select | TX750–768 → BLUE | Medium |
@@ -33,6 +33,8 @@ The following labels were individually reviewed in chat; these rows do not appro
 | Ground | NY109, destination +1 → PURPLE | Hard |
 | Ground | MA025–026 → BLUE | Hard; owner clarified Ground explicitly |
 | 2 Day Air | IN460–479 → ORANGE | Hard requested; owner corrected the answer explicitly |
+
+Reviewed labels now total **five Easy, three Medium and seven Hard**. Two additional Medium scenarios still need owner approval before this initial set can supply five per difficulty; the remaining content/explanation/canonical/version gates also stay open.
 
 The proposed Hard NJ0799 and NDA NY109+1 questions were replaced at the owner's request and are not approved as Hard by this discussion. Work-methods tie content remains a separate open gate. No product difficulty labels or assignment engine are added here.
 
