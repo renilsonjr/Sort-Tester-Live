@@ -1,6 +1,6 @@
 # Full-chart Ranked difficulty review
 
-**Status:** all283 review entries now have explicit owner-approved difficulty labels:103 Easy,127 Medium,53 Hard. The original17 bilingual question approvals are preserved. Four expanded English explanations are now approved;262 English and266 Spanish explanations remain pending, along with canonical/exception checks. See [[2026-11-08-ranked-expanded-wording-review]]. This is review documentation, not an executable bank or a final unique-question count.
+**Status:** all283 review entries now have explicit owner-approved difficulty labels:103 Easy,127 Medium,53 Hard. The original17 bilingual question approvals are preserved. Four expanded bilingual explanations are now approved;262 English and262 Spanish explanations remain pending, along with canonical/exception checks. See [[2026-11-08-ranked-expanded-wording-review]]. This is review documentation, not an executable bank or a final unique-question count.
 
 **Related:** [[2026-11-08-ranked-full-chart-review.json]], [[2026-11-08-ranked-question-wording-review]], [[2026-11-08-ranked-chart-reference]], [[2026-11-08-curated-ranked-bank-design]]. Tracker: [#5](https://github.com/renilsonjr/Sort-Tester-Live/issues/5).
 
@@ -9,7 +9,7 @@
 - Active source: `twilight-2026-11-08-r2`, including owner corrections.
 - 283 source rows; hold four broad NJ CHECK rows without inventing belt answers. Retain listed NJ preload exceptions.
 - 279 belt-bearing source rows plus four NY109 destination+1 service contexts =283 review entries.
-- The original 17 owner-approved labels and bilingual explanations are preserved. Another 266 labels are approved, for 283 approved labels and 0 remaining difficulty proposals. For those additional entries,262 English and266 Spanish explanations remain pending. Source rows are not a proven final unique-scenario count.
+- The original 17 owner-approved labels and bilingual explanations are preserved. Another 266 labels are approved, for 283 approved labels and 0 remaining difficulty proposals. For those additional entries,262 English and262 Spanish explanations remain pending. Source rows are not a proven final unique-scenario count.
 - Question wording, exception exclusions and wildcard coverage still need review for new entries. The six hyphenated Ground codes are now confirmed exact literals, not ranges. A suggestion of Easy never removes an applicable exception.
 - The game still selects15 questions, five per difficulty; expanding the bank increases the possible selections. No17-question runtime limit or fixed-ten-question repetition design remains.
 - Only the work-methods tie-question content is deferred; other tie-break policies remain unchanged.

@@ -1,5 +1,5 @@
 {
-  "status": "Review-only full-chart inventory:283 owner-approved difficulty labels;21 English and17 Spanish explanation approvals. Expanded wording/canonical validation remains incomplete; not an executable bank.",
+  "status": "Review-only full-chart inventory:283 owner-approved difficulty labels;21 entries have owner-approved bilingual explanations. Expanded wording/canonical validation remains incomplete; not an executable bank.",
   "sourceRevision": "twilight-2026-11-08-r2",
   "existingApprovalsPreserved": 17,
   "remainingDifficultyReviews": 0,
@@ -69,7 +69,7 @@
       "difficulty": "Medium",
       "difficultyStatus": "owner-approved",
       "difficultyReason": "Owner approved this difficulty in the first expanded Ground review; wording/explanations remain pending.",
-      "wordingStatus": "english-approved-spanish-pending",
+      "wordingStatus": "owner-approved-bilingual",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [
         "Check applicable exceptions and effective coverage before approving broad-range wording."
@@ -84,7 +84,7 @@
         "es": {
           "prompt": "¿A qué color va?",
           "explanation": "En Terrestre, MA/RI 027–029 va a GOLD.",
-          "approvalStatus": "proposed"
+          "approvalStatus": "owner-approved"
         }
       }
     },
@@ -100,7 +100,7 @@
       "difficulty": "Medium",
       "difficultyStatus": "owner-approved",
       "difficultyReason": "Owner approved this difficulty in the first expanded Ground review; wording/explanations remain pending.",
-      "wordingStatus": "english-approved-spanish-pending",
+      "wordingStatus": "owner-approved-bilingual",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [
         "Check applicable exceptions and effective coverage before approving broad-range wording."
@@ -115,7 +115,7 @@
         "es": {
           "prompt": "¿A qué color va?",
           "explanation": "En Terrestre, NH 030–033 va a BLUE.",
-          "approvalStatus": "proposed"
+          "approvalStatus": "owner-approved"
         }
       }
     },
@@ -131,7 +131,7 @@
       "difficulty": "Hard",
       "difficultyStatus": "owner-approved",
       "difficultyReason": "Owner approved this difficulty in the first expanded Ground review; wording/explanations remain pending.",
-      "wordingStatus": "english-approved-spanish-pending",
+      "wordingStatus": "owner-approved-bilingual",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [],
       "approvedReview": "G03",
@@ -144,7 +144,7 @@
         "es": {
           "prompt": "¿A qué color va?",
           "explanation": "En Terrestre, NH 034 0 va a GOLD. El último dígito importa.",
-          "approvalStatus": "proposed"
+          "approvalStatus": "owner-approved"
         }
       }
     },
@@ -160,7 +160,7 @@
       "difficulty": "Easy",
       "difficultyStatus": "owner-approved",
       "difficultyReason": "Owner approved this difficulty in the first expanded Ground review; wording/explanations remain pending.",
-      "wordingStatus": "english-approved-spanish-pending",
+      "wordingStatus": "owner-approved-bilingual",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [
         "Check applicable exceptions and effective coverage before approving broad-range wording."
@@ -175,7 +175,7 @@
         "es": {
           "prompt": "¿A qué color va?",
           "explanation": "En Terrestre, NH/ME 035–049 va a BLUE.",
-          "approvalStatus": "proposed"
+          "approvalStatus": "owner-approved"
         }
       }
     },
@@ -234,7 +234,19 @@
       "reviewNotes": [
         "Check applicable exceptions and effective coverage before approving broad-range wording."
       ],
-      "approvedReview": "G05"
+      "approvedReview": "G05",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "Ground NY 100–108 goes to YELLOW.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Terrestre, NY 100–108 va a YELLOW.",
+          "approvalStatus": "proposed"
+        }
+      }
     },
     {
       "id": "ground-main-ny-109",
@@ -251,7 +263,19 @@
       "wordingStatus": "not-yet-reviewed",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [],
-      "approvedReview": "G06"
+      "approvedReview": "G06",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "Ground NY 109 goes to ORANGE. A destination marked +1 goes to PURPLE.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Terrestre, NY 109 va a ORANGE. Un destino marcado +1 va a PURPLE.",
+          "approvalStatus": "proposed"
+        }
+      }
     },
     {
       "id": "ground-main-ny-110-119",
@@ -270,7 +294,19 @@
       "reviewNotes": [
         "Check applicable exceptions and effective coverage before approving broad-range wording."
       ],
-      "approvedReview": "G07"
+      "approvedReview": "G07",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "Ground NY 110–119 goes to PINK.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Terrestre, NY 110–119 va a PINK.",
+          "approvalStatus": "proposed"
+        }
+      }
     },
     {
       "id": "ground-main-ny-120-121",
@@ -289,7 +325,19 @@
       "reviewNotes": [
         "Check applicable exceptions and effective coverage before approving broad-range wording."
       ],
-      "approvedReview": "G08"
+      "approvedReview": "G08",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "Ground NY 120–121 goes to GOLD. Both 120 and 121 are included.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Terrestre, NY 120–121 va a GOLD. Se incluyen tanto 120 como 121.",
+          "approvalStatus": "proposed"
+        }
+      }
     },
     {
       "id": "ground-main-ny-122-127",
@@ -5401,9 +5449,9 @@
   },
   "wordingReviewCounts": {
     "enOwnerApproved": 21,
-    "esOwnerApproved": 17,
+    "esOwnerApproved": 21,
     "enPending": 262,
-    "esPending": 266,
-    "bilingualOwnerApproved": 17
+    "esPending": 262,
+    "bilingualOwnerApproved": 21
   }
 }
