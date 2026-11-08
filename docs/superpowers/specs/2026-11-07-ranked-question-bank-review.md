@@ -21,10 +21,16 @@ Across decks: **574 memberships, 374 distinct IDs, 291 heuristic route keys**. N
 
 The heuristic uses service (`GRD` normalized to `GND`), state and destination-code text with dash/whitespace normalization. It omits exception meaning and is not an approved canonical identity scheme. It can collapse distinct contexts or miss equivalent/overlapping scenarios. Existing Basic/Medium/Hard Practice decks overlap and do not establish disjoint owner-approved Ranked difficulties. Existing verification flags/comments do not replace a current chart check. No reviewed separate Hard sort-work-methods tie-break bank has been demonstrated.
 
+## Active reference update — November 8, 2026
+
+The owner replaced the earlier chart with “Talk with Hasan 2.jpeg” and specified Ground NY128–147 GOLD plus the cropped 3 Day Select `* 811–999` PURPLE row. Use [[2026-11-08-ranked-chart-reference]] as the active route source, not the historical photo used in the first comparison above. New photo resolves 2 Day Air GA300–319 to **BLUE**; updating the app's inconsistent PURPLE chart-derived answer is still pending. Other route/exception/explanation differences require a full audit; no chart image is added to this public repository.
+
 ## Owner review gate before Ranked assignment
 
-- [ ] Identify the authoritative current chart/work-method reference and permitted question scope.
-- [ ] Resolve the flagged 2DA/GA range using actual source context; check other overlapping ranges and service aliases.
+- [x] Owner selected the active route-chart reference and two explicit corrections; recorded in [[2026-11-08-ranked-chart-reference]].
+- [ ] Obtain the separate authoritative work-methods content/reference and confirm its permitted question scope.
+- [x] Resolve source answer for flagged 2DA/GA300–319: BLUE in the replacement owner-selected photo.
+- [ ] Review/implement source-consistent code corrections and audit other overlapping ranges, exceptions, explanations and service aliases.
 - [ ] For each canonical scenario, approve the answer, explanation, one Easy/Medium/Hard label and version.
 - [ ] Verify at least five distinct approved scenarios per difficulty; prevent repeated canonical scenarios across the 15-question assignment.
 - [ ] Review and version a separate Hard work-methods pool for shared five-question prize rounds, including fresh sets for additional/outage-replaced rounds.
