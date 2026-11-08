@@ -4,7 +4,7 @@
 
 ## Owner scope expansion — full-chart bank
 
-The owner explicitly requested classifying all usable chart directions to randomize the15-question quiz, preserving the17 existing difficulty approvals without asking to rank them again. The17 are a reviewed subset, not the bank-size limit. [[2026-11-08-ranked-full-chart-review]] accounts for every source row and the four+1 contexts, lists266 new difficulty proposals and keeps four broad-NJ CHECK rows on hold. New labels and wording are not automatically approved. Source entries may need canonical merges/splits or exception clarifications before becoming executable questions. The proposed bank design was revised to this expanded scope; it still needs owner review.
+The owner explicitly requested classifying all usable chart directions to randomize the15-question quiz, preserving the17 existing difficulty approvals without asking to rank them again. The17 are a reviewed subset, not the bank-size limit. [[2026-11-08-ranked-full-chart-review]] accounts for every source row and the four+1 contexts, tracks the new difficulty proposals and subsequent approvals while keeping four broad-NJ CHECK rows on hold. New labels and wording are not automatically approved. Source entries may need canonical merges/splits or exception clarifications before becoming executable questions. The proposed bank design was revised to this expanded scope; it still needs owner review.
 
 ## Subsequent owner decisions — November 8, after PR #31 merge
 
