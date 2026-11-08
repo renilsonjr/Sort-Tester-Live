@@ -1,6 +1,6 @@
 # Full-chart Ranked difficulty review
 
-**Status:** all 283 review entries retain approved difficulty labels: 103 Easy, 127 Medium, 53 Hard.263 entries now have approved English/Spanish explanations, including the original 17 and the 32 specific-code/named-destination cases. Twenty broad-range wording cases and canonical/exception validation remain open, including four cross-state applicability pairs. See [[2026-11-08-ranked-expanded-wording-review]]. This is review documentation, not an executable bank or final unique-question count.
+**Status:** all 283 review entries retain approved difficulty labels:103 Easy,127 Medium,53 Hard.263 entries have approved English/Spanish explanations. Twenty broad-range presentation/wording cases and canonical validation remain open. Listed exact-code precedence across different printed state labels is now owner-approved. See [[2026-11-08-ranked-expanded-wording-review]]. This is review documentation, not an executable bank or final unique-question count.
 
 **Related:** [[2026-11-08-ranked-full-chart-review.json]], [[2026-11-08-ranked-question-wording-review]], [[2026-11-08-ranked-chart-reference]], [[2026-11-08-curated-ranked-bank-design]]. Tracker: [#5](https://github.com/renilsonjr/Sort-Tester-Live/issues/5).
 
@@ -342,6 +342,10 @@ The owner confirmed that EAM appears in the destination/service field as **Next 
 ## Confirmed +1 rule — any state
 
 Destination **+1 → PURPLE for any state**, across Ground,3 Day Select,2 Day Air and Next Day Air. The current four NY109 examples are authored examples of that general rule, not a New York-only or109-only restriction. Keep+1 in the destination/service field and routing code separate. All four existing example answers and Hard labels are unchanged. This clarifies rule scope; it does not inflate the283-entry ledger or approve additional canonical variants. Unapproved conflicting-marker precedence remains undecided.
+
+## Confirmed listed-exception precedence across state labels
+
+A listed exact-code exception takes priority over a covered broad prefix range even when their printed state labels differ. Preserve both labels and the literal code; the mismatch does not defeat the explicit exception. Apply within the same base service/destination context. This approves the coverage relationship, not unrelated marker precedence or a policy of ignoring state labels everywhere. Broad-question wording/presentation and executable validation remain pending.
 
 ## Held source rows
 

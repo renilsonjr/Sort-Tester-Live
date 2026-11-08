@@ -1,5 +1,5 @@
 {
-  "status": "Review-only full-chart inventory:283 approved difficulty labels;263 approved bilingual explanations. Twenty broad-range entries await coverage/wording review. Cross-state exact-code exception applicability needs owner clarification. Canonical validation remains incomplete; not an executable bank.",
+  "status": "Review-only full-chart inventory:283 approved difficulty labels;263 approved bilingual explanations. Twenty broad-range entries await presentation/wording review. Listed exact-code precedence across different printed state labels is owner-approved. Canonical validation remains incomplete; not an executable bank.",
   "sourceRevision": "twilight-2026-11-08-r2",
   "existingApprovalsPreserved": 17,
   "remainingDifficultyReviews": 0,
@@ -1515,11 +1515,18 @@
       "wordingStatus": "not-yet-reviewed",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [
-        "Check applicable exceptions and effective coverage before approving broad-range wording."
+        "Check applicable exceptions and effective coverage before approving broad-range wording.",
+        "Owner confirmed the listed exact-code exception takes priority despite different printed state labels; the broad question must exclude that exact code."
       ],
       "approvedReview": "G45",
       "wordingReviewGroup": "focused-review",
-      "wordingReviewReason": "Conservative prefix-overlap hold for G74: verify actual state/context applicability before drafting exclusions."
+      "wordingReviewReason": "Conservative prefix-overlap hold for G74: verify actual state/context applicability before drafting exclusions.",
+      "coverageInterpretation": {
+        "status": "owner-approved-exception-precedence",
+        "listedExactExceptionReviewRef": "G74",
+        "differentPrintedStateLabelsAllowed": true,
+        "scope": "Exclude the listed exact literal from covered broad-prefix question coverage; retain source labels and literal punctuation."
+      }
     },
     {
       "id": "ground-main-ut-840-849",
@@ -1536,11 +1543,18 @@
       "wordingStatus": "not-yet-reviewed",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [
-        "Check applicable exceptions and effective coverage before approving broad-range wording."
+        "Check applicable exceptions and effective coverage before approving broad-range wording.",
+        "Owner confirmed the listed exact-code exception takes priority despite different printed state labels; the broad question must exclude that exact code."
       ],
       "approvedReview": "G46",
       "wordingReviewGroup": "focused-review",
-      "wordingReviewReason": "Conservative prefix-overlap hold for G75: verify actual state/context applicability before drafting exclusions."
+      "wordingReviewReason": "Conservative prefix-overlap hold for G75: verify actual state/context applicability before drafting exclusions.",
+      "coverageInterpretation": {
+        "status": "owner-approved-exception-precedence",
+        "listedExactExceptionReviewRef": "G75",
+        "differentPrintedStateLabelsAllowed": true,
+        "scope": "Exclude the listed exact literal from covered broad-prefix question coverage; retain source labels and literal punctuation."
+      }
     },
     {
       "id": "ground-main-aznm-850-884",
@@ -1557,11 +1571,18 @@
       "wordingStatus": "not-yet-reviewed",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [
-        "Check applicable exceptions and effective coverage before approving broad-range wording."
+        "Check applicable exceptions and effective coverage before approving broad-range wording.",
+        "Owner confirmed the listed exact-code exception takes priority despite different printed state labels; the broad question must exclude that exact code."
       ],
       "approvedReview": "G47",
       "wordingReviewGroup": "focused-review",
-      "wordingReviewReason": "Conservative prefix-overlap hold for G76: verify actual state/context applicability before drafting exclusions."
+      "wordingReviewReason": "Conservative prefix-overlap hold for G76: verify actual state/context applicability before drafting exclusions.",
+      "coverageInterpretation": {
+        "status": "owner-approved-exception-precedence",
+        "listedExactExceptionReviewRef": "G76",
+        "differentPrintedStateLabelsAllowed": true,
+        "scope": "Exclude the listed exact literal from covered broad-prefix question coverage; retain source labels and literal punctuation."
+      }
     },
     {
       "id": "ground-main-nv-889-891",
@@ -1631,11 +1652,18 @@
       "wordingStatus": "not-yet-reviewed",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [
-        "Check applicable exceptions and effective coverage before approving broad-range wording."
+        "Check applicable exceptions and effective coverage before approving broad-range wording.",
+        "Owner confirmed the listed exact-code exception takes priority despite different printed state labels; the broad question must exclude that exact code."
       ],
       "approvedReview": "G50",
       "wordingReviewGroup": "focused-review",
-      "wordingReviewReason": "Conservative prefix-overlap hold for G78: verify actual state/context applicability before drafting exclusions."
+      "wordingReviewReason": "Conservative prefix-overlap hold for G78: verify actual state/context applicability before drafting exclusions.",
+      "coverageInterpretation": {
+        "status": "owner-approved-exception-precedence",
+        "listedExactExceptionReviewRef": "G78",
+        "differentPrintedStateLabelsAllowed": true,
+        "scope": "Exclude the listed exact literal from covered broad-prefix question coverage; retain source labels and literal punctuation."
+      }
     },
     {
       "id": "ground-main-ca-936-961",
@@ -8943,10 +8971,11 @@
       "approvalScope": "Owner explicitly approved all32 explanations in both languages:27 specific codes and five named destinations. Answers, displayed code literals and difficulty labels remain unchanged."
     }
   ],
-  "pendingCoverageQuestions": [
+  "pendingCoverageQuestions": [],
+  "coverageDecisions": [
     {
       "id": "cross-state-literal-precedence",
-      "status": "awaiting-owner-decision",
+      "status": "owner-approved",
       "question": "Do listed exact-code exceptions override a broad routing-prefix range even when the chart state labels differ?",
       "cases": [
         {
@@ -8966,7 +8995,24 @@
           "exceptionReviewRef": "G78"
         }
       ],
-      "scopeNote": "Earlier approval to exclude applicable answer-changing exceptions remains settled. This asks which exceptions are applicable across different printed state labels; no answer or runtime rule is inferred."
+      "scopeNote": "Same base service and destination context; the state-label mismatch must not defeat an explicitly listed exact-code exception. This does not decide unrelated marker combinations or erase state labels from every canonical identity.",
+      "answer": "Listed exact-code exceptions override covered broad routing-prefix ranges even when their printed state labels differ. Keep the source labels and literal codes unchanged; exclude the exception from the broad question coverage."
+    }
+  ],
+  "pendingBankDecisions": [
+    {
+      "id": "broad-range-question-presentation",
+      "status": "awaiting-owner-decision",
+      "question": "Display a concrete unambiguous code drawn from each reviewed range, or the complete range with every explicit exclusion?",
+      "recommended": "concrete-code-example",
+      "example": {
+        "sourceReviewRef": "S47",
+        "sourceRange": "811–999",
+        "proposedDisplayedCode": "900",
+        "expectedBelt": "PURPLE",
+        "listedExceptionCount": 7
+      },
+      "scopeNote": "A representative code would remain linked to the original chart rule and approved difficulty, not create additional independent questions. The choice, wording and runtime generation are not yet approved or implemented."
     }
   ]
 }

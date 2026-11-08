@@ -1,6 +1,6 @@
 # Expanded Ranked question wording review
 
-**Status:** 263 entries have approved English/Spanish explanations; all 283 difficulty labels remain settled. Twenty broad-range entries await coverage/wording review. The 32-entry specific-code/named-destination batch is approved. Four cross-state range/exception pairs need applicability clarification before drafting exclusions. Original 17 approvals are preserved. No product code or executable bank is created here.
+**Status:** 263 entries have approved English/Spanish explanations; all 283 difficulty labels remain settled. Twenty broad-range entries await presentation/wording review. The owner confirmed listed exact-code exception precedence across different printed state labels. Question presentation under the ten-second timer remains open. Original 17 approvals are preserved. No product code or executable bank is created here.
 
 **Related:** [[2026-11-08-ranked-full-chart-review]], [[2026-11-08-ranked-full-chart-review.json]], [[2026-11-08-ranked-question-wording-review]], [[2026-11-08-ranked-chart-reference]], [[2026-11-08-curated-ranked-bank-design]]. Tracker: [#5](https://github.com/renilsonjr/Sort-Tester-Live/issues/5), [PR #32](https://github.com/renilsonjr/Sort-Tester-Live/pull/32).
 
@@ -388,9 +388,9 @@ These 20 broad-range entries remain pending coverage/wording review. No explanat
 | D40 | 2 Day Air | * 750–999 | PURPLE | Wildcard or named destination: review its scope and any explicit exception wording. |
 | N24 | Next Day Air | * 220–999 | PURPLE | Wildcard or named destination: review its scope and any explicit exception wording. |
 
-## Pending coverage decision — different printed state labels
+## Approved coverage decision — different printed state labels
 
-The owner already approved explicit exclusions for applicable answer-changing exceptions. The unresolved boundary is applicability when the printed state label differs between a broad row and a listed exact-code exception. Do not assume the label is either an independent matching condition or only a chart grouping without owner clarification. Prefix overlap alone is not an approved precedence rule.
+The owner explicitly confirmed that a listed exact-code exception overrides a covered broad prefix range even when the printed state labels differ, within the same service/destination context. Preserve the source labels and complete exact-code literals; exclude these codes from the broad question coverage. This clarification does not erase state labels from unrelated canonical identities or decide combined-marker precedence.
 
 | Broad Ground row | Broad answer | Listed exact-code exception | Exception answer |
 | --- | --- | --- | --- |
@@ -399,8 +399,19 @@ The owner already approved explicit exclusions for applicable answer-changing ex
 | AZ, NM 850–884 (G47) | BLUE | NV 864 4-7 (G76) | ORANGE |
 | CA 900–935 (G50) | RED | AZ 922 2-0 (G78) | BLUE |
 
-- [ ] Owner clarifies whether these listed exact-code exceptions override the broad prefix ranges across different printed state labels.
+- [x] Owner confirmed listed exact-code exceptions take priority across different printed state labels.
+
+## Pending presentation decision — broad ranges under the timer
+
+The approved Ranked timer remains ten seconds per question. Some source ranges need long exclusion lists:3 Day Select811–999 PURPLE has seven listed exact-code exceptions, all ORANGE. Listing all seven inside a timed question could create a reading burden. This is an assistant usability assessment, not a changed competition rule.
+
+Two approaches are proposed for owner choice:
+
+1. **Concrete unambiguous code example — assistant recommendation.** Keep the full reviewed range/exception rule in the bank, but show one code whose coverage has been validated (e.g.3 Day Select900 → PURPLE for source S47). Keep the original approved difficulty and source/canonical association; do not count generated variants as extra independent assignment slots. Exceptions retain their separate reviewed questions. The choice of concrete examples and final copy need review before runtime use.
+2. **Full range with explicit exclusions.** Show the complete range and every applicable excluded code in the question, preserving the earlier broad-question exclusion policy. This teaches the whole range directly but can produce long prompts under the fixed timer.
+
+No choice is inferred. Runtime generation, example content and final bilingual wording are not implemented or automatically approved. All20 remaining range questions stay pending until presentation/coverage/copy review is complete.
 
 ## Current wording counts
 
-Including the original 17: 263 English and 263 Spanish explanations are approved, with 20 pending in each language. Only broad-range coverage/wording remains; four cross-state range/exception pairs are explicitly awaiting clarification. All 283 answers/difficulty labels are unchanged. Only work-methods tie-question content is deferred; other tie-break policies remain unchanged.
+Including the original 17: 263 English and 263 Spanish explanations are approved, with 20 pending in each language. Only broad-range presentation/wording remains; listed exact-code precedence across different printed state labels is settled. All 283 answers/difficulty labels are unchanged. Only work-methods tie-question content is deferred; other tie-break policies remain unchanged.

@@ -34,6 +34,10 @@ Ground `NE 575 3-6`, `NV 833 9-7`, `AZ 847 2-7`, `NV 864 4-7`, `NV 890 0-0` and 
 
 The chart entry **ALL 1DA EAM → PURPLE** denotes a Next Day Air service context. The owner confirmed EAM is shown in the destination/service field as **Next Day Air EAM**, keeping routing code separate, as with the separation used for+1. Its answer remains PURPLE and its approved difficulty remains Hard. Preserve the chart transcription for source traceability; do not display ALL 1DA EAM as a routing code in future Ranked questions. Ordinary Next Day Air and EAM are distinct contexts. No compound EAM/+1/suffix question or precedence has been approved.
 
+### Owner clarification — listed exception priority across printed state labels
+
+A listed exact-code exception overrides its covered broad prefix range within the same service/destination context even when their printed state labels differ. For example, Ground ID832–839 BROWN excludes the listed NV833 9-7 ORANGE code. The same confirmed policy covers UT840–849 versus AZ847 2-7 BLUE, AZ/NM850–884 versus NV864 4-7 ORANGE, and CA900–935 versus AZ922 2-0 BLUE. Preserve source labels and literal punctuation. This clarifies effective coverage without changing any primary-row answer, exact-code answer or approved difficulty. It does not settle unrelated combined modifiers. Final range presentation/wording and runtime validation remain open.
+
 ### +1 scope and implemented branch behavior
 
 The owner approved the plan in [[2026-11-08-chart-corrections-and-destination-plus-one]] and coverage in **Practice and the future Ranked bank**. The rule applies to any state; the four existing NY109 candidates are examples, not a scope restriction. Four explicit NY109 candidates now store optional `destinationModifier: '+1'` separately from unchanged base `svc` and routing `code`; each answer is PURPLE. The destination label shows e.g. **Ground +1 · NY**, while routing code stays **109**. The metadata survives translated questions/feedback, response records, saved results and workbook Service text. Old saved results without metadata retain their historical answers/counts and render normally.
