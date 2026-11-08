@@ -2,6 +2,10 @@
 
 **Status, November 8, 2026:** Chart corrections and destination +1 are implemented and locally verified on `codex/ranked-mode` through application commit `929f189`. They are **not live or published**. Counts are candidate inventory, not owner-approved Ranked content. Implementation owner: [#5](https://github.com/renilsonjr/Sort-Tester-Live/issues/5). Policy: [[2026-11-07-ranked-decision-record]]; proposed versioning: [[2026-11-07-ranked-security-operations-design]]. Active source: [[2026-11-08-ranked-chart-reference]]; implementation plan: [[2026-11-08-chart-corrections-and-destination-plus-one]].
 
+## Owner scope expansion — full-chart bank
+
+The owner explicitly requested classifying all usable chart directions to randomize the15-question quiz, preserving the17 existing difficulty approvals without asking to rank them again. The17 are a reviewed subset, not the bank-size limit. [[2026-11-08-ranked-full-chart-review]] accounts for every source row and the four+1 contexts, lists266 new difficulty proposals and keeps four broad-NJ CHECK rows on hold. New labels and wording are not automatically approved. Source entries may need canonical merges/splits or exception clarifications before becoming executable questions. The proposed bank design was revised to this expanded scope; it still needs owner review.
+
 ## Subsequent owner decisions — November 8, after PR #31 merge
 
 PR #31 is merged and deployed. The r1 evidence below is historical; the subsequent 2DA Indiana ORANGE correction is pending review/publication as source revision `twilight-2026-11-08-r2`. Source details: [[2026-11-08-ranked-chart-reference]].
