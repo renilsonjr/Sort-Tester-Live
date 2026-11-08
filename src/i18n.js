@@ -1,4 +1,4 @@
-import { CHART, STATE_NAMES_ES } from './chart.js?v=tn-370-brown-20261105';
+import { CHART, STATE_NAMES_ES } from './chart.js?v=chart-destination-20261108';
 
 const KEY = 'sortTest.language.v1';
 
@@ -13,7 +13,7 @@ const ES = {
   'the chart.': 'la tabla.',
   'Learn the belt. Then test your recall.': 'Aprende el color. Luego comprueba lo que recuerdas.',
   'Recent sort changes': 'Cambios recientes de clasificación',
-  'Next Day Air stays PURPLE. NY 148–149 stays ORANGE, except 148 1 goes GOLD.': 'Aéreo 1 día sigue en PURPLE. NY 148–149 sigue en ORANGE, excepto 148 1, que va a GOLD.',
+  'For NY 140–147, 2 Day Air and 3 Day Select stay ORANGE; Next Day Air stays PURPLE. NY 148–149 stays ORANGE on Ground, 2 Day Air and 3 Day Select, except 148 1 goes GOLD.': 'Para NY 140–147, Aéreo 2 días y Select 3 días siguen en ORANGE; Aéreo 1 día sigue en PURPLE. NY 148–149 sigue en ORANGE en Terrestre, Aéreo 2 días y Select 3 días, excepto 148 1, que va a GOLD.',
   'Where do you want to start?': '¿Por dónde quieres empezar?',
   'Know the chart': 'Conoce la tabla',
   'Browse every service by state and ZIP range.': 'Consulta cada servicio por estado y rango de ZIP.',
@@ -125,7 +125,9 @@ const DETAIL_ES = {
   'Ground exception': 'Excepción de Ground',
   'Ground, 2 Day Air, 3 Day Select only': 'Solo terrestre, aéreo de 2 días y Select de 3 días',
   'NJ list': 'Lista de Nueva Jersey',
-  'Only orange NJ code': 'Único código de NJ que va a ORANGE',
+  'Listed NJ preload exception': 'Excepción indicada en la lista de precarga de NJ',
+  'Use listed NJ preload codes': 'Consulta los códigos indicados en la lista de precarga de NJ',
+  'Ground-only owner correction': 'Corrección confirmada solo para el servicio terrestre',
   'Single-code exception': 'Excepción de un solo código',
   'Sort change': 'Cambio de clasificación',
   'Sort change; overrides BROWN': 'Cambio de clasificación; reemplaza BROWN',
@@ -173,12 +175,15 @@ export function createLanguage(storage) {
       return source.split(',').map(part => STATE_NAMES_ES[part.trim()] ?? part.trim()).join(', ');
     },
     explanation(response) {
+      if (response.destinationModifier === '+1') return code === 'es'
+        ? 'El indicador de destino +1 va a PURPLE en los cuatro servicios. El código de ruta no cambia.'
+        : 'The destination indicator +1 goes to PURPLE on all four services. The routing code stays unchanged.';
       if (code !== 'es') return response.why;
       if (response.code.endsWith('2S')) return 'La terminación 2S va a BLUE en todos los servicios, sin importar el rango ZIP.';
       if (response.code.endsWith('1S')) return 'La terminación 1S va a PURPLE en todos los servicios, sin importar el rango ZIP.';
       if (response.state === 'NJ') return response.code === '079 9'
-        ? '079 9 es la excepción de Nueva Jersey: ORANGE en lugar de RED.'
-        : 'Nueva Jersey va a RED. Solo 079 9 va a ORANGE.';
+        ? 'El código de precarga de Nueva Jersey 079 9 va a ORANGE en todos los servicios.'
+        : `El código de precarga de Nueva Jersey ${response.code} va a ${response.correctBelt}. Consulta la lista de precarga; el rango general de NJ indica CHECK.`;
       const service = { GND: 'Ground', GRD: 'Ground', NDA: 'Next Day Air', '2DA': '2 Day Air', '3DS': '3 Day Select', ALL: 'All Services' }[response.svc];
       const normalize = value => String(value).replace(/[^A-Z0-9]/gi, '').toUpperCase();
       const section = CHART[service];

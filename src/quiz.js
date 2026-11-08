@@ -53,6 +53,8 @@ function record(run, outcome, answered, elapsedMs) {
     svc: card.svc,
     state: card.state,
     code: card.code,
+    ...(card.destinationModifier === undefined ? {} : { destinationModifier: card.destinationModifier }),
+    ...(card.referenceVersion === undefined ? {} : { referenceVersion: card.referenceVersion }),
     correctBelt: card.belt,
     why: card.why,
     answered,

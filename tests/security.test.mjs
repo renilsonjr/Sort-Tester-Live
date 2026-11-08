@@ -1,10 +1,14 @@
-import test from 'node:test';
+import test, { after } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { runInNewContext } from 'node:vm';
 const shiftLogSource = readFileSync(new URL('../src/shiftLog.js', import.meta.url));
 const { createShiftLog } = await import(`data:text/javascript;base64,${shiftLogSource.toString('base64')}`);
-const createLanguage = () => ({ code: 'en', text: (value) => value });
+import { loadAppModules } from './helpers/load-app-modules.mjs';
+const { modules: [{ createLanguage }, { SERVICE_LABEL }, destination], cleanup } = await loadAppModules([
+  'src/i18n.js', 'src/questions.js', 'src/destination.js',
+]);
+after(cleanup);
 
 // Exercise the real log renderer with a minimal DOM sink. Passive markup is
 // enough to detect HTML interpretation; no executable payload is needed.
@@ -40,7 +44,7 @@ function renderSavedLog(overrides = {}) {
   };
   runInNewContext(`${source}\nshowLog();`, {
     document, window: { scrollTo() {} }, localStorage: storage,
-    createShiftLog, createLanguage,
+    createShiftLog, createLanguage, SERVICE_LABEL, ...destination,
   });
   return markup;
 }
@@ -61,4 +65,14 @@ test('names remain escaped when loaded from local storage', () => {
   const markup = renderSavedLog({ name: marker });
   assert.ok(!markup.includes(marker));
   assert.match(markup, /&lt;b data-security-probe&gt;name&lt;\/b&gt;/);
+});
+
+test('stored service and destination modifier stay escaped in saved missorts', () => {
+  const service = '<b data-security-probe>service</b>';
+  const modifier = '<b data-security-probe>modifier</b>';
+  const markup = renderSavedLog({ missed: [{ svc: service, destinationModifier: modifier, state: 'NY', code: '109', outcome: 'wrong', answered: 'BLUE', correctBelt: 'PURPLE' }] });
+  assert.ok(!markup.includes(service));
+  assert.ok(!markup.includes(modifier));
+  assert.match(markup, /&lt;b data-security-probe&gt;service&lt;\/b&gt;/);
+  assert.match(markup, /&lt;b data-security-probe&gt;modifier&lt;\/b&gt;/);
 });

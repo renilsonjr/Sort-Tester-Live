@@ -1,33 +1,57 @@
 # Ranked question bank — candidate inventory and owner review
 
-**Status:** Read-only inventory of current Practice sources on November 7, 2026. No answer, difficulty or work-methods content is approved by this inventory. Implementation owner: [#5](https://github.com/renilsonjr/Sort-Tester-Live/issues/5). Policy: [[2026-11-07-ranked-decision-record]]; proposed versioning: [[2026-11-07-ranked-security-operations-design]].
+**Status, November 8, 2026:** Chart corrections and destination +1 are implemented and locally verified on `codex/ranked-mode` through application commit `929f189`. They are **not live or published**. Counts are candidate inventory, not owner-approved Ranked content. Implementation owner: [#5](https://github.com/renilsonjr/Sort-Tester-Live/issues/5). Policy: [[2026-11-07-ranked-decision-record]]; proposed versioning: [[2026-11-07-ranked-security-operations-design]]. Active source: [[2026-11-08-ranked-chart-reference]]; implementation plan: [[2026-11-08-chart-corrections-and-destination-plus-one]].
 
-Source snapshot: commit `7c3f7a43c6b9e1e671f08c84539684d9373cc801`; no application source changed during this review. Loaded `src/decks.js` and its imports in an isolated Node VM module context without changing the application. Counts describe full candidate arrays, not the number of questions in a Practice run. Decks overlap; do not add their rows to claim a unique bank.
+## Current branch inventory — November 8, 2026
 
-| Practice deck | Candidate memberships | Distinct IDs within deck | Heuristic route keys within deck |
-| --- | --- | --- | --- |
-| Basic | 26 | 26 | 26 |
-| Medium | 185 | 185 | 185 |
-| Hard | 279 | 279 | 279 |
-| Common Missorts · Set 1 | 14 | 14 | 14 |
-| Common Missorts · Set 2 | 14 | 14 | 14 |
-| Common Missorts · Mixed | 16 | 16 | 16 |
-| New York | 10 | 10 | 10 |
-| Next Day Air | 10 | 10 | 10 |
-| 2 Day Air | 10 | 10 | 10 |
-| 3 Day Select | 10 | 10 | 10 |
+Loaded the real `src/decks.js` and `src/chart.js` modules with `tests/helpers/load-app-modules.mjs` in a temporary ESM sandbox at `929f189`. Every current card carries source provenance `twilight-2026-11-08-r1`. Candidate arrays overlap; their memberships are not unique scenarios or per-run counts.
 
-Across decks: **574 memberships, 374 distinct IDs, 291 heuristic route keys**. No ID had conflicting route/answer combinations under this scan. One normalized route key has multiple belt values: **2DA / GA / 300–319 → PURPLE and BLUE**. The chart-derived main row in `src/chart.js` uses PURPLE; the explicit mixed-deck card `2da-ga-300-319` in `src/decks.js` uses BLUE. This is a review flag, not proof either answer is correct: inspect the authoritative chart, exceptions and context before deciding.
+| Practice deck | Candidate memberships | Distinct IDs within deck | Route-only heuristic keys | Destination-aware heuristic keys | Questions per run |
+| --- | --- | --- | --- | --- | --- |
+| Basic | 26 | 26 | 26 | 26 | 15 |
+| Medium | 185 | 185 | 185 | 185 | 20 |
+| Hard | 279 | 279 | 279 | 279 | 30 |
+| Common Missorts · Set 1 | 18 | 18 | 18 | 18 | 14 |
+| Common Missorts · Set 2 | 18 | 18 | 18 | 18 | 14 |
+| Common Missorts · Mixed | 17 | 17 | 17 | 17 | 16 |
+| New York | 10 | 10 | 10 | 10 | 10 |
+| Next Day Air | 10 | 10 | 10 | 10 | 10 |
+| 2 Day Air | 10 | 10 | 10 | 10 | 10 |
+| 3 Day Select | 10 | 10 | 10 | 10 | 10 |
 
-The heuristic uses service (`GRD` normalized to `GND`), state and destination-code text with dash/whitespace normalization. It omits exception meaning and is not an approved canonical identity scheme. It can collapse distinct contexts or miss equivalent/overlapping scenarios. Existing Basic/Medium/Hard Practice decks overlap and do not establish disjoint owner-approved Ranked difficulties. Existing verification flags/comments do not replace a current chart check. No reviewed separate Hard sort-work-methods tie-break bank has been demonstrated.
+Across decks: **583 memberships, 379 distinct IDs, 292 route-only heuristic keys and 296 destination-aware heuristic keys**. The four +1 scenario IDs appear in both Common pools: eight memberships, four distinct IDs. Each Common run reserves at least one +1 card while keeping 14 questions. Mixed contains the two corrected Illinois spans and retains a 16-question run from its 17-card pool.
+
+The route-only heuristic combines service (`GRD` normalized to `GND`), state and routing-code text; Unicode dashes become ASCII hyphens and whitespace is collapsed/trimmed. The destination-aware heuristic additionally includes the optional destination modifier. The old key now conflates four NY109 pairs: ordinary ORANGE and destination +1 PURPLE, one per service. These are intentional separate contexts, not conflicting answers. The destination-aware scan found no key with multiple belts, and no ID with multiple destination/answer combinations.
+
+**Neither heuristic is an owner-approved canonical identity or deduplication policy.** They can miss equivalent/overlapping ranges or collapse other contextual distinctions. There is no approved unique Ranked-scenario count yet. Basic/Medium/Hard Practice pools overlap and do not establish disjoint owner-approved Ranked difficulty labels. Source provenance and existing `verified` flags do not confer that approval.
+
+## Implemented corrections and verification
+
+The independent active-reference fixture contains 283 main/exception rows. Source/card checks cover the full matrix and retained owner exceptions. On this branch, 2DA GA300–319 is BLUE; IL600–608 is YELLOW and 609–629 ORANGE; the ambiguous Mixed IL600–619 card is replaced by separate 600–608 and 609–619 cards. 3DS TX750–768 and 770–784 are BLUE. Ground-only NY140–147 GOLD no longer leaks to 2DA/3DS, which remain ORANGE. The retained NJ/TN/NY/1S/2S exceptions and cropped 3DS 811–999 PURPLE are covered.
+
+Destination +1 is separate metadata for all four base services, using NY109/PURPLE candidates; routing code remains 109. It persists through translated questions, feedback, saved results and workbook Service text. Legacy saved results retain their historical answers/counts. No +1/conflicting 2S scenarios were authored, and no broad answer for unlisted NJ codes was invented.
+
+Local final verification at application head `929f189`: `node --test tests/*.test.mjs` **382/382 passing**; backend unittest discovery **10/10 passing**; `pip check` reports no broken requirements. `git diff --check` is clean. Backend checks verify the existing foundation; they do not substitute for content/display tests.
+
+Actual Chrome acceptance used fictional local records: legacy 5/10 survived reload, and a new 14-question Common run ended 5/14 with all four +1 services observed. English/Spanish question and feedback changes, wrong answers, timeout, saved history and reload worked. At 390×844 the page width remained 390 without horizontal overflow; basic Tab/Enter interaction worked. This is limited keyboard/mobile coverage, not an accessibility audit or physical-phone test.
+
+A real 24,401-byte XLSX was downloaded and reopened as ZIP/XML: two results and 14 missorts, including four translated +1 Service rows with Routing code 109 and correct belt PURPLE, one recording timeout. Finder Quick Look displayed both Results and Missorts; Microsoft Excel/Numbers and a physical Windows UI were not tested. Long existing Test labels can clip at fixed preview column widths; raw values are retained. Browser console warn/error logs were empty during these flows. No chart photo or screenshot is committed. No push, exact-head hosted CI, final whole-branch review, merge or publication is established by this local evidence.
+
+## Historical inventory — November 7, 2026
+
+The read-only snapshot at `7c3f7a43c6b9e1e671f08c84539684d9373cc801` had **574 memberships, 374 distinct IDs and 291 route-only heuristic keys**. Basic/Medium/Hard were 26/185/279; Common 1/2 were 14/14; Mixed 16; NY/NDA/2DA/3DS 10 each. Those historical counts preceded the Illinois split and +1 additions and must not be presented as current.
+
+That scan flagged 2DA/GA300–319 PURPLE in the chart versus BLUE in Mixed. The November 8 owner-selected replacement source resolved BLUE; implementation now matches it. The superseded photo and the historical scan are not the current answer authority.
 
 ## Owner review gate before Ranked assignment
 
-- [ ] Identify the authoritative current chart/work-method reference and permitted question scope.
-- [ ] Resolve the flagged 2DA/GA range using actual source context; check other overlapping ranges and service aliases.
-- [ ] For each canonical scenario, approve the answer, explanation, one Easy/Medium/Hard label and version.
-- [ ] Verify at least five distinct approved scenarios per difficulty; prevent repeated canonical scenarios across the 15-question assignment.
-- [ ] Review and version a separate Hard work-methods pool for shared five-question prize rounds, including fresh sets for additional/outage-replaced rounds.
-- [ ] Re-run the inventory and test sampling/version freezing. Insufficient normal content blocks starting Ranked without a score; insufficient fresh tie content invokes the approved owner-selection fallback.
+- [x] Owner selected the active route reference and confirmed overrides; recorded in [[2026-11-08-ranked-chart-reference]].
+- [x] Resolve 2DA/GA300–319 to BLUE and implement source-consistent corrections, explanation/exception checks and destination +1 support on the branch.
+- [x] Re-run current candidate inventory and verify Practice sampling/run lengths and source-provenance propagation.
+- [ ] Obtain the separate authoritative work-methods content/reference and confirm its permitted question scope.
+- [ ] Approve canonical duplicate identity, answer/explanation, one Easy/Medium/Hard label and version for each Ranked scenario; source provenance alone is insufficient.
+- [ ] Verify at least five distinct approved scenarios per difficulty and prevent repeated canonical scenarios across the 15-question assignment; test Ranked version freezing when implemented.
+- [ ] Review/version a separate Hard work-methods pool for shared five-question prize rounds, with enough fresh sets for additional/outage-replaced rounds.
+- [ ] Complete final whole-branch review, PR update and exact-head hosted checks before owner review/merge. No automatic publication is authorized.
 
-No app content was edited, and Practice remains unchanged. These unchecked items are work in #5, not reasons to invent labels or silently approve answers in this planning PR.
+Issue #5 remains open. Insufficient approved normal content blocks Ranked start without a score; insufficient fresh tie content invokes the approved owner-selection fallback. Passing Practice corrections does not make the Ranked bank usable.

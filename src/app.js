@@ -1,13 +1,14 @@
 import { BELT_STYLE } from './belts.js';
-import { SERVICE_LABEL } from './questions.js?v=tn-370-brown-20261105';
-import { DECKS, deckById, deckLabel } from './decks.js?v=mixed-missorts-20261105';
-import { CARD_SECONDS, createRun, currentCard, answerCard, timeoutCard, summarize } from './quiz.js?v=review-15s';
+import { formatDestinationLabel } from './destination.js?v=chart-destination-20261108';
+import { SERVICE_LABEL } from './questions.js?v=chart-destination-20261108';
+import { DECKS, deckById, deckLabel } from './decks.js?v=chart-destination-20261108';
+import { CARD_SECONDS, createRun, currentCard, answerCard, timeoutCard, summarize } from './quiz.js?v=chart-destination-20261108';
 import { createClock } from './clock.js';
 import { createShiftLog } from './shiftLog.js';
 import { saveWorkbook } from './exportFile.js';
-import { CHART, searchChart } from './study.js?v=tn-370-brown-20261105';
-import { selectLevelCards } from './levels.js?v=tn-370-brown-20261105';
-import { createLanguage } from './i18n.js?v=mixed-missorts-20261105';
+import { CHART, searchChart } from './study.js?v=chart-destination-20261108';
+import { selectLevelCards } from './levels.js?v=chart-destination-20261108';
+import { createLanguage } from './i18n.js?v=chart-destination-20261108';
 
 const app = document.getElementById('app');
 const log = createShiftLog(typeof localStorage === 'undefined' ? null : localStorage);
@@ -81,7 +82,7 @@ function buildWorkbook(entries) {
         Name: s.name || 'Guest',
         Test: s.deck || '',
         Taken: new Date(s.takenAt).toLocaleString(),
-        Service: serviceName(r.svc),
+        Service: serviceName(r.svc, r.destinationModifier),
         State: r.state,
         'Routing code': r.code,
         Answered: r.outcome === 'timeout' ? 'ran out of time' : r.answered,
@@ -116,8 +117,8 @@ function renderRoutingCode(value) {
   return `<span class="sr-only">${esc(start)} to ${esc(end)}</span><span class="range-display" aria-hidden="true"><span class="range-number">${esc(start)}</span><span class="range-dash"></span><span class="range-number">${esc(end)}</span></span>`;
 }
 
-function serviceName(svc) {
-  return language.service(SERVICE_LABEL[svc] || svc);
+function serviceName(svc, destinationModifier) {
+  return formatDestinationLabel(language.service(SERVICE_LABEL[svc] || svc), destinationModifier);
 }
 
 function displayName(name) {
@@ -212,11 +213,11 @@ function showStart() {
         <div class="lab-change-row">
           <div>
             <h2 id="sort-change-title">NY 140–147</h2>
-            <p>${esc([language.service('Ground'), language.service('2 Day Air'), language.service('3 Day Select')].join(' · '))}</p>
+            <p>${esc(language.service('Ground'))}</p>
           </div>
           ${beltChip('GOLD', 'lab-belt-chip')}
         </div>
-        <p class="lab-change-note">${esc(t('Next Day Air stays PURPLE. NY 148–149 stays ORANGE, except 148 1 goes GOLD.'))}</p>
+        <p class="lab-change-note">${esc(t('For NY 140–147, 2 Day Air and 3 Day Select stay ORANGE; Next Day Air stays PURPLE. NY 148–149 stays ORANGE on Ground, 2 Day Air and 3 Day Select, except 148 1 goes GOLD.'))}</p>
       </section>
       <h2 class="lab-section-heading">${esc(t('Where do you want to start?'))}</h2>
       <button id="study" class="lab-choice" type="button">
@@ -337,7 +338,7 @@ function showDeckPicker(name) {
           <button class="deckbtn" data-deck="${deck.id}">
             <span class="dname">${esc(language.deckName(deck))}<em class="dsort">${esc(deck.sort)}</em></span>
             <span class="dblurb">${esc(language.deckBlurb(deck))}</span>
-            <span class="dmeta">${esc(t('{count} cards · {seconds}s each', { count: deck.cards.length, seconds: CARD_SECONDS }))}</span>
+            <span class="dmeta">${esc(t('{count} cards · {seconds}s each', { count: deck.practiceRunSize ?? deck.cards.length, seconds: CARD_SECONDS }))}</span>
           </button>
         ` : `
           <div class="deckbtn locked">
@@ -475,7 +476,7 @@ function showCard() {
       ${quizHeader(cardIndex + 1, run.cards.length, true)}
       ${quizAvatar('thinking')}
       <div class="quiz-route">
-        <div class="p-line">${esc(serviceName(card.svc))} &middot; ${esc(card.state)}</div>
+        <div class="p-line">${esc(serviceName(card.svc, card.destinationModifier))} &middot; ${esc(card.state)}</div>
         <div class="p-code">${renderRoutingCode(card.code)}</div>
       </div>
       <p class="quiz-cue">${esc(t('Where does this go?'))}</p>
@@ -497,7 +498,7 @@ function showCard() {
     view.querySelectorAll('[data-language]').forEach((option) => option.setAttribute('aria-pressed', String(option.dataset.language === language.code)));
     view.querySelector('#quiz-count').textContent = t('Question {current} of {total}', { current: cardIndex + 1, total: run.cards.length });
     view.querySelector('#cancel').textContent = t('Cancel');
-    view.querySelector('.p-line').textContent = `${serviceName(card.svc)} · ${card.state}`;
+    view.querySelector('.p-line').textContent = `${serviceName(card.svc, card.destinationModifier)} · ${card.state}`;
     view.querySelector('.quiz-cue').textContent = t('Where does this go?');
     view.querySelector('.quiz-avatar').alt = t('Blue mascot thinking with a question mark');
     view.querySelector('#ring').setAttribute('aria-label', `${t('Time to choose')}: ${Math.ceil(clock.remaining() / 1000)}`);
@@ -572,7 +573,7 @@ function showFeedback(response) {
       ${quizAvatar(right ? 'happy' : 'sad')}
       <h1 class="verdict" id="verdict" tabindex="-1">${esc(t(verdict))}</h1>
       <div class="quiz-route">
-        <div class="p-line">${esc(serviceName(response.svc))} &middot; ${esc(response.state)}</div>
+        <div class="p-line">${esc(serviceName(response.svc, response.destinationModifier))} &middot; ${esc(response.state)}</div>
         <div class="p-code">${renderRoutingCode(response.code)}</div>
       </div>
       <div class="answer-compare">
@@ -632,7 +633,7 @@ function renderResults(summary, saved) {
         <ul class="missed">
           ${summary.missed.map((r) => `
             <li>
-              <div class="mcard">${esc(serviceName(r.svc))} &middot; ${esc(r.state)} &middot; ${renderRoutingCode(r.code)}</div>
+              <div class="mcard">${esc(serviceName(r.svc, r.destinationModifier))} &middot; ${esc(r.state)} &middot; ${renderRoutingCode(r.code)}</div>
               <div class="mans${r.outcome === 'timeout' ? ' timeout' : ''}">${esc(r.outcome === 'timeout' ? t('ran out of time') : t('said {answer}', { answer: r.answered }))} &rarr; <strong>${esc(r.correctBelt)}</strong></div>
               <div class="why">${esc(language.explanation(r))}</div>
             </li>
@@ -668,7 +669,7 @@ function showLog() {
                 <ul class="logmiss">
                   ${s.missed.map((r) => `
                     <li>
-                      <div class="mcard">${esc(serviceName(r.svc))} &middot; ${esc(r.state)} &middot; ${renderRoutingCode(r.code)}</div>
+                      <div class="mcard">${esc(serviceName(r.svc, r.destinationModifier))} &middot; ${esc(r.state)} &middot; ${renderRoutingCode(r.code)}</div>
                       <div class="mans${r.outcome === 'timeout' ? ' timeout' : ''}">${esc(r.outcome === 'timeout' ? t('ran out of time') : t('said {answer}', { answer: r.answered }))} &rarr; <strong>${esc(r.correctBelt)}</strong></div>
                     </li>
                   `).join('')}

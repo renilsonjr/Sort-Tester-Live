@@ -1,8 +1,8 @@
-// Twilight chart transcribed for the approved study and quiz design.
-// Keep worksite corrections here so study and generated quiz cards share one answer key.
+// Current Twilight photo plus the explicit owner corrections from November 8.
+// Reference provenance is not approval of Ranked difficulty or work methods.
+export const ROUTE_REFERENCE_VERSION = 'twilight-2026-11-08-r1';
     const rows = text => text.trim().split('\n').map(line => line.split('|').map(value => value.trim()));
-    // The four main columns in the supplied Twilight chart, with the already
-    // established sort changes and the user's NJ rule applied for this mock.
+    // Shared photo rows. Keep service-specific owner corrections out of this table.
     const sharedEast = rows(`
       MA|010–024|GOLD
       MA|025–026|BLUE
@@ -12,14 +12,14 @@
       NH, ME|035–049|BLUE
       VT|050–059|GOLD
       CT|060–069|GOLD
-      NJ|070–089|RED|079 9 is ORANGE
+      NJ|070–089|CHECK|Use listed NJ preload codes
       NY|100–108|YELLOW
       NY|109|ORANGE
       NY|110–119|PINK
       NY|120–121|GOLD|Sort change
       NY|122–127|ORANGE
       NY|128–139|GOLD
-      NY|140–147|GOLD|Sort change
+      NY|140–147|ORANGE
       NY|148–149|ORANGE|148 1 is GOLD
       PA|150–167|GREEN
       PA|168–178|GREEN
@@ -31,7 +31,8 @@
       VA, WV|239–269|YELLOW
       NC, SC|270–299|YELLOW
     `);
-    const groundMain = [...sharedEast, ...rows(`
+    const groundMain = [...sharedEast.map(row => row[0] === 'NY' && row[1] === '140–147'
+      ? ['NY', '140–147', 'GOLD', 'Ground-only owner correction'] : row), ...rows(`
       GA|300–319|BLUE
       FL|320–349|PINK
       AL|350–369|BLUE
@@ -91,15 +92,15 @@
       NE|690–699|ORANGE
       *|700–734|BLUE
       OK|735–749|ORANGE
-      TX|750–768|PURPLE
+      TX|750–768|BLUE
       TX|769 0|PURPLE
-      TX|770–784|PURPLE
+      TX|770–784|BLUE
       TX|785–799|PURPLE
       CO|800–810|ORANGE
       *|811–999|PURPLE
     `)];
     const twoDayMain = [...sharedEast, ...rows(`
-      GA|300–319|PURPLE
+      GA|300–319|BLUE
       FL|320–349|PURPLE
       AL|350–369|PURPLE
       TN|370–385|BROWN
@@ -111,8 +112,8 @@
       IN|460–479|PURPLE
       MI|480–497|ORANGE
       *|498–599|PURPLE
-      IL|600–619|PURPLE
-      IL|620–629|ORANGE
+      IL|600–608|YELLOW
+      IL|609–629|ORANGE
       MO|630–639|BLUE
       *|640–729|PURPLE
       OK|730–740|PURPLE
@@ -130,7 +131,7 @@
       NH, ME|035–049|PURPLE
       VT|050–059|GOLD
       CT|060–069|GOLD
-      NJ|070–089|RED|079 9 is ORANGE
+      NJ|070–089|CHECK|Use listed NJ preload codes
       NY|100–108|YELLOW
       NY|109|ORANGE
       NY|110–119|PINK
@@ -158,7 +159,7 @@
       NJ|077 0|RED|NJ list
       NJ|078 4|RED|NJ list
       NJ|078 9|RED|NJ list
-      NJ|079 9|ORANGE|Only orange NJ code
+      NJ|079 9|ORANGE|Listed NJ preload exception
       NJ|081 9|RED|NJ list
       NJ|082 9|RED|NJ list
       NJ|083 9|RED|NJ list

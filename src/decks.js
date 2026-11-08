@@ -1,17 +1,9 @@
-import { COMMON_CORE, NJ_TWILIGHT } from './questions.js?v=tn-370-brown-20261105';
-import { LEVEL_DECKS } from './levels.js?v=tn-370-brown-20261105';
+import { ROUTE_REFERENCE_VERSION } from './chart.js?v=chart-destination-20261108';
+import { COMMON_CORE, NJ_TWILIGHT } from './questions.js?v=chart-destination-20261108';
+import { LEVEL_DECKS } from './levels.js?v=chart-destination-20261108';
 
-// Every deck here is transcribed from the Saddle Brook primary sort chart with
-// the SORT CHANGE sheet applied.
-//
-// The six familiar decks remain available. The two Common Missorts sets share
-// eleven cards but use different NJ examples under one Twilight answer rule.
-//
-// New York was confirmed correct against the real sheet by the supervisor on
-// 2026-09-16. Next Day Air, 2 Day Air and 3 Day Select were unlocked on the
-// supervisor's instruction without a row-by-row check, so a wrong belt in
-// those three is still possible. The verified flag gates a deck out of the
-// picker: set one back to false if a section needs pulling.
+// Manual Practice cards checked against the current Twilight reference.
+// A verified Practice deck does not establish Ranked difficulty approval.
 
 const NEW_YORK = [
   {
@@ -43,7 +35,7 @@ const NEW_YORK = [
     svc: 'ALL', state: 'NY', code: '120-121',
     belt: 'GOLD',
     confusions: ['PINK', 'ORANGE', 'YELLOW'],
-    why: 'The sort change made 120-121 GOLD on every service. 121 used to sit in the 110-119 PINK zone.',
+    why: 'The owner confirmed 120-121 GOLD on every service. The preceding 110-119 range is PINK.',
     tags: ['sort-change', 'boundary'],
   },
   {
@@ -59,7 +51,7 @@ const NEW_YORK = [
     svc: 'GND', state: 'NY', code: '140-147',
     belt: 'GOLD',
     confusions: ['ORANGE', 'PURPLE', 'PINK'],
-    why: 'The recent sort change sends 140-147 to GOLD on Ground, 2 Day Air and 3 Day Select. The next block, 148-149, is ORANGE except 148 1.',
+    why: 'The owner correction sends 140-147 to GOLD on Ground. On 2 Day Air and 3 Day Select this range is ORANGE. The next block, 148-149, is ORANGE except 148 1.',
     tags: ['sort-change', 'boundary'],
   },
   {
@@ -67,7 +59,7 @@ const NEW_YORK = [
     svc: 'GND', state: 'NY', code: '148-149',
     belt: 'ORANGE',
     confusions: ['GOLD', 'PURPLE', 'PINK'],
-    why: 'ORANGE on Ground, 2 Day Air and 3 Day Select. The preceding 140-147 block is now GOLD, and the single code 148 1 is GOLD too.',
+    why: 'ORANGE on Ground, 2 Day Air and 3 Day Select. The preceding 140-147 block is GOLD on Ground and ORANGE on 2 Day Air and 3 Day Select. The single code 148 1 is GOLD on all three.',
     tags: ['boundary'],
   },
   {
@@ -75,7 +67,7 @@ const NEW_YORK = [
     svc: 'GND', state: 'NY', code: '148 1',
     belt: 'GOLD',
     confusions: ['ORANGE', 'PURPLE', 'PINK'],
-    why: 'This single code remains GOLD inside the ORANGE 148-149 block. The preceding 140-147 block is also GOLD on Ground, 2 Day Air and 3 Day Select.',
+    why: 'This single code remains GOLD inside the ORANGE 148-149 block. The preceding 140-147 block is GOLD on Ground and ORANGE on 2 Day Air and 3 Day Select.',
     tags: ['sort-change', 'exception'],
   },
   {
@@ -83,7 +75,7 @@ const NEW_YORK = [
     svc: 'NDA', state: 'NY', code: '136',
     belt: 'PURPLE',
     confusions: ['GOLD', 'ORANGE', 'PINK'],
-    why: 'The sort change moved all of 128-139 to GOLD, but the Next Day Air exception for 136 survives it.',
+    why: 'Next Day Air sends 128-135 and 137-139 to GOLD; 136 is PURPLE.',
     tags: ['sort-change', 'exception', 'service-split'],
   },
   {
@@ -91,7 +83,7 @@ const NEW_YORK = [
     svc: 'NDA', state: 'NY', code: '140-149',
     belt: 'PURPLE',
     confusions: ['ORANGE', 'GOLD', 'PINK'],
-    why: 'Next Day Air keeps the whole 140-149 range PURPLE. Ground, 2 Day Air and 3 Day Select now split it: 140-147 GOLD, then 148-149 ORANGE except 148 1 GOLD.',
+    why: 'Next Day Air keeps the whole 140-149 range PURPLE. Ground sends 140-147 to GOLD; 2 Day Air and 3 Day Select send it to ORANGE. On those three services, 148-149 is ORANGE except 148 1 GOLD.',
     tags: ['service-split'],
   },
 ];
@@ -166,7 +158,7 @@ const NEXT_DAY_AIR = [
     svc: 'NDA', state: 'NJ', code: '078 4',
     belt: 'RED',
     confusions: ['CHECK', 'BLUE', 'ORANGE'],
-    why: 'New Jersey routes to RED on the current Twilight rule. Only the single code 079 9 goes ORANGE.',
+    why: 'The listed New Jersey preload code 078 4 goes RED on every service. Use the preload list; the broad NJ range says CHECK.',
     tags: ['base-rule'],
   },
   {
@@ -239,9 +231,9 @@ const TWO_DAY_AIR = [
   {
     id: '2da-il-600-608',
     svc: '2DA', state: 'IL', code: '600-608',
-    belt: 'PURPLE',
-    confusions: ['YELLOW', 'ORANGE', 'BLUE'],
-    why: 'The 2 Day Air chart sends IL 600-619 to PURPLE. Ground and 3 Day Select send 600-608 to YELLOW.',
+    belt: 'YELLOW',
+    confusions: ['PURPLE', 'ORANGE', 'BLUE'],
+    why: 'Illinois 600-608 is YELLOW on Ground, 2 Day Air and 3 Day Select. The next range, 609-629, is ORANGE.',
     tags: ['boundary', 'service-split'],
   },
   {
@@ -359,16 +351,18 @@ const MIXED_MISSORTS = [
     'Ohio stays ORANGE on 2 Day Air; do not carry Indiana’s PURPLE rule across the state line.'),
   mixed('mi-2da', '2DA', 'MI', '480-497', 'ORANGE', ['PURPLE', 'YELLOW', 'BROWN'],
     'Michigan stays ORANGE on 2 Day Air, while Indiana immediately before it is PURPLE.'),
-  mixed('il-600-619-2da', '2DA', 'IL', '600-619', 'PURPLE', ['YELLOW', 'ORANGE', 'BLUE'],
-    'Illinois 600-619 is PURPLE on 2 Day Air. Ground and 3 Day Select use different belts within this span.'),
+  mixed('il-600-608-2da', '2DA', 'IL', '600-608', 'YELLOW', ['PURPLE', 'ORANGE', 'BLUE'],
+    'Illinois 600-608 is YELLOW on 2 Day Air. The next range, 609-629, is ORANGE.'),
+  mixed('il-609-619-2da', '2DA', 'IL', '609-619', 'ORANGE', ['PURPLE', 'YELLOW', 'BLUE'],
+    'Illinois 609-619 is ORANGE on 2 Day Air, continuing through 629.'),
   mixed('il-620-629-2da', '2DA', 'IL', '620-629', 'ORANGE', ['PURPLE', 'YELLOW', 'BLUE'],
-    'Illinois changes from PURPLE to ORANGE at 620 on 2 Day Air.'),
+    'Illinois 620-629 continues the ORANGE range that starts at 609 on 2 Day Air.'),
   mixed('ny-128-139-gnd', 'GND', 'NY', '128-139', 'GOLD', ['ORANGE', 'PURPLE', 'PINK'],
     'NY 128-139 is GOLD on Ground. Next Day Air has a single-code PURPLE exception at 136.'),
   mixed('ny-136-nda', 'NDA', 'NY', '136', 'PURPLE', ['GOLD', 'ORANGE', 'PINK'],
     'NY 136 stays PURPLE on Next Day Air inside the surrounding GOLD range.'),
   mixed('ny-140-147-gnd', 'GND', 'NY', '140-147', 'GOLD', ['ORANGE', 'PURPLE', 'PINK'],
-    'The recent sort change moved NY 140-147 to GOLD on Ground, 2 Day Air and 3 Day Select.'),
+    'NY 140-147 is GOLD on Ground. The same range is ORANGE on 2 Day Air and 3 Day Select, and PURPLE on Next Day Air.'),
   mixed('ny-140-147-nda', 'NDA', 'NY', '140-147', 'PURPLE', ['GOLD', 'ORANGE', 'PINK'],
     'Next Day Air keeps NY 140-149 PURPLE, including 140-147.'),
   mixed('ma-025-gnd', 'GND', 'MA', '025', 'BLUE', ['GOLD', 'PURPLE', 'GREEN'],
@@ -391,6 +385,7 @@ export const DECKS = [
   ...LEVEL_DECKS,
   {
     id: 'common-twilight-1',
+    practiceRunSize: 14,
     name: 'Common Missorts · Set 1',
     sort: 'Twilight',
     blurb: 'The usual traps, including the updated New Jersey rule',
@@ -399,6 +394,7 @@ export const DECKS = [
   },
   {
     id: 'common-twilight-2',
+    practiceRunSize: 14,
     name: 'Common Missorts · Set 2',
     sort: 'Twilight',
     blurb: 'A second familiar set with different New Jersey examples',
@@ -407,6 +403,7 @@ export const DECKS = [
   },
   {
     id: 'mixed-missorts',
+    practiceRunSize: 16,
     name: 'Common Missorts · Mixed',
     sort: 'Twilight',
     blurb: '2 Day IN/OH/MI/IL, NY 128-147, MA 025-026, CA 900-935/936-961, and NH',
@@ -445,7 +442,9 @@ export const DECKS = [
     verified: true,
     cards: THREE_DAY_SELECT,
   },
-];
+].map(deck => ({
+  ...deck, cards: deck.cards.map(card => ({ ...card, referenceVersion: ROUTE_REFERENCE_VERSION })),
+}));
 
 // The sort and set stay in each new shift-log and Excel label. Older saved
 // results keep their historical labels and are not rewritten.

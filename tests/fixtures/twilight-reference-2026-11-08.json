@@ -1,0 +1,2567 @@
+{
+  "referenceVersion": "twilight-2026-11-08-r1",
+  "source": "Private Saddle Brook Twilight Primary Sort Chart photo plus eight owner clauses in [[2026-11-08-ranked-chart-reference]]",
+  "sourceSha256": "d54883a35b4556abae22d948a24f8b146509fd649e42a9a7b3e7abcdf5b70a7d",
+  "note": "Independent literal transcription. Photo NJ 070\u2013089 remains CHECK; only listed preloads are classified. Ground 128\u2013139 already GOLD in photo; clause 1 changes 140\u2013147. +1 is recorded separately for the next increment.",
+  "destinationModifierRule": {
+    "modifier": "+1",
+    "services": [
+      "Ground",
+      "3 Day Select",
+      "2 Day Air",
+      "Next Day Air"
+    ],
+    "expectedBelt": "PURPLE",
+    "provenance": "owner-override-8",
+    "implementation": "deferred-task-2"
+  },
+  "cases": [
+    {
+      "id": "ground-main-ma-010-024",
+      "service": "Ground",
+      "kind": "main",
+      "state": "MA",
+      "code": "010\u2013024",
+      "expectedBelt": "GOLD",
+      "provenance": "photo"
+    },
+    {
+      "id": "ground-main-ma-025-026",
+      "service": "Ground",
+      "kind": "main",
+      "state": "MA",
+      "code": "025\u2013026",
+      "expectedBelt": "BLUE",
+      "provenance": "photo"
+    },
+    {
+      "id": "ground-main-mari-027-029",
+      "service": "Ground",
+      "kind": "main",
+      "state": "MA, RI",
+      "code": "027\u2013029",
+      "expectedBelt": "GOLD",
+      "provenance": "photo"
+    },
+    {
+      "id": "ground-main-nh-030-033",
+      "service": "Ground",
+      "kind": "main",
+      "state": "NH",
+      "code": "030\u2013033",
+      "expectedBelt": "BLUE",
+      "provenance": "photo"
+    },
+    {
+      "id": "ground-main-nh-0340",
+      "service": "Ground",
+      "kind": "main",
+      "state": "NH",
+      "code": "034 0",
+      "expectedBelt": "GOLD",
+      "provenance": "photo"
+    },
+    {
+      "id": "ground-main-nhme-035-049",
+      "service": "Ground",
+      "kind": "main",
+      "state": "NH, ME",
+      "code": "035\u2013049",
+      "expectedBelt": "BLUE",
+      "provenance": "photo"
+    },
+    {
+      "id": "ground-main-vt-050-059",
+      "service": "Ground",
+      "kind": "main",
+      "state": "VT",
+      "code": "050\u2013059",
+      "expectedBelt": "GOLD",
+      "provenance": "photo"
+    },
+    {
+      "id": "ground-main-ct-060-069",
+      "service": "Ground",
+      "kind": "main",
+      "state": "CT",
+      "code": "060\u2013069",
+      "expectedBelt": "GOLD",
+      "provenance": "photo"
+    },
+    {
+      "id": "ground-main-nj-070-089",
+      "service": "Ground",
+      "kind": "main",
+      "state": "NJ",
+      "code": "070\u2013089",
+      "expectedBelt": "CHECK",
+      "provenance": "photo"
+    },
+    {
+      "id": "ground-main-ny-100-108",
+      "service": "Ground",
+      "kind": "main",
+      "state": "NY",
+      "code": "100\u2013108",
+      "expectedBelt": "YELLOW",
+      "provenance": "photo"
+    },
+    {
+      "id": "ground-main-ny-109",
+      "service": "Ground",
+      "kind": "main",
+      "state": "NY",
+      "code": "109",
+      "expectedBelt": "ORANGE",
+      "provenance": "photo"
+    },
+    {
+      "id": "ground-main-ny-110-119",
+      "service": "Ground",
+      "kind": "main",
+      "state": "NY",
+      "code": "110\u2013119",
+      "expectedBelt": "PINK",
+      "provenance": "photo"
+    },
+    {
+      "id": "ground-main-ny-120-121",
+      "service": "Ground",
+      "kind": "main",
+      "state": "NY",
+      "code": "120\u2013121",
+      "expectedBelt": "GOLD",
+      "provenance": "owner-override-6"
+    },
+    {
+      "id": "ground-main-ny-122-127",
+      "service": "Ground",
+      "kind": "main",
+      "state": "NY",
+      "code": "122\u2013127",
+      "expectedBelt": "ORANGE",
+      "provenance": "photo"
+    },
+    {
+      "id": "ground-main-ny-128-139",
+      "service": "Ground",
+      "kind": "main",
+      "state": "NY",
+      "code": "128\u2013139",
+      "expectedBelt": "GOLD",
+      "provenance": "photo"
+    },
+    {
+      "id": "ground-main-ny-140-147",
+      "service": "Ground",
+      "kind": "main",
+      "state": "NY",
+      "code": "140\u2013147",
+      "expectedBelt": "GOLD",
+      "provenance": "owner-override-1"
+    },
+    {
+      "id": "ground-main-ny-148-149",
+      "service": "Ground",
+      "kind": "main",
+      "state": "NY",
+      "code": "148\u2013149",
+      "expectedBelt": "ORANGE",
+      "provenance": "photo"
+    },
+    {
+      "id": "ground-main-pa-150-167",
+      "service": "Ground",
+      "kind": "main",
+      "state": "PA",
+      "code": "150\u2013167",
+      "expectedBelt": "GREEN",
+      "provenance": "photo"
+    },
+    {
+      "id": "ground-main-pa-168-178",
+      "service": "Ground",
+      "kind": "main",
+      "state": "PA",
+      "code": "168\u2013178",
+      "expectedBelt": "GREEN",
+      "provenance": "photo"
+    },
+    {
+      "id": "ground-main-pa-179-189",
+      "service": "Ground",
+      "kind": "main",
+      "state": "PA",
+      "code": "179\u2013189",
+      "expectedBelt": "GREEN",
+      "provenance": "photo"
+    },
+    {
+      "id": "ground-main-pa-190-194",
+      "service": "Ground",
+      "kind": "main",
+      "state": "PA",
+      "code": "190\u2013194",
+      "expectedBelt": "ORANGE",
+      "provenance": "photo"
+    },
+    {
+      "id": "ground-main-pade-195-199",
+      "service": "Ground",
+      "kind": "main",
+      "state": "PA, DE",
+      "code": "195\u2013199",
+      "expectedBelt": "GREEN",
+      "provenance": "photo"
+    },
+    {
+      "id": "ground-main-dcmd-200-219",
+      "service": "Ground",
+      "kind": "main",
+      "state": "DC, MD",
+      "code": "200\u2013219",
+      "expectedBelt": "GREEN",
+      "provenance": "photo"
+    },
+    {
+      "id": "ground-main-va-220-238",
+      "service": "Ground",
+      "kind": "main",
+      "state": "VA",
+      "code": "220\u2013238",
+      "expectedBelt": "YELLOW",
+      "provenance": "photo"
+    },
+    {
+      "id": "ground-main-vawv-239-269",
+      "service": "Ground",
+      "kind": "main",
+      "state": "VA, WV",
+      "code": "239\u2013269",
+      "expectedBelt": "YELLOW",
+      "provenance": "photo"
+    },
+    {
+      "id": "ground-main-ncsc-270-299",
+      "service": "Ground",
+      "kind": "main",
+      "state": "NC, SC",
+      "code": "270\u2013299",
+      "expectedBelt": "YELLOW",
+      "provenance": "photo"
+    },
+    {
+      "id": "ground-main-ga-300-319",
+      "service": "Ground",
+      "kind": "main",
+      "state": "GA",
+      "code": "300\u2013319",
+      "expectedBelt": "BLUE",
+      "provenance": "photo"
+    },
+    {
+      "id": "ground-main-fl-320-349",
+      "service": "Ground",
+      "kind": "main",
+      "state": "FL",
+      "code": "320\u2013349",
+      "expectedBelt": "PINK",
+      "provenance": "photo"
+    },
+    {
+      "id": "ground-main-al-350-369",
+      "service": "Ground",
+      "kind": "main",
+      "state": "AL",
+      "code": "350\u2013369",
+      "expectedBelt": "BLUE",
+      "provenance": "photo"
+    },
+    {
+      "id": "ground-main-tn-370-385",
+      "service": "Ground",
+      "kind": "main",
+      "state": "TN",
+      "code": "370\u2013385",
+      "expectedBelt": "BROWN",
+      "provenance": "photo"
+    },
+    {
+      "id": "ground-main-ms-386-399",
+      "service": "Ground",
+      "kind": "main",
+      "state": "MS",
+      "code": "386\u2013399",
+      "expectedBelt": "BROWN",
+      "provenance": "photo"
+    },
+    {
+      "id": "ground-main-ky-400-429",
+      "service": "Ground",
+      "kind": "main",
+      "state": "KY",
+      "code": "400\u2013429",
+      "expectedBelt": "BROWN",
+      "provenance": "photo"
+    },
+    {
+      "id": "ground-main-oh-430-459",
+      "service": "Ground",
+      "kind": "main",
+      "state": "OH",
+      "code": "430\u2013459",
+      "expectedBelt": "ORANGE",
+      "provenance": "photo"
+    },
+    {
+      "id": "ground-main-in-460-479",
+      "service": "Ground",
+      "kind": "main",
+      "state": "IN",
+      "code": "460\u2013479",
+      "expectedBelt": "ORANGE",
+      "provenance": "photo"
+    },
+    {
+      "id": "ground-main-mi-480-497",
+      "service": "Ground",
+      "kind": "main",
+      "state": "MI",
+      "code": "480\u2013497",
+      "expectedBelt": "ORANGE",
+      "provenance": "photo"
+    },
+    {
+      "id": "ground-main-all-498-589",
+      "service": "Ground",
+      "kind": "main",
+      "state": "*",
+      "code": "498\u2013589",
+      "expectedBelt": "BROWN",
+      "provenance": "photo"
+    },
+    {
+      "id": "ground-main-mt-590-599",
+      "service": "Ground",
+      "kind": "main",
+      "state": "MT",
+      "code": "590\u2013599",
+      "expectedBelt": "ORANGE",
+      "provenance": "photo"
+    },
+    {
+      "id": "ground-main-il-600-608",
+      "service": "Ground",
+      "kind": "main",
+      "state": "IL",
+      "code": "600\u2013608",
+      "expectedBelt": "YELLOW",
+      "provenance": "photo"
+    },
+    {
+      "id": "ground-main-il-609-619",
+      "service": "Ground",
+      "kind": "main",
+      "state": "IL",
+      "code": "609\u2013619",
+      "expectedBelt": "ORANGE",
+      "provenance": "photo"
+    },
+    {
+      "id": "ground-main-il-620-629",
+      "service": "Ground",
+      "kind": "main",
+      "state": "IL",
+      "code": "620\u2013629",
+      "expectedBelt": "ORANGE",
+      "provenance": "photo"
+    },
+    {
+      "id": "ground-main-moks-630-674",
+      "service": "Ground",
+      "kind": "main",
+      "state": "MO, KS",
+      "code": "630\u2013674",
+      "expectedBelt": "BLUE",
+      "provenance": "photo"
+    },
+    {
+      "id": "ground-main-ks-675-679",
+      "service": "Ground",
+      "kind": "main",
+      "state": "KS",
+      "code": "675\u2013679",
+      "expectedBelt": "ORANGE",
+      "provenance": "photo"
+    },
+    {
+      "id": "ground-main-ne-680-689",
+      "service": "Ground",
+      "kind": "main",
+      "state": "NE",
+      "code": "680\u2013689",
+      "expectedBelt": "BLUE",
+      "provenance": "photo"
+    },
+    {
+      "id": "ground-main-ne-690-699",
+      "service": "Ground",
+      "kind": "main",
+      "state": "NE",
+      "code": "690\u2013699",
+      "expectedBelt": "ORANGE",
+      "provenance": "photo"
+    },
+    {
+      "id": "ground-main-laar-700-729",
+      "service": "Ground",
+      "kind": "main",
+      "state": "LA, AR",
+      "code": "700\u2013729",
+      "expectedBelt": "BLUE",
+      "provenance": "photo"
+    },
+    {
+      "id": "ground-main-ok-730-734",
+      "service": "Ground",
+      "kind": "main",
+      "state": "OK",
+      "code": "730\u2013734",
+      "expectedBelt": "ORANGE",
+      "provenance": "photo"
+    },
+    {
+      "id": "ground-main-ok-735-749",
+      "service": "Ground",
+      "kind": "main",
+      "state": "OK",
+      "code": "735\u2013749",
+      "expectedBelt": "ORANGE",
+      "provenance": "photo"
+    },
+    {
+      "id": "ground-main-tx-750-779",
+      "service": "Ground",
+      "kind": "main",
+      "state": "TX",
+      "code": "750\u2013779",
+      "expectedBelt": "BLUE",
+      "provenance": "photo"
+    },
+    {
+      "id": "ground-main-tx-780-784",
+      "service": "Ground",
+      "kind": "main",
+      "state": "TX",
+      "code": "780\u2013784",
+      "expectedBelt": "BLUE",
+      "provenance": "photo"
+    },
+    {
+      "id": "ground-main-tx-785-799",
+      "service": "Ground",
+      "kind": "main",
+      "state": "TX",
+      "code": "785\u2013799",
+      "expectedBelt": "ORANGE",
+      "provenance": "photo"
+    },
+    {
+      "id": "ground-main-cowy-800-831",
+      "service": "Ground",
+      "kind": "main",
+      "state": "CO, WY",
+      "code": "800\u2013831",
+      "expectedBelt": "ORANGE",
+      "provenance": "photo"
+    },
+    {
+      "id": "ground-main-id-832-839",
+      "service": "Ground",
+      "kind": "main",
+      "state": "ID",
+      "code": "832\u2013839",
+      "expectedBelt": "BROWN",
+      "provenance": "photo"
+    },
+    {
+      "id": "ground-main-ut-840-849",
+      "service": "Ground",
+      "kind": "main",
+      "state": "UT",
+      "code": "840\u2013849",
+      "expectedBelt": "ORANGE",
+      "provenance": "photo"
+    },
+    {
+      "id": "ground-main-aznm-850-884",
+      "service": "Ground",
+      "kind": "main",
+      "state": "AZ, NM",
+      "code": "850\u2013884",
+      "expectedBelt": "BLUE",
+      "provenance": "photo"
+    },
+    {
+      "id": "ground-main-nv-889-891",
+      "service": "Ground",
+      "kind": "main",
+      "state": "NV",
+      "code": "889\u2013891",
+      "expectedBelt": "BLUE",
+      "provenance": "photo"
+    },
+    {
+      "id": "ground-main-nv-893-899",
+      "service": "Ground",
+      "kind": "main",
+      "state": "NV",
+      "code": "893\u2013899",
+      "expectedBelt": "ORANGE",
+      "provenance": "photo"
+    },
+    {
+      "id": "ground-main-ca-900-935",
+      "service": "Ground",
+      "kind": "main",
+      "state": "CA",
+      "code": "900\u2013935",
+      "expectedBelt": "RED",
+      "provenance": "photo"
+    },
+    {
+      "id": "ground-main-ca-936-961",
+      "service": "Ground",
+      "kind": "main",
+      "state": "CA",
+      "code": "936\u2013961",
+      "expectedBelt": "BROWN",
+      "provenance": "photo"
+    },
+    {
+      "id": "ground-main-hi-967-968",
+      "service": "Ground",
+      "kind": "main",
+      "state": "HI",
+      "code": "967\u2013968",
+      "expectedBelt": "ORANGE",
+      "provenance": "photo"
+    },
+    {
+      "id": "ground-main-orwa-970-994",
+      "service": "Ground",
+      "kind": "main",
+      "state": "OR, WA",
+      "code": "970\u2013994",
+      "expectedBelt": "BROWN",
+      "provenance": "photo"
+    },
+    {
+      "id": "ground-main-ak-995-999",
+      "service": "Ground",
+      "kind": "main",
+      "state": "AK",
+      "code": "995\u2013999",
+      "expectedBelt": "BROWN",
+      "provenance": "photo"
+    },
+    {
+      "id": "ground-main-mex-mexico",
+      "service": "Ground",
+      "kind": "main",
+      "state": "MEX",
+      "code": "MEXICO",
+      "expectedBelt": "GREEN",
+      "provenance": "photo"
+    },
+    {
+      "id": "ground-main-can-canada",
+      "service": "Ground",
+      "kind": "main",
+      "state": "CAN",
+      "code": "CANADA",
+      "expectedBelt": "PURPLE",
+      "provenance": "photo"
+    },
+    {
+      "id": "ground-main-pri-pr",
+      "service": "Ground",
+      "kind": "main",
+      "state": "PRI",
+      "code": "PR",
+      "expectedBelt": "PINK",
+      "provenance": "photo"
+    },
+    {
+      "id": "ground-exceptions-nj-0703",
+      "service": "Ground",
+      "kind": "exceptions",
+      "state": "NJ",
+      "code": "070 3",
+      "expectedBelt": "RED",
+      "provenance": "photo"
+    },
+    {
+      "id": "ground-exceptions-nj-0709",
+      "service": "Ground",
+      "kind": "exceptions",
+      "state": "NJ",
+      "code": "070 9",
+      "expectedBelt": "RED",
+      "provenance": "photo"
+    },
+    {
+      "id": "ground-exceptions-nj-0759",
+      "service": "Ground",
+      "kind": "exceptions",
+      "state": "NJ",
+      "code": "075 9",
+      "expectedBelt": "RED",
+      "provenance": "photo"
+    },
+    {
+      "id": "ground-exceptions-nj-0769",
+      "service": "Ground",
+      "kind": "exceptions",
+      "state": "NJ",
+      "code": "076 9",
+      "expectedBelt": "RED",
+      "provenance": "photo"
+    },
+    {
+      "id": "ground-exceptions-nj-0770",
+      "service": "Ground",
+      "kind": "exceptions",
+      "state": "NJ",
+      "code": "077 0",
+      "expectedBelt": "RED",
+      "provenance": "photo"
+    },
+    {
+      "id": "ground-exceptions-nj-0784",
+      "service": "Ground",
+      "kind": "exceptions",
+      "state": "NJ",
+      "code": "078 4",
+      "expectedBelt": "RED",
+      "provenance": "owner-override-3"
+    },
+    {
+      "id": "ground-exceptions-nj-0789",
+      "service": "Ground",
+      "kind": "exceptions",
+      "state": "NJ",
+      "code": "078 9",
+      "expectedBelt": "RED",
+      "provenance": "photo"
+    },
+    {
+      "id": "ground-exceptions-nj-0799",
+      "service": "Ground",
+      "kind": "exceptions",
+      "state": "NJ",
+      "code": "079 9",
+      "expectedBelt": "ORANGE",
+      "provenance": "owner-override-3"
+    },
+    {
+      "id": "ground-exceptions-nj-0819",
+      "service": "Ground",
+      "kind": "exceptions",
+      "state": "NJ",
+      "code": "081 9",
+      "expectedBelt": "RED",
+      "provenance": "photo"
+    },
+    {
+      "id": "ground-exceptions-nj-0829",
+      "service": "Ground",
+      "kind": "exceptions",
+      "state": "NJ",
+      "code": "082 9",
+      "expectedBelt": "RED",
+      "provenance": "owner-override-3"
+    },
+    {
+      "id": "ground-exceptions-nj-0839",
+      "service": "Ground",
+      "kind": "exceptions",
+      "state": "NJ",
+      "code": "083 9",
+      "expectedBelt": "RED",
+      "provenance": "owner-override-3"
+    },
+    {
+      "id": "ground-exceptions-nj-0860",
+      "service": "Ground",
+      "kind": "exceptions",
+      "state": "NJ",
+      "code": "086 0",
+      "expectedBelt": "RED",
+      "provenance": "photo"
+    },
+    {
+      "id": "ground-exceptions-nj-0871",
+      "service": "Ground",
+      "kind": "exceptions",
+      "state": "NJ",
+      "code": "087 1",
+      "expectedBelt": "RED",
+      "provenance": "photo"
+    },
+    {
+      "id": "ground-exceptions-nj-0889",
+      "service": "Ground",
+      "kind": "exceptions",
+      "state": "NJ",
+      "code": "088 9",
+      "expectedBelt": "RED",
+      "provenance": "photo"
+    },
+    {
+      "id": "ground-exceptions-nj-0899",
+      "service": "Ground",
+      "kind": "exceptions",
+      "state": "NJ",
+      "code": "089 9",
+      "expectedBelt": "RED",
+      "provenance": "photo"
+    },
+    {
+      "id": "ground-exceptions-ne-5753-6",
+      "service": "Ground",
+      "kind": "exceptions",
+      "state": "NE",
+      "code": "575 3-6",
+      "expectedBelt": "ORANGE",
+      "provenance": "photo"
+    },
+    {
+      "id": "ground-exceptions-nv-8339-7",
+      "service": "Ground",
+      "kind": "exceptions",
+      "state": "NV",
+      "code": "833 9-7",
+      "expectedBelt": "ORANGE",
+      "provenance": "photo"
+    },
+    {
+      "id": "ground-exceptions-az-8472-7",
+      "service": "Ground",
+      "kind": "exceptions",
+      "state": "AZ",
+      "code": "847 2-7",
+      "expectedBelt": "BLUE",
+      "provenance": "photo"
+    },
+    {
+      "id": "ground-exceptions-nv-8644-7",
+      "service": "Ground",
+      "kind": "exceptions",
+      "state": "NV",
+      "code": "864 4-7",
+      "expectedBelt": "ORANGE",
+      "provenance": "photo"
+    },
+    {
+      "id": "ground-exceptions-nv-8900-0",
+      "service": "Ground",
+      "kind": "exceptions",
+      "state": "NV",
+      "code": "890 0-0",
+      "expectedBelt": "ORANGE",
+      "provenance": "photo"
+    },
+    {
+      "id": "ground-exceptions-az-9222-0",
+      "service": "Ground",
+      "kind": "exceptions",
+      "state": "AZ",
+      "code": "922 2-0",
+      "expectedBelt": "BLUE",
+      "provenance": "photo"
+    },
+    {
+      "id": "ground-exceptions-tn-376-378",
+      "service": "Ground",
+      "kind": "exceptions",
+      "state": "TN",
+      "code": "376\u2013378",
+      "expectedBelt": "BLUE",
+      "provenance": "owner-override-4"
+    },
+    {
+      "id": "ground-exceptions-ny-1481",
+      "service": "Ground",
+      "kind": "exceptions",
+      "state": "NY",
+      "code": "148 1",
+      "expectedBelt": "GOLD",
+      "provenance": "owner-override-5"
+    },
+    {
+      "id": "ground-exceptions-anystate-ends2s",
+      "service": "Ground",
+      "kind": "exceptions",
+      "state": "Any state",
+      "code": "ends 2S",
+      "expectedBelt": "BLUE",
+      "provenance": "owner-override-7"
+    },
+    {
+      "id": "ground-exceptions-anystate-ends1s",
+      "service": "Ground",
+      "kind": "exceptions",
+      "state": "Any state",
+      "code": "ends 1S",
+      "expectedBelt": "PURPLE",
+      "provenance": "owner-override-7"
+    },
+    {
+      "id": "3dayselect-main-ma-010-024",
+      "service": "3 Day Select",
+      "kind": "main",
+      "state": "MA",
+      "code": "010\u2013024",
+      "expectedBelt": "GOLD",
+      "provenance": "photo"
+    },
+    {
+      "id": "3dayselect-main-ma-025-026",
+      "service": "3 Day Select",
+      "kind": "main",
+      "state": "MA",
+      "code": "025\u2013026",
+      "expectedBelt": "BLUE",
+      "provenance": "photo"
+    },
+    {
+      "id": "3dayselect-main-mari-027-029",
+      "service": "3 Day Select",
+      "kind": "main",
+      "state": "MA, RI",
+      "code": "027\u2013029",
+      "expectedBelt": "GOLD",
+      "provenance": "photo"
+    },
+    {
+      "id": "3dayselect-main-nh-030-033",
+      "service": "3 Day Select",
+      "kind": "main",
+      "state": "NH",
+      "code": "030\u2013033",
+      "expectedBelt": "BLUE",
+      "provenance": "photo"
+    },
+    {
+      "id": "3dayselect-main-nh-0340",
+      "service": "3 Day Select",
+      "kind": "main",
+      "state": "NH",
+      "code": "034 0",
+      "expectedBelt": "GOLD",
+      "provenance": "photo"
+    },
+    {
+      "id": "3dayselect-main-nhme-035-049",
+      "service": "3 Day Select",
+      "kind": "main",
+      "state": "NH, ME",
+      "code": "035\u2013049",
+      "expectedBelt": "BLUE",
+      "provenance": "photo"
+    },
+    {
+      "id": "3dayselect-main-vt-050-059",
+      "service": "3 Day Select",
+      "kind": "main",
+      "state": "VT",
+      "code": "050\u2013059",
+      "expectedBelt": "GOLD",
+      "provenance": "photo"
+    },
+    {
+      "id": "3dayselect-main-ct-060-069",
+      "service": "3 Day Select",
+      "kind": "main",
+      "state": "CT",
+      "code": "060\u2013069",
+      "expectedBelt": "GOLD",
+      "provenance": "photo"
+    },
+    {
+      "id": "3dayselect-main-nj-070-089",
+      "service": "3 Day Select",
+      "kind": "main",
+      "state": "NJ",
+      "code": "070\u2013089",
+      "expectedBelt": "CHECK",
+      "provenance": "photo"
+    },
+    {
+      "id": "3dayselect-main-ny-100-108",
+      "service": "3 Day Select",
+      "kind": "main",
+      "state": "NY",
+      "code": "100\u2013108",
+      "expectedBelt": "YELLOW",
+      "provenance": "photo"
+    },
+    {
+      "id": "3dayselect-main-ny-109",
+      "service": "3 Day Select",
+      "kind": "main",
+      "state": "NY",
+      "code": "109",
+      "expectedBelt": "ORANGE",
+      "provenance": "photo"
+    },
+    {
+      "id": "3dayselect-main-ny-110-119",
+      "service": "3 Day Select",
+      "kind": "main",
+      "state": "NY",
+      "code": "110\u2013119",
+      "expectedBelt": "PINK",
+      "provenance": "photo"
+    },
+    {
+      "id": "3dayselect-main-ny-120-121",
+      "service": "3 Day Select",
+      "kind": "main",
+      "state": "NY",
+      "code": "120\u2013121",
+      "expectedBelt": "GOLD",
+      "provenance": "owner-override-6"
+    },
+    {
+      "id": "3dayselect-main-ny-122-127",
+      "service": "3 Day Select",
+      "kind": "main",
+      "state": "NY",
+      "code": "122\u2013127",
+      "expectedBelt": "ORANGE",
+      "provenance": "photo"
+    },
+    {
+      "id": "3dayselect-main-ny-128-139",
+      "service": "3 Day Select",
+      "kind": "main",
+      "state": "NY",
+      "code": "128\u2013139",
+      "expectedBelt": "GOLD",
+      "provenance": "photo"
+    },
+    {
+      "id": "3dayselect-main-ny-140-147",
+      "service": "3 Day Select",
+      "kind": "main",
+      "state": "NY",
+      "code": "140\u2013147",
+      "expectedBelt": "ORANGE",
+      "provenance": "photo"
+    },
+    {
+      "id": "3dayselect-main-ny-148-149",
+      "service": "3 Day Select",
+      "kind": "main",
+      "state": "NY",
+      "code": "148\u2013149",
+      "expectedBelt": "ORANGE",
+      "provenance": "photo"
+    },
+    {
+      "id": "3dayselect-main-pa-150-167",
+      "service": "3 Day Select",
+      "kind": "main",
+      "state": "PA",
+      "code": "150\u2013167",
+      "expectedBelt": "GREEN",
+      "provenance": "photo"
+    },
+    {
+      "id": "3dayselect-main-pa-168-178",
+      "service": "3 Day Select",
+      "kind": "main",
+      "state": "PA",
+      "code": "168\u2013178",
+      "expectedBelt": "GREEN",
+      "provenance": "photo"
+    },
+    {
+      "id": "3dayselect-main-pa-179-189",
+      "service": "3 Day Select",
+      "kind": "main",
+      "state": "PA",
+      "code": "179\u2013189",
+      "expectedBelt": "GREEN",
+      "provenance": "photo"
+    },
+    {
+      "id": "3dayselect-main-pa-190-194",
+      "service": "3 Day Select",
+      "kind": "main",
+      "state": "PA",
+      "code": "190\u2013194",
+      "expectedBelt": "ORANGE",
+      "provenance": "photo"
+    },
+    {
+      "id": "3dayselect-main-pade-195-199",
+      "service": "3 Day Select",
+      "kind": "main",
+      "state": "PA, DE",
+      "code": "195\u2013199",
+      "expectedBelt": "GREEN",
+      "provenance": "photo"
+    },
+    {
+      "id": "3dayselect-main-dcmd-200-219",
+      "service": "3 Day Select",
+      "kind": "main",
+      "state": "DC, MD",
+      "code": "200\u2013219",
+      "expectedBelt": "GREEN",
+      "provenance": "photo"
+    },
+    {
+      "id": "3dayselect-main-va-220-238",
+      "service": "3 Day Select",
+      "kind": "main",
+      "state": "VA",
+      "code": "220\u2013238",
+      "expectedBelt": "YELLOW",
+      "provenance": "photo"
+    },
+    {
+      "id": "3dayselect-main-vawv-239-269",
+      "service": "3 Day Select",
+      "kind": "main",
+      "state": "VA, WV",
+      "code": "239\u2013269",
+      "expectedBelt": "YELLOW",
+      "provenance": "photo"
+    },
+    {
+      "id": "3dayselect-main-ncsc-270-299",
+      "service": "3 Day Select",
+      "kind": "main",
+      "state": "NC, SC",
+      "code": "270\u2013299",
+      "expectedBelt": "YELLOW",
+      "provenance": "photo"
+    },
+    {
+      "id": "3dayselect-main-ga-300-319",
+      "service": "3 Day Select",
+      "kind": "main",
+      "state": "GA",
+      "code": "300\u2013319",
+      "expectedBelt": "BLUE",
+      "provenance": "photo"
+    },
+    {
+      "id": "3dayselect-main-fl-320-349",
+      "service": "3 Day Select",
+      "kind": "main",
+      "state": "FL",
+      "code": "320\u2013349",
+      "expectedBelt": "PINK",
+      "provenance": "photo"
+    },
+    {
+      "id": "3dayselect-main-al-350-369",
+      "service": "3 Day Select",
+      "kind": "main",
+      "state": "AL",
+      "code": "350\u2013369",
+      "expectedBelt": "BLUE",
+      "provenance": "photo"
+    },
+    {
+      "id": "3dayselect-main-tn-370-385",
+      "service": "3 Day Select",
+      "kind": "main",
+      "state": "TN",
+      "code": "370\u2013385",
+      "expectedBelt": "BROWN",
+      "provenance": "photo"
+    },
+    {
+      "id": "3dayselect-main-ms-386-399",
+      "service": "3 Day Select",
+      "kind": "main",
+      "state": "MS",
+      "code": "386\u2013399",
+      "expectedBelt": "BROWN",
+      "provenance": "photo"
+    },
+    {
+      "id": "3dayselect-main-ky-400-429",
+      "service": "3 Day Select",
+      "kind": "main",
+      "state": "KY",
+      "code": "400\u2013429",
+      "expectedBelt": "BROWN",
+      "provenance": "photo"
+    },
+    {
+      "id": "3dayselect-main-oh-430-459",
+      "service": "3 Day Select",
+      "kind": "main",
+      "state": "OH",
+      "code": "430\u2013459",
+      "expectedBelt": "ORANGE",
+      "provenance": "photo"
+    },
+    {
+      "id": "3dayselect-main-in-460-479",
+      "service": "3 Day Select",
+      "kind": "main",
+      "state": "IN",
+      "code": "460\u2013479",
+      "expectedBelt": "ORANGE",
+      "provenance": "photo"
+    },
+    {
+      "id": "3dayselect-main-mi-480-497",
+      "service": "3 Day Select",
+      "kind": "main",
+      "state": "MI",
+      "code": "480\u2013497",
+      "expectedBelt": "ORANGE",
+      "provenance": "photo"
+    },
+    {
+      "id": "3dayselect-main-all-498-566",
+      "service": "3 Day Select",
+      "kind": "main",
+      "state": "*",
+      "code": "498\u2013566",
+      "expectedBelt": "BROWN",
+      "provenance": "photo"
+    },
+    {
+      "id": "3dayselect-main-all-567-599",
+      "service": "3 Day Select",
+      "kind": "main",
+      "state": "*",
+      "code": "567\u2013599",
+      "expectedBelt": "BLUE",
+      "provenance": "photo"
+    },
+    {
+      "id": "3dayselect-main-il-600-608",
+      "service": "3 Day Select",
+      "kind": "main",
+      "state": "IL",
+      "code": "600\u2013608",
+      "expectedBelt": "YELLOW",
+      "provenance": "photo"
+    },
+    {
+      "id": "3dayselect-main-il-609-629",
+      "service": "3 Day Select",
+      "kind": "main",
+      "state": "IL",
+      "code": "609\u2013629",
+      "expectedBelt": "ORANGE",
+      "provenance": "photo"
+    },
+    {
+      "id": "3dayselect-main-moks-630-674",
+      "service": "3 Day Select",
+      "kind": "main",
+      "state": "MO, KS",
+      "code": "630\u2013674",
+      "expectedBelt": "BLUE",
+      "provenance": "photo"
+    },
+    {
+      "id": "3dayselect-main-ks-675-679",
+      "service": "3 Day Select",
+      "kind": "main",
+      "state": "KS",
+      "code": "675\u2013679",
+      "expectedBelt": "ORANGE",
+      "provenance": "photo"
+    },
+    {
+      "id": "3dayselect-main-ne-680-689",
+      "service": "3 Day Select",
+      "kind": "main",
+      "state": "NE",
+      "code": "680\u2013689",
+      "expectedBelt": "BLUE",
+      "provenance": "photo"
+    },
+    {
+      "id": "3dayselect-main-ne-690-699",
+      "service": "3 Day Select",
+      "kind": "main",
+      "state": "NE",
+      "code": "690\u2013699",
+      "expectedBelt": "ORANGE",
+      "provenance": "photo"
+    },
+    {
+      "id": "3dayselect-main-all-700-734",
+      "service": "3 Day Select",
+      "kind": "main",
+      "state": "*",
+      "code": "700\u2013734",
+      "expectedBelt": "BLUE",
+      "provenance": "photo"
+    },
+    {
+      "id": "3dayselect-main-ok-735-749",
+      "service": "3 Day Select",
+      "kind": "main",
+      "state": "OK",
+      "code": "735\u2013749",
+      "expectedBelt": "ORANGE",
+      "provenance": "photo"
+    },
+    {
+      "id": "3dayselect-main-tx-750-768",
+      "service": "3 Day Select",
+      "kind": "main",
+      "state": "TX",
+      "code": "750\u2013768",
+      "expectedBelt": "BLUE",
+      "provenance": "photo"
+    },
+    {
+      "id": "3dayselect-main-tx-7690",
+      "service": "3 Day Select",
+      "kind": "main",
+      "state": "TX",
+      "code": "769 0",
+      "expectedBelt": "PURPLE",
+      "provenance": "photo"
+    },
+    {
+      "id": "3dayselect-main-tx-770-784",
+      "service": "3 Day Select",
+      "kind": "main",
+      "state": "TX",
+      "code": "770\u2013784",
+      "expectedBelt": "BLUE",
+      "provenance": "photo"
+    },
+    {
+      "id": "3dayselect-main-tx-785-799",
+      "service": "3 Day Select",
+      "kind": "main",
+      "state": "TX",
+      "code": "785\u2013799",
+      "expectedBelt": "PURPLE",
+      "provenance": "photo"
+    },
+    {
+      "id": "3dayselect-main-co-800-810",
+      "service": "3 Day Select",
+      "kind": "main",
+      "state": "CO",
+      "code": "800\u2013810",
+      "expectedBelt": "ORANGE",
+      "provenance": "photo"
+    },
+    {
+      "id": "3dayselect-main-all-811-999",
+      "service": "3 Day Select",
+      "kind": "main",
+      "state": "*",
+      "code": "811\u2013999",
+      "expectedBelt": "PURPLE",
+      "provenance": "owner-override-2-cropped-row"
+    },
+    {
+      "id": "3dayselect-exceptions-nj-0703",
+      "service": "3 Day Select",
+      "kind": "exceptions",
+      "state": "NJ",
+      "code": "070 3",
+      "expectedBelt": "RED",
+      "provenance": "photo"
+    },
+    {
+      "id": "3dayselect-exceptions-nj-0709",
+      "service": "3 Day Select",
+      "kind": "exceptions",
+      "state": "NJ",
+      "code": "070 9",
+      "expectedBelt": "RED",
+      "provenance": "photo"
+    },
+    {
+      "id": "3dayselect-exceptions-nj-0759",
+      "service": "3 Day Select",
+      "kind": "exceptions",
+      "state": "NJ",
+      "code": "075 9",
+      "expectedBelt": "RED",
+      "provenance": "photo"
+    },
+    {
+      "id": "3dayselect-exceptions-nj-0769",
+      "service": "3 Day Select",
+      "kind": "exceptions",
+      "state": "NJ",
+      "code": "076 9",
+      "expectedBelt": "RED",
+      "provenance": "photo"
+    },
+    {
+      "id": "3dayselect-exceptions-nj-0770",
+      "service": "3 Day Select",
+      "kind": "exceptions",
+      "state": "NJ",
+      "code": "077 0",
+      "expectedBelt": "RED",
+      "provenance": "photo"
+    },
+    {
+      "id": "3dayselect-exceptions-nj-0784",
+      "service": "3 Day Select",
+      "kind": "exceptions",
+      "state": "NJ",
+      "code": "078 4",
+      "expectedBelt": "RED",
+      "provenance": "owner-override-3"
+    },
+    {
+      "id": "3dayselect-exceptions-nj-0789",
+      "service": "3 Day Select",
+      "kind": "exceptions",
+      "state": "NJ",
+      "code": "078 9",
+      "expectedBelt": "RED",
+      "provenance": "photo"
+    },
+    {
+      "id": "3dayselect-exceptions-nj-0799",
+      "service": "3 Day Select",
+      "kind": "exceptions",
+      "state": "NJ",
+      "code": "079 9",
+      "expectedBelt": "ORANGE",
+      "provenance": "owner-override-3"
+    },
+    {
+      "id": "3dayselect-exceptions-nj-0819",
+      "service": "3 Day Select",
+      "kind": "exceptions",
+      "state": "NJ",
+      "code": "081 9",
+      "expectedBelt": "RED",
+      "provenance": "photo"
+    },
+    {
+      "id": "3dayselect-exceptions-nj-0829",
+      "service": "3 Day Select",
+      "kind": "exceptions",
+      "state": "NJ",
+      "code": "082 9",
+      "expectedBelt": "RED",
+      "provenance": "owner-override-3"
+    },
+    {
+      "id": "3dayselect-exceptions-nj-0839",
+      "service": "3 Day Select",
+      "kind": "exceptions",
+      "state": "NJ",
+      "code": "083 9",
+      "expectedBelt": "RED",
+      "provenance": "owner-override-3"
+    },
+    {
+      "id": "3dayselect-exceptions-nj-0860",
+      "service": "3 Day Select",
+      "kind": "exceptions",
+      "state": "NJ",
+      "code": "086 0",
+      "expectedBelt": "RED",
+      "provenance": "photo"
+    },
+    {
+      "id": "3dayselect-exceptions-nj-0871",
+      "service": "3 Day Select",
+      "kind": "exceptions",
+      "state": "NJ",
+      "code": "087 1",
+      "expectedBelt": "RED",
+      "provenance": "photo"
+    },
+    {
+      "id": "3dayselect-exceptions-nj-0889",
+      "service": "3 Day Select",
+      "kind": "exceptions",
+      "state": "NJ",
+      "code": "088 9",
+      "expectedBelt": "RED",
+      "provenance": "photo"
+    },
+    {
+      "id": "3dayselect-exceptions-nj-0899",
+      "service": "3 Day Select",
+      "kind": "exceptions",
+      "state": "NJ",
+      "code": "089 9",
+      "expectedBelt": "RED",
+      "provenance": "photo"
+    },
+    {
+      "id": "3dayselect-exceptions-ms-3950",
+      "service": "3 Day Select",
+      "kind": "exceptions",
+      "state": "MS",
+      "code": "395 0",
+      "expectedBelt": "BLUE",
+      "provenance": "photo"
+    },
+    {
+      "id": "3dayselect-exceptions-sd-5119",
+      "service": "3 Day Select",
+      "kind": "exceptions",
+      "state": "SD",
+      "code": "511 9",
+      "expectedBelt": "BLUE",
+      "provenance": "photo"
+    },
+    {
+      "id": "3dayselect-exceptions-sd-5719",
+      "service": "3 Day Select",
+      "kind": "exceptions",
+      "state": "SD",
+      "code": "571 9",
+      "expectedBelt": "BROWN",
+      "provenance": "photo"
+    },
+    {
+      "id": "3dayselect-exceptions-nd-5819",
+      "service": "3 Day Select",
+      "kind": "exceptions",
+      "state": "ND",
+      "code": "581 9",
+      "expectedBelt": "BROWN",
+      "provenance": "photo"
+    },
+    {
+      "id": "3dayselect-exceptions-nd-5820",
+      "service": "3 Day Select",
+      "kind": "exceptions",
+      "state": "ND",
+      "code": "582 0",
+      "expectedBelt": "BROWN",
+      "provenance": "photo"
+    },
+    {
+      "id": "3dayselect-exceptions-tx-7864",
+      "service": "3 Day Select",
+      "kind": "exceptions",
+      "state": "TX",
+      "code": "786 4",
+      "expectedBelt": "ORANGE",
+      "provenance": "photo"
+    },
+    {
+      "id": "3dayselect-exceptions-tx-7879",
+      "service": "3 Day Select",
+      "kind": "exceptions",
+      "state": "TX",
+      "code": "787 9",
+      "expectedBelt": "ORANGE",
+      "provenance": "photo"
+    },
+    {
+      "id": "3dayselect-exceptions-tx-7960",
+      "service": "3 Day Select",
+      "kind": "exceptions",
+      "state": "TX",
+      "code": "796 0",
+      "expectedBelt": "ORANGE",
+      "provenance": "photo"
+    },
+    {
+      "id": "3dayselect-exceptions-tx-7999",
+      "service": "3 Day Select",
+      "kind": "exceptions",
+      "state": "TX",
+      "code": "799 9",
+      "expectedBelt": "ORANGE",
+      "provenance": "photo"
+    },
+    {
+      "id": "3dayselect-exceptions-co-8113",
+      "service": "3 Day Select",
+      "kind": "exceptions",
+      "state": "CO",
+      "code": "811 3",
+      "expectedBelt": "ORANGE",
+      "provenance": "photo"
+    },
+    {
+      "id": "3dayselect-exceptions-co-8120",
+      "service": "3 Day Select",
+      "kind": "exceptions",
+      "state": "CO",
+      "code": "812 0",
+      "expectedBelt": "ORANGE",
+      "provenance": "photo"
+    },
+    {
+      "id": "3dayselect-exceptions-co-8137",
+      "service": "3 Day Select",
+      "kind": "exceptions",
+      "state": "CO",
+      "code": "813 7",
+      "expectedBelt": "ORANGE",
+      "provenance": "photo"
+    },
+    {
+      "id": "3dayselect-exceptions-co-8160",
+      "service": "3 Day Select",
+      "kind": "exceptions",
+      "state": "CO",
+      "code": "816 0",
+      "expectedBelt": "ORANGE",
+      "provenance": "photo"
+    },
+    {
+      "id": "3dayselect-exceptions-co-8161",
+      "service": "3 Day Select",
+      "kind": "exceptions",
+      "state": "CO",
+      "code": "816 1",
+      "expectedBelt": "ORANGE",
+      "provenance": "photo"
+    },
+    {
+      "id": "3dayselect-exceptions-wy-8200",
+      "service": "3 Day Select",
+      "kind": "exceptions",
+      "state": "WY",
+      "code": "820 0",
+      "expectedBelt": "ORANGE",
+      "provenance": "photo"
+    },
+    {
+      "id": "3dayselect-exceptions-wy-8201",
+      "service": "3 Day Select",
+      "kind": "exceptions",
+      "state": "WY",
+      "code": "820 1",
+      "expectedBelt": "ORANGE",
+      "provenance": "photo"
+    },
+    {
+      "id": "3dayselect-exceptions-ny-1481",
+      "service": "3 Day Select",
+      "kind": "exceptions",
+      "state": "NY",
+      "code": "148 1",
+      "expectedBelt": "GOLD",
+      "provenance": "owner-override-5"
+    },
+    {
+      "id": "3dayselect-exceptions-anystate-ends2s",
+      "service": "3 Day Select",
+      "kind": "exceptions",
+      "state": "Any state",
+      "code": "ends 2S",
+      "expectedBelt": "BLUE",
+      "provenance": "owner-override-7"
+    },
+    {
+      "id": "3dayselect-exceptions-anystate-ends1s",
+      "service": "3 Day Select",
+      "kind": "exceptions",
+      "state": "Any state",
+      "code": "ends 1S",
+      "expectedBelt": "PURPLE",
+      "provenance": "owner-override-7"
+    },
+    {
+      "id": "2dayair-main-ma-010-024",
+      "service": "2 Day Air",
+      "kind": "main",
+      "state": "MA",
+      "code": "010\u2013024",
+      "expectedBelt": "GOLD",
+      "provenance": "photo"
+    },
+    {
+      "id": "2dayair-main-ma-025-026",
+      "service": "2 Day Air",
+      "kind": "main",
+      "state": "MA",
+      "code": "025\u2013026",
+      "expectedBelt": "BLUE",
+      "provenance": "photo"
+    },
+    {
+      "id": "2dayair-main-mari-027-029",
+      "service": "2 Day Air",
+      "kind": "main",
+      "state": "MA, RI",
+      "code": "027\u2013029",
+      "expectedBelt": "GOLD",
+      "provenance": "photo"
+    },
+    {
+      "id": "2dayair-main-nh-030-033",
+      "service": "2 Day Air",
+      "kind": "main",
+      "state": "NH",
+      "code": "030\u2013033",
+      "expectedBelt": "BLUE",
+      "provenance": "photo"
+    },
+    {
+      "id": "2dayair-main-nh-0340",
+      "service": "2 Day Air",
+      "kind": "main",
+      "state": "NH",
+      "code": "034 0",
+      "expectedBelt": "GOLD",
+      "provenance": "photo"
+    },
+    {
+      "id": "2dayair-main-nhme-035-049",
+      "service": "2 Day Air",
+      "kind": "main",
+      "state": "NH, ME",
+      "code": "035\u2013049",
+      "expectedBelt": "BLUE",
+      "provenance": "photo"
+    },
+    {
+      "id": "2dayair-main-vt-050-059",
+      "service": "2 Day Air",
+      "kind": "main",
+      "state": "VT",
+      "code": "050\u2013059",
+      "expectedBelt": "GOLD",
+      "provenance": "photo"
+    },
+    {
+      "id": "2dayair-main-ct-060-069",
+      "service": "2 Day Air",
+      "kind": "main",
+      "state": "CT",
+      "code": "060\u2013069",
+      "expectedBelt": "GOLD",
+      "provenance": "photo"
+    },
+    {
+      "id": "2dayair-main-nj-070-089",
+      "service": "2 Day Air",
+      "kind": "main",
+      "state": "NJ",
+      "code": "070\u2013089",
+      "expectedBelt": "CHECK",
+      "provenance": "photo"
+    },
+    {
+      "id": "2dayair-main-ny-100-108",
+      "service": "2 Day Air",
+      "kind": "main",
+      "state": "NY",
+      "code": "100\u2013108",
+      "expectedBelt": "YELLOW",
+      "provenance": "photo"
+    },
+    {
+      "id": "2dayair-main-ny-109",
+      "service": "2 Day Air",
+      "kind": "main",
+      "state": "NY",
+      "code": "109",
+      "expectedBelt": "ORANGE",
+      "provenance": "photo"
+    },
+    {
+      "id": "2dayair-main-ny-110-119",
+      "service": "2 Day Air",
+      "kind": "main",
+      "state": "NY",
+      "code": "110\u2013119",
+      "expectedBelt": "PINK",
+      "provenance": "photo"
+    },
+    {
+      "id": "2dayair-main-ny-120-121",
+      "service": "2 Day Air",
+      "kind": "main",
+      "state": "NY",
+      "code": "120\u2013121",
+      "expectedBelt": "GOLD",
+      "provenance": "owner-override-6"
+    },
+    {
+      "id": "2dayair-main-ny-122-127",
+      "service": "2 Day Air",
+      "kind": "main",
+      "state": "NY",
+      "code": "122\u2013127",
+      "expectedBelt": "ORANGE",
+      "provenance": "photo"
+    },
+    {
+      "id": "2dayair-main-ny-128-139",
+      "service": "2 Day Air",
+      "kind": "main",
+      "state": "NY",
+      "code": "128\u2013139",
+      "expectedBelt": "GOLD",
+      "provenance": "photo"
+    },
+    {
+      "id": "2dayair-main-ny-140-147",
+      "service": "2 Day Air",
+      "kind": "main",
+      "state": "NY",
+      "code": "140\u2013147",
+      "expectedBelt": "ORANGE",
+      "provenance": "photo"
+    },
+    {
+      "id": "2dayair-main-ny-148-149",
+      "service": "2 Day Air",
+      "kind": "main",
+      "state": "NY",
+      "code": "148\u2013149",
+      "expectedBelt": "ORANGE",
+      "provenance": "photo"
+    },
+    {
+      "id": "2dayair-main-pa-150-167",
+      "service": "2 Day Air",
+      "kind": "main",
+      "state": "PA",
+      "code": "150\u2013167",
+      "expectedBelt": "GREEN",
+      "provenance": "photo"
+    },
+    {
+      "id": "2dayair-main-pa-168-178",
+      "service": "2 Day Air",
+      "kind": "main",
+      "state": "PA",
+      "code": "168\u2013178",
+      "expectedBelt": "GREEN",
+      "provenance": "photo"
+    },
+    {
+      "id": "2dayair-main-pa-179-189",
+      "service": "2 Day Air",
+      "kind": "main",
+      "state": "PA",
+      "code": "179\u2013189",
+      "expectedBelt": "GREEN",
+      "provenance": "photo"
+    },
+    {
+      "id": "2dayair-main-pa-190-194",
+      "service": "2 Day Air",
+      "kind": "main",
+      "state": "PA",
+      "code": "190\u2013194",
+      "expectedBelt": "ORANGE",
+      "provenance": "photo"
+    },
+    {
+      "id": "2dayair-main-pade-195-199",
+      "service": "2 Day Air",
+      "kind": "main",
+      "state": "PA, DE",
+      "code": "195\u2013199",
+      "expectedBelt": "GREEN",
+      "provenance": "photo"
+    },
+    {
+      "id": "2dayair-main-dcmd-200-219",
+      "service": "2 Day Air",
+      "kind": "main",
+      "state": "DC, MD",
+      "code": "200\u2013219",
+      "expectedBelt": "GREEN",
+      "provenance": "photo"
+    },
+    {
+      "id": "2dayair-main-va-220-238",
+      "service": "2 Day Air",
+      "kind": "main",
+      "state": "VA",
+      "code": "220\u2013238",
+      "expectedBelt": "YELLOW",
+      "provenance": "photo"
+    },
+    {
+      "id": "2dayair-main-vawv-239-269",
+      "service": "2 Day Air",
+      "kind": "main",
+      "state": "VA, WV",
+      "code": "239\u2013269",
+      "expectedBelt": "YELLOW",
+      "provenance": "photo"
+    },
+    {
+      "id": "2dayair-main-ncsc-270-299",
+      "service": "2 Day Air",
+      "kind": "main",
+      "state": "NC, SC",
+      "code": "270\u2013299",
+      "expectedBelt": "YELLOW",
+      "provenance": "photo"
+    },
+    {
+      "id": "2dayair-main-ga-300-319",
+      "service": "2 Day Air",
+      "kind": "main",
+      "state": "GA",
+      "code": "300\u2013319",
+      "expectedBelt": "BLUE",
+      "provenance": "photo"
+    },
+    {
+      "id": "2dayair-main-fl-320-349",
+      "service": "2 Day Air",
+      "kind": "main",
+      "state": "FL",
+      "code": "320\u2013349",
+      "expectedBelt": "PURPLE",
+      "provenance": "photo"
+    },
+    {
+      "id": "2dayair-main-al-350-369",
+      "service": "2 Day Air",
+      "kind": "main",
+      "state": "AL",
+      "code": "350\u2013369",
+      "expectedBelt": "PURPLE",
+      "provenance": "photo"
+    },
+    {
+      "id": "2dayair-main-tn-370-385",
+      "service": "2 Day Air",
+      "kind": "main",
+      "state": "TN",
+      "code": "370\u2013385",
+      "expectedBelt": "BROWN",
+      "provenance": "photo"
+    },
+    {
+      "id": "2dayair-main-ms-386-399",
+      "service": "2 Day Air",
+      "kind": "main",
+      "state": "MS",
+      "code": "386\u2013399",
+      "expectedBelt": "PURPLE",
+      "provenance": "photo"
+    },
+    {
+      "id": "2dayair-main-ky-400-419",
+      "service": "2 Day Air",
+      "kind": "main",
+      "state": "KY",
+      "code": "400\u2013419",
+      "expectedBelt": "BROWN",
+      "provenance": "photo"
+    },
+    {
+      "id": "2dayair-main-ky-420",
+      "service": "2 Day Air",
+      "kind": "main",
+      "state": "KY",
+      "code": "420",
+      "expectedBelt": "PURPLE",
+      "provenance": "photo"
+    },
+    {
+      "id": "2dayair-main-ky-421-429",
+      "service": "2 Day Air",
+      "kind": "main",
+      "state": "KY",
+      "code": "421\u2013429",
+      "expectedBelt": "BROWN",
+      "provenance": "photo"
+    },
+    {
+      "id": "2dayair-main-oh-430-459",
+      "service": "2 Day Air",
+      "kind": "main",
+      "state": "OH",
+      "code": "430\u2013459",
+      "expectedBelt": "ORANGE",
+      "provenance": "photo"
+    },
+    {
+      "id": "2dayair-main-in-460-479",
+      "service": "2 Day Air",
+      "kind": "main",
+      "state": "IN",
+      "code": "460\u2013479",
+      "expectedBelt": "PURPLE",
+      "provenance": "photo"
+    },
+    {
+      "id": "2dayair-main-mi-480-497",
+      "service": "2 Day Air",
+      "kind": "main",
+      "state": "MI",
+      "code": "480\u2013497",
+      "expectedBelt": "ORANGE",
+      "provenance": "photo"
+    },
+    {
+      "id": "2dayair-main-all-498-599",
+      "service": "2 Day Air",
+      "kind": "main",
+      "state": "*",
+      "code": "498\u2013599",
+      "expectedBelt": "PURPLE",
+      "provenance": "photo"
+    },
+    {
+      "id": "2dayair-main-il-600-608",
+      "service": "2 Day Air",
+      "kind": "main",
+      "state": "IL",
+      "code": "600\u2013608",
+      "expectedBelt": "YELLOW",
+      "provenance": "photo"
+    },
+    {
+      "id": "2dayair-main-il-609-629",
+      "service": "2 Day Air",
+      "kind": "main",
+      "state": "IL",
+      "code": "609\u2013629",
+      "expectedBelt": "ORANGE",
+      "provenance": "photo"
+    },
+    {
+      "id": "2dayair-main-mo-630-639",
+      "service": "2 Day Air",
+      "kind": "main",
+      "state": "MO",
+      "code": "630\u2013639",
+      "expectedBelt": "BLUE",
+      "provenance": "photo"
+    },
+    {
+      "id": "2dayair-main-all-640-729",
+      "service": "2 Day Air",
+      "kind": "main",
+      "state": "*",
+      "code": "640\u2013729",
+      "expectedBelt": "PURPLE",
+      "provenance": "photo"
+    },
+    {
+      "id": "2dayair-main-ok-730-740",
+      "service": "2 Day Air",
+      "kind": "main",
+      "state": "OK",
+      "code": "730\u2013740",
+      "expectedBelt": "PURPLE",
+      "provenance": "photo"
+    },
+    {
+      "id": "2dayair-main-ok-7419",
+      "service": "2 Day Air",
+      "kind": "main",
+      "state": "OK",
+      "code": "741 9",
+      "expectedBelt": "ORANGE",
+      "provenance": "photo"
+    },
+    {
+      "id": "2dayair-main-ok-742-749",
+      "service": "2 Day Air",
+      "kind": "main",
+      "state": "OK",
+      "code": "742\u2013749",
+      "expectedBelt": "PURPLE",
+      "provenance": "photo"
+    },
+    {
+      "id": "2dayair-main-all-750-999",
+      "service": "2 Day Air",
+      "kind": "main",
+      "state": "*",
+      "code": "750\u2013999",
+      "expectedBelt": "PURPLE",
+      "provenance": "photo"
+    },
+    {
+      "id": "2dayair-main-all-world",
+      "service": "2 Day Air",
+      "kind": "main",
+      "state": "*",
+      "code": "WORLD",
+      "expectedBelt": "PURPLE",
+      "provenance": "photo"
+    },
+    {
+      "id": "2dayair-exceptions-nj-0703",
+      "service": "2 Day Air",
+      "kind": "exceptions",
+      "state": "NJ",
+      "code": "070 3",
+      "expectedBelt": "RED",
+      "provenance": "photo"
+    },
+    {
+      "id": "2dayair-exceptions-nj-0709",
+      "service": "2 Day Air",
+      "kind": "exceptions",
+      "state": "NJ",
+      "code": "070 9",
+      "expectedBelt": "RED",
+      "provenance": "photo"
+    },
+    {
+      "id": "2dayair-exceptions-nj-0759",
+      "service": "2 Day Air",
+      "kind": "exceptions",
+      "state": "NJ",
+      "code": "075 9",
+      "expectedBelt": "RED",
+      "provenance": "photo"
+    },
+    {
+      "id": "2dayair-exceptions-nj-0769",
+      "service": "2 Day Air",
+      "kind": "exceptions",
+      "state": "NJ",
+      "code": "076 9",
+      "expectedBelt": "RED",
+      "provenance": "photo"
+    },
+    {
+      "id": "2dayair-exceptions-nj-0770",
+      "service": "2 Day Air",
+      "kind": "exceptions",
+      "state": "NJ",
+      "code": "077 0",
+      "expectedBelt": "RED",
+      "provenance": "photo"
+    },
+    {
+      "id": "2dayair-exceptions-nj-0784",
+      "service": "2 Day Air",
+      "kind": "exceptions",
+      "state": "NJ",
+      "code": "078 4",
+      "expectedBelt": "RED",
+      "provenance": "owner-override-3"
+    },
+    {
+      "id": "2dayair-exceptions-nj-0789",
+      "service": "2 Day Air",
+      "kind": "exceptions",
+      "state": "NJ",
+      "code": "078 9",
+      "expectedBelt": "RED",
+      "provenance": "photo"
+    },
+    {
+      "id": "2dayair-exceptions-nj-0799",
+      "service": "2 Day Air",
+      "kind": "exceptions",
+      "state": "NJ",
+      "code": "079 9",
+      "expectedBelt": "ORANGE",
+      "provenance": "owner-override-3"
+    },
+    {
+      "id": "2dayair-exceptions-nj-0819",
+      "service": "2 Day Air",
+      "kind": "exceptions",
+      "state": "NJ",
+      "code": "081 9",
+      "expectedBelt": "RED",
+      "provenance": "photo"
+    },
+    {
+      "id": "2dayair-exceptions-nj-0829",
+      "service": "2 Day Air",
+      "kind": "exceptions",
+      "state": "NJ",
+      "code": "082 9",
+      "expectedBelt": "RED",
+      "provenance": "owner-override-3"
+    },
+    {
+      "id": "2dayair-exceptions-nj-0839",
+      "service": "2 Day Air",
+      "kind": "exceptions",
+      "state": "NJ",
+      "code": "083 9",
+      "expectedBelt": "RED",
+      "provenance": "owner-override-3"
+    },
+    {
+      "id": "2dayair-exceptions-nj-0860",
+      "service": "2 Day Air",
+      "kind": "exceptions",
+      "state": "NJ",
+      "code": "086 0",
+      "expectedBelt": "RED",
+      "provenance": "photo"
+    },
+    {
+      "id": "2dayair-exceptions-nj-0871",
+      "service": "2 Day Air",
+      "kind": "exceptions",
+      "state": "NJ",
+      "code": "087 1",
+      "expectedBelt": "RED",
+      "provenance": "photo"
+    },
+    {
+      "id": "2dayair-exceptions-nj-0889",
+      "service": "2 Day Air",
+      "kind": "exceptions",
+      "state": "NJ",
+      "code": "088 9",
+      "expectedBelt": "RED",
+      "provenance": "photo"
+    },
+    {
+      "id": "2dayair-exceptions-nj-0899",
+      "service": "2 Day Air",
+      "kind": "exceptions",
+      "state": "NJ",
+      "code": "089 9",
+      "expectedBelt": "RED",
+      "provenance": "photo"
+    },
+    {
+      "id": "2dayair-exceptions-ny-1481",
+      "service": "2 Day Air",
+      "kind": "exceptions",
+      "state": "NY",
+      "code": "148 1",
+      "expectedBelt": "GOLD",
+      "provenance": "owner-override-5"
+    },
+    {
+      "id": "2dayair-exceptions-anystate-ends2s",
+      "service": "2 Day Air",
+      "kind": "exceptions",
+      "state": "Any state",
+      "code": "ends 2S",
+      "expectedBelt": "BLUE",
+      "provenance": "owner-override-7"
+    },
+    {
+      "id": "2dayair-exceptions-anystate-ends1s",
+      "service": "2 Day Air",
+      "kind": "exceptions",
+      "state": "Any state",
+      "code": "ends 1S",
+      "expectedBelt": "PURPLE",
+      "provenance": "owner-override-7"
+    },
+    {
+      "id": "nextdayair-main-ma-010-024",
+      "service": "Next Day Air",
+      "kind": "main",
+      "state": "MA",
+      "code": "010\u2013024",
+      "expectedBelt": "GOLD",
+      "provenance": "photo"
+    },
+    {
+      "id": "nextdayair-main-ma-025-026",
+      "service": "Next Day Air",
+      "kind": "main",
+      "state": "MA",
+      "code": "025\u2013026",
+      "expectedBelt": "PURPLE",
+      "provenance": "photo"
+    },
+    {
+      "id": "nextdayair-main-mari-027-029",
+      "service": "Next Day Air",
+      "kind": "main",
+      "state": "MA, RI",
+      "code": "027\u2013029",
+      "expectedBelt": "GOLD",
+      "provenance": "photo"
+    },
+    {
+      "id": "nextdayair-main-nh-030-033",
+      "service": "Next Day Air",
+      "kind": "main",
+      "state": "NH",
+      "code": "030\u2013033",
+      "expectedBelt": "PURPLE",
+      "provenance": "photo"
+    },
+    {
+      "id": "nextdayair-main-nh-0340",
+      "service": "Next Day Air",
+      "kind": "main",
+      "state": "NH",
+      "code": "034 0",
+      "expectedBelt": "GOLD",
+      "provenance": "photo"
+    },
+    {
+      "id": "nextdayair-main-nhme-035-049",
+      "service": "Next Day Air",
+      "kind": "main",
+      "state": "NH, ME",
+      "code": "035\u2013049",
+      "expectedBelt": "PURPLE",
+      "provenance": "photo"
+    },
+    {
+      "id": "nextdayair-main-vt-050-059",
+      "service": "Next Day Air",
+      "kind": "main",
+      "state": "VT",
+      "code": "050\u2013059",
+      "expectedBelt": "GOLD",
+      "provenance": "photo"
+    },
+    {
+      "id": "nextdayair-main-ct-060-069",
+      "service": "Next Day Air",
+      "kind": "main",
+      "state": "CT",
+      "code": "060\u2013069",
+      "expectedBelt": "GOLD",
+      "provenance": "photo"
+    },
+    {
+      "id": "nextdayair-main-nj-070-089",
+      "service": "Next Day Air",
+      "kind": "main",
+      "state": "NJ",
+      "code": "070\u2013089",
+      "expectedBelt": "CHECK",
+      "provenance": "photo"
+    },
+    {
+      "id": "nextdayair-main-ny-100-108",
+      "service": "Next Day Air",
+      "kind": "main",
+      "state": "NY",
+      "code": "100\u2013108",
+      "expectedBelt": "YELLOW",
+      "provenance": "photo"
+    },
+    {
+      "id": "nextdayair-main-ny-109",
+      "service": "Next Day Air",
+      "kind": "main",
+      "state": "NY",
+      "code": "109",
+      "expectedBelt": "ORANGE",
+      "provenance": "photo"
+    },
+    {
+      "id": "nextdayair-main-ny-110-119",
+      "service": "Next Day Air",
+      "kind": "main",
+      "state": "NY",
+      "code": "110\u2013119",
+      "expectedBelt": "PINK",
+      "provenance": "photo"
+    },
+    {
+      "id": "nextdayair-main-ny-120-121",
+      "service": "Next Day Air",
+      "kind": "main",
+      "state": "NY",
+      "code": "120\u2013121",
+      "expectedBelt": "GOLD",
+      "provenance": "owner-override-6"
+    },
+    {
+      "id": "nextdayair-main-ny-122-127",
+      "service": "Next Day Air",
+      "kind": "main",
+      "state": "NY",
+      "code": "122\u2013127",
+      "expectedBelt": "ORANGE",
+      "provenance": "photo"
+    },
+    {
+      "id": "nextdayair-main-ny-128-135",
+      "service": "Next Day Air",
+      "kind": "main",
+      "state": "NY",
+      "code": "128\u2013135",
+      "expectedBelt": "GOLD",
+      "provenance": "photo"
+    },
+    {
+      "id": "nextdayair-main-ny-136",
+      "service": "Next Day Air",
+      "kind": "main",
+      "state": "NY",
+      "code": "136",
+      "expectedBelt": "PURPLE",
+      "provenance": "photo"
+    },
+    {
+      "id": "nextdayair-main-ny-137-139",
+      "service": "Next Day Air",
+      "kind": "main",
+      "state": "NY",
+      "code": "137\u2013139",
+      "expectedBelt": "GOLD",
+      "provenance": "photo"
+    },
+    {
+      "id": "nextdayair-main-ny-140-149",
+      "service": "Next Day Air",
+      "kind": "main",
+      "state": "NY",
+      "code": "140\u2013149",
+      "expectedBelt": "PURPLE",
+      "provenance": "photo"
+    },
+    {
+      "id": "nextdayair-main-pa-150-167",
+      "service": "Next Day Air",
+      "kind": "main",
+      "state": "PA",
+      "code": "150\u2013167",
+      "expectedBelt": "PURPLE",
+      "provenance": "photo"
+    },
+    {
+      "id": "nextdayair-main-pa-168-178",
+      "service": "Next Day Air",
+      "kind": "main",
+      "state": "PA",
+      "code": "168\u2013178",
+      "expectedBelt": "GREEN",
+      "provenance": "photo"
+    },
+    {
+      "id": "nextdayair-main-pa-179-189",
+      "service": "Next Day Air",
+      "kind": "main",
+      "state": "PA",
+      "code": "179\u2013189",
+      "expectedBelt": "GREEN",
+      "provenance": "photo"
+    },
+    {
+      "id": "nextdayair-main-pa-190-194",
+      "service": "Next Day Air",
+      "kind": "main",
+      "state": "PA",
+      "code": "190\u2013194",
+      "expectedBelt": "ORANGE",
+      "provenance": "photo"
+    },
+    {
+      "id": "nextdayair-main-pade-195-199",
+      "service": "Next Day Air",
+      "kind": "main",
+      "state": "PA, DE",
+      "code": "195\u2013199",
+      "expectedBelt": "GREEN",
+      "provenance": "photo"
+    },
+    {
+      "id": "nextdayair-main-dcmd-200-219",
+      "service": "Next Day Air",
+      "kind": "main",
+      "state": "DC, MD",
+      "code": "200\u2013219",
+      "expectedBelt": "GREEN",
+      "provenance": "photo"
+    },
+    {
+      "id": "nextdayair-main-all-220-999",
+      "service": "Next Day Air",
+      "kind": "main",
+      "state": "*",
+      "code": "220\u2013999",
+      "expectedBelt": "PURPLE",
+      "provenance": "photo"
+    },
+    {
+      "id": "nextdayair-main-all-world",
+      "service": "Next Day Air",
+      "kind": "main",
+      "state": "*",
+      "code": "WORLD",
+      "expectedBelt": "PURPLE",
+      "provenance": "photo"
+    },
+    {
+      "id": "nextdayair-main-all-all1daeam",
+      "service": "Next Day Air",
+      "kind": "main",
+      "state": "*",
+      "code": "ALL 1DA EAM",
+      "expectedBelt": "PURPLE",
+      "provenance": "photo"
+    },
+    {
+      "id": "nextdayair-exceptions-nj-0703",
+      "service": "Next Day Air",
+      "kind": "exceptions",
+      "state": "NJ",
+      "code": "070 3",
+      "expectedBelt": "RED",
+      "provenance": "photo"
+    },
+    {
+      "id": "nextdayair-exceptions-nj-0709",
+      "service": "Next Day Air",
+      "kind": "exceptions",
+      "state": "NJ",
+      "code": "070 9",
+      "expectedBelt": "RED",
+      "provenance": "photo"
+    },
+    {
+      "id": "nextdayair-exceptions-nj-0759",
+      "service": "Next Day Air",
+      "kind": "exceptions",
+      "state": "NJ",
+      "code": "075 9",
+      "expectedBelt": "RED",
+      "provenance": "photo"
+    },
+    {
+      "id": "nextdayair-exceptions-nj-0769",
+      "service": "Next Day Air",
+      "kind": "exceptions",
+      "state": "NJ",
+      "code": "076 9",
+      "expectedBelt": "RED",
+      "provenance": "photo"
+    },
+    {
+      "id": "nextdayair-exceptions-nj-0770",
+      "service": "Next Day Air",
+      "kind": "exceptions",
+      "state": "NJ",
+      "code": "077 0",
+      "expectedBelt": "RED",
+      "provenance": "photo"
+    },
+    {
+      "id": "nextdayair-exceptions-nj-0784",
+      "service": "Next Day Air",
+      "kind": "exceptions",
+      "state": "NJ",
+      "code": "078 4",
+      "expectedBelt": "RED",
+      "provenance": "owner-override-3"
+    },
+    {
+      "id": "nextdayair-exceptions-nj-0789",
+      "service": "Next Day Air",
+      "kind": "exceptions",
+      "state": "NJ",
+      "code": "078 9",
+      "expectedBelt": "RED",
+      "provenance": "photo"
+    },
+    {
+      "id": "nextdayair-exceptions-nj-0799",
+      "service": "Next Day Air",
+      "kind": "exceptions",
+      "state": "NJ",
+      "code": "079 9",
+      "expectedBelt": "ORANGE",
+      "provenance": "owner-override-3"
+    },
+    {
+      "id": "nextdayair-exceptions-nj-0819",
+      "service": "Next Day Air",
+      "kind": "exceptions",
+      "state": "NJ",
+      "code": "081 9",
+      "expectedBelt": "RED",
+      "provenance": "photo"
+    },
+    {
+      "id": "nextdayair-exceptions-nj-0829",
+      "service": "Next Day Air",
+      "kind": "exceptions",
+      "state": "NJ",
+      "code": "082 9",
+      "expectedBelt": "RED",
+      "provenance": "owner-override-3"
+    },
+    {
+      "id": "nextdayair-exceptions-nj-0839",
+      "service": "Next Day Air",
+      "kind": "exceptions",
+      "state": "NJ",
+      "code": "083 9",
+      "expectedBelt": "RED",
+      "provenance": "owner-override-3"
+    },
+    {
+      "id": "nextdayair-exceptions-nj-0860",
+      "service": "Next Day Air",
+      "kind": "exceptions",
+      "state": "NJ",
+      "code": "086 0",
+      "expectedBelt": "RED",
+      "provenance": "photo"
+    },
+    {
+      "id": "nextdayair-exceptions-nj-0871",
+      "service": "Next Day Air",
+      "kind": "exceptions",
+      "state": "NJ",
+      "code": "087 1",
+      "expectedBelt": "RED",
+      "provenance": "photo"
+    },
+    {
+      "id": "nextdayair-exceptions-nj-0889",
+      "service": "Next Day Air",
+      "kind": "exceptions",
+      "state": "NJ",
+      "code": "088 9",
+      "expectedBelt": "RED",
+      "provenance": "photo"
+    },
+    {
+      "id": "nextdayair-exceptions-nj-0899",
+      "service": "Next Day Air",
+      "kind": "exceptions",
+      "state": "NJ",
+      "code": "089 9",
+      "expectedBelt": "RED",
+      "provenance": "photo"
+    },
+    {
+      "id": "nextdayair-exceptions-anystate-ends2s",
+      "service": "Next Day Air",
+      "kind": "exceptions",
+      "state": "Any state",
+      "code": "ends 2S",
+      "expectedBelt": "BLUE",
+      "provenance": "owner-override-7"
+    },
+    {
+      "id": "nextdayair-exceptions-anystate-ends1s",
+      "service": "Next Day Air",
+      "kind": "exceptions",
+      "state": "Any state",
+      "code": "ends 1S",
+      "expectedBelt": "PURPLE",
+      "provenance": "owner-override-7"
+    }
+  ]
+}
