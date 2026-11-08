@@ -210,7 +210,7 @@ Approved-label totals: **103 Easy,127 Medium,53 Hard**. No difficulty proposals 
 | S79 | `3dayselect-exceptions-ny-1481` | 3 Day Select | NY 148 1 | GOLD | Hard |
 | S80 | `3dayselect-exceptions-anystate-ends2s` | 3 Day Select | Any state ends 2S | BLUE | Hard |
 | S81 | `3dayselect-exceptions-anystate-ends1s` | 3 Day Select | Any state ends 1S | PURPLE | Hard |
-| S82 | `destination-plus-one-3ds` | 3 Day Select | NY 109 | PURPLE | Hard |
+| S82 | `destination-plus-one-3ds` | 3 Day Select +1 | NY 109 | PURPLE | Hard |
 | D01 | `2dayair-main-ma-010-024` | 2 Day Air | MA 010–024 | GOLD | Medium |
 | D02 | `2dayair-main-ma-025-026` | 2 Day Air | MA 025–026 | BLUE | Hard |
 | D03 | `2dayair-main-mari-027-029` | 2 Day Air | MA, RI 027–029 | GOLD | Medium |
@@ -270,7 +270,7 @@ Approved-label totals: **103 Easy,127 Medium,53 Hard**. No difficulty proposals 
 | D57 | `2dayair-exceptions-ny-1481` | 2 Day Air | NY 148 1 | GOLD | Hard |
 | D58 | `2dayair-exceptions-anystate-ends2s` | 2 Day Air | Any state ends 2S | BLUE | Hard |
 | D59 | `2dayair-exceptions-anystate-ends1s` | 2 Day Air | Any state ends 1S | PURPLE | Hard |
-| D60 | `destination-plus-one-2da` | 2 Day Air | NY 109 | PURPLE | Hard |
+| D60 | `destination-plus-one-2da` | 2 Day Air +1 | NY 109 | PURPLE | Hard |
 | N01 | `nextdayair-main-ma-010-024` | Next Day Air | MA 010–024 | GOLD | Medium |
 | N02 | `nextdayair-main-ma-025-026` | Next Day Air | MA 025–026 | PURPLE | Medium |
 | N03 | `nextdayair-main-mari-027-029` | Next Day Air | MA, RI 027–029 | GOLD | Medium |
@@ -296,7 +296,7 @@ Approved-label totals: **103 Easy,127 Medium,53 Hard**. No difficulty proposals 
 | N23 | `nextdayair-main-dcmd-200-219` | Next Day Air | DC, MD 200–219 | GREEN | Medium |
 | N24 | `nextdayair-main-all-220-999` | Next Day Air | * 220–999 | PURPLE | Medium |
 | N25 | `nextdayair-main-all-world` | Next Day Air | * WORLD | PURPLE | Medium |
-| N26 | `nextdayair-main-all-all1daeam` | Next Day Air | * ALL 1DA EAM | PURPLE | Hard |
+| N26 | `nextdayair-main-all-all1daeam` | Next Day Air EAM | Any route; source entry ALL 1DA EAM | PURPLE | Hard |
 | N27 | `nextdayair-exceptions-nj-0703` | Next Day Air | NJ 070 3 | RED | Easy |
 | N28 | `nextdayair-exceptions-nj-0709` | Next Day Air | NJ 070 9 | RED | Easy |
 | N29 | `nextdayair-exceptions-nj-0759` | Next Day Air | NJ 075 9 | RED | Easy |
@@ -314,7 +314,7 @@ Approved-label totals: **103 Easy,127 Medium,53 Hard**. No difficulty proposals 
 | N41 | `nextdayair-exceptions-nj-0899` | Next Day Air | NJ 089 9 | RED | Easy |
 | N42 | `nextdayair-exceptions-anystate-ends2s` | Next Day Air | Any state ends 2S | BLUE | Hard |
 | N43 | `nextdayair-exceptions-anystate-ends1s` | Next Day Air | Any state ends 1S | PURPLE | Hard |
-| N44 | `destination-plus-one-nda` | Next Day Air | NY 109 | PURPLE | Hard |
+| N44 | `destination-plus-one-nda` | Next Day Air +1 | NY 109 | PURPLE | Hard |
 
 ## Difficulty review complete
 
@@ -334,6 +334,10 @@ The owner corrected the earlier range interpretation and confirmed all six simil
 | Ground | AZ | 922 2-0 | BLUE | Hard |
 
 Future executable bank records must discriminate exact literals from numeric prefix ranges before normalization or overlap checks. A literal code must not be processed by a generic numeric-range parser.
+
+## Confirmed EAM destination/service context
+
+The owner confirmed that EAM appears in the destination/service field as **Next Day Air EAM**, with routing code in its own separate field. The chart rule ALL 1DA EAM goes PURPLE and keeps its approved Hard label. The JSON source transcription remains ALL 1DA EAM for traceability; it is not a code to place in the routing-code field. Ordinary Next Day Air, Next Day Air EAM and destination+1 remain distinct contexts. This does not approve combined EAM/+1/suffix precedence or new question wording.
 
 ## Held source rows
 

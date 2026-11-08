@@ -30,6 +30,10 @@ Apply this photo with only the owner's stated corrections; do not automatically 
 
 Ground `NE 575 3-6`, `NV 833 9-7`, `AZ 847 2-7`, `NV 864 4-7`, `NV 890 0-0` and `AZ 922 2-0` each denote one exact code. The owner corrected the initial “range” reply and confirmed the same literal interpretation for all similarly formatted entries. Preserve their displayed spaces and hyphens; do not derive numeric endpoints or strip the hyphen to invent a different code. This resolves interpretation without changing the literal source rows, existing r2 answers or owner-approved Hard labels. Future bank validation must distinguish this type from numeric prefix ranges. See [[2026-11-08-ranked-full-chart-review]] and [[2026-11-08-curated-ranked-bank-design]].
 
+### Owner clarification — EAM destination/service field
+
+The chart entry **ALL 1DA EAM → PURPLE** denotes a Next Day Air service context. The owner confirmed EAM is shown in the destination/service field as **Next Day Air EAM**, keeping routing code separate, as with the separation used for+1. Its answer remains PURPLE and its approved difficulty remains Hard. Preserve the chart transcription for source traceability; do not display ALL 1DA EAM as a routing code in future Ranked questions. Ordinary Next Day Air and EAM are distinct contexts. No compound EAM/+1/suffix question or precedence has been approved.
+
 ### +1 scope and implemented branch behavior
 
 The owner approved the plan in [[2026-11-08-chart-corrections-and-destination-plus-one]] and coverage in **Practice and the future Ranked bank**. Four explicit NY109 candidates now store optional `destinationModifier: '+1'` separately from unchanged base `svc` and routing `code`; each answer is PURPLE. The destination label shows e.g. **Ground +1 · NY**, while routing code stays **109**. The metadata survives translated questions/feedback, response records, saved results and workbook Service text. Old saved results without metadata retain their historical answers/counts and render normally.

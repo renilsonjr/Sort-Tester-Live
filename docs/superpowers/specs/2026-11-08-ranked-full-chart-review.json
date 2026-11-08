@@ -4869,9 +4869,17 @@
       "wordingStatus": "not-yet-reviewed",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [
-        "Wildcard fallback: explicitly exclude specific overrides; not a duplicate of a named-state row by text alone."
+        "Wildcard fallback: explicitly exclude specific overrides; not a duplicate of a named-state row by text alone.",
+        "Owner confirmed EAM belongs in the destination/service field, with the routing code kept separate. ALL 1DA EAM is retained here as source transcription, not a literal routing code to show in an executable question."
       ],
-      "approvedReview": "N26"
+      "approvedReview": "N26",
+      "destinationInterpretation": {
+        "baseService": "Next Day Air",
+        "serviceQualifier": "EAM",
+        "displayService": "Next Day Air EAM",
+        "routingCodeSeparate": true,
+        "ownerConfirmed": true
+      }
     },
     {
       "id": "nextdayair-exceptions-nj-0703",
