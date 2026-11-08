@@ -2,15 +2,15 @@
   "status": "Review-only inventory; not an executable or owner-approved full Ranked bank",
   "sourceRevision": "twilight-2026-11-08-r2",
   "existingApprovalsPreserved": 17,
-  "remainingDifficultyReviews": 138,
+  "remainingDifficultyReviews": 130,
   "scopeNote": "Every source row plus four explicit NY109 destination+1 service contexts. Raw review entries can require canonical merges/splits or clarified exception scope; not a proven unique-question count.",
   "countsByService": {
     "Ground": {
       "owner-approved": 89
     },
     "3 Day Select": {
-      "owner-approved": 51,
-      "proposed": 34
+      "owner-approved": 59,
+      "proposed": 26
     },
     "2 Day Air": {
       "proposed": 60,
@@ -2624,11 +2624,12 @@
       "provenance": "photo",
       "destinationModifier": null,
       "difficulty": "Easy",
-      "difficultyStatus": "proposed",
-      "difficultyReason": "Assistant proposal informed by owner feedback on Ground NJ preloads: RED codes Easy, ORANGE079 9 Medium. Approval for this service remains pending.",
+      "difficultyStatus": "owner-approved",
+      "difficultyReason": "Owner explicitly approved this recorded difficulty; question wording, explanations and any ambiguous source notation remain pending.",
       "wordingStatus": "not-yet-reviewed",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
-      "reviewNotes": []
+      "reviewNotes": [],
+      "approvedReview": "S49"
     },
     {
       "id": "3dayselect-exceptions-nj-0759",
@@ -2640,11 +2641,12 @@
       "provenance": "photo",
       "destinationModifier": null,
       "difficulty": "Easy",
-      "difficultyStatus": "proposed",
-      "difficultyReason": "Assistant proposal informed by owner feedback on Ground NJ preloads: RED codes Easy, ORANGE079 9 Medium. Approval for this service remains pending.",
+      "difficultyStatus": "owner-approved",
+      "difficultyReason": "Owner explicitly approved this recorded difficulty; question wording, explanations and any ambiguous source notation remain pending.",
       "wordingStatus": "not-yet-reviewed",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
-      "reviewNotes": []
+      "reviewNotes": [],
+      "approvedReview": "S50"
     },
     {
       "id": "3dayselect-exceptions-nj-0769",
@@ -2656,11 +2658,12 @@
       "provenance": "photo",
       "destinationModifier": null,
       "difficulty": "Easy",
-      "difficultyStatus": "proposed",
-      "difficultyReason": "Assistant proposal informed by owner feedback on Ground NJ preloads: RED codes Easy, ORANGE079 9 Medium. Approval for this service remains pending.",
+      "difficultyStatus": "owner-approved",
+      "difficultyReason": "Owner explicitly approved this recorded difficulty; question wording, explanations and any ambiguous source notation remain pending.",
       "wordingStatus": "not-yet-reviewed",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
-      "reviewNotes": []
+      "reviewNotes": [],
+      "approvedReview": "S51"
     },
     {
       "id": "3dayselect-exceptions-nj-0770",
@@ -2672,11 +2675,12 @@
       "provenance": "photo",
       "destinationModifier": null,
       "difficulty": "Easy",
-      "difficultyStatus": "proposed",
-      "difficultyReason": "Assistant proposal informed by owner feedback on Ground NJ preloads: RED codes Easy, ORANGE079 9 Medium. Approval for this service remains pending.",
+      "difficultyStatus": "owner-approved",
+      "difficultyReason": "Owner explicitly approved this recorded difficulty; question wording, explanations and any ambiguous source notation remain pending.",
       "wordingStatus": "not-yet-reviewed",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
-      "reviewNotes": []
+      "reviewNotes": [],
+      "approvedReview": "S52"
     },
     {
       "id": "3dayselect-exceptions-nj-0784",
@@ -2688,11 +2692,12 @@
       "provenance": "owner-override-3",
       "destinationModifier": null,
       "difficulty": "Easy",
-      "difficultyStatus": "proposed",
-      "difficultyReason": "Assistant proposal informed by owner feedback on Ground NJ preloads: RED codes Easy, ORANGE079 9 Medium. Approval for this service remains pending.",
+      "difficultyStatus": "owner-approved",
+      "difficultyReason": "Owner explicitly approved this recorded difficulty; question wording, explanations and any ambiguous source notation remain pending.",
       "wordingStatus": "not-yet-reviewed",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
-      "reviewNotes": []
+      "reviewNotes": [],
+      "approvedReview": "S53"
     },
     {
       "id": "3dayselect-exceptions-nj-0789",
@@ -2704,11 +2709,12 @@
       "provenance": "photo",
       "destinationModifier": null,
       "difficulty": "Easy",
-      "difficultyStatus": "proposed",
-      "difficultyReason": "Assistant proposal informed by owner feedback on Ground NJ preloads: RED codes Easy, ORANGE079 9 Medium. Approval for this service remains pending.",
+      "difficultyStatus": "owner-approved",
+      "difficultyReason": "Owner explicitly approved this recorded difficulty; question wording, explanations and any ambiguous source notation remain pending.",
       "wordingStatus": "not-yet-reviewed",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
-      "reviewNotes": []
+      "reviewNotes": [],
+      "approvedReview": "S54"
     },
     {
       "id": "3dayselect-exceptions-nj-0799",
@@ -2720,11 +2726,12 @@
       "provenance": "owner-override-3",
       "destinationModifier": null,
       "difficulty": "Medium",
-      "difficultyStatus": "proposed",
-      "difficultyReason": "Assistant proposal informed by owner feedback on Ground NJ preloads: RED codes Easy, ORANGE079 9 Medium. Approval for this service remains pending.",
+      "difficultyStatus": "owner-approved",
+      "difficultyReason": "Owner explicitly approved this recorded difficulty; question wording, explanations and any ambiguous source notation remain pending.",
       "wordingStatus": "not-yet-reviewed",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
-      "reviewNotes": []
+      "reviewNotes": [],
+      "approvedReview": "S55"
     },
     {
       "id": "3dayselect-exceptions-nj-0819",
@@ -2736,11 +2743,12 @@
       "provenance": "photo",
       "destinationModifier": null,
       "difficulty": "Easy",
-      "difficultyStatus": "proposed",
-      "difficultyReason": "Assistant proposal informed by owner feedback on Ground NJ preloads: RED codes Easy, ORANGE079 9 Medium. Approval for this service remains pending.",
+      "difficultyStatus": "owner-approved",
+      "difficultyReason": "Owner explicitly approved this recorded difficulty; question wording, explanations and any ambiguous source notation remain pending.",
       "wordingStatus": "not-yet-reviewed",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
-      "reviewNotes": []
+      "reviewNotes": [],
+      "approvedReview": "S56"
     },
     {
       "id": "3dayselect-exceptions-nj-0829",
@@ -5101,5 +5109,5 @@
       "holdReason": "CHECK does not establish a belt; use listed NJ preload exceptions, do not invent an unlisted answer."
     }
   ],
-  "approvedDifficultyCount": 145
+  "approvedDifficultyCount": 153
 }
