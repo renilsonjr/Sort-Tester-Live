@@ -1,5 +1,5 @@
 {
-  "status": "Review-only full-chart inventory:283 owner-approved difficulty labels;21 entries have owner-approved bilingual explanations. Expanded wording/canonical validation remains incomplete; not an executable bank.",
+  "status": "Review-only full-chart inventory:283 owner-approved difficulty labels;25 entries have approved bilingual explanations. Remaining standard feedback is drafted for owner review; focused wording/coverage and canonical validation remain open. Not an executable bank.",
   "sourceRevision": "twilight-2026-11-08-r2",
   "existingApprovalsPreserved": 17,
   "remainingDifficultyReviews": 0,
@@ -229,7 +229,7 @@
       "difficulty": "Medium",
       "difficultyStatus": "owner-approved",
       "difficultyReason": "Owner approved this difficulty in the first expanded Ground review; wording/explanations remain pending.",
-      "wordingStatus": "not-yet-reviewed",
+      "wordingStatus": "owner-approved-bilingual",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [
         "Check applicable exceptions and effective coverage before approving broad-range wording."
@@ -239,12 +239,12 @@
         "en": {
           "prompt": "Which belt does this go to?",
           "explanation": "Ground NY 100–108 goes to YELLOW.",
-          "approvalStatus": "proposed"
+          "approvalStatus": "owner-approved"
         },
         "es": {
           "prompt": "¿A qué color va?",
           "explanation": "En Terrestre, NY 100–108 va a YELLOW.",
-          "approvalStatus": "proposed"
+          "approvalStatus": "owner-approved"
         }
       }
     },
@@ -260,7 +260,7 @@
       "difficulty": "Medium",
       "difficultyStatus": "owner-approved",
       "difficultyReason": "Owner approved this difficulty in the first expanded Ground review; wording/explanations remain pending.",
-      "wordingStatus": "not-yet-reviewed",
+      "wordingStatus": "owner-approved-bilingual",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [],
       "approvedReview": "G06",
@@ -268,12 +268,12 @@
         "en": {
           "prompt": "Which belt does this go to?",
           "explanation": "Ground NY 109 goes to ORANGE. A destination marked +1 goes to PURPLE.",
-          "approvalStatus": "proposed"
+          "approvalStatus": "owner-approved"
         },
         "es": {
           "prompt": "¿A qué color va?",
           "explanation": "En Terrestre, NY 109 va a ORANGE. Un destino marcado +1 va a PURPLE.",
-          "approvalStatus": "proposed"
+          "approvalStatus": "owner-approved"
         }
       }
     },
@@ -289,7 +289,7 @@
       "difficulty": "Medium",
       "difficultyStatus": "owner-approved",
       "difficultyReason": "Owner approved this difficulty in the first expanded Ground review; wording/explanations remain pending.",
-      "wordingStatus": "not-yet-reviewed",
+      "wordingStatus": "owner-approved-bilingual",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [
         "Check applicable exceptions and effective coverage before approving broad-range wording."
@@ -299,12 +299,12 @@
         "en": {
           "prompt": "Which belt does this go to?",
           "explanation": "Ground NY 110–119 goes to PINK.",
-          "approvalStatus": "proposed"
+          "approvalStatus": "owner-approved"
         },
         "es": {
           "prompt": "¿A qué color va?",
           "explanation": "En Terrestre, NY 110–119 va a PINK.",
-          "approvalStatus": "proposed"
+          "approvalStatus": "owner-approved"
         }
       }
     },
@@ -320,7 +320,7 @@
       "difficulty": "Medium",
       "difficultyStatus": "owner-approved",
       "difficultyReason": "Owner approved this difficulty in the first expanded Ground review; wording/explanations remain pending.",
-      "wordingStatus": "not-yet-reviewed",
+      "wordingStatus": "owner-approved-bilingual",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [
         "Check applicable exceptions and effective coverage before approving broad-range wording."
@@ -330,12 +330,12 @@
         "en": {
           "prompt": "Which belt does this go to?",
           "explanation": "Ground NY 120–121 goes to GOLD. Both 120 and 121 are included.",
-          "approvalStatus": "proposed"
+          "approvalStatus": "owner-approved"
         },
         "es": {
           "prompt": "¿A qué color va?",
           "explanation": "En Terrestre, NY 120–121 va a GOLD. Se incluyen tanto 120 como 121.",
-          "approvalStatus": "proposed"
+          "approvalStatus": "owner-approved"
         }
       }
     },
@@ -356,7 +356,20 @@
       "reviewNotes": [
         "Check applicable exceptions and effective coverage before approving broad-range wording."
       ],
-      "approvedReview": "G09"
+      "approvedReview": "G09",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "Ground NY 122–127 goes to ORANGE.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Terrestre, NY 122–127 va a ORANGE.",
+          "approvalStatus": "proposed"
+        }
+      },
+      "wordingReviewGroup": "standard-template-batch-1"
     },
     {
       "id": "ground-main-ny-128-139",
@@ -375,7 +388,20 @@
       "reviewNotes": [
         "Check applicable exceptions and effective coverage before approving broad-range wording."
       ],
-      "approvedReview": "G10"
+      "approvedReview": "G10",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "Ground NY 128–139 goes to GOLD.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Terrestre, NY 128–139 va a GOLD.",
+          "approvalStatus": "proposed"
+        }
+      },
+      "wordingReviewGroup": "standard-template-batch-1"
     },
     {
       "id": "ground-main-ny-140-147",
@@ -394,7 +420,20 @@
       "reviewNotes": [
         "Check applicable exceptions and effective coverage before approving broad-range wording."
       ],
-      "approvedReview": "G11"
+      "approvedReview": "G11",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "Ground NY 140–147 goes to GOLD.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Terrestre, NY 140–147 va a GOLD.",
+          "approvalStatus": "proposed"
+        }
+      },
+      "wordingReviewGroup": "standard-template-batch-1"
     },
     {
       "id": "ground-main-ny-148-149",
@@ -414,7 +453,9 @@
         "Check applicable exceptions and effective coverage before approving broad-range wording.",
         "Exclude NY148 1 GOLD from the broad ORANGE question, as shown during this difficulty review."
       ],
-      "approvedReview": "G12"
+      "approvedReview": "G12",
+      "wordingReviewGroup": "focused-review",
+      "wordingReviewReason": "Conservative prefix-overlap hold for H4: verify actual state/context applicability before drafting exclusions."
     },
     {
       "id": "ground-main-pa-150-167",
@@ -433,7 +474,20 @@
       "reviewNotes": [
         "Check applicable exceptions and effective coverage before approving broad-range wording."
       ],
-      "approvedReview": "G13"
+      "approvedReview": "G13",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "Ground PA 150–167 goes to GREEN.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Terrestre, PA 150–167 va a GREEN.",
+          "approvalStatus": "proposed"
+        }
+      },
+      "wordingReviewGroup": "standard-template-batch-1"
     },
     {
       "id": "ground-main-pa-168-178",
@@ -452,7 +506,20 @@
       "reviewNotes": [
         "Check applicable exceptions and effective coverage before approving broad-range wording."
       ],
-      "approvedReview": "G14"
+      "approvedReview": "G14",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "Ground PA 168–178 goes to GREEN.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Terrestre, PA 168–178 va a GREEN.",
+          "approvalStatus": "proposed"
+        }
+      },
+      "wordingReviewGroup": "standard-template-batch-1"
     },
     {
       "id": "ground-main-pa-179-189",
@@ -471,7 +538,20 @@
       "reviewNotes": [
         "Check applicable exceptions and effective coverage before approving broad-range wording."
       ],
-      "approvedReview": "G15"
+      "approvedReview": "G15",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "Ground PA 179–189 goes to GREEN.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Terrestre, PA 179–189 va a GREEN.",
+          "approvalStatus": "proposed"
+        }
+      },
+      "wordingReviewGroup": "standard-template-batch-1"
     },
     {
       "id": "ground-main-pa-190-194",
@@ -490,7 +570,20 @@
       "reviewNotes": [
         "Check applicable exceptions and effective coverage before approving broad-range wording."
       ],
-      "approvedReview": "G16"
+      "approvedReview": "G16",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "Ground PA 190–194 goes to ORANGE.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Terrestre, PA 190–194 va a ORANGE.",
+          "approvalStatus": "proposed"
+        }
+      },
+      "wordingReviewGroup": "standard-template-batch-1"
     },
     {
       "id": "ground-main-pade-195-199",
@@ -509,7 +602,20 @@
       "reviewNotes": [
         "Check applicable exceptions and effective coverage before approving broad-range wording."
       ],
-      "approvedReview": "G17"
+      "approvedReview": "G17",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "Ground PA/DE 195–199 goes to GREEN.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Terrestre, PA/DE 195–199 va a GREEN.",
+          "approvalStatus": "proposed"
+        }
+      },
+      "wordingReviewGroup": "standard-template-batch-1"
     },
     {
       "id": "ground-main-dcmd-200-219",
@@ -528,7 +634,20 @@
       "reviewNotes": [
         "Check applicable exceptions and effective coverage before approving broad-range wording."
       ],
-      "approvedReview": "G18"
+      "approvedReview": "G18",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "Ground DC/MD 200–219 goes to GREEN.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Terrestre, DC/MD 200–219 va a GREEN.",
+          "approvalStatus": "proposed"
+        }
+      },
+      "wordingReviewGroup": "standard-template-batch-1"
     },
     {
       "id": "ground-main-va-220-238",
@@ -547,7 +666,20 @@
       "reviewNotes": [
         "Check applicable exceptions and effective coverage before approving broad-range wording."
       ],
-      "approvedReview": "G19"
+      "approvedReview": "G19",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "Ground VA 220–238 goes to YELLOW.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Terrestre, VA 220–238 va a YELLOW.",
+          "approvalStatus": "proposed"
+        }
+      },
+      "wordingReviewGroup": "standard-template-batch-1"
     },
     {
       "id": "ground-main-vawv-239-269",
@@ -566,7 +698,20 @@
       "reviewNotes": [
         "Check applicable exceptions and effective coverage before approving broad-range wording."
       ],
-      "approvedReview": "G20"
+      "approvedReview": "G20",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "Ground VA/WV 239–269 goes to YELLOW.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Terrestre, VA/WV 239–269 va a YELLOW.",
+          "approvalStatus": "proposed"
+        }
+      },
+      "wordingReviewGroup": "standard-template-batch-1"
     },
     {
       "id": "ground-main-ncsc-270-299",
@@ -585,7 +730,20 @@
       "reviewNotes": [
         "Check applicable exceptions and effective coverage before approving broad-range wording."
       ],
-      "approvedReview": "G21"
+      "approvedReview": "G21",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "Ground NC/SC 270–299 goes to YELLOW.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Terrestre, NC/SC 270–299 va a YELLOW.",
+          "approvalStatus": "proposed"
+        }
+      },
+      "wordingReviewGroup": "standard-template-batch-1"
     },
     {
       "id": "ground-main-ga-300-319",
@@ -642,7 +800,20 @@
       "reviewNotes": [
         "Check applicable exceptions and effective coverage before approving broad-range wording."
       ],
-      "approvedReview": "G22"
+      "approvedReview": "G22",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "Ground AL 350–369 goes to BLUE.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Terrestre, AL 350–369 va a BLUE.",
+          "approvalStatus": "proposed"
+        }
+      },
+      "wordingReviewGroup": "standard-template-batch-1"
     },
     {
       "id": "ground-main-tn-370-385",
@@ -662,7 +833,9 @@
         "Check applicable exceptions and effective coverage before approving broad-range wording.",
         "Exclude TN376–378 BLUE from the broad BROWN question, as shown during this difficulty review."
       ],
-      "approvedReview": "G23"
+      "approvedReview": "G23",
+      "wordingReviewGroup": "focused-review",
+      "wordingReviewReason": "Conservative prefix-overlap hold for H3: verify actual state/context applicability before drafting exclusions."
     },
     {
       "id": "ground-main-ms-386-399",
@@ -681,7 +854,20 @@
       "reviewNotes": [
         "Check applicable exceptions and effective coverage before approving broad-range wording."
       ],
-      "approvedReview": "G24"
+      "approvedReview": "G24",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "Ground MS 386–399 goes to BROWN.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Terrestre, MS 386–399 va a BROWN.",
+          "approvalStatus": "proposed"
+        }
+      },
+      "wordingReviewGroup": "standard-template-batch-1"
     },
     {
       "id": "ground-main-ky-400-429",
@@ -700,7 +886,20 @@
       "reviewNotes": [
         "Check applicable exceptions and effective coverage before approving broad-range wording."
       ],
-      "approvedReview": "G25"
+      "approvedReview": "G25",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "Ground KY 400–429 goes to BROWN.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Terrestre, KY 400–429 va a BROWN.",
+          "approvalStatus": "proposed"
+        }
+      },
+      "wordingReviewGroup": "standard-template-batch-1"
     },
     {
       "id": "ground-main-oh-430-459",
@@ -719,7 +918,20 @@
       "reviewNotes": [
         "Check applicable exceptions and effective coverage before approving broad-range wording."
       ],
-      "approvedReview": "G26"
+      "approvedReview": "G26",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "Ground OH 430–459 goes to ORANGE.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Terrestre, OH 430–459 va a ORANGE.",
+          "approvalStatus": "proposed"
+        }
+      },
+      "wordingReviewGroup": "standard-template-batch-1"
     },
     {
       "id": "ground-main-in-460-479",
@@ -738,7 +950,20 @@
       "reviewNotes": [
         "Check applicable exceptions and effective coverage before approving broad-range wording."
       ],
-      "approvedReview": "G27"
+      "approvedReview": "G27",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "Ground IN 460–479 goes to ORANGE.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Terrestre, IN 460–479 va a ORANGE.",
+          "approvalStatus": "proposed"
+        }
+      },
+      "wordingReviewGroup": "standard-template-batch-1"
     },
     {
       "id": "ground-main-mi-480-497",
@@ -757,7 +982,20 @@
       "reviewNotes": [
         "Check applicable exceptions and effective coverage before approving broad-range wording."
       ],
-      "approvedReview": "G28"
+      "approvedReview": "G28",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "Ground MI 480–497 goes to ORANGE.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Terrestre, MI 480–497 va a ORANGE.",
+          "approvalStatus": "proposed"
+        }
+      },
+      "wordingReviewGroup": "standard-template-batch-1"
     },
     {
       "id": "ground-main-all-498-589",
@@ -778,7 +1016,9 @@
         "Wildcard fallback: explicitly exclude specific overrides; not a duplicate of a named-state row by text alone.",
         "Owner reviewed this Easy label with listed exceptions explicitly excluded; exact exception coverage still needs validation before executable use."
       ],
-      "approvedReview": "G29"
+      "approvedReview": "G29",
+      "wordingReviewGroup": "focused-review",
+      "wordingReviewReason": "Wildcard or named destination: review its scope and any explicit exception wording."
     },
     {
       "id": "ground-main-mt-590-599",
@@ -797,7 +1037,20 @@
       "reviewNotes": [
         "Check applicable exceptions and effective coverage before approving broad-range wording."
       ],
-      "approvedReview": "G30"
+      "approvedReview": "G30",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "Ground MT 590–599 goes to ORANGE.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Terrestre, MT 590–599 va a ORANGE.",
+          "approvalStatus": "proposed"
+        }
+      },
+      "wordingReviewGroup": "standard-template-batch-1"
     },
     {
       "id": "ground-main-il-600-608",
@@ -816,7 +1069,20 @@
       "reviewNotes": [
         "Check applicable exceptions and effective coverage before approving broad-range wording."
       ],
-      "approvedReview": "G31"
+      "approvedReview": "G31",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "Ground IL 600–608 goes to YELLOW.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Terrestre, IL 600–608 va a YELLOW.",
+          "approvalStatus": "proposed"
+        }
+      },
+      "wordingReviewGroup": "standard-template-batch-1"
     },
     {
       "id": "ground-main-il-609-619",
@@ -835,7 +1101,20 @@
       "reviewNotes": [
         "Check applicable exceptions and effective coverage before approving broad-range wording."
       ],
-      "approvedReview": "G32"
+      "approvedReview": "G32",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "Ground IL 609–619 goes to ORANGE.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Terrestre, IL 609–619 va a ORANGE.",
+          "approvalStatus": "proposed"
+        }
+      },
+      "wordingReviewGroup": "standard-template-batch-1"
     },
     {
       "id": "ground-main-il-620-629",
@@ -854,7 +1133,20 @@
       "reviewNotes": [
         "Check applicable exceptions and effective coverage before approving broad-range wording."
       ],
-      "approvedReview": "G33"
+      "approvedReview": "G33",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "Ground IL 620–629 goes to ORANGE.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Terrestre, IL 620–629 va a ORANGE.",
+          "approvalStatus": "proposed"
+        }
+      },
+      "wordingReviewGroup": "standard-template-batch-1"
     },
     {
       "id": "ground-main-moks-630-674",
@@ -873,7 +1165,20 @@
       "reviewNotes": [
         "Check applicable exceptions and effective coverage before approving broad-range wording."
       ],
-      "approvedReview": "G34"
+      "approvedReview": "G34",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "Ground MO/KS 630–674 goes to BLUE.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Terrestre, MO/KS 630–674 va a BLUE.",
+          "approvalStatus": "proposed"
+        }
+      },
+      "wordingReviewGroup": "standard-template-batch-1"
     },
     {
       "id": "ground-main-ks-675-679",
@@ -892,7 +1197,20 @@
       "reviewNotes": [
         "Check applicable exceptions and effective coverage before approving broad-range wording."
       ],
-      "approvedReview": "G35"
+      "approvedReview": "G35",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "Ground KS 675–679 goes to ORANGE.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Terrestre, KS 675–679 va a ORANGE.",
+          "approvalStatus": "proposed"
+        }
+      },
+      "wordingReviewGroup": "standard-template-batch-1"
     },
     {
       "id": "ground-main-ne-680-689",
@@ -911,7 +1229,20 @@
       "reviewNotes": [
         "Check applicable exceptions and effective coverage before approving broad-range wording."
       ],
-      "approvedReview": "G36"
+      "approvedReview": "G36",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "Ground NE 680–689 goes to BLUE.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Terrestre, NE 680–689 va a BLUE.",
+          "approvalStatus": "proposed"
+        }
+      },
+      "wordingReviewGroup": "standard-template-batch-1"
     },
     {
       "id": "ground-main-ne-690-699",
@@ -930,7 +1261,20 @@
       "reviewNotes": [
         "Check applicable exceptions and effective coverage before approving broad-range wording."
       ],
-      "approvedReview": "G37"
+      "approvedReview": "G37",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "Ground NE 690–699 goes to ORANGE.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Terrestre, NE 690–699 va a ORANGE.",
+          "approvalStatus": "proposed"
+        }
+      },
+      "wordingReviewGroup": "standard-template-batch-1"
     },
     {
       "id": "ground-main-laar-700-729",
@@ -949,7 +1293,20 @@
       "reviewNotes": [
         "Check applicable exceptions and effective coverage before approving broad-range wording."
       ],
-      "approvedReview": "G38"
+      "approvedReview": "G38",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "Ground LA/AR 700–729 goes to BLUE.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Terrestre, LA/AR 700–729 va a BLUE.",
+          "approvalStatus": "proposed"
+        }
+      },
+      "wordingReviewGroup": "standard-template-batch-1"
     },
     {
       "id": "ground-main-ok-730-734",
@@ -968,7 +1325,20 @@
       "reviewNotes": [
         "Check applicable exceptions and effective coverage before approving broad-range wording."
       ],
-      "approvedReview": "G39"
+      "approvedReview": "G39",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "Ground OK 730–734 goes to ORANGE.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Terrestre, OK 730–734 va a ORANGE.",
+          "approvalStatus": "proposed"
+        }
+      },
+      "wordingReviewGroup": "standard-template-batch-1"
     },
     {
       "id": "ground-main-ok-735-749",
@@ -987,7 +1357,20 @@
       "reviewNotes": [
         "Check applicable exceptions and effective coverage before approving broad-range wording."
       ],
-      "approvedReview": "G40"
+      "approvedReview": "G40",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "Ground OK 735–749 goes to ORANGE.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Terrestre, OK 735–749 va a ORANGE.",
+          "approvalStatus": "proposed"
+        }
+      },
+      "wordingReviewGroup": "standard-template-batch-1"
     },
     {
       "id": "ground-main-tx-750-779",
@@ -1006,7 +1389,20 @@
       "reviewNotes": [
         "Check applicable exceptions and effective coverage before approving broad-range wording."
       ],
-      "approvedReview": "G41"
+      "approvedReview": "G41",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "Ground TX 750–779 goes to BLUE.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Terrestre, TX 750–779 va a BLUE.",
+          "approvalStatus": "proposed"
+        }
+      },
+      "wordingReviewGroup": "standard-template-batch-1"
     },
     {
       "id": "ground-main-tx-780-784",
@@ -1025,7 +1421,20 @@
       "reviewNotes": [
         "Check applicable exceptions and effective coverage before approving broad-range wording."
       ],
-      "approvedReview": "G42"
+      "approvedReview": "G42",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "Ground TX 780–784 goes to BLUE.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Terrestre, TX 780–784 va a BLUE.",
+          "approvalStatus": "proposed"
+        }
+      },
+      "wordingReviewGroup": "standard-template-batch-1"
     },
     {
       "id": "ground-main-tx-785-799",
@@ -1044,7 +1453,20 @@
       "reviewNotes": [
         "Check applicable exceptions and effective coverage before approving broad-range wording."
       ],
-      "approvedReview": "G43"
+      "approvedReview": "G43",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "Ground TX 785–799 goes to ORANGE.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Terrestre, TX 785–799 va a ORANGE.",
+          "approvalStatus": "proposed"
+        }
+      },
+      "wordingReviewGroup": "standard-template-batch-1"
     },
     {
       "id": "ground-main-cowy-800-831",
@@ -1063,7 +1485,20 @@
       "reviewNotes": [
         "Check applicable exceptions and effective coverage before approving broad-range wording."
       ],
-      "approvedReview": "G44"
+      "approvedReview": "G44",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "Ground CO/WY 800–831 goes to ORANGE.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Terrestre, CO/WY 800–831 va a ORANGE.",
+          "approvalStatus": "proposed"
+        }
+      },
+      "wordingReviewGroup": "standard-template-batch-1"
     },
     {
       "id": "ground-main-id-832-839",
@@ -1082,7 +1517,9 @@
       "reviewNotes": [
         "Check applicable exceptions and effective coverage before approving broad-range wording."
       ],
-      "approvedReview": "G45"
+      "approvedReview": "G45",
+      "wordingReviewGroup": "focused-review",
+      "wordingReviewReason": "Conservative prefix-overlap hold for G74: verify actual state/context applicability before drafting exclusions."
     },
     {
       "id": "ground-main-ut-840-849",
@@ -1101,7 +1538,9 @@
       "reviewNotes": [
         "Check applicable exceptions and effective coverage before approving broad-range wording."
       ],
-      "approvedReview": "G46"
+      "approvedReview": "G46",
+      "wordingReviewGroup": "focused-review",
+      "wordingReviewReason": "Conservative prefix-overlap hold for G75: verify actual state/context applicability before drafting exclusions."
     },
     {
       "id": "ground-main-aznm-850-884",
@@ -1120,7 +1559,9 @@
       "reviewNotes": [
         "Check applicable exceptions and effective coverage before approving broad-range wording."
       ],
-      "approvedReview": "G47"
+      "approvedReview": "G47",
+      "wordingReviewGroup": "focused-review",
+      "wordingReviewReason": "Conservative prefix-overlap hold for G76: verify actual state/context applicability before drafting exclusions."
     },
     {
       "id": "ground-main-nv-889-891",
@@ -1139,7 +1580,9 @@
       "reviewNotes": [
         "Check applicable exceptions and effective coverage before approving broad-range wording."
       ],
-      "approvedReview": "G48"
+      "approvedReview": "G48",
+      "wordingReviewGroup": "focused-review",
+      "wordingReviewReason": "Conservative prefix-overlap hold for G77: verify actual state/context applicability before drafting exclusions."
     },
     {
       "id": "ground-main-nv-893-899",
@@ -1158,7 +1601,20 @@
       "reviewNotes": [
         "Check applicable exceptions and effective coverage before approving broad-range wording."
       ],
-      "approvedReview": "G49"
+      "approvedReview": "G49",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "Ground NV 893–899 goes to ORANGE.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Terrestre, NV 893–899 va a ORANGE.",
+          "approvalStatus": "proposed"
+        }
+      },
+      "wordingReviewGroup": "standard-template-batch-1"
     },
     {
       "id": "ground-main-ca-900-935",
@@ -1177,7 +1633,9 @@
       "reviewNotes": [
         "Check applicable exceptions and effective coverage before approving broad-range wording."
       ],
-      "approvedReview": "G50"
+      "approvedReview": "G50",
+      "wordingReviewGroup": "focused-review",
+      "wordingReviewReason": "Conservative prefix-overlap hold for G78: verify actual state/context applicability before drafting exclusions."
     },
     {
       "id": "ground-main-ca-936-961",
@@ -1196,7 +1654,20 @@
       "reviewNotes": [
         "Check applicable exceptions and effective coverage before approving broad-range wording."
       ],
-      "approvedReview": "G51"
+      "approvedReview": "G51",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "Ground CA 936–961 goes to BROWN.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Terrestre, CA 936–961 va a BROWN.",
+          "approvalStatus": "proposed"
+        }
+      },
+      "wordingReviewGroup": "standard-template-batch-1"
     },
     {
       "id": "ground-main-hi-967-968",
@@ -1215,7 +1686,20 @@
       "reviewNotes": [
         "Check applicable exceptions and effective coverage before approving broad-range wording."
       ],
-      "approvedReview": "G52"
+      "approvedReview": "G52",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "Ground HI 967–968 goes to ORANGE.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Terrestre, HI 967–968 va a ORANGE.",
+          "approvalStatus": "proposed"
+        }
+      },
+      "wordingReviewGroup": "standard-template-batch-1"
     },
     {
       "id": "ground-main-orwa-970-994",
@@ -1234,7 +1718,20 @@
       "reviewNotes": [
         "Check applicable exceptions and effective coverage before approving broad-range wording."
       ],
-      "approvedReview": "G53"
+      "approvedReview": "G53",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "Ground OR/WA 970–994 goes to BROWN.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Terrestre, OR/WA 970–994 va a BROWN.",
+          "approvalStatus": "proposed"
+        }
+      },
+      "wordingReviewGroup": "standard-template-batch-1"
     },
     {
       "id": "ground-main-ak-995-999",
@@ -1253,7 +1750,20 @@
       "reviewNotes": [
         "Check applicable exceptions and effective coverage before approving broad-range wording."
       ],
-      "approvedReview": "G54"
+      "approvedReview": "G54",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "Ground AK 995–999 goes to BROWN.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Terrestre, AK 995–999 va a BROWN.",
+          "approvalStatus": "proposed"
+        }
+      },
+      "wordingReviewGroup": "standard-template-batch-1"
     },
     {
       "id": "ground-main-mex-mexico",
@@ -1270,7 +1780,9 @@
       "wordingStatus": "not-yet-reviewed",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [],
-      "approvedReview": "G55"
+      "approvedReview": "G55",
+      "wordingReviewGroup": "focused-review",
+      "wordingReviewReason": "Exact code or named destination: review wording that preserves the source meaning."
     },
     {
       "id": "ground-main-can-canada",
@@ -1287,7 +1799,9 @@
       "wordingStatus": "not-yet-reviewed",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [],
-      "approvedReview": "G56"
+      "approvedReview": "G56",
+      "wordingReviewGroup": "focused-review",
+      "wordingReviewReason": "Exact code or named destination: review wording that preserves the source meaning."
     },
     {
       "id": "ground-main-pri-pr",
@@ -1304,7 +1818,9 @@
       "wordingStatus": "not-yet-reviewed",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [],
-      "approvedReview": "G57"
+      "approvedReview": "G57",
+      "wordingReviewGroup": "focused-review",
+      "wordingReviewReason": "Exact code or named destination: review wording that preserves the source meaning."
     },
     {
       "id": "ground-exceptions-nj-0703",
@@ -1321,7 +1837,20 @@
       "wordingStatus": "not-yet-reviewed",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [],
-      "approvedReview": "G58"
+      "approvedReview": "G58",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "Ground NJ 070 3 goes to RED.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Terrestre, NJ 070 3 va a RED.",
+          "approvalStatus": "proposed"
+        }
+      },
+      "wordingReviewGroup": "standard-template-batch-1"
     },
     {
       "id": "ground-exceptions-nj-0709",
@@ -1338,7 +1867,20 @@
       "wordingStatus": "not-yet-reviewed",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [],
-      "approvedReview": "G59"
+      "approvedReview": "G59",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "Ground NJ 070 9 goes to RED.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Terrestre, NJ 070 9 va a RED.",
+          "approvalStatus": "proposed"
+        }
+      },
+      "wordingReviewGroup": "standard-template-batch-1"
     },
     {
       "id": "ground-exceptions-nj-0759",
@@ -1355,7 +1897,20 @@
       "wordingStatus": "not-yet-reviewed",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [],
-      "approvedReview": "G60"
+      "approvedReview": "G60",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "Ground NJ 075 9 goes to RED.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Terrestre, NJ 075 9 va a RED.",
+          "approvalStatus": "proposed"
+        }
+      },
+      "wordingReviewGroup": "standard-template-batch-1"
     },
     {
       "id": "ground-exceptions-nj-0769",
@@ -1372,7 +1927,20 @@
       "wordingStatus": "not-yet-reviewed",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [],
-      "approvedReview": "G61"
+      "approvedReview": "G61",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "Ground NJ 076 9 goes to RED.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Terrestre, NJ 076 9 va a RED.",
+          "approvalStatus": "proposed"
+        }
+      },
+      "wordingReviewGroup": "standard-template-batch-1"
     },
     {
       "id": "ground-exceptions-nj-0770",
@@ -1389,7 +1957,20 @@
       "wordingStatus": "not-yet-reviewed",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [],
-      "approvedReview": "G62"
+      "approvedReview": "G62",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "Ground NJ 077 0 goes to RED.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Terrestre, NJ 077 0 va a RED.",
+          "approvalStatus": "proposed"
+        }
+      },
+      "wordingReviewGroup": "standard-template-batch-1"
     },
     {
       "id": "ground-exceptions-nj-0784",
@@ -1406,7 +1987,20 @@
       "wordingStatus": "not-yet-reviewed",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [],
-      "approvedReview": "G63"
+      "approvedReview": "G63",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "Ground NJ 078 4 goes to RED.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Terrestre, NJ 078 4 va a RED.",
+          "approvalStatus": "proposed"
+        }
+      },
+      "wordingReviewGroup": "standard-template-batch-1"
     },
     {
       "id": "ground-exceptions-nj-0789",
@@ -1423,7 +2017,20 @@
       "wordingStatus": "not-yet-reviewed",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [],
-      "approvedReview": "G64"
+      "approvedReview": "G64",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "Ground NJ 078 9 goes to RED.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Terrestre, NJ 078 9 va a RED.",
+          "approvalStatus": "proposed"
+        }
+      },
+      "wordingReviewGroup": "standard-template-batch-1"
     },
     {
       "id": "ground-exceptions-nj-0799",
@@ -1440,7 +2047,9 @@
       "wordingStatus": "not-yet-reviewed",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [],
-      "approvedReview": "G65"
+      "approvedReview": "G65",
+      "wordingReviewGroup": "focused-review",
+      "wordingReviewReason": "Specific exception or suffix: review its explanatory wording separately."
     },
     {
       "id": "ground-exceptions-nj-0819",
@@ -1457,7 +2066,20 @@
       "wordingStatus": "not-yet-reviewed",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [],
-      "approvedReview": "G66"
+      "approvedReview": "G66",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "Ground NJ 081 9 goes to RED.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Terrestre, NJ 081 9 va a RED.",
+          "approvalStatus": "proposed"
+        }
+      },
+      "wordingReviewGroup": "standard-template-batch-1"
     },
     {
       "id": "ground-exceptions-nj-0829",
@@ -1474,7 +2096,20 @@
       "wordingStatus": "not-yet-reviewed",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [],
-      "approvedReview": "G67"
+      "approvedReview": "G67",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "Ground NJ 082 9 goes to RED.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Terrestre, NJ 082 9 va a RED.",
+          "approvalStatus": "proposed"
+        }
+      },
+      "wordingReviewGroup": "standard-template-batch-1"
     },
     {
       "id": "ground-exceptions-nj-0839",
@@ -1491,7 +2126,20 @@
       "wordingStatus": "not-yet-reviewed",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [],
-      "approvedReview": "G68"
+      "approvedReview": "G68",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "Ground NJ 083 9 goes to RED.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Terrestre, NJ 083 9 va a RED.",
+          "approvalStatus": "proposed"
+        }
+      },
+      "wordingReviewGroup": "standard-template-batch-1"
     },
     {
       "id": "ground-exceptions-nj-0860",
@@ -1508,7 +2156,20 @@
       "wordingStatus": "not-yet-reviewed",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [],
-      "approvedReview": "G69"
+      "approvedReview": "G69",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "Ground NJ 086 0 goes to RED.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Terrestre, NJ 086 0 va a RED.",
+          "approvalStatus": "proposed"
+        }
+      },
+      "wordingReviewGroup": "standard-template-batch-1"
     },
     {
       "id": "ground-exceptions-nj-0871",
@@ -1525,7 +2186,20 @@
       "wordingStatus": "not-yet-reviewed",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [],
-      "approvedReview": "G70"
+      "approvedReview": "G70",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "Ground NJ 087 1 goes to RED.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Terrestre, NJ 087 1 va a RED.",
+          "approvalStatus": "proposed"
+        }
+      },
+      "wordingReviewGroup": "standard-template-batch-1"
     },
     {
       "id": "ground-exceptions-nj-0889",
@@ -1542,7 +2216,20 @@
       "wordingStatus": "not-yet-reviewed",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [],
-      "approvedReview": "G71"
+      "approvedReview": "G71",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "Ground NJ 088 9 goes to RED.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Terrestre, NJ 088 9 va a RED.",
+          "approvalStatus": "proposed"
+        }
+      },
+      "wordingReviewGroup": "standard-template-batch-1"
     },
     {
       "id": "ground-exceptions-nj-0899",
@@ -1559,7 +2246,20 @@
       "wordingStatus": "not-yet-reviewed",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [],
-      "approvedReview": "G72"
+      "approvedReview": "G72",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "Ground NJ 089 9 goes to RED.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Terrestre, NJ 089 9 va a RED.",
+          "approvalStatus": "proposed"
+        }
+      },
+      "wordingReviewGroup": "standard-template-batch-1"
     },
     {
       "id": "ground-exceptions-ne-5753-6",
@@ -1584,7 +2284,9 @@
         "value": "575 3-6",
         "ownerConfirmed": true,
         "hyphenIsRangeDelimiter": false
-      }
+      },
+      "wordingReviewGroup": "focused-review",
+      "wordingReviewReason": "Specific exception or suffix: review its explanatory wording separately."
     },
     {
       "id": "ground-exceptions-nv-8339-7",
@@ -1609,7 +2311,9 @@
         "value": "833 9-7",
         "ownerConfirmed": true,
         "hyphenIsRangeDelimiter": false
-      }
+      },
+      "wordingReviewGroup": "focused-review",
+      "wordingReviewReason": "Specific exception or suffix: review its explanatory wording separately."
     },
     {
       "id": "ground-exceptions-az-8472-7",
@@ -1634,7 +2338,9 @@
         "value": "847 2-7",
         "ownerConfirmed": true,
         "hyphenIsRangeDelimiter": false
-      }
+      },
+      "wordingReviewGroup": "focused-review",
+      "wordingReviewReason": "Specific exception or suffix: review its explanatory wording separately."
     },
     {
       "id": "ground-exceptions-nv-8644-7",
@@ -1659,7 +2365,9 @@
         "value": "864 4-7",
         "ownerConfirmed": true,
         "hyphenIsRangeDelimiter": false
-      }
+      },
+      "wordingReviewGroup": "focused-review",
+      "wordingReviewReason": "Specific exception or suffix: review its explanatory wording separately."
     },
     {
       "id": "ground-exceptions-nv-8900-0",
@@ -1684,7 +2392,9 @@
         "value": "890 0-0",
         "ownerConfirmed": true,
         "hyphenIsRangeDelimiter": false
-      }
+      },
+      "wordingReviewGroup": "focused-review",
+      "wordingReviewReason": "Specific exception or suffix: review its explanatory wording separately."
     },
     {
       "id": "ground-exceptions-az-9222-0",
@@ -1709,7 +2419,9 @@
         "value": "922 2-0",
         "ownerConfirmed": true,
         "hyphenIsRangeDelimiter": false
-      }
+      },
+      "wordingReviewGroup": "focused-review",
+      "wordingReviewReason": "Specific exception or suffix: review its explanatory wording separately."
     },
     {
       "id": "ground-exceptions-tn-376-378",
@@ -1760,7 +2472,9 @@
       "wordingStatus": "not-yet-reviewed",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [],
-      "approvedReview": "G79"
+      "approvedReview": "G79",
+      "wordingReviewGroup": "focused-review",
+      "wordingReviewReason": "Specific exception or suffix: review its explanatory wording separately."
     },
     {
       "id": "ground-exceptions-anystate-ends1s",
@@ -1777,7 +2491,9 @@
       "wordingStatus": "not-yet-reviewed",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [],
-      "approvedReview": "G80"
+      "approvedReview": "G80",
+      "wordingReviewGroup": "focused-review",
+      "wordingReviewReason": "Specific exception or suffix: review its explanatory wording separately."
     },
     {
       "id": "3dayselect-main-ma-010-024",
@@ -1796,7 +2512,20 @@
       "reviewNotes": [
         "Check applicable exceptions and effective coverage before approving broad-range wording."
       ],
-      "approvedReview": "S01"
+      "approvedReview": "S01",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "3 Day Select MA 010–024 goes to GOLD.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Select 3 días, MA 010–024 va a GOLD.",
+          "approvalStatus": "proposed"
+        }
+      },
+      "wordingReviewGroup": "standard-template-batch-1"
     },
     {
       "id": "3dayselect-main-ma-025-026",
@@ -1815,7 +2544,20 @@
       "reviewNotes": [
         "Check applicable exceptions and effective coverage before approving broad-range wording."
       ],
-      "approvedReview": "S02"
+      "approvedReview": "S02",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "3 Day Select MA 025–026 goes to BLUE.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Select 3 días, MA 025–026 va a BLUE.",
+          "approvalStatus": "proposed"
+        }
+      },
+      "wordingReviewGroup": "standard-template-batch-1"
     },
     {
       "id": "3dayselect-main-mari-027-029",
@@ -1834,7 +2576,20 @@
       "reviewNotes": [
         "Check applicable exceptions and effective coverage before approving broad-range wording."
       ],
-      "approvedReview": "S03"
+      "approvedReview": "S03",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "3 Day Select MA/RI 027–029 goes to GOLD.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Select 3 días, MA/RI 027–029 va a GOLD.",
+          "approvalStatus": "proposed"
+        }
+      },
+      "wordingReviewGroup": "standard-template-batch-1"
     },
     {
       "id": "3dayselect-main-nh-030-033",
@@ -1853,7 +2608,20 @@
       "reviewNotes": [
         "Check applicable exceptions and effective coverage before approving broad-range wording."
       ],
-      "approvedReview": "S04"
+      "approvedReview": "S04",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "3 Day Select NH 030–033 goes to BLUE.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Select 3 días, NH 030–033 va a BLUE.",
+          "approvalStatus": "proposed"
+        }
+      },
+      "wordingReviewGroup": "standard-template-batch-1"
     },
     {
       "id": "3dayselect-main-nh-0340",
@@ -1870,7 +2638,9 @@
       "wordingStatus": "not-yet-reviewed",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [],
-      "approvedReview": "S05"
+      "approvedReview": "S05",
+      "wordingReviewGroup": "focused-review",
+      "wordingReviewReason": "Exact code or named destination: review wording that preserves the source meaning."
     },
     {
       "id": "3dayselect-main-nhme-035-049",
@@ -1889,7 +2659,20 @@
       "reviewNotes": [
         "Check applicable exceptions and effective coverage before approving broad-range wording."
       ],
-      "approvedReview": "S06"
+      "approvedReview": "S06",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "3 Day Select NH/ME 035–049 goes to BLUE.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Select 3 días, NH/ME 035–049 va a BLUE.",
+          "approvalStatus": "proposed"
+        }
+      },
+      "wordingReviewGroup": "standard-template-batch-1"
     },
     {
       "id": "3dayselect-main-vt-050-059",
@@ -1908,7 +2691,20 @@
       "reviewNotes": [
         "Check applicable exceptions and effective coverage before approving broad-range wording."
       ],
-      "approvedReview": "S07"
+      "approvedReview": "S07",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "3 Day Select VT 050–059 goes to GOLD.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Select 3 días, VT 050–059 va a GOLD.",
+          "approvalStatus": "proposed"
+        }
+      },
+      "wordingReviewGroup": "standard-template-batch-1"
     },
     {
       "id": "3dayselect-main-ct-060-069",
@@ -1927,7 +2723,20 @@
       "reviewNotes": [
         "Check applicable exceptions and effective coverage before approving broad-range wording."
       ],
-      "approvedReview": "S08"
+      "approvedReview": "S08",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "3 Day Select CT 060–069 goes to GOLD.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Select 3 días, CT 060–069 va a GOLD.",
+          "approvalStatus": "proposed"
+        }
+      },
+      "wordingReviewGroup": "standard-template-batch-1"
     },
     {
       "id": "3dayselect-main-ny-100-108",
@@ -1946,7 +2755,20 @@
       "reviewNotes": [
         "Check applicable exceptions and effective coverage before approving broad-range wording."
       ],
-      "approvedReview": "S09"
+      "approvedReview": "S09",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "3 Day Select NY 100–108 goes to YELLOW.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Select 3 días, NY 100–108 va a YELLOW.",
+          "approvalStatus": "proposed"
+        }
+      },
+      "wordingReviewGroup": "standard-template-batch-1"
     },
     {
       "id": "3dayselect-main-ny-109",
@@ -1963,7 +2785,20 @@
       "wordingStatus": "not-yet-reviewed",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [],
-      "approvedReview": "S10"
+      "approvedReview": "S10",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "3 Day Select NY 109 goes to ORANGE.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Select 3 días, NY 109 va a ORANGE.",
+          "approvalStatus": "proposed"
+        }
+      },
+      "wordingReviewGroup": "standard-template-batch-1"
     },
     {
       "id": "3dayselect-main-ny-110-119",
@@ -1982,7 +2817,20 @@
       "reviewNotes": [
         "Check applicable exceptions and effective coverage before approving broad-range wording."
       ],
-      "approvedReview": "S11"
+      "approvedReview": "S11",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "3 Day Select NY 110–119 goes to PINK.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Select 3 días, NY 110–119 va a PINK.",
+          "approvalStatus": "proposed"
+        }
+      },
+      "wordingReviewGroup": "standard-template-batch-1"
     },
     {
       "id": "3dayselect-main-ny-120-121",
@@ -2001,7 +2849,20 @@
       "reviewNotes": [
         "Check applicable exceptions and effective coverage before approving broad-range wording."
       ],
-      "approvedReview": "S12"
+      "approvedReview": "S12",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "3 Day Select NY 120–121 goes to GOLD.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Select 3 días, NY 120–121 va a GOLD.",
+          "approvalStatus": "proposed"
+        }
+      },
+      "wordingReviewGroup": "standard-template-batch-1"
     },
     {
       "id": "3dayselect-main-ny-122-127",
@@ -2020,7 +2881,20 @@
       "reviewNotes": [
         "Check applicable exceptions and effective coverage before approving broad-range wording."
       ],
-      "approvedReview": "S13"
+      "approvedReview": "S13",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "3 Day Select NY 122–127 goes to ORANGE.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Select 3 días, NY 122–127 va a ORANGE.",
+          "approvalStatus": "proposed"
+        }
+      },
+      "wordingReviewGroup": "standard-template-batch-1"
     },
     {
       "id": "3dayselect-main-ny-128-139",
@@ -2039,7 +2913,20 @@
       "reviewNotes": [
         "Check applicable exceptions and effective coverage before approving broad-range wording."
       ],
-      "approvedReview": "S14"
+      "approvedReview": "S14",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "3 Day Select NY 128–139 goes to GOLD.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Select 3 días, NY 128–139 va a GOLD.",
+          "approvalStatus": "proposed"
+        }
+      },
+      "wordingReviewGroup": "standard-template-batch-1"
     },
     {
       "id": "3dayselect-main-ny-140-147",
@@ -2058,7 +2945,20 @@
       "reviewNotes": [
         "Check applicable exceptions and effective coverage before approving broad-range wording."
       ],
-      "approvedReview": "S15"
+      "approvedReview": "S15",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "3 Day Select NY 140–147 goes to ORANGE.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Select 3 días, NY 140–147 va a ORANGE.",
+          "approvalStatus": "proposed"
+        }
+      },
+      "wordingReviewGroup": "standard-template-batch-1"
     },
     {
       "id": "3dayselect-main-ny-148-149",
@@ -2077,7 +2977,9 @@
       "reviewNotes": [
         "Check applicable exceptions and effective coverage before approving broad-range wording."
       ],
-      "approvedReview": "S16"
+      "approvedReview": "S16",
+      "wordingReviewGroup": "focused-review",
+      "wordingReviewReason": "Conservative prefix-overlap hold for S79: verify actual state/context applicability before drafting exclusions."
     },
     {
       "id": "3dayselect-main-pa-150-167",
@@ -2096,7 +2998,20 @@
       "reviewNotes": [
         "Check applicable exceptions and effective coverage before approving broad-range wording."
       ],
-      "approvedReview": "S17"
+      "approvedReview": "S17",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "3 Day Select PA 150–167 goes to GREEN.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Select 3 días, PA 150–167 va a GREEN.",
+          "approvalStatus": "proposed"
+        }
+      },
+      "wordingReviewGroup": "standard-template-batch-1"
     },
     {
       "id": "3dayselect-main-pa-168-178",
@@ -2115,7 +3030,20 @@
       "reviewNotes": [
         "Check applicable exceptions and effective coverage before approving broad-range wording."
       ],
-      "approvedReview": "S18"
+      "approvedReview": "S18",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "3 Day Select PA 168–178 goes to GREEN.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Select 3 días, PA 168–178 va a GREEN.",
+          "approvalStatus": "proposed"
+        }
+      },
+      "wordingReviewGroup": "standard-template-batch-1"
     },
     {
       "id": "3dayselect-main-pa-179-189",
@@ -2134,7 +3062,20 @@
       "reviewNotes": [
         "Check applicable exceptions and effective coverage before approving broad-range wording."
       ],
-      "approvedReview": "S19"
+      "approvedReview": "S19",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "3 Day Select PA 179–189 goes to GREEN.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Select 3 días, PA 179–189 va a GREEN.",
+          "approvalStatus": "proposed"
+        }
+      },
+      "wordingReviewGroup": "standard-template-batch-1"
     },
     {
       "id": "3dayselect-main-pa-190-194",
@@ -2153,7 +3094,20 @@
       "reviewNotes": [
         "Check applicable exceptions and effective coverage before approving broad-range wording."
       ],
-      "approvedReview": "S20"
+      "approvedReview": "S20",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "3 Day Select PA 190–194 goes to ORANGE.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Select 3 días, PA 190–194 va a ORANGE.",
+          "approvalStatus": "proposed"
+        }
+      },
+      "wordingReviewGroup": "standard-template-batch-1"
     },
     {
       "id": "3dayselect-main-pade-195-199",
@@ -2172,7 +3126,20 @@
       "reviewNotes": [
         "Check applicable exceptions and effective coverage before approving broad-range wording."
       ],
-      "approvedReview": "S21"
+      "approvedReview": "S21",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "3 Day Select PA/DE 195–199 goes to GREEN.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Select 3 días, PA/DE 195–199 va a GREEN.",
+          "approvalStatus": "proposed"
+        }
+      },
+      "wordingReviewGroup": "standard-template-batch-1"
     },
     {
       "id": "3dayselect-main-dcmd-200-219",
@@ -2191,7 +3158,20 @@
       "reviewNotes": [
         "Check applicable exceptions and effective coverage before approving broad-range wording."
       ],
-      "approvedReview": "S22"
+      "approvedReview": "S22",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "3 Day Select DC/MD 200–219 goes to GREEN.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Select 3 días, DC/MD 200–219 va a GREEN.",
+          "approvalStatus": "proposed"
+        }
+      },
+      "wordingReviewGroup": "standard-template-batch-1"
     },
     {
       "id": "3dayselect-main-va-220-238",
@@ -2210,7 +3190,20 @@
       "reviewNotes": [
         "Check applicable exceptions and effective coverage before approving broad-range wording."
       ],
-      "approvedReview": "S23"
+      "approvedReview": "S23",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "3 Day Select VA 220–238 goes to YELLOW.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Select 3 días, VA 220–238 va a YELLOW.",
+          "approvalStatus": "proposed"
+        }
+      },
+      "wordingReviewGroup": "standard-template-batch-1"
     },
     {
       "id": "3dayselect-main-vawv-239-269",
@@ -2229,7 +3222,20 @@
       "reviewNotes": [
         "Check applicable exceptions and effective coverage before approving broad-range wording."
       ],
-      "approvedReview": "S24"
+      "approvedReview": "S24",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "3 Day Select VA/WV 239–269 goes to YELLOW.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Select 3 días, VA/WV 239–269 va a YELLOW.",
+          "approvalStatus": "proposed"
+        }
+      },
+      "wordingReviewGroup": "standard-template-batch-1"
     },
     {
       "id": "3dayselect-main-ncsc-270-299",
@@ -2248,7 +3254,20 @@
       "reviewNotes": [
         "Check applicable exceptions and effective coverage before approving broad-range wording."
       ],
-      "approvedReview": "S25"
+      "approvedReview": "S25",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "3 Day Select NC/SC 270–299 goes to YELLOW.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Select 3 días, NC/SC 270–299 va a YELLOW.",
+          "approvalStatus": "proposed"
+        }
+      },
+      "wordingReviewGroup": "standard-template-batch-1"
     },
     {
       "id": "3dayselect-main-ga-300-319",
@@ -2267,7 +3286,20 @@
       "reviewNotes": [
         "Check applicable exceptions and effective coverage before approving broad-range wording."
       ],
-      "approvedReview": "S26"
+      "approvedReview": "S26",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "3 Day Select GA 300–319 goes to BLUE.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Select 3 días, GA 300–319 va a BLUE.",
+          "approvalStatus": "proposed"
+        }
+      },
+      "wordingReviewGroup": "standard-template-batch-1"
     },
     {
       "id": "3dayselect-main-fl-320-349",
@@ -2286,7 +3318,20 @@
       "reviewNotes": [
         "Check applicable exceptions and effective coverage before approving broad-range wording."
       ],
-      "approvedReview": "S27"
+      "approvedReview": "S27",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "3 Day Select FL 320–349 goes to PINK.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Select 3 días, FL 320–349 va a PINK.",
+          "approvalStatus": "proposed"
+        }
+      },
+      "wordingReviewGroup": "standard-template-batch-1"
     },
     {
       "id": "3dayselect-main-al-350-369",
@@ -2324,7 +3369,20 @@
       "reviewNotes": [
         "Check applicable exceptions and effective coverage before approving broad-range wording."
       ],
-      "approvedReview": "S28"
+      "approvedReview": "S28",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "3 Day Select TN 370–385 goes to BROWN.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Select 3 días, TN 370–385 va a BROWN.",
+          "approvalStatus": "proposed"
+        }
+      },
+      "wordingReviewGroup": "standard-template-batch-1"
     },
     {
       "id": "3dayselect-main-ms-386-399",
@@ -2343,7 +3401,9 @@
       "reviewNotes": [
         "Check applicable exceptions and effective coverage before approving broad-range wording."
       ],
-      "approvedReview": "S29"
+      "approvedReview": "S29",
+      "wordingReviewGroup": "focused-review",
+      "wordingReviewReason": "Conservative prefix-overlap hold for S63: verify actual state/context applicability before drafting exclusions."
     },
     {
       "id": "3dayselect-main-ky-400-429",
@@ -2362,7 +3422,20 @@
       "reviewNotes": [
         "Check applicable exceptions and effective coverage before approving broad-range wording."
       ],
-      "approvedReview": "S30"
+      "approvedReview": "S30",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "3 Day Select KY 400–429 goes to BROWN.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Select 3 días, KY 400–429 va a BROWN.",
+          "approvalStatus": "proposed"
+        }
+      },
+      "wordingReviewGroup": "standard-template-batch-1"
     },
     {
       "id": "3dayselect-main-oh-430-459",
@@ -2381,7 +3454,20 @@
       "reviewNotes": [
         "Check applicable exceptions and effective coverage before approving broad-range wording."
       ],
-      "approvedReview": "S31"
+      "approvedReview": "S31",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "3 Day Select OH 430–459 goes to ORANGE.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Select 3 días, OH 430–459 va a ORANGE.",
+          "approvalStatus": "proposed"
+        }
+      },
+      "wordingReviewGroup": "standard-template-batch-1"
     },
     {
       "id": "3dayselect-main-in-460-479",
@@ -2400,7 +3486,20 @@
       "reviewNotes": [
         "Check applicable exceptions and effective coverage before approving broad-range wording."
       ],
-      "approvedReview": "S32"
+      "approvedReview": "S32",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "3 Day Select IN 460–479 goes to ORANGE.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Select 3 días, IN 460–479 va a ORANGE.",
+          "approvalStatus": "proposed"
+        }
+      },
+      "wordingReviewGroup": "standard-template-batch-1"
     },
     {
       "id": "3dayselect-main-mi-480-497",
@@ -2419,7 +3518,20 @@
       "reviewNotes": [
         "Check applicable exceptions and effective coverage before approving broad-range wording."
       ],
-      "approvedReview": "S33"
+      "approvedReview": "S33",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "3 Day Select MI 480–497 goes to ORANGE.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Select 3 días, MI 480–497 va a ORANGE.",
+          "approvalStatus": "proposed"
+        }
+      },
+      "wordingReviewGroup": "standard-template-batch-1"
     },
     {
       "id": "3dayselect-main-all-498-566",
@@ -2439,7 +3551,9 @@
         "Check applicable exceptions and effective coverage before approving broad-range wording.",
         "Wildcard fallback: explicitly exclude specific overrides; not a duplicate of a named-state row by text alone."
       ],
-      "approvedReview": "S34"
+      "approvedReview": "S34",
+      "wordingReviewGroup": "focused-review",
+      "wordingReviewReason": "Wildcard or named destination: review its scope and any explicit exception wording."
     },
     {
       "id": "3dayselect-main-all-567-599",
@@ -2459,7 +3573,9 @@
         "Check applicable exceptions and effective coverage before approving broad-range wording.",
         "Wildcard fallback: explicitly exclude specific overrides; not a duplicate of a named-state row by text alone."
       ],
-      "approvedReview": "S35"
+      "approvedReview": "S35",
+      "wordingReviewGroup": "focused-review",
+      "wordingReviewReason": "Wildcard or named destination: review its scope and any explicit exception wording."
     },
     {
       "id": "3dayselect-main-il-600-608",
@@ -2478,7 +3594,20 @@
       "reviewNotes": [
         "Check applicable exceptions and effective coverage before approving broad-range wording."
       ],
-      "approvedReview": "S36"
+      "approvedReview": "S36",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "3 Day Select IL 600–608 goes to YELLOW.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Select 3 días, IL 600–608 va a YELLOW.",
+          "approvalStatus": "proposed"
+        }
+      },
+      "wordingReviewGroup": "standard-template-batch-1"
     },
     {
       "id": "3dayselect-main-il-609-629",
@@ -2497,7 +3626,20 @@
       "reviewNotes": [
         "Check applicable exceptions and effective coverage before approving broad-range wording."
       ],
-      "approvedReview": "S37"
+      "approvedReview": "S37",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "3 Day Select IL 609–629 goes to ORANGE.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Select 3 días, IL 609–629 va a ORANGE.",
+          "approvalStatus": "proposed"
+        }
+      },
+      "wordingReviewGroup": "standard-template-batch-1"
     },
     {
       "id": "3dayselect-main-moks-630-674",
@@ -2516,7 +3658,20 @@
       "reviewNotes": [
         "Check applicable exceptions and effective coverage before approving broad-range wording."
       ],
-      "approvedReview": "S38"
+      "approvedReview": "S38",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "3 Day Select MO/KS 630–674 goes to BLUE.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Select 3 días, MO/KS 630–674 va a BLUE.",
+          "approvalStatus": "proposed"
+        }
+      },
+      "wordingReviewGroup": "standard-template-batch-1"
     },
     {
       "id": "3dayselect-main-ks-675-679",
@@ -2535,7 +3690,20 @@
       "reviewNotes": [
         "Check applicable exceptions and effective coverage before approving broad-range wording."
       ],
-      "approvedReview": "S39"
+      "approvedReview": "S39",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "3 Day Select KS 675–679 goes to ORANGE.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Select 3 días, KS 675–679 va a ORANGE.",
+          "approvalStatus": "proposed"
+        }
+      },
+      "wordingReviewGroup": "standard-template-batch-1"
     },
     {
       "id": "3dayselect-main-ne-680-689",
@@ -2554,7 +3722,20 @@
       "reviewNotes": [
         "Check applicable exceptions and effective coverage before approving broad-range wording."
       ],
-      "approvedReview": "S40"
+      "approvedReview": "S40",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "3 Day Select NE 680–689 goes to BLUE.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Select 3 días, NE 680–689 va a BLUE.",
+          "approvalStatus": "proposed"
+        }
+      },
+      "wordingReviewGroup": "standard-template-batch-1"
     },
     {
       "id": "3dayselect-main-ne-690-699",
@@ -2573,7 +3754,20 @@
       "reviewNotes": [
         "Check applicable exceptions and effective coverage before approving broad-range wording."
       ],
-      "approvedReview": "S41"
+      "approvedReview": "S41",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "3 Day Select NE 690–699 goes to ORANGE.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Select 3 días, NE 690–699 va a ORANGE.",
+          "approvalStatus": "proposed"
+        }
+      },
+      "wordingReviewGroup": "standard-template-batch-1"
     },
     {
       "id": "3dayselect-main-all-700-734",
@@ -2593,7 +3787,9 @@
         "Check applicable exceptions and effective coverage before approving broad-range wording.",
         "Wildcard fallback: explicitly exclude specific overrides; not a duplicate of a named-state row by text alone."
       ],
-      "approvedReview": "S42"
+      "approvedReview": "S42",
+      "wordingReviewGroup": "focused-review",
+      "wordingReviewReason": "Wildcard or named destination: review its scope and any explicit exception wording."
     },
     {
       "id": "3dayselect-main-ok-735-749",
@@ -2612,7 +3808,20 @@
       "reviewNotes": [
         "Check applicable exceptions and effective coverage before approving broad-range wording."
       ],
-      "approvedReview": "S43"
+      "approvedReview": "S43",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "3 Day Select OK 735–749 goes to ORANGE.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Select 3 días, OK 735–749 va a ORANGE.",
+          "approvalStatus": "proposed"
+        }
+      },
+      "wordingReviewGroup": "standard-template-batch-1"
     },
     {
       "id": "3dayselect-main-tx-750-768",
@@ -2648,7 +3857,9 @@
       "wordingStatus": "not-yet-reviewed",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [],
-      "approvedReview": "S44"
+      "approvedReview": "S44",
+      "wordingReviewGroup": "focused-review",
+      "wordingReviewReason": "Exact code or named destination: review wording that preserves the source meaning."
     },
     {
       "id": "3dayselect-main-tx-770-784",
@@ -2686,7 +3897,9 @@
       "reviewNotes": [
         "Check applicable exceptions and effective coverage before approving broad-range wording."
       ],
-      "approvedReview": "S45"
+      "approvedReview": "S45",
+      "wordingReviewGroup": "focused-review",
+      "wordingReviewReason": "Conservative prefix-overlap hold for S68, S69, S70, S71: verify actual state/context applicability before drafting exclusions."
     },
     {
       "id": "3dayselect-main-co-800-810",
@@ -2705,7 +3918,20 @@
       "reviewNotes": [
         "Check applicable exceptions and effective coverage before approving broad-range wording."
       ],
-      "approvedReview": "S46"
+      "approvedReview": "S46",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "3 Day Select CO 800–810 goes to ORANGE.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Select 3 días, CO 800–810 va a ORANGE.",
+          "approvalStatus": "proposed"
+        }
+      },
+      "wordingReviewGroup": "standard-template-batch-1"
     },
     {
       "id": "3dayselect-main-all-811-999",
@@ -2725,7 +3951,9 @@
         "Check applicable exceptions and effective coverage before approving broad-range wording.",
         "Wildcard fallback: explicitly exclude specific overrides; not a duplicate of a named-state row by text alone."
       ],
-      "approvedReview": "S47"
+      "approvedReview": "S47",
+      "wordingReviewGroup": "focused-review",
+      "wordingReviewReason": "Wildcard or named destination: review its scope and any explicit exception wording."
     },
     {
       "id": "3dayselect-exceptions-nj-0703",
@@ -2742,7 +3970,20 @@
       "wordingStatus": "not-yet-reviewed",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [],
-      "approvedReview": "S48"
+      "approvedReview": "S48",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "3 Day Select NJ 070 3 goes to RED.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Select 3 días, NJ 070 3 va a RED.",
+          "approvalStatus": "proposed"
+        }
+      },
+      "wordingReviewGroup": "standard-template-batch-1"
     },
     {
       "id": "3dayselect-exceptions-nj-0709",
@@ -2759,7 +4000,20 @@
       "wordingStatus": "not-yet-reviewed",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [],
-      "approvedReview": "S49"
+      "approvedReview": "S49",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "3 Day Select NJ 070 9 goes to RED.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Select 3 días, NJ 070 9 va a RED.",
+          "approvalStatus": "proposed"
+        }
+      },
+      "wordingReviewGroup": "standard-template-batch-1"
     },
     {
       "id": "3dayselect-exceptions-nj-0759",
@@ -2776,7 +4030,20 @@
       "wordingStatus": "not-yet-reviewed",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [],
-      "approvedReview": "S50"
+      "approvedReview": "S50",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "3 Day Select NJ 075 9 goes to RED.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Select 3 días, NJ 075 9 va a RED.",
+          "approvalStatus": "proposed"
+        }
+      },
+      "wordingReviewGroup": "standard-template-batch-1"
     },
     {
       "id": "3dayselect-exceptions-nj-0769",
@@ -2793,7 +4060,20 @@
       "wordingStatus": "not-yet-reviewed",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [],
-      "approvedReview": "S51"
+      "approvedReview": "S51",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "3 Day Select NJ 076 9 goes to RED.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Select 3 días, NJ 076 9 va a RED.",
+          "approvalStatus": "proposed"
+        }
+      },
+      "wordingReviewGroup": "standard-template-batch-1"
     },
     {
       "id": "3dayselect-exceptions-nj-0770",
@@ -2810,7 +4090,20 @@
       "wordingStatus": "not-yet-reviewed",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [],
-      "approvedReview": "S52"
+      "approvedReview": "S52",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "3 Day Select NJ 077 0 goes to RED.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Select 3 días, NJ 077 0 va a RED.",
+          "approvalStatus": "proposed"
+        }
+      },
+      "wordingReviewGroup": "standard-template-batch-1"
     },
     {
       "id": "3dayselect-exceptions-nj-0784",
@@ -2827,7 +4120,20 @@
       "wordingStatus": "not-yet-reviewed",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [],
-      "approvedReview": "S53"
+      "approvedReview": "S53",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "3 Day Select NJ 078 4 goes to RED.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Select 3 días, NJ 078 4 va a RED.",
+          "approvalStatus": "proposed"
+        }
+      },
+      "wordingReviewGroup": "standard-template-batch-1"
     },
     {
       "id": "3dayselect-exceptions-nj-0789",
@@ -2844,7 +4150,20 @@
       "wordingStatus": "not-yet-reviewed",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [],
-      "approvedReview": "S54"
+      "approvedReview": "S54",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "3 Day Select NJ 078 9 goes to RED.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Select 3 días, NJ 078 9 va a RED.",
+          "approvalStatus": "proposed"
+        }
+      },
+      "wordingReviewGroup": "standard-template-batch-1"
     },
     {
       "id": "3dayselect-exceptions-nj-0799",
@@ -2861,7 +4180,9 @@
       "wordingStatus": "not-yet-reviewed",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [],
-      "approvedReview": "S55"
+      "approvedReview": "S55",
+      "wordingReviewGroup": "focused-review",
+      "wordingReviewReason": "Specific exception or suffix: review its explanatory wording separately."
     },
     {
       "id": "3dayselect-exceptions-nj-0819",
@@ -2878,7 +4199,20 @@
       "wordingStatus": "not-yet-reviewed",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [],
-      "approvedReview": "S56"
+      "approvedReview": "S56",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "3 Day Select NJ 081 9 goes to RED.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Select 3 días, NJ 081 9 va a RED.",
+          "approvalStatus": "proposed"
+        }
+      },
+      "wordingReviewGroup": "standard-template-batch-1"
     },
     {
       "id": "3dayselect-exceptions-nj-0829",
@@ -2895,7 +4229,20 @@
       "wordingStatus": "not-yet-reviewed",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [],
-      "approvedReview": "S57"
+      "approvedReview": "S57",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "3 Day Select NJ 082 9 goes to RED.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Select 3 días, NJ 082 9 va a RED.",
+          "approvalStatus": "proposed"
+        }
+      },
+      "wordingReviewGroup": "standard-template-batch-1"
     },
     {
       "id": "3dayselect-exceptions-nj-0839",
@@ -2912,7 +4259,20 @@
       "wordingStatus": "not-yet-reviewed",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [],
-      "approvedReview": "S58"
+      "approvedReview": "S58",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "3 Day Select NJ 083 9 goes to RED.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Select 3 días, NJ 083 9 va a RED.",
+          "approvalStatus": "proposed"
+        }
+      },
+      "wordingReviewGroup": "standard-template-batch-1"
     },
     {
       "id": "3dayselect-exceptions-nj-0860",
@@ -2929,7 +4289,20 @@
       "wordingStatus": "not-yet-reviewed",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [],
-      "approvedReview": "S59"
+      "approvedReview": "S59",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "3 Day Select NJ 086 0 goes to RED.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Select 3 días, NJ 086 0 va a RED.",
+          "approvalStatus": "proposed"
+        }
+      },
+      "wordingReviewGroup": "standard-template-batch-1"
     },
     {
       "id": "3dayselect-exceptions-nj-0871",
@@ -2946,7 +4319,20 @@
       "wordingStatus": "not-yet-reviewed",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [],
-      "approvedReview": "S60"
+      "approvedReview": "S60",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "3 Day Select NJ 087 1 goes to RED.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Select 3 días, NJ 087 1 va a RED.",
+          "approvalStatus": "proposed"
+        }
+      },
+      "wordingReviewGroup": "standard-template-batch-1"
     },
     {
       "id": "3dayselect-exceptions-nj-0889",
@@ -2963,7 +4349,20 @@
       "wordingStatus": "not-yet-reviewed",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [],
-      "approvedReview": "S61"
+      "approvedReview": "S61",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "3 Day Select NJ 088 9 goes to RED.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Select 3 días, NJ 088 9 va a RED.",
+          "approvalStatus": "proposed"
+        }
+      },
+      "wordingReviewGroup": "standard-template-batch-1"
     },
     {
       "id": "3dayselect-exceptions-nj-0899",
@@ -2980,7 +4379,20 @@
       "wordingStatus": "not-yet-reviewed",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [],
-      "approvedReview": "S62"
+      "approvedReview": "S62",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "3 Day Select NJ 089 9 goes to RED.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Select 3 días, NJ 089 9 va a RED.",
+          "approvalStatus": "proposed"
+        }
+      },
+      "wordingReviewGroup": "standard-template-batch-1"
     },
     {
       "id": "3dayselect-exceptions-ms-3950",
@@ -2997,7 +4409,9 @@
       "wordingStatus": "not-yet-reviewed",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [],
-      "approvedReview": "S63"
+      "approvedReview": "S63",
+      "wordingReviewGroup": "focused-review",
+      "wordingReviewReason": "Specific exception or suffix: review its explanatory wording separately."
     },
     {
       "id": "3dayselect-exceptions-sd-5119",
@@ -3014,7 +4428,9 @@
       "wordingStatus": "not-yet-reviewed",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [],
-      "approvedReview": "S64"
+      "approvedReview": "S64",
+      "wordingReviewGroup": "focused-review",
+      "wordingReviewReason": "Specific exception or suffix: review its explanatory wording separately."
     },
     {
       "id": "3dayselect-exceptions-sd-5719",
@@ -3031,7 +4447,9 @@
       "wordingStatus": "not-yet-reviewed",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [],
-      "approvedReview": "S65"
+      "approvedReview": "S65",
+      "wordingReviewGroup": "focused-review",
+      "wordingReviewReason": "Specific exception or suffix: review its explanatory wording separately."
     },
     {
       "id": "3dayselect-exceptions-nd-5819",
@@ -3048,7 +4466,9 @@
       "wordingStatus": "not-yet-reviewed",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [],
-      "approvedReview": "S66"
+      "approvedReview": "S66",
+      "wordingReviewGroup": "focused-review",
+      "wordingReviewReason": "Specific exception or suffix: review its explanatory wording separately."
     },
     {
       "id": "3dayselect-exceptions-nd-5820",
@@ -3065,7 +4485,9 @@
       "wordingStatus": "not-yet-reviewed",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [],
-      "approvedReview": "S67"
+      "approvedReview": "S67",
+      "wordingReviewGroup": "focused-review",
+      "wordingReviewReason": "Specific exception or suffix: review its explanatory wording separately."
     },
     {
       "id": "3dayselect-exceptions-tx-7864",
@@ -3082,7 +4504,9 @@
       "wordingStatus": "not-yet-reviewed",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [],
-      "approvedReview": "S68"
+      "approvedReview": "S68",
+      "wordingReviewGroup": "focused-review",
+      "wordingReviewReason": "Specific exception or suffix: review its explanatory wording separately."
     },
     {
       "id": "3dayselect-exceptions-tx-7879",
@@ -3099,7 +4523,9 @@
       "wordingStatus": "not-yet-reviewed",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [],
-      "approvedReview": "S69"
+      "approvedReview": "S69",
+      "wordingReviewGroup": "focused-review",
+      "wordingReviewReason": "Specific exception or suffix: review its explanatory wording separately."
     },
     {
       "id": "3dayselect-exceptions-tx-7960",
@@ -3116,7 +4542,9 @@
       "wordingStatus": "not-yet-reviewed",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [],
-      "approvedReview": "S70"
+      "approvedReview": "S70",
+      "wordingReviewGroup": "focused-review",
+      "wordingReviewReason": "Specific exception or suffix: review its explanatory wording separately."
     },
     {
       "id": "3dayselect-exceptions-tx-7999",
@@ -3133,7 +4561,9 @@
       "wordingStatus": "not-yet-reviewed",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [],
-      "approvedReview": "S71"
+      "approvedReview": "S71",
+      "wordingReviewGroup": "focused-review",
+      "wordingReviewReason": "Specific exception or suffix: review its explanatory wording separately."
     },
     {
       "id": "3dayselect-exceptions-co-8113",
@@ -3150,7 +4580,9 @@
       "wordingStatus": "not-yet-reviewed",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [],
-      "approvedReview": "S72"
+      "approvedReview": "S72",
+      "wordingReviewGroup": "focused-review",
+      "wordingReviewReason": "Specific exception or suffix: review its explanatory wording separately."
     },
     {
       "id": "3dayselect-exceptions-co-8120",
@@ -3167,7 +4599,9 @@
       "wordingStatus": "not-yet-reviewed",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [],
-      "approvedReview": "S73"
+      "approvedReview": "S73",
+      "wordingReviewGroup": "focused-review",
+      "wordingReviewReason": "Specific exception or suffix: review its explanatory wording separately."
     },
     {
       "id": "3dayselect-exceptions-co-8137",
@@ -3184,7 +4618,9 @@
       "wordingStatus": "not-yet-reviewed",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [],
-      "approvedReview": "S74"
+      "approvedReview": "S74",
+      "wordingReviewGroup": "focused-review",
+      "wordingReviewReason": "Specific exception or suffix: review its explanatory wording separately."
     },
     {
       "id": "3dayselect-exceptions-co-8160",
@@ -3201,7 +4637,9 @@
       "wordingStatus": "not-yet-reviewed",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [],
-      "approvedReview": "S75"
+      "approvedReview": "S75",
+      "wordingReviewGroup": "focused-review",
+      "wordingReviewReason": "Specific exception or suffix: review its explanatory wording separately."
     },
     {
       "id": "3dayselect-exceptions-co-8161",
@@ -3218,7 +4656,9 @@
       "wordingStatus": "not-yet-reviewed",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [],
-      "approvedReview": "S76"
+      "approvedReview": "S76",
+      "wordingReviewGroup": "focused-review",
+      "wordingReviewReason": "Specific exception or suffix: review its explanatory wording separately."
     },
     {
       "id": "3dayselect-exceptions-wy-8200",
@@ -3235,7 +4675,9 @@
       "wordingStatus": "not-yet-reviewed",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [],
-      "approvedReview": "S77"
+      "approvedReview": "S77",
+      "wordingReviewGroup": "focused-review",
+      "wordingReviewReason": "Specific exception or suffix: review its explanatory wording separately."
     },
     {
       "id": "3dayselect-exceptions-wy-8201",
@@ -3252,7 +4694,9 @@
       "wordingStatus": "not-yet-reviewed",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [],
-      "approvedReview": "S78"
+      "approvedReview": "S78",
+      "wordingReviewGroup": "focused-review",
+      "wordingReviewReason": "Specific exception or suffix: review its explanatory wording separately."
     },
     {
       "id": "3dayselect-exceptions-ny-1481",
@@ -3269,7 +4713,9 @@
       "wordingStatus": "not-yet-reviewed",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [],
-      "approvedReview": "S79"
+      "approvedReview": "S79",
+      "wordingReviewGroup": "focused-review",
+      "wordingReviewReason": "Specific exception or suffix: review its explanatory wording separately."
     },
     {
       "id": "3dayselect-exceptions-anystate-ends2s",
@@ -3286,7 +4732,9 @@
       "wordingStatus": "not-yet-reviewed",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [],
-      "approvedReview": "S80"
+      "approvedReview": "S80",
+      "wordingReviewGroup": "focused-review",
+      "wordingReviewReason": "Specific exception or suffix: review its explanatory wording separately."
     },
     {
       "id": "3dayselect-exceptions-anystate-ends1s",
@@ -3303,7 +4751,9 @@
       "wordingStatus": "not-yet-reviewed",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [],
-      "approvedReview": "S81"
+      "approvedReview": "S81",
+      "wordingReviewGroup": "focused-review",
+      "wordingReviewReason": "Specific exception or suffix: review its explanatory wording separately."
     },
     {
       "id": "2dayair-main-ma-010-024",
@@ -3322,7 +4772,20 @@
       "reviewNotes": [
         "Check applicable exceptions and effective coverage before approving broad-range wording."
       ],
-      "approvedReview": "D01"
+      "approvedReview": "D01",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "2 Day Air MA 010–024 goes to GOLD.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Aéreo 2 días, MA 010–024 va a GOLD.",
+          "approvalStatus": "proposed"
+        }
+      },
+      "wordingReviewGroup": "standard-template-batch-1"
     },
     {
       "id": "2dayair-main-ma-025-026",
@@ -3341,7 +4804,20 @@
       "reviewNotes": [
         "Check applicable exceptions and effective coverage before approving broad-range wording."
       ],
-      "approvedReview": "D02"
+      "approvedReview": "D02",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "2 Day Air MA 025–026 goes to BLUE.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Aéreo 2 días, MA 025–026 va a BLUE.",
+          "approvalStatus": "proposed"
+        }
+      },
+      "wordingReviewGroup": "standard-template-batch-1"
     },
     {
       "id": "2dayair-main-mari-027-029",
@@ -3360,7 +4836,20 @@
       "reviewNotes": [
         "Check applicable exceptions and effective coverage before approving broad-range wording."
       ],
-      "approvedReview": "D03"
+      "approvedReview": "D03",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "2 Day Air MA/RI 027–029 goes to GOLD.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Aéreo 2 días, MA/RI 027–029 va a GOLD.",
+          "approvalStatus": "proposed"
+        }
+      },
+      "wordingReviewGroup": "standard-template-batch-1"
     },
     {
       "id": "2dayair-main-nh-030-033",
@@ -3379,7 +4868,20 @@
       "reviewNotes": [
         "Check applicable exceptions and effective coverage before approving broad-range wording."
       ],
-      "approvedReview": "D04"
+      "approvedReview": "D04",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "2 Day Air NH 030–033 goes to BLUE.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Aéreo 2 días, NH 030–033 va a BLUE.",
+          "approvalStatus": "proposed"
+        }
+      },
+      "wordingReviewGroup": "standard-template-batch-1"
     },
     {
       "id": "2dayair-main-nh-0340",
@@ -3396,7 +4898,9 @@
       "wordingStatus": "not-yet-reviewed",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [],
-      "approvedReview": "D05"
+      "approvedReview": "D05",
+      "wordingReviewGroup": "focused-review",
+      "wordingReviewReason": "Exact code or named destination: review wording that preserves the source meaning."
     },
     {
       "id": "2dayair-main-nhme-035-049",
@@ -3415,7 +4919,20 @@
       "reviewNotes": [
         "Check applicable exceptions and effective coverage before approving broad-range wording."
       ],
-      "approvedReview": "D06"
+      "approvedReview": "D06",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "2 Day Air NH/ME 035–049 goes to BLUE.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Aéreo 2 días, NH/ME 035–049 va a BLUE.",
+          "approvalStatus": "proposed"
+        }
+      },
+      "wordingReviewGroup": "standard-template-batch-1"
     },
     {
       "id": "2dayair-main-vt-050-059",
@@ -3434,7 +4951,20 @@
       "reviewNotes": [
         "Check applicable exceptions and effective coverage before approving broad-range wording."
       ],
-      "approvedReview": "D07"
+      "approvedReview": "D07",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "2 Day Air VT 050–059 goes to GOLD.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Aéreo 2 días, VT 050–059 va a GOLD.",
+          "approvalStatus": "proposed"
+        }
+      },
+      "wordingReviewGroup": "standard-template-batch-1"
     },
     {
       "id": "2dayair-main-ct-060-069",
@@ -3453,7 +4983,20 @@
       "reviewNotes": [
         "Check applicable exceptions and effective coverage before approving broad-range wording."
       ],
-      "approvedReview": "D08"
+      "approvedReview": "D08",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "2 Day Air CT 060–069 goes to GOLD.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Aéreo 2 días, CT 060–069 va a GOLD.",
+          "approvalStatus": "proposed"
+        }
+      },
+      "wordingReviewGroup": "standard-template-batch-1"
     },
     {
       "id": "2dayair-main-ny-100-108",
@@ -3472,7 +5015,20 @@
       "reviewNotes": [
         "Check applicable exceptions and effective coverage before approving broad-range wording."
       ],
-      "approvedReview": "D09"
+      "approvedReview": "D09",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "2 Day Air NY 100–108 goes to YELLOW.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Aéreo 2 días, NY 100–108 va a YELLOW.",
+          "approvalStatus": "proposed"
+        }
+      },
+      "wordingReviewGroup": "standard-template-batch-1"
     },
     {
       "id": "2dayair-main-ny-109",
@@ -3489,7 +5045,20 @@
       "wordingStatus": "not-yet-reviewed",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [],
-      "approvedReview": "D10"
+      "approvedReview": "D10",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "2 Day Air NY 109 goes to ORANGE.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Aéreo 2 días, NY 109 va a ORANGE.",
+          "approvalStatus": "proposed"
+        }
+      },
+      "wordingReviewGroup": "standard-template-batch-1"
     },
     {
       "id": "2dayair-main-ny-110-119",
@@ -3508,7 +5077,20 @@
       "reviewNotes": [
         "Check applicable exceptions and effective coverage before approving broad-range wording."
       ],
-      "approvedReview": "D11"
+      "approvedReview": "D11",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "2 Day Air NY 110–119 goes to PINK.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Aéreo 2 días, NY 110–119 va a PINK.",
+          "approvalStatus": "proposed"
+        }
+      },
+      "wordingReviewGroup": "standard-template-batch-1"
     },
     {
       "id": "2dayair-main-ny-120-121",
@@ -3527,7 +5109,20 @@
       "reviewNotes": [
         "Check applicable exceptions and effective coverage before approving broad-range wording."
       ],
-      "approvedReview": "D12"
+      "approvedReview": "D12",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "2 Day Air NY 120–121 goes to GOLD.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Aéreo 2 días, NY 120–121 va a GOLD.",
+          "approvalStatus": "proposed"
+        }
+      },
+      "wordingReviewGroup": "standard-template-batch-1"
     },
     {
       "id": "2dayair-main-ny-122-127",
@@ -3546,7 +5141,20 @@
       "reviewNotes": [
         "Check applicable exceptions and effective coverage before approving broad-range wording."
       ],
-      "approvedReview": "D13"
+      "approvedReview": "D13",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "2 Day Air NY 122–127 goes to ORANGE.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Aéreo 2 días, NY 122–127 va a ORANGE.",
+          "approvalStatus": "proposed"
+        }
+      },
+      "wordingReviewGroup": "standard-template-batch-1"
     },
     {
       "id": "2dayair-main-ny-128-139",
@@ -3565,7 +5173,20 @@
       "reviewNotes": [
         "Check applicable exceptions and effective coverage before approving broad-range wording."
       ],
-      "approvedReview": "D14"
+      "approvedReview": "D14",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "2 Day Air NY 128–139 goes to GOLD.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Aéreo 2 días, NY 128–139 va a GOLD.",
+          "approvalStatus": "proposed"
+        }
+      },
+      "wordingReviewGroup": "standard-template-batch-1"
     },
     {
       "id": "2dayair-main-ny-140-147",
@@ -3603,7 +5224,9 @@
       "reviewNotes": [
         "Check applicable exceptions and effective coverage before approving broad-range wording."
       ],
-      "approvedReview": "D15"
+      "approvedReview": "D15",
+      "wordingReviewGroup": "focused-review",
+      "wordingReviewReason": "Conservative prefix-overlap hold for D57: verify actual state/context applicability before drafting exclusions."
     },
     {
       "id": "2dayair-main-pa-150-167",
@@ -3622,7 +5245,20 @@
       "reviewNotes": [
         "Check applicable exceptions and effective coverage before approving broad-range wording."
       ],
-      "approvedReview": "D16"
+      "approvedReview": "D16",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "2 Day Air PA 150–167 goes to GREEN.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Aéreo 2 días, PA 150–167 va a GREEN.",
+          "approvalStatus": "proposed"
+        }
+      },
+      "wordingReviewGroup": "standard-template-batch-1"
     },
     {
       "id": "2dayair-main-pa-168-178",
@@ -3641,7 +5277,20 @@
       "reviewNotes": [
         "Check applicable exceptions and effective coverage before approving broad-range wording."
       ],
-      "approvedReview": "D17"
+      "approvedReview": "D17",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "2 Day Air PA 168–178 goes to GREEN.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Aéreo 2 días, PA 168–178 va a GREEN.",
+          "approvalStatus": "proposed"
+        }
+      },
+      "wordingReviewGroup": "standard-template-batch-1"
     },
     {
       "id": "2dayair-main-pa-179-189",
@@ -3660,7 +5309,20 @@
       "reviewNotes": [
         "Check applicable exceptions and effective coverage before approving broad-range wording."
       ],
-      "approvedReview": "D18"
+      "approvedReview": "D18",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "2 Day Air PA 179–189 goes to GREEN.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Aéreo 2 días, PA 179–189 va a GREEN.",
+          "approvalStatus": "proposed"
+        }
+      },
+      "wordingReviewGroup": "standard-template-batch-1"
     },
     {
       "id": "2dayair-main-pa-190-194",
@@ -3679,7 +5341,20 @@
       "reviewNotes": [
         "Check applicable exceptions and effective coverage before approving broad-range wording."
       ],
-      "approvedReview": "D19"
+      "approvedReview": "D19",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "2 Day Air PA 190–194 goes to ORANGE.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Aéreo 2 días, PA 190–194 va a ORANGE.",
+          "approvalStatus": "proposed"
+        }
+      },
+      "wordingReviewGroup": "standard-template-batch-1"
     },
     {
       "id": "2dayair-main-pade-195-199",
@@ -3698,7 +5373,20 @@
       "reviewNotes": [
         "Check applicable exceptions and effective coverage before approving broad-range wording."
       ],
-      "approvedReview": "D20"
+      "approvedReview": "D20",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "2 Day Air PA/DE 195–199 goes to GREEN.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Aéreo 2 días, PA/DE 195–199 va a GREEN.",
+          "approvalStatus": "proposed"
+        }
+      },
+      "wordingReviewGroup": "standard-template-batch-1"
     },
     {
       "id": "2dayair-main-dcmd-200-219",
@@ -3717,7 +5405,20 @@
       "reviewNotes": [
         "Check applicable exceptions and effective coverage before approving broad-range wording."
       ],
-      "approvedReview": "D21"
+      "approvedReview": "D21",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "2 Day Air DC/MD 200–219 goes to GREEN.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Aéreo 2 días, DC/MD 200–219 va a GREEN.",
+          "approvalStatus": "proposed"
+        }
+      },
+      "wordingReviewGroup": "standard-template-batch-1"
     },
     {
       "id": "2dayair-main-va-220-238",
@@ -3736,7 +5437,20 @@
       "reviewNotes": [
         "Check applicable exceptions and effective coverage before approving broad-range wording."
       ],
-      "approvedReview": "D22"
+      "approvedReview": "D22",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "2 Day Air VA 220–238 goes to YELLOW.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Aéreo 2 días, VA 220–238 va a YELLOW.",
+          "approvalStatus": "proposed"
+        }
+      },
+      "wordingReviewGroup": "standard-template-batch-1"
     },
     {
       "id": "2dayair-main-vawv-239-269",
@@ -3755,7 +5469,20 @@
       "reviewNotes": [
         "Check applicable exceptions and effective coverage before approving broad-range wording."
       ],
-      "approvedReview": "D23"
+      "approvedReview": "D23",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "2 Day Air VA/WV 239–269 goes to YELLOW.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Aéreo 2 días, VA/WV 239–269 va a YELLOW.",
+          "approvalStatus": "proposed"
+        }
+      },
+      "wordingReviewGroup": "standard-template-batch-1"
     },
     {
       "id": "2dayair-main-ncsc-270-299",
@@ -3774,7 +5501,20 @@
       "reviewNotes": [
         "Check applicable exceptions and effective coverage before approving broad-range wording."
       ],
-      "approvedReview": "D24"
+      "approvedReview": "D24",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "2 Day Air NC/SC 270–299 goes to YELLOW.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Aéreo 2 días, NC/SC 270–299 va a YELLOW.",
+          "approvalStatus": "proposed"
+        }
+      },
+      "wordingReviewGroup": "standard-template-batch-1"
     },
     {
       "id": "2dayair-main-ga-300-319",
@@ -3793,7 +5533,20 @@
       "reviewNotes": [
         "Check applicable exceptions and effective coverage before approving broad-range wording."
       ],
-      "approvedReview": "D25"
+      "approvedReview": "D25",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "2 Day Air GA 300–319 goes to BLUE.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Aéreo 2 días, GA 300–319 va a BLUE.",
+          "approvalStatus": "proposed"
+        }
+      },
+      "wordingReviewGroup": "standard-template-batch-1"
     },
     {
       "id": "2dayair-main-fl-320-349",
@@ -3831,7 +5584,20 @@
       "reviewNotes": [
         "Check applicable exceptions and effective coverage before approving broad-range wording."
       ],
-      "approvedReview": "D26"
+      "approvedReview": "D26",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "2 Day Air AL 350–369 goes to PURPLE.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Aéreo 2 días, AL 350–369 va a PURPLE.",
+          "approvalStatus": "proposed"
+        }
+      },
+      "wordingReviewGroup": "standard-template-batch-1"
     },
     {
       "id": "2dayair-main-tn-370-385",
@@ -3850,7 +5616,20 @@
       "reviewNotes": [
         "Check applicable exceptions and effective coverage before approving broad-range wording."
       ],
-      "approvedReview": "D27"
+      "approvedReview": "D27",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "2 Day Air TN 370–385 goes to BROWN.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Aéreo 2 días, TN 370–385 va a BROWN.",
+          "approvalStatus": "proposed"
+        }
+      },
+      "wordingReviewGroup": "standard-template-batch-1"
     },
     {
       "id": "2dayair-main-ms-386-399",
@@ -3869,7 +5648,20 @@
       "reviewNotes": [
         "Check applicable exceptions and effective coverage before approving broad-range wording."
       ],
-      "approvedReview": "D28"
+      "approvedReview": "D28",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "2 Day Air MS 386–399 goes to PURPLE.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Aéreo 2 días, MS 386–399 va a PURPLE.",
+          "approvalStatus": "proposed"
+        }
+      },
+      "wordingReviewGroup": "standard-template-batch-1"
     },
     {
       "id": "2dayair-main-ky-400-419",
@@ -3888,7 +5680,20 @@
       "reviewNotes": [
         "Check applicable exceptions and effective coverage before approving broad-range wording."
       ],
-      "approvedReview": "D29"
+      "approvedReview": "D29",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "2 Day Air KY 400–419 goes to BROWN.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Aéreo 2 días, KY 400–419 va a BROWN.",
+          "approvalStatus": "proposed"
+        }
+      },
+      "wordingReviewGroup": "standard-template-batch-1"
     },
     {
       "id": "2dayair-main-ky-420",
@@ -3905,7 +5710,20 @@
       "wordingStatus": "not-yet-reviewed",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [],
-      "approvedReview": "D30"
+      "approvedReview": "D30",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "2 Day Air KY 420 goes to PURPLE.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Aéreo 2 días, KY 420 va a PURPLE.",
+          "approvalStatus": "proposed"
+        }
+      },
+      "wordingReviewGroup": "standard-template-batch-1"
     },
     {
       "id": "2dayair-main-ky-421-429",
@@ -3924,7 +5742,20 @@
       "reviewNotes": [
         "Check applicable exceptions and effective coverage before approving broad-range wording."
       ],
-      "approvedReview": "D31"
+      "approvedReview": "D31",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "2 Day Air KY 421–429 goes to BROWN.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Aéreo 2 días, KY 421–429 va a BROWN.",
+          "approvalStatus": "proposed"
+        }
+      },
+      "wordingReviewGroup": "standard-template-batch-1"
     },
     {
       "id": "2dayair-main-oh-430-459",
@@ -3943,7 +5774,20 @@
       "reviewNotes": [
         "Check applicable exceptions and effective coverage before approving broad-range wording."
       ],
-      "approvedReview": "D32"
+      "approvedReview": "D32",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "2 Day Air OH 430–459 goes to ORANGE.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Aéreo 2 días, OH 430–459 va a ORANGE.",
+          "approvalStatus": "proposed"
+        }
+      },
+      "wordingReviewGroup": "standard-template-batch-1"
     },
     {
       "id": "2dayair-main-in-460-479",
@@ -3981,7 +5825,20 @@
       "reviewNotes": [
         "Check applicable exceptions and effective coverage before approving broad-range wording."
       ],
-      "approvedReview": "D33"
+      "approvedReview": "D33",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "2 Day Air MI 480–497 goes to ORANGE.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Aéreo 2 días, MI 480–497 va a ORANGE.",
+          "approvalStatus": "proposed"
+        }
+      },
+      "wordingReviewGroup": "standard-template-batch-1"
     },
     {
       "id": "2dayair-main-all-498-599",
@@ -4001,7 +5858,9 @@
         "Check applicable exceptions and effective coverage before approving broad-range wording.",
         "Wildcard fallback: explicitly exclude specific overrides; not a duplicate of a named-state row by text alone."
       ],
-      "approvedReview": "D34"
+      "approvedReview": "D34",
+      "wordingReviewGroup": "focused-review",
+      "wordingReviewReason": "Wildcard or named destination: review its scope and any explicit exception wording."
     },
     {
       "id": "2dayair-main-il-600-608",
@@ -4058,7 +5917,20 @@
       "reviewNotes": [
         "Check applicable exceptions and effective coverage before approving broad-range wording."
       ],
-      "approvedReview": "D35"
+      "approvedReview": "D35",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "2 Day Air MO 630–639 goes to BLUE.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Aéreo 2 días, MO 630–639 va a BLUE.",
+          "approvalStatus": "proposed"
+        }
+      },
+      "wordingReviewGroup": "standard-template-batch-1"
     },
     {
       "id": "2dayair-main-all-640-729",
@@ -4078,7 +5950,9 @@
         "Check applicable exceptions and effective coverage before approving broad-range wording.",
         "Wildcard fallback: explicitly exclude specific overrides; not a duplicate of a named-state row by text alone."
       ],
-      "approvedReview": "D36"
+      "approvedReview": "D36",
+      "wordingReviewGroup": "focused-review",
+      "wordingReviewReason": "Wildcard or named destination: review its scope and any explicit exception wording."
     },
     {
       "id": "2dayair-main-ok-730-740",
@@ -4097,7 +5971,20 @@
       "reviewNotes": [
         "Check applicable exceptions and effective coverage before approving broad-range wording."
       ],
-      "approvedReview": "D37"
+      "approvedReview": "D37",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "2 Day Air OK 730–740 goes to PURPLE.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Aéreo 2 días, OK 730–740 va a PURPLE.",
+          "approvalStatus": "proposed"
+        }
+      },
+      "wordingReviewGroup": "standard-template-batch-1"
     },
     {
       "id": "2dayair-main-ok-7419",
@@ -4114,7 +6001,9 @@
       "wordingStatus": "not-yet-reviewed",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [],
-      "approvedReview": "D38"
+      "approvedReview": "D38",
+      "wordingReviewGroup": "focused-review",
+      "wordingReviewReason": "Exact code or named destination: review wording that preserves the source meaning."
     },
     {
       "id": "2dayair-main-ok-742-749",
@@ -4133,7 +6022,20 @@
       "reviewNotes": [
         "Check applicable exceptions and effective coverage before approving broad-range wording."
       ],
-      "approvedReview": "D39"
+      "approvedReview": "D39",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "2 Day Air OK 742–749 goes to PURPLE.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Aéreo 2 días, OK 742–749 va a PURPLE.",
+          "approvalStatus": "proposed"
+        }
+      },
+      "wordingReviewGroup": "standard-template-batch-1"
     },
     {
       "id": "2dayair-main-all-750-999",
@@ -4153,7 +6055,9 @@
         "Check applicable exceptions and effective coverage before approving broad-range wording.",
         "Wildcard fallback: explicitly exclude specific overrides; not a duplicate of a named-state row by text alone."
       ],
-      "approvedReview": "D40"
+      "approvedReview": "D40",
+      "wordingReviewGroup": "focused-review",
+      "wordingReviewReason": "Wildcard or named destination: review its scope and any explicit exception wording."
     },
     {
       "id": "2dayair-main-all-world",
@@ -4172,7 +6076,9 @@
       "reviewNotes": [
         "Wildcard fallback: explicitly exclude specific overrides; not a duplicate of a named-state row by text alone."
       ],
-      "approvedReview": "D41"
+      "approvedReview": "D41",
+      "wordingReviewGroup": "focused-review",
+      "wordingReviewReason": "Wildcard or named destination: review its scope and any explicit exception wording."
     },
     {
       "id": "2dayair-exceptions-nj-0703",
@@ -4189,7 +6095,20 @@
       "wordingStatus": "not-yet-reviewed",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [],
-      "approvedReview": "D42"
+      "approvedReview": "D42",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "2 Day Air NJ 070 3 goes to RED.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Aéreo 2 días, NJ 070 3 va a RED.",
+          "approvalStatus": "proposed"
+        }
+      },
+      "wordingReviewGroup": "standard-template-batch-1"
     },
     {
       "id": "2dayair-exceptions-nj-0709",
@@ -4206,7 +6125,20 @@
       "wordingStatus": "not-yet-reviewed",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [],
-      "approvedReview": "D43"
+      "approvedReview": "D43",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "2 Day Air NJ 070 9 goes to RED.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Aéreo 2 días, NJ 070 9 va a RED.",
+          "approvalStatus": "proposed"
+        }
+      },
+      "wordingReviewGroup": "standard-template-batch-1"
     },
     {
       "id": "2dayair-exceptions-nj-0759",
@@ -4223,7 +6155,20 @@
       "wordingStatus": "not-yet-reviewed",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [],
-      "approvedReview": "D44"
+      "approvedReview": "D44",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "2 Day Air NJ 075 9 goes to RED.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Aéreo 2 días, NJ 075 9 va a RED.",
+          "approvalStatus": "proposed"
+        }
+      },
+      "wordingReviewGroup": "standard-template-batch-1"
     },
     {
       "id": "2dayair-exceptions-nj-0769",
@@ -4240,7 +6185,20 @@
       "wordingStatus": "not-yet-reviewed",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [],
-      "approvedReview": "D45"
+      "approvedReview": "D45",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "2 Day Air NJ 076 9 goes to RED.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Aéreo 2 días, NJ 076 9 va a RED.",
+          "approvalStatus": "proposed"
+        }
+      },
+      "wordingReviewGroup": "standard-template-batch-1"
     },
     {
       "id": "2dayair-exceptions-nj-0770",
@@ -4257,7 +6215,20 @@
       "wordingStatus": "not-yet-reviewed",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [],
-      "approvedReview": "D46"
+      "approvedReview": "D46",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "2 Day Air NJ 077 0 goes to RED.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Aéreo 2 días, NJ 077 0 va a RED.",
+          "approvalStatus": "proposed"
+        }
+      },
+      "wordingReviewGroup": "standard-template-batch-1"
     },
     {
       "id": "2dayair-exceptions-nj-0784",
@@ -4274,7 +6245,20 @@
       "wordingStatus": "not-yet-reviewed",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [],
-      "approvedReview": "D47"
+      "approvedReview": "D47",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "2 Day Air NJ 078 4 goes to RED.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Aéreo 2 días, NJ 078 4 va a RED.",
+          "approvalStatus": "proposed"
+        }
+      },
+      "wordingReviewGroup": "standard-template-batch-1"
     },
     {
       "id": "2dayair-exceptions-nj-0789",
@@ -4291,7 +6275,20 @@
       "wordingStatus": "not-yet-reviewed",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [],
-      "approvedReview": "D48"
+      "approvedReview": "D48",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "2 Day Air NJ 078 9 goes to RED.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Aéreo 2 días, NJ 078 9 va a RED.",
+          "approvalStatus": "proposed"
+        }
+      },
+      "wordingReviewGroup": "standard-template-batch-1"
     },
     {
       "id": "2dayair-exceptions-nj-0799",
@@ -4308,7 +6305,9 @@
       "wordingStatus": "not-yet-reviewed",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [],
-      "approvedReview": "D49"
+      "approvedReview": "D49",
+      "wordingReviewGroup": "focused-review",
+      "wordingReviewReason": "Specific exception or suffix: review its explanatory wording separately."
     },
     {
       "id": "2dayair-exceptions-nj-0819",
@@ -4325,7 +6324,20 @@
       "wordingStatus": "not-yet-reviewed",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [],
-      "approvedReview": "D50"
+      "approvedReview": "D50",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "2 Day Air NJ 081 9 goes to RED.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Aéreo 2 días, NJ 081 9 va a RED.",
+          "approvalStatus": "proposed"
+        }
+      },
+      "wordingReviewGroup": "standard-template-batch-1"
     },
     {
       "id": "2dayair-exceptions-nj-0829",
@@ -4342,7 +6354,20 @@
       "wordingStatus": "not-yet-reviewed",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [],
-      "approvedReview": "D51"
+      "approvedReview": "D51",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "2 Day Air NJ 082 9 goes to RED.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Aéreo 2 días, NJ 082 9 va a RED.",
+          "approvalStatus": "proposed"
+        }
+      },
+      "wordingReviewGroup": "standard-template-batch-1"
     },
     {
       "id": "2dayair-exceptions-nj-0839",
@@ -4359,7 +6384,20 @@
       "wordingStatus": "not-yet-reviewed",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [],
-      "approvedReview": "D52"
+      "approvedReview": "D52",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "2 Day Air NJ 083 9 goes to RED.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Aéreo 2 días, NJ 083 9 va a RED.",
+          "approvalStatus": "proposed"
+        }
+      },
+      "wordingReviewGroup": "standard-template-batch-1"
     },
     {
       "id": "2dayair-exceptions-nj-0860",
@@ -4376,7 +6414,20 @@
       "wordingStatus": "not-yet-reviewed",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [],
-      "approvedReview": "D53"
+      "approvedReview": "D53",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "2 Day Air NJ 086 0 goes to RED.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Aéreo 2 días, NJ 086 0 va a RED.",
+          "approvalStatus": "proposed"
+        }
+      },
+      "wordingReviewGroup": "standard-template-batch-1"
     },
     {
       "id": "2dayair-exceptions-nj-0871",
@@ -4393,7 +6444,20 @@
       "wordingStatus": "not-yet-reviewed",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [],
-      "approvedReview": "D54"
+      "approvedReview": "D54",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "2 Day Air NJ 087 1 goes to RED.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Aéreo 2 días, NJ 087 1 va a RED.",
+          "approvalStatus": "proposed"
+        }
+      },
+      "wordingReviewGroup": "standard-template-batch-1"
     },
     {
       "id": "2dayair-exceptions-nj-0889",
@@ -4410,7 +6474,20 @@
       "wordingStatus": "not-yet-reviewed",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [],
-      "approvedReview": "D55"
+      "approvedReview": "D55",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "2 Day Air NJ 088 9 goes to RED.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Aéreo 2 días, NJ 088 9 va a RED.",
+          "approvalStatus": "proposed"
+        }
+      },
+      "wordingReviewGroup": "standard-template-batch-1"
     },
     {
       "id": "2dayair-exceptions-nj-0899",
@@ -4427,7 +6504,20 @@
       "wordingStatus": "not-yet-reviewed",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [],
-      "approvedReview": "D56"
+      "approvedReview": "D56",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "2 Day Air NJ 089 9 goes to RED.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Aéreo 2 días, NJ 089 9 va a RED.",
+          "approvalStatus": "proposed"
+        }
+      },
+      "wordingReviewGroup": "standard-template-batch-1"
     },
     {
       "id": "2dayair-exceptions-ny-1481",
@@ -4444,7 +6534,9 @@
       "wordingStatus": "not-yet-reviewed",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [],
-      "approvedReview": "D57"
+      "approvedReview": "D57",
+      "wordingReviewGroup": "focused-review",
+      "wordingReviewReason": "Specific exception or suffix: review its explanatory wording separately."
     },
     {
       "id": "2dayair-exceptions-anystate-ends2s",
@@ -4461,7 +6553,9 @@
       "wordingStatus": "not-yet-reviewed",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [],
-      "approvedReview": "D58"
+      "approvedReview": "D58",
+      "wordingReviewGroup": "focused-review",
+      "wordingReviewReason": "Specific exception or suffix: review its explanatory wording separately."
     },
     {
       "id": "2dayair-exceptions-anystate-ends1s",
@@ -4478,7 +6572,9 @@
       "wordingStatus": "not-yet-reviewed",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [],
-      "approvedReview": "D59"
+      "approvedReview": "D59",
+      "wordingReviewGroup": "focused-review",
+      "wordingReviewReason": "Specific exception or suffix: review its explanatory wording separately."
     },
     {
       "id": "nextdayair-main-ma-010-024",
@@ -4497,7 +6593,20 @@
       "reviewNotes": [
         "Check applicable exceptions and effective coverage before approving broad-range wording."
       ],
-      "approvedReview": "N01"
+      "approvedReview": "N01",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "Next Day Air MA 010–024 goes to GOLD.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Aéreo 1 día, MA 010–024 va a GOLD.",
+          "approvalStatus": "proposed"
+        }
+      },
+      "wordingReviewGroup": "standard-template-batch-1"
     },
     {
       "id": "nextdayair-main-ma-025-026",
@@ -4516,7 +6625,20 @@
       "reviewNotes": [
         "Check applicable exceptions and effective coverage before approving broad-range wording."
       ],
-      "approvedReview": "N02"
+      "approvedReview": "N02",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "Next Day Air MA 025–026 goes to PURPLE.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Aéreo 1 día, MA 025–026 va a PURPLE.",
+          "approvalStatus": "proposed"
+        }
+      },
+      "wordingReviewGroup": "standard-template-batch-1"
     },
     {
       "id": "nextdayair-main-mari-027-029",
@@ -4535,7 +6657,20 @@
       "reviewNotes": [
         "Check applicable exceptions and effective coverage before approving broad-range wording."
       ],
-      "approvedReview": "N03"
+      "approvedReview": "N03",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "Next Day Air MA/RI 027–029 goes to GOLD.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Aéreo 1 día, MA/RI 027–029 va a GOLD.",
+          "approvalStatus": "proposed"
+        }
+      },
+      "wordingReviewGroup": "standard-template-batch-1"
     },
     {
       "id": "nextdayair-main-nh-030-033",
@@ -4554,7 +6689,20 @@
       "reviewNotes": [
         "Check applicable exceptions and effective coverage before approving broad-range wording."
       ],
-      "approvedReview": "N04"
+      "approvedReview": "N04",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "Next Day Air NH 030–033 goes to PURPLE.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Aéreo 1 día, NH 030–033 va a PURPLE.",
+          "approvalStatus": "proposed"
+        }
+      },
+      "wordingReviewGroup": "standard-template-batch-1"
     },
     {
       "id": "nextdayair-main-nh-0340",
@@ -4571,7 +6719,9 @@
       "wordingStatus": "not-yet-reviewed",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [],
-      "approvedReview": "N05"
+      "approvedReview": "N05",
+      "wordingReviewGroup": "focused-review",
+      "wordingReviewReason": "Exact code or named destination: review wording that preserves the source meaning."
     },
     {
       "id": "nextdayair-main-nhme-035-049",
@@ -4590,7 +6740,20 @@
       "reviewNotes": [
         "Check applicable exceptions and effective coverage before approving broad-range wording."
       ],
-      "approvedReview": "N06"
+      "approvedReview": "N06",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "Next Day Air NH/ME 035–049 goes to PURPLE.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Aéreo 1 día, NH/ME 035–049 va a PURPLE.",
+          "approvalStatus": "proposed"
+        }
+      },
+      "wordingReviewGroup": "standard-template-batch-1"
     },
     {
       "id": "nextdayair-main-vt-050-059",
@@ -4609,7 +6772,20 @@
       "reviewNotes": [
         "Check applicable exceptions and effective coverage before approving broad-range wording."
       ],
-      "approvedReview": "N07"
+      "approvedReview": "N07",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "Next Day Air VT 050–059 goes to GOLD.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Aéreo 1 día, VT 050–059 va a GOLD.",
+          "approvalStatus": "proposed"
+        }
+      },
+      "wordingReviewGroup": "standard-template-batch-1"
     },
     {
       "id": "nextdayair-main-ct-060-069",
@@ -4628,7 +6804,20 @@
       "reviewNotes": [
         "Check applicable exceptions and effective coverage before approving broad-range wording."
       ],
-      "approvedReview": "N08"
+      "approvedReview": "N08",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "Next Day Air CT 060–069 goes to GOLD.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Aéreo 1 día, CT 060–069 va a GOLD.",
+          "approvalStatus": "proposed"
+        }
+      },
+      "wordingReviewGroup": "standard-template-batch-1"
     },
     {
       "id": "nextdayair-main-ny-100-108",
@@ -4647,7 +6836,20 @@
       "reviewNotes": [
         "Check applicable exceptions and effective coverage before approving broad-range wording."
       ],
-      "approvedReview": "N09"
+      "approvedReview": "N09",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "Next Day Air NY 100–108 goes to YELLOW.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Aéreo 1 día, NY 100–108 va a YELLOW.",
+          "approvalStatus": "proposed"
+        }
+      },
+      "wordingReviewGroup": "standard-template-batch-1"
     },
     {
       "id": "nextdayair-main-ny-109",
@@ -4664,7 +6866,20 @@
       "wordingStatus": "not-yet-reviewed",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [],
-      "approvedReview": "N10"
+      "approvedReview": "N10",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "Next Day Air NY 109 goes to ORANGE.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Aéreo 1 día, NY 109 va a ORANGE.",
+          "approvalStatus": "proposed"
+        }
+      },
+      "wordingReviewGroup": "standard-template-batch-1"
     },
     {
       "id": "nextdayair-main-ny-110-119",
@@ -4683,7 +6898,20 @@
       "reviewNotes": [
         "Check applicable exceptions and effective coverage before approving broad-range wording."
       ],
-      "approvedReview": "N11"
+      "approvedReview": "N11",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "Next Day Air NY 110–119 goes to PINK.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Aéreo 1 día, NY 110–119 va a PINK.",
+          "approvalStatus": "proposed"
+        }
+      },
+      "wordingReviewGroup": "standard-template-batch-1"
     },
     {
       "id": "nextdayair-main-ny-120-121",
@@ -4702,7 +6930,20 @@
       "reviewNotes": [
         "Check applicable exceptions and effective coverage before approving broad-range wording."
       ],
-      "approvedReview": "N12"
+      "approvedReview": "N12",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "Next Day Air NY 120–121 goes to GOLD.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Aéreo 1 día, NY 120–121 va a GOLD.",
+          "approvalStatus": "proposed"
+        }
+      },
+      "wordingReviewGroup": "standard-template-batch-1"
     },
     {
       "id": "nextdayair-main-ny-122-127",
@@ -4721,7 +6962,20 @@
       "reviewNotes": [
         "Check applicable exceptions and effective coverage before approving broad-range wording."
       ],
-      "approvedReview": "N13"
+      "approvedReview": "N13",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "Next Day Air NY 122–127 goes to ORANGE.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Aéreo 1 día, NY 122–127 va a ORANGE.",
+          "approvalStatus": "proposed"
+        }
+      },
+      "wordingReviewGroup": "standard-template-batch-1"
     },
     {
       "id": "nextdayair-main-ny-128-135",
@@ -4740,7 +6994,20 @@
       "reviewNotes": [
         "Check applicable exceptions and effective coverage before approving broad-range wording."
       ],
-      "approvedReview": "N14"
+      "approvedReview": "N14",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "Next Day Air NY 128–135 goes to GOLD.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Aéreo 1 día, NY 128–135 va a GOLD.",
+          "approvalStatus": "proposed"
+        }
+      },
+      "wordingReviewGroup": "standard-template-batch-1"
     },
     {
       "id": "nextdayair-main-ny-136",
@@ -4757,7 +7024,20 @@
       "wordingStatus": "not-yet-reviewed",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [],
-      "approvedReview": "N15"
+      "approvedReview": "N15",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "Next Day Air NY 136 goes to PURPLE.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Aéreo 1 día, NY 136 va a PURPLE.",
+          "approvalStatus": "proposed"
+        }
+      },
+      "wordingReviewGroup": "standard-template-batch-1"
     },
     {
       "id": "nextdayair-main-ny-137-139",
@@ -4776,7 +7056,20 @@
       "reviewNotes": [
         "Check applicable exceptions and effective coverage before approving broad-range wording."
       ],
-      "approvedReview": "N16"
+      "approvedReview": "N16",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "Next Day Air NY 137–139 goes to GOLD.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Aéreo 1 día, NY 137–139 va a GOLD.",
+          "approvalStatus": "proposed"
+        }
+      },
+      "wordingReviewGroup": "standard-template-batch-1"
     },
     {
       "id": "nextdayair-main-ny-140-149",
@@ -4795,7 +7088,20 @@
       "reviewNotes": [
         "Check applicable exceptions and effective coverage before approving broad-range wording."
       ],
-      "approvedReview": "N17"
+      "approvedReview": "N17",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "Next Day Air NY 140–149 goes to PURPLE.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Aéreo 1 día, NY 140–149 va a PURPLE.",
+          "approvalStatus": "proposed"
+        }
+      },
+      "wordingReviewGroup": "standard-template-batch-1"
     },
     {
       "id": "nextdayair-main-pa-150-167",
@@ -4814,7 +7120,20 @@
       "reviewNotes": [
         "Check applicable exceptions and effective coverage before approving broad-range wording."
       ],
-      "approvedReview": "N18"
+      "approvedReview": "N18",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "Next Day Air PA 150–167 goes to PURPLE.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Aéreo 1 día, PA 150–167 va a PURPLE.",
+          "approvalStatus": "proposed"
+        }
+      },
+      "wordingReviewGroup": "standard-template-batch-1"
     },
     {
       "id": "nextdayair-main-pa-168-178",
@@ -4833,7 +7152,20 @@
       "reviewNotes": [
         "Check applicable exceptions and effective coverage before approving broad-range wording."
       ],
-      "approvedReview": "N19"
+      "approvedReview": "N19",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "Next Day Air PA 168–178 goes to GREEN.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Aéreo 1 día, PA 168–178 va a GREEN.",
+          "approvalStatus": "proposed"
+        }
+      },
+      "wordingReviewGroup": "standard-template-batch-1"
     },
     {
       "id": "nextdayair-main-pa-179-189",
@@ -4852,7 +7184,20 @@
       "reviewNotes": [
         "Check applicable exceptions and effective coverage before approving broad-range wording."
       ],
-      "approvedReview": "N20"
+      "approvedReview": "N20",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "Next Day Air PA 179–189 goes to GREEN.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Aéreo 1 día, PA 179–189 va a GREEN.",
+          "approvalStatus": "proposed"
+        }
+      },
+      "wordingReviewGroup": "standard-template-batch-1"
     },
     {
       "id": "nextdayair-main-pa-190-194",
@@ -4871,7 +7216,20 @@
       "reviewNotes": [
         "Check applicable exceptions and effective coverage before approving broad-range wording."
       ],
-      "approvedReview": "N21"
+      "approvedReview": "N21",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "Next Day Air PA 190–194 goes to ORANGE.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Aéreo 1 día, PA 190–194 va a ORANGE.",
+          "approvalStatus": "proposed"
+        }
+      },
+      "wordingReviewGroup": "standard-template-batch-1"
     },
     {
       "id": "nextdayair-main-pade-195-199",
@@ -4890,7 +7248,20 @@
       "reviewNotes": [
         "Check applicable exceptions and effective coverage before approving broad-range wording."
       ],
-      "approvedReview": "N22"
+      "approvedReview": "N22",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "Next Day Air PA/DE 195–199 goes to GREEN.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Aéreo 1 día, PA/DE 195–199 va a GREEN.",
+          "approvalStatus": "proposed"
+        }
+      },
+      "wordingReviewGroup": "standard-template-batch-1"
     },
     {
       "id": "nextdayair-main-dcmd-200-219",
@@ -4909,7 +7280,20 @@
       "reviewNotes": [
         "Check applicable exceptions and effective coverage before approving broad-range wording."
       ],
-      "approvedReview": "N23"
+      "approvedReview": "N23",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "Next Day Air DC/MD 200–219 goes to GREEN.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Aéreo 1 día, DC/MD 200–219 va a GREEN.",
+          "approvalStatus": "proposed"
+        }
+      },
+      "wordingReviewGroup": "standard-template-batch-1"
     },
     {
       "id": "nextdayair-main-all-220-999",
@@ -4929,7 +7313,9 @@
         "Check applicable exceptions and effective coverage before approving broad-range wording.",
         "Wildcard fallback: explicitly exclude specific overrides; not a duplicate of a named-state row by text alone."
       ],
-      "approvedReview": "N24"
+      "approvedReview": "N24",
+      "wordingReviewGroup": "focused-review",
+      "wordingReviewReason": "Wildcard or named destination: review its scope and any explicit exception wording."
     },
     {
       "id": "nextdayair-main-all-world",
@@ -4948,7 +7334,9 @@
       "reviewNotes": [
         "Wildcard fallback: explicitly exclude specific overrides; not a duplicate of a named-state row by text alone."
       ],
-      "approvedReview": "N25"
+      "approvedReview": "N25",
+      "wordingReviewGroup": "focused-review",
+      "wordingReviewReason": "Wildcard or named destination: review its scope and any explicit exception wording."
     },
     {
       "id": "nextdayair-main-all-all1daeam",
@@ -4975,7 +7363,9 @@
         "displayService": "Next Day Air EAM",
         "routingCodeSeparate": true,
         "ownerConfirmed": true
-      }
+      },
+      "wordingReviewGroup": "focused-review",
+      "wordingReviewReason": "Service qualifier: review EAM destination presentation with separate routing field."
     },
     {
       "id": "nextdayair-exceptions-nj-0703",
@@ -4992,7 +7382,20 @@
       "wordingStatus": "not-yet-reviewed",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [],
-      "approvedReview": "N27"
+      "approvedReview": "N27",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "Next Day Air NJ 070 3 goes to RED.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Aéreo 1 día, NJ 070 3 va a RED.",
+          "approvalStatus": "proposed"
+        }
+      },
+      "wordingReviewGroup": "standard-template-batch-1"
     },
     {
       "id": "nextdayair-exceptions-nj-0709",
@@ -5009,7 +7412,20 @@
       "wordingStatus": "not-yet-reviewed",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [],
-      "approvedReview": "N28"
+      "approvedReview": "N28",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "Next Day Air NJ 070 9 goes to RED.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Aéreo 1 día, NJ 070 9 va a RED.",
+          "approvalStatus": "proposed"
+        }
+      },
+      "wordingReviewGroup": "standard-template-batch-1"
     },
     {
       "id": "nextdayair-exceptions-nj-0759",
@@ -5026,7 +7442,20 @@
       "wordingStatus": "not-yet-reviewed",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [],
-      "approvedReview": "N29"
+      "approvedReview": "N29",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "Next Day Air NJ 075 9 goes to RED.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Aéreo 1 día, NJ 075 9 va a RED.",
+          "approvalStatus": "proposed"
+        }
+      },
+      "wordingReviewGroup": "standard-template-batch-1"
     },
     {
       "id": "nextdayair-exceptions-nj-0769",
@@ -5043,7 +7472,20 @@
       "wordingStatus": "not-yet-reviewed",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [],
-      "approvedReview": "N30"
+      "approvedReview": "N30",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "Next Day Air NJ 076 9 goes to RED.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Aéreo 1 día, NJ 076 9 va a RED.",
+          "approvalStatus": "proposed"
+        }
+      },
+      "wordingReviewGroup": "standard-template-batch-1"
     },
     {
       "id": "nextdayair-exceptions-nj-0770",
@@ -5060,7 +7502,20 @@
       "wordingStatus": "not-yet-reviewed",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [],
-      "approvedReview": "N31"
+      "approvedReview": "N31",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "Next Day Air NJ 077 0 goes to RED.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Aéreo 1 día, NJ 077 0 va a RED.",
+          "approvalStatus": "proposed"
+        }
+      },
+      "wordingReviewGroup": "standard-template-batch-1"
     },
     {
       "id": "nextdayair-exceptions-nj-0784",
@@ -5077,7 +7532,20 @@
       "wordingStatus": "not-yet-reviewed",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [],
-      "approvedReview": "N32"
+      "approvedReview": "N32",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "Next Day Air NJ 078 4 goes to RED.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Aéreo 1 día, NJ 078 4 va a RED.",
+          "approvalStatus": "proposed"
+        }
+      },
+      "wordingReviewGroup": "standard-template-batch-1"
     },
     {
       "id": "nextdayair-exceptions-nj-0789",
@@ -5094,7 +7562,20 @@
       "wordingStatus": "not-yet-reviewed",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [],
-      "approvedReview": "N33"
+      "approvedReview": "N33",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "Next Day Air NJ 078 9 goes to RED.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Aéreo 1 día, NJ 078 9 va a RED.",
+          "approvalStatus": "proposed"
+        }
+      },
+      "wordingReviewGroup": "standard-template-batch-1"
     },
     {
       "id": "nextdayair-exceptions-nj-0799",
@@ -5111,7 +7592,9 @@
       "wordingStatus": "not-yet-reviewed",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [],
-      "approvedReview": "N34"
+      "approvedReview": "N34",
+      "wordingReviewGroup": "focused-review",
+      "wordingReviewReason": "Specific exception or suffix: review its explanatory wording separately."
     },
     {
       "id": "nextdayair-exceptions-nj-0819",
@@ -5128,7 +7611,20 @@
       "wordingStatus": "not-yet-reviewed",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [],
-      "approvedReview": "N35"
+      "approvedReview": "N35",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "Next Day Air NJ 081 9 goes to RED.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Aéreo 1 día, NJ 081 9 va a RED.",
+          "approvalStatus": "proposed"
+        }
+      },
+      "wordingReviewGroup": "standard-template-batch-1"
     },
     {
       "id": "nextdayair-exceptions-nj-0829",
@@ -5145,7 +7641,20 @@
       "wordingStatus": "not-yet-reviewed",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [],
-      "approvedReview": "N36"
+      "approvedReview": "N36",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "Next Day Air NJ 082 9 goes to RED.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Aéreo 1 día, NJ 082 9 va a RED.",
+          "approvalStatus": "proposed"
+        }
+      },
+      "wordingReviewGroup": "standard-template-batch-1"
     },
     {
       "id": "nextdayair-exceptions-nj-0839",
@@ -5162,7 +7671,20 @@
       "wordingStatus": "not-yet-reviewed",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [],
-      "approvedReview": "N37"
+      "approvedReview": "N37",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "Next Day Air NJ 083 9 goes to RED.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Aéreo 1 día, NJ 083 9 va a RED.",
+          "approvalStatus": "proposed"
+        }
+      },
+      "wordingReviewGroup": "standard-template-batch-1"
     },
     {
       "id": "nextdayair-exceptions-nj-0860",
@@ -5179,7 +7701,20 @@
       "wordingStatus": "not-yet-reviewed",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [],
-      "approvedReview": "N38"
+      "approvedReview": "N38",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "Next Day Air NJ 086 0 goes to RED.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Aéreo 1 día, NJ 086 0 va a RED.",
+          "approvalStatus": "proposed"
+        }
+      },
+      "wordingReviewGroup": "standard-template-batch-1"
     },
     {
       "id": "nextdayair-exceptions-nj-0871",
@@ -5196,7 +7731,20 @@
       "wordingStatus": "not-yet-reviewed",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [],
-      "approvedReview": "N39"
+      "approvedReview": "N39",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "Next Day Air NJ 087 1 goes to RED.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Aéreo 1 día, NJ 087 1 va a RED.",
+          "approvalStatus": "proposed"
+        }
+      },
+      "wordingReviewGroup": "standard-template-batch-1"
     },
     {
       "id": "nextdayair-exceptions-nj-0889",
@@ -5213,7 +7761,20 @@
       "wordingStatus": "not-yet-reviewed",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [],
-      "approvedReview": "N40"
+      "approvedReview": "N40",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "Next Day Air NJ 088 9 goes to RED.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Aéreo 1 día, NJ 088 9 va a RED.",
+          "approvalStatus": "proposed"
+        }
+      },
+      "wordingReviewGroup": "standard-template-batch-1"
     },
     {
       "id": "nextdayair-exceptions-nj-0899",
@@ -5230,7 +7791,20 @@
       "wordingStatus": "not-yet-reviewed",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [],
-      "approvedReview": "N41"
+      "approvedReview": "N41",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "Next Day Air NJ 089 9 goes to RED.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Aéreo 1 día, NJ 089 9 va a RED.",
+          "approvalStatus": "proposed"
+        }
+      },
+      "wordingReviewGroup": "standard-template-batch-1"
     },
     {
       "id": "nextdayair-exceptions-anystate-ends2s",
@@ -5247,7 +7821,9 @@
       "wordingStatus": "not-yet-reviewed",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [],
-      "approvedReview": "N42"
+      "approvedReview": "N42",
+      "wordingReviewGroup": "focused-review",
+      "wordingReviewReason": "Specific exception or suffix: review its explanatory wording separately."
     },
     {
       "id": "nextdayair-exceptions-anystate-ends1s",
@@ -5264,7 +7840,9 @@
       "wordingStatus": "not-yet-reviewed",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [],
-      "approvedReview": "N43"
+      "approvedReview": "N43",
+      "wordingReviewGroup": "focused-review",
+      "wordingReviewReason": "Specific exception or suffix: review its explanatory wording separately."
     },
     {
       "id": "destination-plus-one-gnd",
@@ -5320,7 +7898,9 @@
         "exampleRoutingCode": "109",
         "examplesAreNotScopeRestrictions": true,
         "ownerConfirmed": true
-      }
+      },
+      "wordingReviewGroup": "focused-review",
+      "wordingReviewReason": "Destination modifier: review field separation and global scope."
     },
     {
       "id": "destination-plus-one-2da",
@@ -5348,7 +7928,9 @@
         "exampleRoutingCode": "109",
         "examplesAreNotScopeRestrictions": true,
         "ownerConfirmed": true
-      }
+      },
+      "wordingReviewGroup": "focused-review",
+      "wordingReviewReason": "Destination modifier: review field separation and global scope."
     },
     {
       "id": "destination-plus-one-3ds",
@@ -5376,7 +7958,9 @@
         "exampleRoutingCode": "109",
         "examplesAreNotScopeRestrictions": true,
         "ownerConfirmed": true
-      }
+      },
+      "wordingReviewGroup": "focused-review",
+      "wordingReviewReason": "Destination modifier: review field separation and global scope."
     }
   ],
   "heldSourceRows": [
@@ -5448,10 +8032,212 @@
     "scopeNote": "NY109 examples do not restrict the rule to New York or routing109. This clarification does not create or approve additional canonical variants or decide conflicting combined-marker precedence."
   },
   "wordingReviewCounts": {
-    "enOwnerApproved": 21,
-    "esOwnerApproved": 21,
-    "enPending": 262,
-    "esPending": 262,
-    "bilingualOwnerApproved": 21
-  }
+    "enOwnerApproved": 25,
+    "esOwnerApproved": 25,
+    "enPending": 258,
+    "esPending": 258,
+    "bilingualOwnerApproved": 25
+  },
+  "wordingReviewBatches": [
+    {
+      "id": "standard-template-batch-1",
+      "status": "proposed",
+      "languages": [
+        "en",
+        "es"
+      ],
+      "entryCount": 188,
+      "entryReviewRefs": [
+        "G09",
+        "G10",
+        "G11",
+        "G13",
+        "G14",
+        "G15",
+        "G16",
+        "G17",
+        "G18",
+        "G19",
+        "G20",
+        "G21",
+        "G22",
+        "G24",
+        "G25",
+        "G26",
+        "G27",
+        "G28",
+        "G30",
+        "G31",
+        "G32",
+        "G33",
+        "G34",
+        "G35",
+        "G36",
+        "G37",
+        "G38",
+        "G39",
+        "G40",
+        "G41",
+        "G42",
+        "G43",
+        "G44",
+        "G49",
+        "G51",
+        "G52",
+        "G53",
+        "G54",
+        "G58",
+        "G59",
+        "G60",
+        "G61",
+        "G62",
+        "G63",
+        "G64",
+        "G66",
+        "G67",
+        "G68",
+        "G69",
+        "G70",
+        "G71",
+        "G72",
+        "S01",
+        "S02",
+        "S03",
+        "S04",
+        "S06",
+        "S07",
+        "S08",
+        "S09",
+        "S10",
+        "S11",
+        "S12",
+        "S13",
+        "S14",
+        "S15",
+        "S17",
+        "S18",
+        "S19",
+        "S20",
+        "S21",
+        "S22",
+        "S23",
+        "S24",
+        "S25",
+        "S26",
+        "S27",
+        "S28",
+        "S30",
+        "S31",
+        "S32",
+        "S33",
+        "S36",
+        "S37",
+        "S38",
+        "S39",
+        "S40",
+        "S41",
+        "S43",
+        "S46",
+        "S48",
+        "S49",
+        "S50",
+        "S51",
+        "S52",
+        "S53",
+        "S54",
+        "S56",
+        "S57",
+        "S58",
+        "S59",
+        "S60",
+        "S61",
+        "S62",
+        "D01",
+        "D02",
+        "D03",
+        "D04",
+        "D06",
+        "D07",
+        "D08",
+        "D09",
+        "D10",
+        "D11",
+        "D12",
+        "D13",
+        "D14",
+        "D16",
+        "D17",
+        "D18",
+        "D19",
+        "D20",
+        "D21",
+        "D22",
+        "D23",
+        "D24",
+        "D25",
+        "D26",
+        "D27",
+        "D28",
+        "D29",
+        "D30",
+        "D31",
+        "D32",
+        "D33",
+        "D35",
+        "D37",
+        "D39",
+        "D42",
+        "D43",
+        "D44",
+        "D45",
+        "D46",
+        "D47",
+        "D48",
+        "D50",
+        "D51",
+        "D52",
+        "D53",
+        "D54",
+        "D55",
+        "D56",
+        "N01",
+        "N02",
+        "N03",
+        "N04",
+        "N06",
+        "N07",
+        "N08",
+        "N09",
+        "N10",
+        "N11",
+        "N12",
+        "N13",
+        "N14",
+        "N15",
+        "N16",
+        "N17",
+        "N18",
+        "N19",
+        "N20",
+        "N21",
+        "N22",
+        "N23",
+        "N27",
+        "N28",
+        "N29",
+        "N30",
+        "N31",
+        "N32",
+        "N33",
+        "N35",
+        "N36",
+        "N37",
+        "N38",
+        "N39",
+        "N40",
+        "N41"
+      ],
+      "scope": "Feedback wording only; existing answers/difficulties unchanged. Does not approve canonical selection or exception coverage."
+    }
+  ]
 }
