@@ -1,8 +1,8 @@
 # Chart Corrections and Destination +1 Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:executing-plans for native task-by-task execution after owner approval. Do not implement this document merely because it is committed.
+> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development; the owner approved task agents on November 8, 2026. Do not implement this document merely because it is committed.
 
-**Status:** Proposed for owner review, November 8, 2026. Confirmed outcomes: active chart/retained exceptions and +1 coverage in Practice and the future Ranked bank. The field design, pool sampling and tasks below are assistant proposals. No product code has changed.
+**Status:** Owner approved the plan and selected task agents, November 8, 2026. Confirmed outcomes: active chart/retained exceptions and +1 coverage in Practice and the future Ranked bank. The field design, pool sampling and tasks below are approved for implementation. Product behavior remains unverified until the task evidence is recorded.
 
 **Goal:** Make current route answers/explanations consistent with the selected chart and owner overrides, and teach destination +1 PURPLE without changing existing Practice run lengths or screen layouts.
 
@@ -18,7 +18,7 @@
 2. **Recommended:** expanded candidate pools, same existing run lengths, using `practiceRunSize` distinct from `questionCount`. Requires sampling/count-label tests, keeps picker grouping and run lengths stable.
 3. Encode +1 inside `svc` or append it to `code`: not selected. It is a separate destination indicator; service translation/grouping and routing code must remain meaningful.
 
-Owner review must explicitly cover approach2 and the destination-label example: **Ground +1 · NY**, routing code **109**, answer **PURPLE**. No new screen, control or layout is proposed; existing destination text gains the relevant marker.
+Owner approval covers approach2 and the destination-label example: **Ground +1 · NY**, routing code **109**, answer **PURPLE**. No new screen, control or layout is proposed; existing destination text gains the relevant marker.
 
 ## Global constraints
 
@@ -39,7 +39,7 @@ Owner review must explicitly cover approach2 and the destination-label example: 
 - Correct destination display on initial render can be lost on language toggle, feedback/history or Excel export; old saved rows have no new field (Task3).
 - +1 PURPLE can look accidentally correct where a base route is already PURPLE: demonstrate it with NY109, normally ORANGE, for each base service; never infer +1 from route text (Tasks2/3).
 
-## Task1: Independent reference cases and content corrections
+## Task 1: Independent reference cases and content corrections
 
 **Files:** Create `tests/helpers/load-app-modules.mjs`, `tests/fixtures/twilight-reference-2026-11-08.json`, `tests/chart-reference.test.mjs`; modify `src/chart.js`, `src/questions.js`, `src/decks.js`, `src/i18n.js` as required by the reviewed source matrix.
 
@@ -60,7 +60,7 @@ assert.equal(CHART['2 Day Air'].main.find(([state, code]) => state === 'GA' && c
 - [ ] Give changed routes new IDs when their meaning changes; preserve IDs for unchanged scenarios. Add/export `ROUTE_REFERENCE_VERSION = 'twilight-2026-11-08-r1'` in `src/chart.js`; attach that provenance to current cards without treating it as Ranked difficulty approval. Audit every card against its referenced scenario, not just the initially flagged GA conflict.
 - [ ] Run reference tests, all existing Node tests and `git diff --check`; inspect the independent matrix versus actual changes. Commit the tested content correction.
 
-## Task2: +1 candidates and stable Practice lengths
+## Task 2: +1 candidates and stable Practice lengths
 
 **Files:** Modify `src/questions.js`, `src/decks.js`, `src/levels.js`; create `tests/destination-plus-one.test.mjs`, `tests/practice-selection.test.mjs`; use the Task1 loader.
 
@@ -82,7 +82,7 @@ assert.ok(['GND', 'NDA', '2DA', '3DS'].includes(card.svc));
 - [ ] Test counts, unique IDs, service/marker coverage and full selection under deterministic RNG seeds0–99 plus all-zero/near-one generators for both expanded Common pools and Mixed; level15/20/30 and four10-card decks remain valid. The `verified` status is not owner Ranked-content approval.
 - [ ] Run new selection/destination tests and all Node tests; commit only after they pass. Do not resample or rewrite previously saved results.
 
-## Task3: Destination label, recorded response and export
+## Task 3: Destination label, recorded response and export
 
 **Files:** Create `src/destination.js`; modify `src/app.js`, `src/quiz.js`, `src/i18n.js`, module cache-version imports in `index.html`/affected modules as needed; add `tests/destination-display.test.mjs`, extend new tests and `tests/security.test.mjs` where relevant. No CSS/layout redesign.
 
@@ -105,7 +105,7 @@ assert.equal(response.destinationModifier, '+1');
 - [ ] Update existing module-version query strings for every changed module/importer so a future approved Pages deployment cannot mix old and new data/rendering. Keep dependency pins/permissions unchanged and chart photos absent from release files.
 - [ ] Run all Node tests; manually walk a fictional +1 Practice quiz in both languages and an ordinary quiz, reload its saved result, generate/open a real Excel export, and inspect mobile/keyboard behavior. Record observed versus untested steps. Commit after required checks.
 
-## Task4: Review, CI and remaining Issue5 gates
+## Task 4: Review, CI and remaining Issue5 gates
 
 **Files:** Update [[2026-11-07-ranked-question-bank-review]] and [[2026-11-08-ranked-chart-reference]] with verified source/count/version evidence; existing workflow already runs `node --test tests/*.test.mjs`, no workflow change planned.
 
@@ -118,4 +118,6 @@ assert.equal(response.destinationModifier, '+1');
 
 Spec coverage: photo/override fidelity→Task1; Practice+Ranked +1 scope→Task2; correct destination location and history/export→Task3; actual evidence and remaining curation gates→Task4. Count metadata avoids moving ordinary decks into the level picker. No untouched-layout claim may hide missing +1 content. No policy for conflicting markers or unlisted NJ codes is invented.
 
-**Recommended execution:** Native in this chat, in the four reviewable increments above; the changes share source/card/rendering contracts. Await owner review of this plan and sampling/label choices before any implementation. A fresh review of the resulting branch follows implementation. This proposal does not authorize feature execution by being pushed.
+**Approved execution:** Task agents in this chat, selected explicitly by the owner. A fresh implementer handles each increment, with spec/quality review between tasks and a final whole-branch review. Approval authorizes branch implementation, not merging or publishing.
+
+**Task-boundary clarification:** Task1 includes the minimal `practiceRunSize:16` Mixed metadata and selector size hook required to keep the split Illinois pool at a sixteen-question run. Task2 extends that hook with expanded Common pools and +1 reservation; Task3 updates count labels along with the full UI integration. No interim commit is released independently.
