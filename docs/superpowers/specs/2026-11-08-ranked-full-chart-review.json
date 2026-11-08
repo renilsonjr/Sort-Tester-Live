@@ -1,5 +1,5 @@
 {
-  "status": "Review-only full-chart inventory: all283 difficulty labels owner-approved;266 expanded question wordings still need review; not an executable canonical bank.",
+  "status": "Review-only full-chart inventory:283 owner-approved difficulty labels;21 English and17 Spanish explanation approvals. Expanded wording/canonical validation remains incomplete; not an executable bank.",
   "sourceRevision": "twilight-2026-11-08-r2",
   "existingApprovalsPreserved": 17,
   "remainingDifficultyReviews": 0,
@@ -69,12 +69,24 @@
       "difficulty": "Medium",
       "difficultyStatus": "owner-approved",
       "difficultyReason": "Owner approved this difficulty in the first expanded Ground review; wording/explanations remain pending.",
-      "wordingStatus": "not-yet-reviewed",
+      "wordingStatus": "english-approved-spanish-pending",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [
         "Check applicable exceptions and effective coverage before approving broad-range wording."
       ],
-      "approvedReview": "G01"
+      "approvedReview": "G01",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "Ground MA/RI 027–029 goes to GOLD.",
+          "approvalStatus": "owner-approved"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Terrestre, MA/RI 027–029 va a GOLD.",
+          "approvalStatus": "proposed"
+        }
+      }
     },
     {
       "id": "ground-main-nh-030-033",
@@ -88,12 +100,24 @@
       "difficulty": "Medium",
       "difficultyStatus": "owner-approved",
       "difficultyReason": "Owner approved this difficulty in the first expanded Ground review; wording/explanations remain pending.",
-      "wordingStatus": "not-yet-reviewed",
+      "wordingStatus": "english-approved-spanish-pending",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [
         "Check applicable exceptions and effective coverage before approving broad-range wording."
       ],
-      "approvedReview": "G02"
+      "approvedReview": "G02",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "Ground NH 030–033 goes to BLUE.",
+          "approvalStatus": "owner-approved"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Terrestre, NH 030–033 va a BLUE.",
+          "approvalStatus": "proposed"
+        }
+      }
     },
     {
       "id": "ground-main-nh-0340",
@@ -107,10 +131,22 @@
       "difficulty": "Hard",
       "difficultyStatus": "owner-approved",
       "difficultyReason": "Owner approved this difficulty in the first expanded Ground review; wording/explanations remain pending.",
-      "wordingStatus": "not-yet-reviewed",
+      "wordingStatus": "english-approved-spanish-pending",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [],
-      "approvedReview": "G03"
+      "approvedReview": "G03",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "Ground NH 034 0 goes to GOLD. The final digit matters.",
+          "approvalStatus": "owner-approved"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Terrestre, NH 034 0 va a GOLD. El último dígito importa.",
+          "approvalStatus": "proposed"
+        }
+      }
     },
     {
       "id": "ground-main-nhme-035-049",
@@ -124,12 +160,24 @@
       "difficulty": "Easy",
       "difficultyStatus": "owner-approved",
       "difficultyReason": "Owner approved this difficulty in the first expanded Ground review; wording/explanations remain pending.",
-      "wordingStatus": "not-yet-reviewed",
+      "wordingStatus": "english-approved-spanish-pending",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [
         "Check applicable exceptions and effective coverage before approving broad-range wording."
       ],
-      "approvedReview": "G04"
+      "approvedReview": "G04",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "Ground NH/ME 035–049 goes to BLUE.",
+          "approvalStatus": "owner-approved"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Terrestre, NH/ME 035–049 va a BLUE.",
+          "approvalStatus": "proposed"
+        }
+      }
     },
     {
       "id": "ground-main-vt-050-059",
@@ -5350,5 +5398,12 @@
       "S82"
     ],
     "scopeNote": "NY109 examples do not restrict the rule to New York or routing109. This clarification does not create or approve additional canonical variants or decide conflicting combined-marker precedence."
+  },
+  "wordingReviewCounts": {
+    "enOwnerApproved": 21,
+    "esOwnerApproved": 17,
+    "enPending": 262,
+    "esPending": 266,
+    "bilingualOwnerApproved": 17
   }
 }

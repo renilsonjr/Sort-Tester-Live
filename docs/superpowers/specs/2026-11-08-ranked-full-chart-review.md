@@ -1,6 +1,6 @@
 # Full-chart Ranked difficulty review
 
-**Status:** all283 review entries now have explicit owner-approved difficulty labels:103 Easy,127 Medium,53 Hard. The original17 bilingual question approvals are preserved. The other266 entries still need wording/explanation and canonical/exception checks. This is review documentation, not an executable bank or a final unique-question count.
+**Status:** all283 review entries now have explicit owner-approved difficulty labels:103 Easy,127 Medium,53 Hard. The original17 bilingual question approvals are preserved. Four expanded English explanations are now approved;262 English and266 Spanish explanations remain pending, along with canonical/exception checks. See [[2026-11-08-ranked-expanded-wording-review]]. This is review documentation, not an executable bank or a final unique-question count.
 
 **Related:** [[2026-11-08-ranked-full-chart-review.json]], [[2026-11-08-ranked-question-wording-review]], [[2026-11-08-ranked-chart-reference]], [[2026-11-08-curated-ranked-bank-design]]. Tracker: [#5](https://github.com/renilsonjr/Sort-Tester-Live/issues/5).
 
@@ -9,7 +9,7 @@
 - Active source: `twilight-2026-11-08-r2`, including owner corrections.
 - 283 source rows; hold four broad NJ CHECK rows without inventing belt answers. Retain listed NJ preload exceptions.
 - 279 belt-bearing source rows plus four NY109 destination+1 service contexts =283 review entries.
-- The original 17 owner-approved labels and bilingual explanations are preserved. Another 266 labels are approved, for 283 approved labels and 0 remaining difficulty proposals. Those additional labels still need wording/explanation review. Source rows are not a proven final unique-scenario count.
+- The original 17 owner-approved labels and bilingual explanations are preserved. Another 266 labels are approved, for 283 approved labels and 0 remaining difficulty proposals. For those additional entries,262 English and266 Spanish explanations remain pending. Source rows are not a proven final unique-scenario count.
 - Question wording, exception exclusions and wildcard coverage still need review for new entries. The six hyphenated Ground codes are now confirmed exact literals, not ranges. A suggestion of Easy never removes an applicable exception.
 - The game still selects15 questions, five per difficulty; expanding the bank increases the possible selections. No17-question runtime limit or fixed-ten-question repetition design remains.
 - Only the work-methods tie-question content is deferred; other tie-break policies remain unchanged.
@@ -356,7 +356,7 @@ Destination **+1 → PURPLE for any state**, across Ground,3 Day Select,2 Day Ai
 
 Validated all283 fixture IDs are accounted for exactly once as a source entry or held CHECK row; the four+1 contexts are additional explicit entries. All17 prior review references map exactly once with their original answer, difficulty and approval status preserved. The initial 266 new-label proposals now contain 266 owner-approved labels and 0 remaining proposals. There are no duplicate review IDs. Counts are inventory evidence, not executable-bank validation, content approval, hosted CI or deployment.
 
-## Final classification audit
+## Historical classification audit — before expanded wording reviews
 
 Verified all283 source rows are accounted for:279 belt-bearing rows and four held broad-NJ CHECK rows; four explicit NY109 destination+1 service contexts bring the review ledger to283 entries. All source answers/provenance remain unchanged from revision r2. Every entry has exactly one approved difficulty and one unique review reference. All17 initial answer/label/context mappings remain unchanged; only those17 have approved bilingual wording. The other266 still need wording and explanation review. The six Ground hyphenated entries are now confirmed exact literal codes; their runtime validation is still future implementation work.
 
