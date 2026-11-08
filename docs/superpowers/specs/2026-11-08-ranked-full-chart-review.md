@@ -9,7 +9,7 @@
 - Active source: `twilight-2026-11-08-r2`, including owner corrections.
 - 283 source rows; hold four broad NJ CHECK rows without inventing belt answers. Retain listed NJ preload exceptions.
 - 279 belt-bearing source rows plus four NY109 destination+1 service contexts =283 review entries.
-- The original 17 owner-approved labels and bilingual explanations are preserved. Another 136 labels are approved, for 153 approved labels and 130 remaining difficulty proposals. Those additional labels still need wording/explanation review. Source rows are not a proven final unique-scenario count.
+- The original 17 owner-approved labels and bilingual explanations are preserved. Another 144 labels are approved, for 161 approved labels and 122 remaining difficulty proposals. Those additional labels still need wording/explanation review. Source rows are not a proven final unique-scenario count.
 - Question wording, exception exclusions, wildcard coverage and compound final-digit shorthand still need review for new entries. A suggestion of Easy never removes an applicable exception.
 - The game still selects15 questions, five per difficulty; expanding the bank increases the possible selections. No17-question runtime limit or fixed-ten-question repetition design remains.
 - Only the work-methods tie-question content is deferred; other tie-break policies remain unchanged.
@@ -17,11 +17,11 @@
 | Service | Approved difficulty labels | New difficulty proposals |
 | --- | --- | --- |
 | Ground | 89 | 0 |
-| 3 Day Select | 59 | 26 |
+| 3 Day Select | 67 | 18 |
 | 2 Day Air | 5 | 60 |
 | Next Day Air | 0 | 44 |
 
-Proposed-label totals for remaining entries: Easy 6, Medium 63, Hard 61. These are draft classifications requiring owner review, not settled counts.
+Proposed-label totals for remaining entries: Easy 0, Medium 63, Hard 59. These are draft classifications requiring owner review, not settled counts.
 
 ## Previously approved — do not rank again
 
@@ -185,6 +185,14 @@ Proposed-label totals for remaining entries: Easy 6, Medium 63, Hard 61. These a
 | S54 | `3dayselect-exceptions-nj-0789` | 3 Day Select | NJ 078 9 | RED | Easy |
 | S55 | `3dayselect-exceptions-nj-0799` | 3 Day Select | NJ 079 9 | ORANGE | Medium |
 | S56 | `3dayselect-exceptions-nj-0819` | 3 Day Select | NJ 081 9 | RED | Easy |
+| S57 | `3dayselect-exceptions-nj-0829` | 3 Day Select | NJ 082 9 | RED | Easy |
+| S58 | `3dayselect-exceptions-nj-0839` | 3 Day Select | NJ 083 9 | RED | Easy |
+| S59 | `3dayselect-exceptions-nj-0860` | 3 Day Select | NJ 086 0 | RED | Easy |
+| S60 | `3dayselect-exceptions-nj-0871` | 3 Day Select | NJ 087 1 | RED | Easy |
+| S61 | `3dayselect-exceptions-nj-0889` | 3 Day Select | NJ 088 9 | RED | Easy |
+| S62 | `3dayselect-exceptions-nj-0899` | 3 Day Select | NJ 089 9 | RED | Easy |
+| S63 | `3dayselect-exceptions-ms-3950` | 3 Day Select | MS 395 0 | BLUE | Hard |
+| S64 | `3dayselect-exceptions-sd-5119` | 3 Day Select | SD 511 9 | BLUE | Hard |
 
 ## Ground — new proposals only
 
@@ -195,14 +203,6 @@ Proposed-label totals for remaining entries: Easy 6, Medium 63, Hard 61. These a
 
 | Source review ID | State / route | Answer | Proposed difficulty | Review note |
 | --- | --- | --- | --- | --- |
-| `3dayselect-exceptions-nj-0829` | NJ 082 9 | RED | Easy | Assistant proposal informed by owner feedback on Ground NJ preloads: RED codes Easy, ORANGE079 9 Medium. Approval for this service remains pending. |
-| `3dayselect-exceptions-nj-0839` | NJ 083 9 | RED | Easy | Assistant proposal informed by owner feedback on Ground NJ preloads: RED codes Easy, ORANGE079 9 Medium. Approval for this service remains pending. |
-| `3dayselect-exceptions-nj-0860` | NJ 086 0 | RED | Easy | Assistant proposal informed by owner feedback on Ground NJ preloads: RED codes Easy, ORANGE079 9 Medium. Approval for this service remains pending. |
-| `3dayselect-exceptions-nj-0871` | NJ 087 1 | RED | Easy | Assistant proposal informed by owner feedback on Ground NJ preloads: RED codes Easy, ORANGE079 9 Medium. Approval for this service remains pending. |
-| `3dayselect-exceptions-nj-0889` | NJ 088 9 | RED | Easy | Assistant proposal informed by owner feedback on Ground NJ preloads: RED codes Easy, ORANGE079 9 Medium. Approval for this service remains pending. |
-| `3dayselect-exceptions-nj-0899` | NJ 089 9 | RED | Easy | Assistant proposal informed by owner feedback on Ground NJ preloads: RED codes Easy, ORANGE079 9 Medium. Approval for this service remains pending. |
-| `3dayselect-exceptions-ms-3950` | MS 395 0 | BLUE | Hard | Specific exception, exact-code qualifier, suffix, or destination modifier. |
-| `3dayselect-exceptions-sd-5119` | SD 511 9 | BLUE | Hard | Specific exception, exact-code qualifier, suffix, or destination modifier. |
 | `3dayselect-exceptions-sd-5719` | SD 571 9 | BROWN | Hard | Specific exception, exact-code qualifier, suffix, or destination modifier. |
 | `3dayselect-exceptions-nd-5819` | ND 581 9 | BROWN | Hard | Specific exception, exact-code qualifier, suffix, or destination modifier. |
 | `3dayselect-exceptions-nd-5820` | ND 582 0 | BROWN | Hard | Specific exception, exact-code qualifier, suffix, or destination modifier. |
@@ -347,4 +347,4 @@ Proposed-label totals for remaining entries: Easy 6, Medium 63, Hard 61. These a
 
 ## Read-only inventory validation
 
-Validated all283 fixture IDs are accounted for exactly once as a source entry or held CHECK row; the four+1 contexts are additional explicit entries. All17 prior review references map exactly once with their original answer, difficulty and approval status preserved. The initial 266 new-label proposals now contain 136 owner-approved labels and 130 remaining proposals. There are no duplicate review IDs. Counts are inventory evidence, not executable-bank validation, content approval, hosted CI or deployment.
+Validated all283 fixture IDs are accounted for exactly once as a source entry or held CHECK row; the four+1 contexts are additional explicit entries. All17 prior review references map exactly once with their original answer, difficulty and approval status preserved. The initial 266 new-label proposals now contain 144 owner-approved labels and 122 remaining proposals. There are no duplicate review IDs. Counts are inventory evidence, not executable-bank validation, content approval, hosted CI or deployment.
