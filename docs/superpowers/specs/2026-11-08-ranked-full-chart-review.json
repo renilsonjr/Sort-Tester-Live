@@ -1,5 +1,5 @@
 {
-  "status": "Review-only full-chart inventory:283 approved difficulty labels;263 approved bilingual explanations. Twenty broad-range entries await presentation/wording review. Listed exact-code precedence across different printed state labels is owner-approved. Canonical validation remains incomplete; not an executable bank.",
+  "status": "Review-only full-chart inventory:283 approved difficulty labels;263 approved bilingual explanations. Specific-code presentation is owner-approved. Twenty specific range examples and their bilingual feedback are proposed for review; source rules/exclusions preserved. Canonical validation remains incomplete; not an executable bank.",
   "sourceRevision": "twilight-2026-11-08-r2",
   "existingApprovalsPreserved": 17,
   "remainingDifficultyReviews": 0,
@@ -454,8 +454,40 @@
         "Exclude NY148 1 GOLD from the broad ORANGE question, as shown during this difficulty review."
       ],
       "approvedReview": "G12",
-      "wordingReviewGroup": "focused-review",
-      "wordingReviewReason": "Conservative prefix-overlap hold for H4: verify actual state/context applicability before drafting exclusions."
+      "wordingReviewGroup": "range-example-batch-1",
+      "wordingReviewReason": "Conservative prefix-overlap hold for H4: verify actual state/context applicability before drafting exclusions.",
+      "rangeExampleReview": {
+        "status": "proposed-example-content",
+        "strategy": "specific-code-from-reviewed-range",
+        "sourceReviewRef": "G12",
+        "sourceRange": "148–149",
+        "displayedRoutingCode": "149",
+        "ordinaryDestinationContext": true,
+        "createsAdditionalIndependentQuestion": false,
+        "sourceStateLabelRetained": "NY",
+        "sourceExclusions": [
+          {
+            "sourceReviewRef": "H4",
+            "sourceStateLabel": "NY",
+            "sourceCode": "148 1",
+            "kind": "qualified_code",
+            "expectedBelt": "GOLD"
+          }
+        ],
+        "samplingSafetyNote": "The displayed three-digit example avoids every prefix containing a listed different-belt exception. This is a conservative example check, not removal of the entire prefix from the original rule; exact literals retain their complete source code."
+      },
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "Ground NY 149 goes to ORANGE.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Terrestre, NY 149 va a ORANGE.",
+          "approvalStatus": "proposed"
+        }
+      }
     },
     {
       "id": "ground-main-pa-150-167",
@@ -834,8 +866,40 @@
         "Exclude TN376–378 BLUE from the broad BROWN question, as shown during this difficulty review."
       ],
       "approvedReview": "G23",
-      "wordingReviewGroup": "focused-review",
-      "wordingReviewReason": "Conservative prefix-overlap hold for H3: verify actual state/context applicability before drafting exclusions."
+      "wordingReviewGroup": "range-example-batch-1",
+      "wordingReviewReason": "Conservative prefix-overlap hold for H3: verify actual state/context applicability before drafting exclusions.",
+      "rangeExampleReview": {
+        "status": "proposed-example-content",
+        "strategy": "specific-code-from-reviewed-range",
+        "sourceReviewRef": "G23",
+        "sourceRange": "370–385",
+        "displayedRoutingCode": "370",
+        "ordinaryDestinationContext": true,
+        "createsAdditionalIndependentQuestion": false,
+        "sourceStateLabelRetained": "TN",
+        "sourceExclusions": [
+          {
+            "sourceReviewRef": "H3",
+            "sourceStateLabel": "TN",
+            "sourceCode": "376–378",
+            "kind": "prefix_range",
+            "expectedBelt": "BLUE"
+          }
+        ],
+        "samplingSafetyNote": "The displayed three-digit example avoids every prefix containing a listed different-belt exception. This is a conservative example check, not removal of the entire prefix from the original rule; exact literals retain their complete source code."
+      },
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "Ground TN 370 goes to BROWN.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Terrestre, TN 370 va a BROWN.",
+          "approvalStatus": "proposed"
+        }
+      }
     },
     {
       "id": "ground-main-ms-386-399",
@@ -1017,8 +1081,40 @@
         "Owner reviewed this Easy label with listed exceptions explicitly excluded; exact exception coverage still needs validation before executable use."
       ],
       "approvedReview": "G29",
-      "wordingReviewGroup": "focused-review",
-      "wordingReviewReason": "Wildcard or named destination: review its scope and any explicit exception wording."
+      "wordingReviewGroup": "range-example-batch-1",
+      "wordingReviewReason": "Wildcard or named destination: review its scope and any explicit exception wording.",
+      "rangeExampleReview": {
+        "status": "proposed-example-content",
+        "strategy": "specific-code-from-reviewed-range",
+        "sourceReviewRef": "G29",
+        "sourceRange": "498–589",
+        "displayedRoutingCode": "500",
+        "ordinaryDestinationContext": true,
+        "createsAdditionalIndependentQuestion": false,
+        "sourceStateLabelRetained": "*",
+        "sourceExclusions": [
+          {
+            "sourceReviewRef": "G73",
+            "sourceStateLabel": "NE",
+            "sourceCode": "575 3-6",
+            "kind": "exact_code_literal",
+            "expectedBelt": "ORANGE"
+          }
+        ],
+        "samplingSafetyNote": "The displayed three-digit example avoids every prefix containing a listed different-belt exception. This is a conservative example check, not removal of the entire prefix from the original rule; exact literals retain their complete source code."
+      },
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "Ground routing code 500 goes to BROWN.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Terrestre, el código de ruta 500 va a BROWN.",
+          "approvalStatus": "proposed"
+        }
+      }
     },
     {
       "id": "ground-main-mt-590-599",
@@ -1519,13 +1615,45 @@
         "Owner confirmed the listed exact-code exception takes priority despite different printed state labels; the broad question must exclude that exact code."
       ],
       "approvedReview": "G45",
-      "wordingReviewGroup": "focused-review",
+      "wordingReviewGroup": "range-example-batch-1",
       "wordingReviewReason": "Conservative prefix-overlap hold for G74: verify actual state/context applicability before drafting exclusions.",
       "coverageInterpretation": {
         "status": "owner-approved-exception-precedence",
         "listedExactExceptionReviewRef": "G74",
         "differentPrintedStateLabelsAllowed": true,
         "scope": "Exclude the listed exact literal from covered broad-prefix question coverage; retain source labels and literal punctuation."
+      },
+      "rangeExampleReview": {
+        "status": "proposed-example-content",
+        "strategy": "specific-code-from-reviewed-range",
+        "sourceReviewRef": "G45",
+        "sourceRange": "832–839",
+        "displayedRoutingCode": "832",
+        "ordinaryDestinationContext": true,
+        "createsAdditionalIndependentQuestion": false,
+        "sourceStateLabelRetained": "ID",
+        "sourceExclusions": [
+          {
+            "sourceReviewRef": "G74",
+            "sourceStateLabel": "NV",
+            "sourceCode": "833 9-7",
+            "kind": "exact_code_literal",
+            "expectedBelt": "ORANGE"
+          }
+        ],
+        "samplingSafetyNote": "The displayed three-digit example avoids every prefix containing a listed different-belt exception. This is a conservative example check, not removal of the entire prefix from the original rule; exact literals retain their complete source code."
+      },
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "Ground ID 832 goes to BROWN.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Terrestre, ID 832 va a BROWN.",
+          "approvalStatus": "proposed"
+        }
       }
     },
     {
@@ -1547,13 +1675,45 @@
         "Owner confirmed the listed exact-code exception takes priority despite different printed state labels; the broad question must exclude that exact code."
       ],
       "approvedReview": "G46",
-      "wordingReviewGroup": "focused-review",
+      "wordingReviewGroup": "range-example-batch-1",
       "wordingReviewReason": "Conservative prefix-overlap hold for G75: verify actual state/context applicability before drafting exclusions.",
       "coverageInterpretation": {
         "status": "owner-approved-exception-precedence",
         "listedExactExceptionReviewRef": "G75",
         "differentPrintedStateLabelsAllowed": true,
         "scope": "Exclude the listed exact literal from covered broad-prefix question coverage; retain source labels and literal punctuation."
+      },
+      "rangeExampleReview": {
+        "status": "proposed-example-content",
+        "strategy": "specific-code-from-reviewed-range",
+        "sourceReviewRef": "G46",
+        "sourceRange": "840–849",
+        "displayedRoutingCode": "840",
+        "ordinaryDestinationContext": true,
+        "createsAdditionalIndependentQuestion": false,
+        "sourceStateLabelRetained": "UT",
+        "sourceExclusions": [
+          {
+            "sourceReviewRef": "G75",
+            "sourceStateLabel": "AZ",
+            "sourceCode": "847 2-7",
+            "kind": "exact_code_literal",
+            "expectedBelt": "BLUE"
+          }
+        ],
+        "samplingSafetyNote": "The displayed three-digit example avoids every prefix containing a listed different-belt exception. This is a conservative example check, not removal of the entire prefix from the original rule; exact literals retain their complete source code."
+      },
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "Ground UT 840 goes to ORANGE.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Terrestre, UT 840 va a ORANGE.",
+          "approvalStatus": "proposed"
+        }
       }
     },
     {
@@ -1575,13 +1735,45 @@
         "Owner confirmed the listed exact-code exception takes priority despite different printed state labels; the broad question must exclude that exact code."
       ],
       "approvedReview": "G47",
-      "wordingReviewGroup": "focused-review",
+      "wordingReviewGroup": "range-example-batch-1",
       "wordingReviewReason": "Conservative prefix-overlap hold for G76: verify actual state/context applicability before drafting exclusions.",
       "coverageInterpretation": {
         "status": "owner-approved-exception-precedence",
         "listedExactExceptionReviewRef": "G76",
         "differentPrintedStateLabelsAllowed": true,
         "scope": "Exclude the listed exact literal from covered broad-prefix question coverage; retain source labels and literal punctuation."
+      },
+      "rangeExampleReview": {
+        "status": "proposed-example-content",
+        "strategy": "specific-code-from-reviewed-range",
+        "sourceReviewRef": "G47",
+        "sourceRange": "850–884",
+        "displayedRoutingCode": "850",
+        "ordinaryDestinationContext": true,
+        "createsAdditionalIndependentQuestion": false,
+        "sourceStateLabelRetained": "AZ, NM",
+        "sourceExclusions": [
+          {
+            "sourceReviewRef": "G76",
+            "sourceStateLabel": "NV",
+            "sourceCode": "864 4-7",
+            "kind": "exact_code_literal",
+            "expectedBelt": "ORANGE"
+          }
+        ],
+        "samplingSafetyNote": "The displayed three-digit example avoids every prefix containing a listed different-belt exception. This is a conservative example check, not removal of the entire prefix from the original rule; exact literals retain their complete source code."
+      },
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "Ground AZ/NM 850 goes to BLUE.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Terrestre, AZ/NM 850 va a BLUE.",
+          "approvalStatus": "proposed"
+        }
       }
     },
     {
@@ -1602,8 +1794,40 @@
         "Check applicable exceptions and effective coverage before approving broad-range wording."
       ],
       "approvedReview": "G48",
-      "wordingReviewGroup": "focused-review",
-      "wordingReviewReason": "Conservative prefix-overlap hold for G77: verify actual state/context applicability before drafting exclusions."
+      "wordingReviewGroup": "range-example-batch-1",
+      "wordingReviewReason": "Conservative prefix-overlap hold for G77: verify actual state/context applicability before drafting exclusions.",
+      "rangeExampleReview": {
+        "status": "proposed-example-content",
+        "strategy": "specific-code-from-reviewed-range",
+        "sourceReviewRef": "G48",
+        "sourceRange": "889–891",
+        "displayedRoutingCode": "889",
+        "ordinaryDestinationContext": true,
+        "createsAdditionalIndependentQuestion": false,
+        "sourceStateLabelRetained": "NV",
+        "sourceExclusions": [
+          {
+            "sourceReviewRef": "G77",
+            "sourceStateLabel": "NV",
+            "sourceCode": "890 0-0",
+            "kind": "exact_code_literal",
+            "expectedBelt": "ORANGE"
+          }
+        ],
+        "samplingSafetyNote": "The displayed three-digit example avoids every prefix containing a listed different-belt exception. This is a conservative example check, not removal of the entire prefix from the original rule; exact literals retain their complete source code."
+      },
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "Ground NV 889 goes to BLUE.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Terrestre, NV 889 va a BLUE.",
+          "approvalStatus": "proposed"
+        }
+      }
     },
     {
       "id": "ground-main-nv-893-899",
@@ -1656,13 +1880,45 @@
         "Owner confirmed the listed exact-code exception takes priority despite different printed state labels; the broad question must exclude that exact code."
       ],
       "approvedReview": "G50",
-      "wordingReviewGroup": "focused-review",
+      "wordingReviewGroup": "range-example-batch-1",
       "wordingReviewReason": "Conservative prefix-overlap hold for G78: verify actual state/context applicability before drafting exclusions.",
       "coverageInterpretation": {
         "status": "owner-approved-exception-precedence",
         "listedExactExceptionReviewRef": "G78",
         "differentPrintedStateLabelsAllowed": true,
         "scope": "Exclude the listed exact literal from covered broad-prefix question coverage; retain source labels and literal punctuation."
+      },
+      "rangeExampleReview": {
+        "status": "proposed-example-content",
+        "strategy": "specific-code-from-reviewed-range",
+        "sourceReviewRef": "G50",
+        "sourceRange": "900–935",
+        "displayedRoutingCode": "900",
+        "ordinaryDestinationContext": true,
+        "createsAdditionalIndependentQuestion": false,
+        "sourceStateLabelRetained": "CA",
+        "sourceExclusions": [
+          {
+            "sourceReviewRef": "G78",
+            "sourceStateLabel": "AZ",
+            "sourceCode": "922 2-0",
+            "kind": "exact_code_literal",
+            "expectedBelt": "BLUE"
+          }
+        ],
+        "samplingSafetyNote": "The displayed three-digit example avoids every prefix containing a listed different-belt exception. This is a conservative example check, not removal of the entire prefix from the original rule; exact literals retain their complete source code."
+      },
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "Ground CA 900 goes to RED.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Terrestre, CA 900 va a RED.",
+          "approvalStatus": "proposed"
+        }
       }
     },
     {
@@ -3162,8 +3418,40 @@
         "Check applicable exceptions and effective coverage before approving broad-range wording."
       ],
       "approvedReview": "S16",
-      "wordingReviewGroup": "focused-review",
-      "wordingReviewReason": "Conservative prefix-overlap hold for S79: verify actual state/context applicability before drafting exclusions."
+      "wordingReviewGroup": "range-example-batch-1",
+      "wordingReviewReason": "Conservative prefix-overlap hold for S79: verify actual state/context applicability before drafting exclusions.",
+      "rangeExampleReview": {
+        "status": "proposed-example-content",
+        "strategy": "specific-code-from-reviewed-range",
+        "sourceReviewRef": "S16",
+        "sourceRange": "148–149",
+        "displayedRoutingCode": "149",
+        "ordinaryDestinationContext": true,
+        "createsAdditionalIndependentQuestion": false,
+        "sourceStateLabelRetained": "NY",
+        "sourceExclusions": [
+          {
+            "sourceReviewRef": "S79",
+            "sourceStateLabel": "NY",
+            "sourceCode": "148 1",
+            "kind": "qualified_code",
+            "expectedBelt": "GOLD"
+          }
+        ],
+        "samplingSafetyNote": "The displayed three-digit example avoids every prefix containing a listed different-belt exception. This is a conservative example check, not removal of the entire prefix from the original rule; exact literals retain their complete source code."
+      },
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "3 Day Select NY 149 goes to ORANGE.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Select 3 días, NY 149 va a ORANGE.",
+          "approvalStatus": "proposed"
+        }
+      }
     },
     {
       "id": "3dayselect-main-pa-150-167",
@@ -3586,8 +3874,40 @@
         "Check applicable exceptions and effective coverage before approving broad-range wording."
       ],
       "approvedReview": "S29",
-      "wordingReviewGroup": "focused-review",
-      "wordingReviewReason": "Conservative prefix-overlap hold for S63: verify actual state/context applicability before drafting exclusions."
+      "wordingReviewGroup": "range-example-batch-1",
+      "wordingReviewReason": "Conservative prefix-overlap hold for S63: verify actual state/context applicability before drafting exclusions.",
+      "rangeExampleReview": {
+        "status": "proposed-example-content",
+        "strategy": "specific-code-from-reviewed-range",
+        "sourceReviewRef": "S29",
+        "sourceRange": "386–399",
+        "displayedRoutingCode": "386",
+        "ordinaryDestinationContext": true,
+        "createsAdditionalIndependentQuestion": false,
+        "sourceStateLabelRetained": "MS",
+        "sourceExclusions": [
+          {
+            "sourceReviewRef": "S63",
+            "sourceStateLabel": "MS",
+            "sourceCode": "395 0",
+            "kind": "qualified_code",
+            "expectedBelt": "BLUE"
+          }
+        ],
+        "samplingSafetyNote": "The displayed three-digit example avoids every prefix containing a listed different-belt exception. This is a conservative example check, not removal of the entire prefix from the original rule; exact literals retain their complete source code."
+      },
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "3 Day Select MS 386 goes to BROWN.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Select 3 días, MS 386 va a BROWN.",
+          "approvalStatus": "proposed"
+        }
+      }
     },
     {
       "id": "3dayselect-main-ky-400-429",
@@ -3736,8 +4056,40 @@
         "Wildcard fallback: explicitly exclude specific overrides; not a duplicate of a named-state row by text alone."
       ],
       "approvedReview": "S34",
-      "wordingReviewGroup": "focused-review",
-      "wordingReviewReason": "Wildcard or named destination: review its scope and any explicit exception wording."
+      "wordingReviewGroup": "range-example-batch-1",
+      "wordingReviewReason": "Wildcard or named destination: review its scope and any explicit exception wording.",
+      "rangeExampleReview": {
+        "status": "proposed-example-content",
+        "strategy": "specific-code-from-reviewed-range",
+        "sourceReviewRef": "S34",
+        "sourceRange": "498–566",
+        "displayedRoutingCode": "500",
+        "ordinaryDestinationContext": true,
+        "createsAdditionalIndependentQuestion": false,
+        "sourceStateLabelRetained": "*",
+        "sourceExclusions": [
+          {
+            "sourceReviewRef": "S64",
+            "sourceStateLabel": "SD",
+            "sourceCode": "511 9",
+            "kind": "qualified_code",
+            "expectedBelt": "BLUE"
+          }
+        ],
+        "samplingSafetyNote": "The displayed three-digit example avoids every prefix containing a listed different-belt exception. This is a conservative example check, not removal of the entire prefix from the original rule; exact literals retain their complete source code."
+      },
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "3 Day Select routing code 500 goes to BROWN.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Select 3 días, el código de ruta 500 va a BROWN.",
+          "approvalStatus": "proposed"
+        }
+      }
     },
     {
       "id": "3dayselect-main-all-567-599",
@@ -3758,8 +4110,54 @@
         "Wildcard fallback: explicitly exclude specific overrides; not a duplicate of a named-state row by text alone."
       ],
       "approvedReview": "S35",
-      "wordingReviewGroup": "focused-review",
-      "wordingReviewReason": "Wildcard or named destination: review its scope and any explicit exception wording."
+      "wordingReviewGroup": "range-example-batch-1",
+      "wordingReviewReason": "Wildcard or named destination: review its scope and any explicit exception wording.",
+      "rangeExampleReview": {
+        "status": "proposed-example-content",
+        "strategy": "specific-code-from-reviewed-range",
+        "sourceReviewRef": "S35",
+        "sourceRange": "567–599",
+        "displayedRoutingCode": "567",
+        "ordinaryDestinationContext": true,
+        "createsAdditionalIndependentQuestion": false,
+        "sourceStateLabelRetained": "*",
+        "sourceExclusions": [
+          {
+            "sourceReviewRef": "S65",
+            "sourceStateLabel": "SD",
+            "sourceCode": "571 9",
+            "kind": "qualified_code",
+            "expectedBelt": "BROWN"
+          },
+          {
+            "sourceReviewRef": "S66",
+            "sourceStateLabel": "ND",
+            "sourceCode": "581 9",
+            "kind": "qualified_code",
+            "expectedBelt": "BROWN"
+          },
+          {
+            "sourceReviewRef": "S67",
+            "sourceStateLabel": "ND",
+            "sourceCode": "582 0",
+            "kind": "qualified_code",
+            "expectedBelt": "BROWN"
+          }
+        ],
+        "samplingSafetyNote": "The displayed three-digit example avoids every prefix containing a listed different-belt exception. This is a conservative example check, not removal of the entire prefix from the original rule; exact literals retain their complete source code."
+      },
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "3 Day Select routing code 567 goes to BLUE.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Select 3 días, el código de ruta 567 va a BLUE.",
+          "approvalStatus": "proposed"
+        }
+      }
     },
     {
       "id": "3dayselect-main-il-600-608",
@@ -3972,8 +4370,32 @@
         "Wildcard fallback: explicitly exclude specific overrides; not a duplicate of a named-state row by text alone."
       ],
       "approvedReview": "S42",
-      "wordingReviewGroup": "focused-review",
-      "wordingReviewReason": "Wildcard or named destination: review its scope and any explicit exception wording."
+      "wordingReviewGroup": "range-example-batch-1",
+      "wordingReviewReason": "Wildcard or named destination: review its scope and any explicit exception wording.",
+      "rangeExampleReview": {
+        "status": "proposed-example-content",
+        "strategy": "specific-code-from-reviewed-range",
+        "sourceReviewRef": "S42",
+        "sourceRange": "700–734",
+        "displayedRoutingCode": "700",
+        "ordinaryDestinationContext": true,
+        "createsAdditionalIndependentQuestion": false,
+        "sourceStateLabelRetained": "*",
+        "sourceExclusions": [],
+        "samplingSafetyNote": "The displayed three-digit example avoids every prefix containing a listed different-belt exception. This is a conservative example check, not removal of the entire prefix from the original rule; exact literals retain their complete source code."
+      },
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "3 Day Select routing code 700 goes to BLUE.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Select 3 días, el código de ruta 700 va a BLUE.",
+          "approvalStatus": "proposed"
+        }
+      }
     },
     {
       "id": "3dayselect-main-ok-735-749",
@@ -4094,8 +4516,61 @@
         "Check applicable exceptions and effective coverage before approving broad-range wording."
       ],
       "approvedReview": "S45",
-      "wordingReviewGroup": "focused-review",
-      "wordingReviewReason": "Conservative prefix-overlap hold for S68, S69, S70, S71: verify actual state/context applicability before drafting exclusions."
+      "wordingReviewGroup": "range-example-batch-1",
+      "wordingReviewReason": "Conservative prefix-overlap hold for S68, S69, S70, S71: verify actual state/context applicability before drafting exclusions.",
+      "rangeExampleReview": {
+        "status": "proposed-example-content",
+        "strategy": "specific-code-from-reviewed-range",
+        "sourceReviewRef": "S45",
+        "sourceRange": "785–799",
+        "displayedRoutingCode": "785",
+        "ordinaryDestinationContext": true,
+        "createsAdditionalIndependentQuestion": false,
+        "sourceStateLabelRetained": "TX",
+        "sourceExclusions": [
+          {
+            "sourceReviewRef": "S68",
+            "sourceStateLabel": "TX",
+            "sourceCode": "786 4",
+            "kind": "qualified_code",
+            "expectedBelt": "ORANGE"
+          },
+          {
+            "sourceReviewRef": "S69",
+            "sourceStateLabel": "TX",
+            "sourceCode": "787 9",
+            "kind": "qualified_code",
+            "expectedBelt": "ORANGE"
+          },
+          {
+            "sourceReviewRef": "S70",
+            "sourceStateLabel": "TX",
+            "sourceCode": "796 0",
+            "kind": "qualified_code",
+            "expectedBelt": "ORANGE"
+          },
+          {
+            "sourceReviewRef": "S71",
+            "sourceStateLabel": "TX",
+            "sourceCode": "799 9",
+            "kind": "qualified_code",
+            "expectedBelt": "ORANGE"
+          }
+        ],
+        "samplingSafetyNote": "The displayed three-digit example avoids every prefix containing a listed different-belt exception. This is a conservative example check, not removal of the entire prefix from the original rule; exact literals retain their complete source code."
+      },
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "3 Day Select TX 785 goes to PURPLE.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Select 3 días, TX 785 va a PURPLE.",
+          "approvalStatus": "proposed"
+        }
+      }
     },
     {
       "id": "3dayselect-main-co-800-810",
@@ -4148,8 +4623,82 @@
         "Wildcard fallback: explicitly exclude specific overrides; not a duplicate of a named-state row by text alone."
       ],
       "approvedReview": "S47",
-      "wordingReviewGroup": "focused-review",
-      "wordingReviewReason": "Wildcard or named destination: review its scope and any explicit exception wording."
+      "wordingReviewGroup": "range-example-batch-1",
+      "wordingReviewReason": "Wildcard or named destination: review its scope and any explicit exception wording.",
+      "rangeExampleReview": {
+        "status": "proposed-example-content",
+        "strategy": "specific-code-from-reviewed-range",
+        "sourceReviewRef": "S47",
+        "sourceRange": "811–999",
+        "displayedRoutingCode": "900",
+        "ordinaryDestinationContext": true,
+        "createsAdditionalIndependentQuestion": false,
+        "sourceStateLabelRetained": "*",
+        "sourceExclusions": [
+          {
+            "sourceReviewRef": "S72",
+            "sourceStateLabel": "CO",
+            "sourceCode": "811 3",
+            "kind": "qualified_code",
+            "expectedBelt": "ORANGE"
+          },
+          {
+            "sourceReviewRef": "S73",
+            "sourceStateLabel": "CO",
+            "sourceCode": "812 0",
+            "kind": "qualified_code",
+            "expectedBelt": "ORANGE"
+          },
+          {
+            "sourceReviewRef": "S74",
+            "sourceStateLabel": "CO",
+            "sourceCode": "813 7",
+            "kind": "qualified_code",
+            "expectedBelt": "ORANGE"
+          },
+          {
+            "sourceReviewRef": "S75",
+            "sourceStateLabel": "CO",
+            "sourceCode": "816 0",
+            "kind": "qualified_code",
+            "expectedBelt": "ORANGE"
+          },
+          {
+            "sourceReviewRef": "S76",
+            "sourceStateLabel": "CO",
+            "sourceCode": "816 1",
+            "kind": "qualified_code",
+            "expectedBelt": "ORANGE"
+          },
+          {
+            "sourceReviewRef": "S77",
+            "sourceStateLabel": "WY",
+            "sourceCode": "820 0",
+            "kind": "qualified_code",
+            "expectedBelt": "ORANGE"
+          },
+          {
+            "sourceReviewRef": "S78",
+            "sourceStateLabel": "WY",
+            "sourceCode": "820 1",
+            "kind": "qualified_code",
+            "expectedBelt": "ORANGE"
+          }
+        ],
+        "samplingSafetyNote": "The displayed three-digit example avoids every prefix containing a listed different-belt exception. This is a conservative example check, not removal of the entire prefix from the original rule; exact literals retain their complete source code."
+      },
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "3 Day Select routing code 900 goes to PURPLE.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Select 3 días, el código de ruta 900 va a PURPLE.",
+          "approvalStatus": "proposed"
+        }
+      }
     },
     {
       "id": "3dayselect-exceptions-nj-0703",
@@ -5673,8 +6222,40 @@
         "Check applicable exceptions and effective coverage before approving broad-range wording."
       ],
       "approvedReview": "D15",
-      "wordingReviewGroup": "focused-review",
-      "wordingReviewReason": "Conservative prefix-overlap hold for D57: verify actual state/context applicability before drafting exclusions."
+      "wordingReviewGroup": "range-example-batch-1",
+      "wordingReviewReason": "Conservative prefix-overlap hold for D57: verify actual state/context applicability before drafting exclusions.",
+      "rangeExampleReview": {
+        "status": "proposed-example-content",
+        "strategy": "specific-code-from-reviewed-range",
+        "sourceReviewRef": "D15",
+        "sourceRange": "148–149",
+        "displayedRoutingCode": "149",
+        "ordinaryDestinationContext": true,
+        "createsAdditionalIndependentQuestion": false,
+        "sourceStateLabelRetained": "NY",
+        "sourceExclusions": [
+          {
+            "sourceReviewRef": "D57",
+            "sourceStateLabel": "NY",
+            "sourceCode": "148 1",
+            "kind": "qualified_code",
+            "expectedBelt": "GOLD"
+          }
+        ],
+        "samplingSafetyNote": "The displayed three-digit example avoids every prefix containing a listed different-belt exception. This is a conservative example check, not removal of the entire prefix from the original rule; exact literals retain their complete source code."
+      },
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "2 Day Air NY 149 goes to ORANGE.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Aéreo 2 días, NY 149 va a ORANGE.",
+          "approvalStatus": "proposed"
+        }
+      }
     },
     {
       "id": "2dayair-main-pa-150-167",
@@ -6307,8 +6888,32 @@
         "Wildcard fallback: explicitly exclude specific overrides; not a duplicate of a named-state row by text alone."
       ],
       "approvedReview": "D34",
-      "wordingReviewGroup": "focused-review",
-      "wordingReviewReason": "Wildcard or named destination: review its scope and any explicit exception wording."
+      "wordingReviewGroup": "range-example-batch-1",
+      "wordingReviewReason": "Wildcard or named destination: review its scope and any explicit exception wording.",
+      "rangeExampleReview": {
+        "status": "proposed-example-content",
+        "strategy": "specific-code-from-reviewed-range",
+        "sourceReviewRef": "D34",
+        "sourceRange": "498–599",
+        "displayedRoutingCode": "500",
+        "ordinaryDestinationContext": true,
+        "createsAdditionalIndependentQuestion": false,
+        "sourceStateLabelRetained": "*",
+        "sourceExclusions": [],
+        "samplingSafetyNote": "The displayed three-digit example avoids every prefix containing a listed different-belt exception. This is a conservative example check, not removal of the entire prefix from the original rule; exact literals retain their complete source code."
+      },
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "2 Day Air routing code 500 goes to PURPLE.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Aéreo 2 días, el código de ruta 500 va a PURPLE.",
+          "approvalStatus": "proposed"
+        }
+      }
     },
     {
       "id": "2dayair-main-il-600-608",
@@ -6399,8 +7004,32 @@
         "Wildcard fallback: explicitly exclude specific overrides; not a duplicate of a named-state row by text alone."
       ],
       "approvedReview": "D36",
-      "wordingReviewGroup": "focused-review",
-      "wordingReviewReason": "Wildcard or named destination: review its scope and any explicit exception wording."
+      "wordingReviewGroup": "range-example-batch-1",
+      "wordingReviewReason": "Wildcard or named destination: review its scope and any explicit exception wording.",
+      "rangeExampleReview": {
+        "status": "proposed-example-content",
+        "strategy": "specific-code-from-reviewed-range",
+        "sourceReviewRef": "D36",
+        "sourceRange": "640–729",
+        "displayedRoutingCode": "640",
+        "ordinaryDestinationContext": true,
+        "createsAdditionalIndependentQuestion": false,
+        "sourceStateLabelRetained": "*",
+        "sourceExclusions": [],
+        "samplingSafetyNote": "The displayed three-digit example avoids every prefix containing a listed different-belt exception. This is a conservative example check, not removal of the entire prefix from the original rule; exact literals retain their complete source code."
+      },
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "2 Day Air routing code 640 goes to PURPLE.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Aéreo 2 días, el código de ruta 640 va a PURPLE.",
+          "approvalStatus": "proposed"
+        }
+      }
     },
     {
       "id": "2dayair-main-ok-730-740",
@@ -6516,8 +7145,32 @@
         "Wildcard fallback: explicitly exclude specific overrides; not a duplicate of a named-state row by text alone."
       ],
       "approvedReview": "D40",
-      "wordingReviewGroup": "focused-review",
-      "wordingReviewReason": "Wildcard or named destination: review its scope and any explicit exception wording."
+      "wordingReviewGroup": "range-example-batch-1",
+      "wordingReviewReason": "Wildcard or named destination: review its scope and any explicit exception wording.",
+      "rangeExampleReview": {
+        "status": "proposed-example-content",
+        "strategy": "specific-code-from-reviewed-range",
+        "sourceReviewRef": "D40",
+        "sourceRange": "750–999",
+        "displayedRoutingCode": "750",
+        "ordinaryDestinationContext": true,
+        "createsAdditionalIndependentQuestion": false,
+        "sourceStateLabelRetained": "*",
+        "sourceExclusions": [],
+        "samplingSafetyNote": "The displayed three-digit example avoids every prefix containing a listed different-belt exception. This is a conservative example check, not removal of the entire prefix from the original rule; exact literals retain their complete source code."
+      },
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "2 Day Air routing code 750 goes to PURPLE.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Aéreo 2 días, el código de ruta 750 va a PURPLE.",
+          "approvalStatus": "proposed"
+        }
+      }
     },
     {
       "id": "2dayair-main-all-world",
@@ -7846,8 +8499,32 @@
         "Wildcard fallback: explicitly exclude specific overrides; not a duplicate of a named-state row by text alone."
       ],
       "approvedReview": "N24",
-      "wordingReviewGroup": "focused-review",
-      "wordingReviewReason": "Wildcard or named destination: review its scope and any explicit exception wording."
+      "wordingReviewGroup": "range-example-batch-1",
+      "wordingReviewReason": "Wildcard or named destination: review its scope and any explicit exception wording.",
+      "rangeExampleReview": {
+        "status": "proposed-example-content",
+        "strategy": "specific-code-from-reviewed-range",
+        "sourceReviewRef": "N24",
+        "sourceRange": "220–999",
+        "displayedRoutingCode": "220",
+        "ordinaryDestinationContext": true,
+        "createsAdditionalIndependentQuestion": false,
+        "sourceStateLabelRetained": "*",
+        "sourceExclusions": [],
+        "samplingSafetyNote": "The displayed three-digit example avoids every prefix containing a listed different-belt exception. This is a conservative example check, not removal of the entire prefix from the original rule; exact literals retain their complete source code."
+      },
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "Next Day Air routing code 220 goes to PURPLE.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Aéreo 1 día, el código de ruta 220 va a PURPLE.",
+          "approvalStatus": "proposed"
+        }
+      }
     },
     {
       "id": "nextdayair-main-all-world",
@@ -8969,6 +9646,38 @@
       ],
       "scope": "Feedback for27 specific-code cases and five named destinations; no new range/exclusion interpretation or changes to settled answers/difficulties.",
       "approvalScope": "Owner explicitly approved all32 explanations in both languages:27 specific codes and five named destinations. Answers, displayed code literals and difficulty labels remain unchanged."
+    },
+    {
+      "id": "range-example-batch-1",
+      "status": "proposed",
+      "languages": [
+        "en",
+        "es"
+      ],
+      "entryCount": 20,
+      "entryReviewRefs": [
+        "G12",
+        "G23",
+        "G29",
+        "G45",
+        "G46",
+        "G47",
+        "G48",
+        "G50",
+        "S16",
+        "S29",
+        "S34",
+        "S35",
+        "S42",
+        "S45",
+        "S47",
+        "D15",
+        "D34",
+        "D36",
+        "D40",
+        "N24"
+      ],
+      "scope": "Specific example codes and bilingual feedback for the20 remaining range rules; preserve source ranges/exclusions and difficulties. Strategy is approved, example content/copy still needs review. No runtime selector or canonical identity is approved by this copy review."
     }
   ],
   "pendingCoverageQuestions": [],
@@ -8999,10 +9708,11 @@
       "answer": "Listed exact-code exceptions override covered broad routing-prefix ranges even when their printed state labels differ. Keep the source labels and literal codes unchanged; exclude the exception from the broad question coverage."
     }
   ],
-  "pendingBankDecisions": [
+  "pendingBankDecisions": [],
+  "presentationDecisions": [
     {
       "id": "broad-range-question-presentation",
-      "status": "awaiting-owner-decision",
+      "status": "owner-approved",
       "question": "Display a concrete unambiguous code drawn from each reviewed range, or the complete range with every explicit exclusion?",
       "recommended": "concrete-code-example",
       "example": {
@@ -9012,7 +9722,9 @@
         "expectedBelt": "PURPLE",
         "listedExceptionCount": 7
       },
-      "scopeNote": "A representative code would remain linked to the original chart rule and approved difficulty, not create additional independent questions. The choice, wording and runtime generation are not yet approved or implemented."
+      "scopeNote": "Presentation strategy is approved. Individual example content and bilingual feedback below remain proposals. No extra independent question slots are created by variants; no runtime generation is implemented.",
+      "selected": "concrete-code-example",
+      "answer": "Show specific unambiguous codes drawn from the reviewed source ranges; retain the original chart rule, exclusions and approved difficulty."
     }
   ]
 }

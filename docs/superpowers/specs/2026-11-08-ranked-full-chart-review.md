@@ -1,6 +1,6 @@
 # Full-chart Ranked difficulty review
 
-**Status:** all 283 review entries retain approved difficulty labels:103 Easy,127 Medium,53 Hard.263 entries have approved English/Spanish explanations. Twenty broad-range presentation/wording cases and canonical validation remain open. Listed exact-code precedence across different printed state labels is now owner-approved. See [[2026-11-08-ranked-expanded-wording-review]]. This is review documentation, not an executable bank or final unique-question count.
+**Status:** all 283 review entries retain approved difficulty labels:103 Easy,127 Medium,53 Hard.263 entries have approved bilingual explanations. The owner selected specific-code presentation;20 example codes and their bilingual feedback await review. Source ranges/exclusions remain intact. See [[2026-11-08-ranked-expanded-wording-review]]. This is review documentation, not an executable bank or final unique-question count.
 
 **Related:** [[2026-11-08-ranked-full-chart-review.json]], [[2026-11-08-ranked-question-wording-review]], [[2026-11-08-ranked-chart-reference]], [[2026-11-08-curated-ranked-bank-design]]. Tracker: [#5](https://github.com/renilsonjr/Sort-Tester-Live/issues/5).
 

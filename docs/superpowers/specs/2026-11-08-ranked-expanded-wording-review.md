@@ -1,6 +1,6 @@
 # Expanded Ranked question wording review
 
-**Status:** 263 entries have approved English/Spanish explanations; all 283 difficulty labels remain settled. Twenty broad-range entries await presentation/wording review. The owner confirmed listed exact-code exception precedence across different printed state labels. Question presentation under the ten-second timer remains open. Original 17 approvals are preserved. No product code or executable bank is created here.
+**Status:** 263 entries have approved English/Spanish explanations; all 283 difficulty labels remain settled. The owner selected specific unambiguous codes for the remaining range questions. Twenty example codes and bilingual explanations are proposed below for review. Full source ranges/exclusions and original 17 approvals are preserved. No product code or executable bank is created here.
 
 **Related:** [[2026-11-08-ranked-full-chart-review]], [[2026-11-08-ranked-full-chart-review.json]], [[2026-11-08-ranked-question-wording-review]], [[2026-11-08-ranked-chart-reference]], [[2026-11-08-curated-ranked-bank-design]]. Tracker: [#5](https://github.com/renilsonjr/Sort-Tester-Live/issues/5), [PR #32](https://github.com/renilsonjr/Sort-Tester-Live/pull/32).
 
@@ -401,7 +401,7 @@ The owner explicitly confirmed that a listed exact-code exception overrides a co
 
 - [x] Owner confirmed listed exact-code exceptions take priority across different printed state labels.
 
-## Pending presentation decision — broad ranges under the timer
+## Approved presentation decision — specific codes under the timer
 
 The approved Ranked timer remains ten seconds per question. Some source ranges need long exclusion lists:3 Day Select811–999 PURPLE has seven listed exact-code exceptions, all ORANGE. Listing all seven inside a timed question could create a reading burden. This is an assistant usability assessment, not a changed competition rule.
 
@@ -410,8 +410,40 @@ Two approaches are proposed for owner choice:
 1. **Concrete unambiguous code example — assistant recommendation.** Keep the full reviewed range/exception rule in the bank, but show one code whose coverage has been validated (e.g.3 Day Select900 → PURPLE for source S47). Keep the original approved difficulty and source/canonical association; do not count generated variants as extra independent assignment slots. Exceptions retain their separate reviewed questions. The choice of concrete examples and final copy need review before runtime use.
 2. **Full range with explicit exclusions.** Show the complete range and every applicable excluded code in the question, preserving the earlier broad-question exclusion policy. This teaches the whole range directly but can produce long prompts under the fixed timer.
 
-No choice is inferred. Runtime generation, example content and final bilingual wording are not implemented or automatically approved. All20 remaining range questions stay pending until presentation/coverage/copy review is complete.
+The owner selected approach1: specific unambiguous code examples. Approach2 (full ranges with every exclusion listed) is not selected for these questions. Strategy approval does not automatically approve every example or its bilingual copy, and no runtime generation is implemented. The20 proposed examples below remain pending review.
+
+## Specific range-example batch — proposed (20 entries)
+
+Each question shows the specific code below in its routing field, with the ordinary base service and source state/region context. No unshown+1,EAM or suffix is added. The full source range and its applicable listed exceptions remain associated with the same reviewed rule/difficulty; an example does not create another independent assignment slot. The source code field in the JSON remains the original range, while rangeExampleReview.displayedRoutingCode is the proposed presentation value.
+
+For safety, each displayed three-digit example avoids any prefix containing a listed different-belt exception. This conservative example selection does not exclude the entire prefix from the original rule: exact exceptions retain their full literals. The attached exclusion list is an audit of source coverage, not text to put into the ten-second question. No production routing/overlap validator is implemented by this document.
+
+| Review reference | Service | Source state/region | Source range | Code shown | Answer | Retained source exclusions | Proposed English feedback | Proposed Spanish feedback |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| G12 | Ground | NY | 148–149 | 149 | ORANGE | NY 148 1 → GOLD | Ground NY 149 goes to ORANGE. | En Terrestre, NY 149 va a ORANGE. |
+| G23 | Ground | TN | 370–385 | 370 | BROWN | TN 376–378 → BLUE | Ground TN 370 goes to BROWN. | En Terrestre, TN 370 va a BROWN. |
+| G29 | Ground | * | 498–589 | 500 | BROWN | NE 575 3-6 → ORANGE | Ground routing code 500 goes to BROWN. | En Terrestre, el código de ruta 500 va a BROWN. |
+| G45 | Ground | ID | 832–839 | 832 | BROWN | NV 833 9-7 → ORANGE | Ground ID 832 goes to BROWN. | En Terrestre, ID 832 va a BROWN. |
+| G46 | Ground | UT | 840–849 | 840 | ORANGE | AZ 847 2-7 → BLUE | Ground UT 840 goes to ORANGE. | En Terrestre, UT 840 va a ORANGE. |
+| G47 | Ground | AZ, NM | 850–884 | 850 | BLUE | NV 864 4-7 → ORANGE | Ground AZ/NM 850 goes to BLUE. | En Terrestre, AZ/NM 850 va a BLUE. |
+| G48 | Ground | NV | 889–891 | 889 | BLUE | NV 890 0-0 → ORANGE | Ground NV 889 goes to BLUE. | En Terrestre, NV 889 va a BLUE. |
+| G50 | Ground | CA | 900–935 | 900 | RED | AZ 922 2-0 → BLUE | Ground CA 900 goes to RED. | En Terrestre, CA 900 va a RED. |
+| S16 | 3 Day Select | NY | 148–149 | 149 | ORANGE | NY 148 1 → GOLD | 3 Day Select NY 149 goes to ORANGE. | En Select 3 días, NY 149 va a ORANGE. |
+| S29 | 3 Day Select | MS | 386–399 | 386 | BROWN | MS 395 0 → BLUE | 3 Day Select MS 386 goes to BROWN. | En Select 3 días, MS 386 va a BROWN. |
+| S34 | 3 Day Select | * | 498–566 | 500 | BROWN | SD 511 9 → BLUE | 3 Day Select routing code 500 goes to BROWN. | En Select 3 días, el código de ruta 500 va a BROWN. |
+| S35 | 3 Day Select | * | 567–599 | 567 | BLUE | SD 571 9 → BROWN; ND 581 9 → BROWN; ND 582 0 → BROWN | 3 Day Select routing code 567 goes to BLUE. | En Select 3 días, el código de ruta 567 va a BLUE. |
+| S42 | 3 Day Select | * | 700–734 | 700 | BLUE | No listed numeric different-belt exception in this source range. | 3 Day Select routing code 700 goes to BLUE. | En Select 3 días, el código de ruta 700 va a BLUE. |
+| S45 | 3 Day Select | TX | 785–799 | 785 | PURPLE | TX 786 4 → ORANGE; TX 787 9 → ORANGE; TX 796 0 → ORANGE; TX 799 9 → ORANGE | 3 Day Select TX 785 goes to PURPLE. | En Select 3 días, TX 785 va a PURPLE. |
+| S47 | 3 Day Select | * | 811–999 | 900 | PURPLE | CO 811 3 → ORANGE; CO 812 0 → ORANGE; CO 813 7 → ORANGE; CO 816 0 → ORANGE; CO 816 1 → ORANGE; WY 820 0 → ORANGE; WY 820 1 → ORANGE | 3 Day Select routing code 900 goes to PURPLE. | En Select 3 días, el código de ruta 900 va a PURPLE. |
+| D15 | 2 Day Air | NY | 148–149 | 149 | ORANGE | NY 148 1 → GOLD | 2 Day Air NY 149 goes to ORANGE. | En Aéreo 2 días, NY 149 va a ORANGE. |
+| D34 | 2 Day Air | * | 498–599 | 500 | PURPLE | No listed numeric different-belt exception in this source range. | 2 Day Air routing code 500 goes to PURPLE. | En Aéreo 2 días, el código de ruta 500 va a PURPLE. |
+| D36 | 2 Day Air | * | 640–729 | 640 | PURPLE | No listed numeric different-belt exception in this source range. | 2 Day Air routing code 640 goes to PURPLE. | En Aéreo 2 días, el código de ruta 640 va a PURPLE. |
+| D40 | 2 Day Air | * | 750–999 | 750 | PURPLE | No listed numeric different-belt exception in this source range. | 2 Day Air routing code 750 goes to PURPLE. | En Aéreo 2 días, el código de ruta 750 va a PURPLE. |
+| N24 | Next Day Air | * | 220–999 | 220 | PURPLE | No listed numeric different-belt exception in this source range. | Next Day Air routing code 220 goes to PURPLE. | En Aéreo 1 día, el código de ruta 220 va a PURPLE. |
+
+- [ ] Owner approves all20 specific example codes and their English feedback.
+- [ ] Owner approves all20 specific example codes and their Spanish feedback.
 
 ## Current wording counts
 
-Including the original 17: 263 English and 263 Spanish explanations are approved, with 20 pending in each language. Only broad-range presentation/wording remains; listed exact-code precedence across different printed state labels is settled. All 283 answers/difficulty labels are unchanged. Only work-methods tie-question content is deferred; other tie-break policies remain unchanged.
+Including the original 17: 263 English and 263 Spanish explanations are approved, with 20 pending in each language. The remaining20 now have proposed concrete example codes and bilingual feedback. Cross-state listed-exception priority and specific-code presentation strategy are settled; final example/copy approval and canonical/runtime validation remain open. All 283 answers/difficulty labels are unchanged. Only work-methods tie-question content is deferred; other tie-break policies remain unchanged.
