@@ -2,12 +2,12 @@
   "status": "Review-only inventory; not an executable or owner-approved full Ranked bank",
   "sourceRevision": "twilight-2026-11-08-r2",
   "existingApprovalsPreserved": 17,
-  "remainingDifficultyReviews": 210,
+  "remainingDifficultyReviews": 202,
   "scopeNote": "Every source row plus four explicit NY109 destination+1 service contexts. Raw review entries can require canonical merges/splits or clarified exception scope; not a proven unique-question count.",
   "countsByService": {
     "Ground": {
-      "owner-approved": 65,
-      "proposed": 24
+      "owner-approved": 73,
+      "proposed": 16
     },
     "3 Day Select": {
       "proposed": 82,
@@ -1205,12 +1205,13 @@
       "expectedBelt": "PINK",
       "provenance": "photo",
       "destinationModifier": null,
-      "difficulty": "Medium",
-      "difficultyStatus": "proposed",
-      "difficultyReason": "Narrow/boundary-sensitive range or named non-ZIP destination.",
+      "difficulty": "Easy",
+      "difficultyStatus": "owner-approved",
+      "difficultyReason": "Owner explicitly classified this batch as Easy, superseding the draft Medium/Hard labels; wording/explanations remain pending.",
       "wordingStatus": "not-yet-reviewed",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
-      "reviewNotes": []
+      "reviewNotes": [],
+      "approvedReview": "G57"
     },
     {
       "id": "ground-exceptions-nj-0703",
@@ -1221,12 +1222,13 @@
       "expectedBelt": "RED",
       "provenance": "photo",
       "destinationModifier": null,
-      "difficulty": "Hard",
-      "difficultyStatus": "proposed",
-      "difficultyReason": "Specific exception, exact-code qualifier, suffix, or destination modifier.",
+      "difficulty": "Easy",
+      "difficultyStatus": "owner-approved",
+      "difficultyReason": "Owner explicitly classified this batch as Easy, superseding the draft Medium/Hard labels; wording/explanations remain pending.",
       "wordingStatus": "not-yet-reviewed",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
-      "reviewNotes": []
+      "reviewNotes": [],
+      "approvedReview": "G58"
     },
     {
       "id": "ground-exceptions-nj-0709",
@@ -1237,12 +1239,13 @@
       "expectedBelt": "RED",
       "provenance": "photo",
       "destinationModifier": null,
-      "difficulty": "Hard",
-      "difficultyStatus": "proposed",
-      "difficultyReason": "Specific exception, exact-code qualifier, suffix, or destination modifier.",
+      "difficulty": "Easy",
+      "difficultyStatus": "owner-approved",
+      "difficultyReason": "Owner explicitly classified this batch as Easy, superseding the draft Medium/Hard labels; wording/explanations remain pending.",
       "wordingStatus": "not-yet-reviewed",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
-      "reviewNotes": []
+      "reviewNotes": [],
+      "approvedReview": "G59"
     },
     {
       "id": "ground-exceptions-nj-0759",
@@ -1253,12 +1256,13 @@
       "expectedBelt": "RED",
       "provenance": "photo",
       "destinationModifier": null,
-      "difficulty": "Hard",
-      "difficultyStatus": "proposed",
-      "difficultyReason": "Specific exception, exact-code qualifier, suffix, or destination modifier.",
+      "difficulty": "Easy",
+      "difficultyStatus": "owner-approved",
+      "difficultyReason": "Owner explicitly classified this batch as Easy, superseding the draft Medium/Hard labels; wording/explanations remain pending.",
       "wordingStatus": "not-yet-reviewed",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
-      "reviewNotes": []
+      "reviewNotes": [],
+      "approvedReview": "G60"
     },
     {
       "id": "ground-exceptions-nj-0769",
@@ -1269,12 +1273,13 @@
       "expectedBelt": "RED",
       "provenance": "photo",
       "destinationModifier": null,
-      "difficulty": "Hard",
-      "difficultyStatus": "proposed",
-      "difficultyReason": "Specific exception, exact-code qualifier, suffix, or destination modifier.",
+      "difficulty": "Easy",
+      "difficultyStatus": "owner-approved",
+      "difficultyReason": "Owner explicitly classified this batch as Easy, superseding the draft Medium/Hard labels; wording/explanations remain pending.",
       "wordingStatus": "not-yet-reviewed",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
-      "reviewNotes": []
+      "reviewNotes": [],
+      "approvedReview": "G61"
     },
     {
       "id": "ground-exceptions-nj-0770",
@@ -1285,12 +1290,13 @@
       "expectedBelt": "RED",
       "provenance": "photo",
       "destinationModifier": null,
-      "difficulty": "Hard",
-      "difficultyStatus": "proposed",
-      "difficultyReason": "Specific exception, exact-code qualifier, suffix, or destination modifier.",
+      "difficulty": "Easy",
+      "difficultyStatus": "owner-approved",
+      "difficultyReason": "Owner explicitly classified this batch as Easy, superseding the draft Medium/Hard labels; wording/explanations remain pending.",
       "wordingStatus": "not-yet-reviewed",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
-      "reviewNotes": []
+      "reviewNotes": [],
+      "approvedReview": "G62"
     },
     {
       "id": "ground-exceptions-nj-0784",
@@ -1301,12 +1307,13 @@
       "expectedBelt": "RED",
       "provenance": "owner-override-3",
       "destinationModifier": null,
-      "difficulty": "Hard",
-      "difficultyStatus": "proposed",
-      "difficultyReason": "Specific exception, exact-code qualifier, suffix, or destination modifier.",
+      "difficulty": "Easy",
+      "difficultyStatus": "owner-approved",
+      "difficultyReason": "Owner explicitly classified this batch as Easy, superseding the draft Medium/Hard labels; wording/explanations remain pending.",
       "wordingStatus": "not-yet-reviewed",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
-      "reviewNotes": []
+      "reviewNotes": [],
+      "approvedReview": "G63"
     },
     {
       "id": "ground-exceptions-nj-0789",
@@ -1317,12 +1324,13 @@
       "expectedBelt": "RED",
       "provenance": "photo",
       "destinationModifier": null,
-      "difficulty": "Hard",
-      "difficultyStatus": "proposed",
-      "difficultyReason": "Specific exception, exact-code qualifier, suffix, or destination modifier.",
+      "difficulty": "Easy",
+      "difficultyStatus": "owner-approved",
+      "difficultyReason": "Owner explicitly classified this batch as Easy, superseding the draft Medium/Hard labels; wording/explanations remain pending.",
       "wordingStatus": "not-yet-reviewed",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
-      "reviewNotes": []
+      "reviewNotes": [],
+      "approvedReview": "G64"
     },
     {
       "id": "ground-exceptions-nj-0799",
@@ -1333,9 +1341,9 @@
       "expectedBelt": "ORANGE",
       "provenance": "owner-override-3",
       "destinationModifier": null,
-      "difficulty": "Hard",
+      "difficulty": "Medium",
       "difficultyStatus": "proposed",
-      "difficultyReason": "Specific exception, exact-code qualifier, suffix, or destination modifier.",
+      "difficultyReason": "Assistant revised this proposal after the owner rated the preceding NJ batch Easy; ORANGE079 9 is proposed Medium. This is not owner approval.",
       "wordingStatus": "not-yet-reviewed",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": []
@@ -1349,9 +1357,9 @@
       "expectedBelt": "RED",
       "provenance": "photo",
       "destinationModifier": null,
-      "difficulty": "Hard",
+      "difficulty": "Easy",
       "difficultyStatus": "proposed",
-      "difficultyReason": "Specific exception, exact-code qualifier, suffix, or destination modifier.",
+      "difficultyReason": "Assistant revised this proposal after the owner rated the preceding NJ batch Easy; ORANGE079 9 is proposed Medium. This is not owner approval.",
       "wordingStatus": "not-yet-reviewed",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": []
@@ -1365,9 +1373,9 @@
       "expectedBelt": "RED",
       "provenance": "owner-override-3",
       "destinationModifier": null,
-      "difficulty": "Hard",
+      "difficulty": "Easy",
       "difficultyStatus": "proposed",
-      "difficultyReason": "Specific exception, exact-code qualifier, suffix, or destination modifier.",
+      "difficultyReason": "Assistant revised this proposal after the owner rated the preceding NJ batch Easy; ORANGE079 9 is proposed Medium. This is not owner approval.",
       "wordingStatus": "not-yet-reviewed",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": []
@@ -1381,9 +1389,9 @@
       "expectedBelt": "RED",
       "provenance": "owner-override-3",
       "destinationModifier": null,
-      "difficulty": "Hard",
+      "difficulty": "Easy",
       "difficultyStatus": "proposed",
-      "difficultyReason": "Specific exception, exact-code qualifier, suffix, or destination modifier.",
+      "difficultyReason": "Assistant revised this proposal after the owner rated the preceding NJ batch Easy; ORANGE079 9 is proposed Medium. This is not owner approval.",
       "wordingStatus": "not-yet-reviewed",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": []
@@ -1397,9 +1405,9 @@
       "expectedBelt": "RED",
       "provenance": "photo",
       "destinationModifier": null,
-      "difficulty": "Hard",
+      "difficulty": "Easy",
       "difficultyStatus": "proposed",
-      "difficultyReason": "Specific exception, exact-code qualifier, suffix, or destination modifier.",
+      "difficultyReason": "Assistant revised this proposal after the owner rated the preceding NJ batch Easy; ORANGE079 9 is proposed Medium. This is not owner approval.",
       "wordingStatus": "not-yet-reviewed",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": []
@@ -1413,9 +1421,9 @@
       "expectedBelt": "RED",
       "provenance": "photo",
       "destinationModifier": null,
-      "difficulty": "Hard",
+      "difficulty": "Easy",
       "difficultyStatus": "proposed",
-      "difficultyReason": "Specific exception, exact-code qualifier, suffix, or destination modifier.",
+      "difficultyReason": "Assistant revised this proposal after the owner rated the preceding NJ batch Easy; ORANGE079 9 is proposed Medium. This is not owner approval.",
       "wordingStatus": "not-yet-reviewed",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": []
@@ -1429,9 +1437,9 @@
       "expectedBelt": "RED",
       "provenance": "photo",
       "destinationModifier": null,
-      "difficulty": "Hard",
+      "difficulty": "Easy",
       "difficultyStatus": "proposed",
-      "difficultyReason": "Specific exception, exact-code qualifier, suffix, or destination modifier.",
+      "difficultyReason": "Assistant revised this proposal after the owner rated the preceding NJ batch Easy; ORANGE079 9 is proposed Medium. This is not owner approval.",
       "wordingStatus": "not-yet-reviewed",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": []
@@ -1445,9 +1453,9 @@
       "expectedBelt": "RED",
       "provenance": "photo",
       "destinationModifier": null,
-      "difficulty": "Hard",
+      "difficulty": "Easy",
       "difficultyStatus": "proposed",
-      "difficultyReason": "Specific exception, exact-code qualifier, suffix, or destination modifier.",
+      "difficultyReason": "Assistant revised this proposal after the owner rated the preceding NJ batch Easy; ORANGE079 9 is proposed Medium. This is not owner approval.",
       "wordingStatus": "not-yet-reviewed",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": []
@@ -5030,5 +5038,5 @@
       "holdReason": "CHECK does not establish a belt; use listed NJ preload exceptions, do not invent an unlisted answer."
     }
   ],
-  "approvedDifficultyCount": 73
+  "approvedDifficultyCount": 81
 }

@@ -9,19 +9,19 @@
 - Active source: `twilight-2026-11-08-r2`, including owner corrections.
 - 283 source rows; hold four broad NJ CHECK rows without inventing belt answers. Retain listed NJ preload exceptions.
 - 279 belt-bearing source rows plus four NY109 destination+1 service contexts =283 review entries.
-- The original17 owner-approved labels and bilingual explanations are preserved. Another56 labels are approved, for73 approved labels and210 remaining difficulty proposals. The additional56 still need wording/explanation review. Existing source rows are not a proven final unique-scenario count.
+- The original17 owner-approved labels and bilingual explanations are preserved. Another64 labels are approved, for81 approved labels and202 remaining difficulty proposals. The additional64 still need wording/explanation review. Existing source rows are not a proven final unique-scenario count.
 - Question wording, exception exclusions, wildcard coverage and compound final-digit shorthand still need review for new entries. A suggestion of Easy never removes an applicable exception.
 - The game still selects15 questions, five per difficulty; expanding the bank increases the possible selections. No17-question runtime limit or fixed-ten-question repetition design remains.
 - Only the work-methods tie-question content is deferred; other tie-break policies remain unchanged.
 
 | Service | Approved difficulty labels | New difficulty proposals |
 | --- | --- | --- |
-| Ground | 65 | 24 |
+| Ground | 73 | 16 |
 | 3 Day Select | 3 | 82 |
 | 2 Day Air | 5 | 60 |
 | Next Day Air | 0 | 44 |
 
-Proposed-label totals for new entries: Easy0, Medium109, Hard101. These are draft classifications requiring owner review, not new settled counts.
+Proposed-label totals for remaining entries: Easy 7, Medium 109, Hard 86. These are draft classifications requiring owner review, not new settled counts.
 
 ## Previously approved — do not rank again
 
@@ -105,27 +105,27 @@ Proposed-label totals for new entries: Easy0, Medium109, Hard101. These are draf
 | G54 | `ground-main-ak-995-999` | Ground | AK 995–999 | BROWN | Easy |
 | G55 | `ground-main-mex-mexico` | Ground | MEX MEXICO | GREEN | Medium |
 | G56 | `ground-main-can-canada` | Ground | CAN CANADA | PURPLE | Medium |
+| G57 | `ground-main-pri-pr` | Ground | PRI PR | PINK | Easy |
+| G58 | `ground-exceptions-nj-0703` | Ground | NJ 070 3 | RED | Easy |
+| G59 | `ground-exceptions-nj-0709` | Ground | NJ 070 9 | RED | Easy |
+| G60 | `ground-exceptions-nj-0759` | Ground | NJ 075 9 | RED | Easy |
+| G61 | `ground-exceptions-nj-0769` | Ground | NJ 076 9 | RED | Easy |
+| G62 | `ground-exceptions-nj-0770` | Ground | NJ 077 0 | RED | Easy |
+| G63 | `ground-exceptions-nj-0784` | Ground | NJ 078 4 | RED | Easy |
+| G64 | `ground-exceptions-nj-0789` | Ground | NJ 078 9 | RED | Easy |
 
 ## Ground — new proposals only
 
 | Source review ID | State / route | Answer | Proposed difficulty | Review note |
 | --- | --- | --- | --- | --- |
-| `ground-main-pri-pr` | PRI PR | PINK | Medium | Narrow/boundary-sensitive range or named non-ZIP destination. |
-| `ground-exceptions-nj-0703` | NJ 070 3 | RED | Hard | Specific exception, exact-code qualifier, suffix, or destination modifier. |
-| `ground-exceptions-nj-0709` | NJ 070 9 | RED | Hard | Specific exception, exact-code qualifier, suffix, or destination modifier. |
-| `ground-exceptions-nj-0759` | NJ 075 9 | RED | Hard | Specific exception, exact-code qualifier, suffix, or destination modifier. |
-| `ground-exceptions-nj-0769` | NJ 076 9 | RED | Hard | Specific exception, exact-code qualifier, suffix, or destination modifier. |
-| `ground-exceptions-nj-0770` | NJ 077 0 | RED | Hard | Specific exception, exact-code qualifier, suffix, or destination modifier. |
-| `ground-exceptions-nj-0784` | NJ 078 4 | RED | Hard | Specific exception, exact-code qualifier, suffix, or destination modifier. |
-| `ground-exceptions-nj-0789` | NJ 078 9 | RED | Hard | Specific exception, exact-code qualifier, suffix, or destination modifier. |
-| `ground-exceptions-nj-0799` | NJ 079 9 | ORANGE | Hard | Specific exception, exact-code qualifier, suffix, or destination modifier. |
-| `ground-exceptions-nj-0819` | NJ 081 9 | RED | Hard | Specific exception, exact-code qualifier, suffix, or destination modifier. |
-| `ground-exceptions-nj-0829` | NJ 082 9 | RED | Hard | Specific exception, exact-code qualifier, suffix, or destination modifier. |
-| `ground-exceptions-nj-0839` | NJ 083 9 | RED | Hard | Specific exception, exact-code qualifier, suffix, or destination modifier. |
-| `ground-exceptions-nj-0860` | NJ 086 0 | RED | Hard | Specific exception, exact-code qualifier, suffix, or destination modifier. |
-| `ground-exceptions-nj-0871` | NJ 087 1 | RED | Hard | Specific exception, exact-code qualifier, suffix, or destination modifier. |
-| `ground-exceptions-nj-0889` | NJ 088 9 | RED | Hard | Specific exception, exact-code qualifier, suffix, or destination modifier. |
-| `ground-exceptions-nj-0899` | NJ 089 9 | RED | Hard | Specific exception, exact-code qualifier, suffix, or destination modifier. |
+| `ground-exceptions-nj-0799` | NJ 079 9 | ORANGE | Medium | Assistant revised this proposal after the owner rated the preceding NJ batch Easy; ORANGE079 9 is proposed Medium. This is not owner approval. |
+| `ground-exceptions-nj-0819` | NJ 081 9 | RED | Easy | Assistant revised this proposal after the owner rated the preceding NJ batch Easy; ORANGE079 9 is proposed Medium. This is not owner approval. |
+| `ground-exceptions-nj-0829` | NJ 082 9 | RED | Easy | Assistant revised this proposal after the owner rated the preceding NJ batch Easy; ORANGE079 9 is proposed Medium. This is not owner approval. |
+| `ground-exceptions-nj-0839` | NJ 083 9 | RED | Easy | Assistant revised this proposal after the owner rated the preceding NJ batch Easy; ORANGE079 9 is proposed Medium. This is not owner approval. |
+| `ground-exceptions-nj-0860` | NJ 086 0 | RED | Easy | Assistant revised this proposal after the owner rated the preceding NJ batch Easy; ORANGE079 9 is proposed Medium. This is not owner approval. |
+| `ground-exceptions-nj-0871` | NJ 087 1 | RED | Easy | Assistant revised this proposal after the owner rated the preceding NJ batch Easy; ORANGE079 9 is proposed Medium. This is not owner approval. |
+| `ground-exceptions-nj-0889` | NJ 088 9 | RED | Easy | Assistant revised this proposal after the owner rated the preceding NJ batch Easy; ORANGE079 9 is proposed Medium. This is not owner approval. |
+| `ground-exceptions-nj-0899` | NJ 089 9 | RED | Easy | Assistant revised this proposal after the owner rated the preceding NJ batch Easy; ORANGE079 9 is proposed Medium. This is not owner approval. |
 | `ground-exceptions-ne-5753-6` | NE 575 3-6 | ORANGE | Hard | Compound final-digit shorthand: preserve source; do not infer an expanded numeric range. |
 | `ground-exceptions-nv-8339-7` | NV 833 9-7 | ORANGE | Hard | Compound final-digit shorthand: preserve source; do not infer an expanded numeric range. |
 | `ground-exceptions-az-8472-7` | AZ 847 2-7 | BLUE | Hard | Compound final-digit shorthand: preserve source; do not infer an expanded numeric range. |
@@ -347,4 +347,4 @@ Proposed-label totals for new entries: Easy0, Medium109, Hard101. These are draf
 
 ## Read-only inventory validation
 
-Validated all283 fixture IDs are accounted for exactly once as a source entry or held CHECK row; the four+1 contexts are additional explicit entries. All17 prior review references map exactly once with their original answer, difficulty and approval status preserved. The initial266 new-label proposals now contain 56 owner-approved labels and210 remaining proposals. There are no duplicate review IDs. Counts are inventory evidence, not executable-bank validation, content approval, hosted CI or deployment.
+Validated all283 fixture IDs are accounted for exactly once as a source entry or held CHECK row; the four+1 contexts are additional explicit entries. All17 prior review references map exactly once with their original answer, difficulty and approval status preserved. The initial266 new-label proposals now contain 64 owner-approved labels and202 remaining proposals. There are no duplicate review IDs. Counts are inventory evidence, not executable-bank validation, content approval, hosted CI or deployment.
