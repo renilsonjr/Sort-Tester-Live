@@ -9,7 +9,7 @@
 - Active source: `twilight-2026-11-08-r2`, including owner corrections.
 - 283 source rows; hold four broad NJ CHECK rows without inventing belt answers. Retain listed NJ preload exceptions.
 - 279 belt-bearing source rows plus four NY109 destination+1 service contexts =283 review entries.
-- The original 17 owner-approved labels and bilingual explanations are preserved. Another 96 labels are approved, for 113 approved labels and 170 remaining difficulty proposals. Those additional labels still need wording/explanation review. Source rows are not a proven final unique-scenario count.
+- The original 17 owner-approved labels and bilingual explanations are preserved. Another 104 labels are approved, for 121 approved labels and 162 remaining difficulty proposals. Those additional labels still need wording/explanation review. Source rows are not a proven final unique-scenario count.
 - Question wording, exception exclusions, wildcard coverage and compound final-digit shorthand still need review for new entries. A suggestion of Easy never removes an applicable exception.
 - The game still selects15 questions, five per difficulty; expanding the bank increases the possible selections. No17-question runtime limit or fixed-ten-question repetition design remains.
 - Only the work-methods tie-question content is deferred; other tie-break policies remain unchanged.
@@ -17,11 +17,11 @@
 | Service | Approved difficulty labels | New difficulty proposals |
 | --- | --- | --- |
 | Ground | 89 | 0 |
-| 3 Day Select | 19 | 66 |
+| 3 Day Select | 27 | 58 |
 | 2 Day Air | 5 | 60 |
 | Next Day Air | 0 | 44 |
 
-Proposed-label totals for remaining entries: Easy 0, Medium 93, Hard 77. These are draft classifications requiring owner review, not settled counts.
+Proposed-label totals for remaining entries: Easy 0, Medium 85, Hard 77. These are draft classifications requiring owner review, not settled counts.
 
 ## Previously approved — do not rank again
 
@@ -145,6 +145,14 @@ Proposed-label totals for remaining entries: Easy 0, Medium 93, Hard 77. These a
 | S14 | `3dayselect-main-ny-128-139` | 3 Day Select | NY 128–139 | GOLD | Medium |
 | S15 | `3dayselect-main-ny-140-147` | 3 Day Select | NY 140–147 | ORANGE | Medium |
 | S16 | `3dayselect-main-ny-148-149` | 3 Day Select | NY 148–149 | ORANGE | Medium |
+| S17 | `3dayselect-main-pa-150-167` | 3 Day Select | PA 150–167 | GREEN | Medium |
+| S18 | `3dayselect-main-pa-168-178` | 3 Day Select | PA 168–178 | GREEN | Medium |
+| S19 | `3dayselect-main-pa-179-189` | 3 Day Select | PA 179–189 | GREEN | Medium |
+| S20 | `3dayselect-main-pa-190-194` | 3 Day Select | PA 190–194 | ORANGE | Medium |
+| S21 | `3dayselect-main-pade-195-199` | 3 Day Select | PA, DE 195–199 | GREEN | Medium |
+| S22 | `3dayselect-main-dcmd-200-219` | 3 Day Select | DC, MD 200–219 | GREEN | Medium |
+| S23 | `3dayselect-main-va-220-238` | 3 Day Select | VA 220–238 | YELLOW | Medium |
+| S24 | `3dayselect-main-vawv-239-269` | 3 Day Select | VA, WV 239–269 | YELLOW | Medium |
 
 ## Ground — new proposals only
 
@@ -155,14 +163,6 @@ Proposed-label totals for remaining entries: Easy 0, Medium 93, Hard 77. These a
 
 | Source review ID | State / route | Answer | Proposed difficulty | Review note |
 | --- | --- | --- | --- | --- |
-| `3dayselect-main-pa-150-167` | PA 150–167 | GREEN | Medium | Check applicable exceptions and effective coverage before approving broad-range wording. |
-| `3dayselect-main-pa-168-178` | PA 168–178 | GREEN | Medium | Check applicable exceptions and effective coverage before approving broad-range wording. |
-| `3dayselect-main-pa-179-189` | PA 179–189 | GREEN | Medium | Check applicable exceptions and effective coverage before approving broad-range wording. |
-| `3dayselect-main-pa-190-194` | PA 190–194 | ORANGE | Medium | Check applicable exceptions and effective coverage before approving broad-range wording. |
-| `3dayselect-main-pade-195-199` | PA, DE 195–199 | GREEN | Medium | Check applicable exceptions and effective coverage before approving broad-range wording. |
-| `3dayselect-main-dcmd-200-219` | DC, MD 200–219 | GREEN | Medium | Check applicable exceptions and effective coverage before approving broad-range wording. |
-| `3dayselect-main-va-220-238` | VA 220–238 | YELLOW | Medium | Check applicable exceptions and effective coverage before approving broad-range wording. |
-| `3dayselect-main-vawv-239-269` | VA, WV 239–269 | YELLOW | Medium | Check applicable exceptions and effective coverage before approving broad-range wording. |
 | `3dayselect-main-ncsc-270-299` | NC, SC 270–299 | YELLOW | Medium | Check applicable exceptions and effective coverage before approving broad-range wording. |
 | `3dayselect-main-ga-300-319` | GA 300–319 | BLUE | Medium | Check applicable exceptions and effective coverage before approving broad-range wording. |
 | `3dayselect-main-fl-320-349` | FL 320–349 | PINK | Medium | Check applicable exceptions and effective coverage before approving broad-range wording. |
@@ -347,4 +347,4 @@ Proposed-label totals for remaining entries: Easy 0, Medium 93, Hard 77. These a
 
 ## Read-only inventory validation
 
-Validated all283 fixture IDs are accounted for exactly once as a source entry or held CHECK row; the four+1 contexts are additional explicit entries. All17 prior review references map exactly once with their original answer, difficulty and approval status preserved. The initial 266 new-label proposals now contain 96 owner-approved labels and 170 remaining proposals. There are no duplicate review IDs. Counts are inventory evidence, not executable-bank validation, content approval, hosted CI or deployment.
+Validated all283 fixture IDs are accounted for exactly once as a source entry or held CHECK row; the four+1 contexts are additional explicit entries. All17 prior review references map exactly once with their original answer, difficulty and approval status preserved. The initial 266 new-label proposals now contain 104 owner-approved labels and 162 remaining proposals. There are no duplicate review IDs. Counts are inventory evidence, not executable-bank validation, content approval, hosted CI or deployment.
