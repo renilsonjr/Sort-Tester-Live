@@ -21,7 +21,7 @@
 | 2 Day Air | 45 | 20 |
 | Next Day Air | 0 | 44 |
 
-Proposed-label totals for remaining entries: Easy 0, Medium 25, Hard 39. These are draft classifications requiring owner review, not settled counts.
+Proposed-label totals for remaining entries: Easy 14, Medium 26, Hard 24. These are draft classifications requiring owner review, not settled counts.
 
 ## Previously approved — do not rank again
 
@@ -267,21 +267,21 @@ Proposed-label totals for remaining entries: Easy 0, Medium 25, Hard 39. These a
 | Source review ID | State / route | Answer | Proposed difficulty | Review note |
 | --- | --- | --- | --- | --- |
 | `2dayair-main-all-world` | * WORLD | PURPLE | Medium | Wildcard fallback: explicitly exclude specific overrides; not a duplicate of a named-state row by text alone. |
-| `2dayair-exceptions-nj-0703` | NJ 070 3 | RED | Hard | Specific exception, exact-code qualifier, suffix, or destination modifier. |
-| `2dayair-exceptions-nj-0709` | NJ 070 9 | RED | Hard | Specific exception, exact-code qualifier, suffix, or destination modifier. |
-| `2dayair-exceptions-nj-0759` | NJ 075 9 | RED | Hard | Specific exception, exact-code qualifier, suffix, or destination modifier. |
-| `2dayair-exceptions-nj-0769` | NJ 076 9 | RED | Hard | Specific exception, exact-code qualifier, suffix, or destination modifier. |
-| `2dayair-exceptions-nj-0770` | NJ 077 0 | RED | Hard | Specific exception, exact-code qualifier, suffix, or destination modifier. |
-| `2dayair-exceptions-nj-0784` | NJ 078 4 | RED | Hard | Specific exception, exact-code qualifier, suffix, or destination modifier. |
-| `2dayair-exceptions-nj-0789` | NJ 078 9 | RED | Hard | Specific exception, exact-code qualifier, suffix, or destination modifier. |
-| `2dayair-exceptions-nj-0799` | NJ 079 9 | ORANGE | Hard | Specific exception, exact-code qualifier, suffix, or destination modifier. |
-| `2dayair-exceptions-nj-0819` | NJ 081 9 | RED | Hard | Specific exception, exact-code qualifier, suffix, or destination modifier. |
-| `2dayair-exceptions-nj-0829` | NJ 082 9 | RED | Hard | Specific exception, exact-code qualifier, suffix, or destination modifier. |
-| `2dayair-exceptions-nj-0839` | NJ 083 9 | RED | Hard | Specific exception, exact-code qualifier, suffix, or destination modifier. |
-| `2dayair-exceptions-nj-0860` | NJ 086 0 | RED | Hard | Specific exception, exact-code qualifier, suffix, or destination modifier. |
-| `2dayair-exceptions-nj-0871` | NJ 087 1 | RED | Hard | Specific exception, exact-code qualifier, suffix, or destination modifier. |
-| `2dayair-exceptions-nj-0889` | NJ 088 9 | RED | Hard | Specific exception, exact-code qualifier, suffix, or destination modifier. |
-| `2dayair-exceptions-nj-0899` | NJ 089 9 | RED | Hard | Specific exception, exact-code qualifier, suffix, or destination modifier. |
+| `2dayair-exceptions-nj-0703` | NJ 070 3 | RED | Easy | Assistant proposal consistent with owner-reviewed Ground/3DS NJ levels: RED preloads Easy, ORANGE079 9 Medium. Approval for2DA remains pending. |
+| `2dayair-exceptions-nj-0709` | NJ 070 9 | RED | Easy | Assistant proposal consistent with owner-reviewed Ground/3DS NJ levels: RED preloads Easy, ORANGE079 9 Medium. Approval for2DA remains pending. |
+| `2dayair-exceptions-nj-0759` | NJ 075 9 | RED | Easy | Assistant proposal consistent with owner-reviewed Ground/3DS NJ levels: RED preloads Easy, ORANGE079 9 Medium. Approval for2DA remains pending. |
+| `2dayair-exceptions-nj-0769` | NJ 076 9 | RED | Easy | Assistant proposal consistent with owner-reviewed Ground/3DS NJ levels: RED preloads Easy, ORANGE079 9 Medium. Approval for2DA remains pending. |
+| `2dayair-exceptions-nj-0770` | NJ 077 0 | RED | Easy | Assistant proposal consistent with owner-reviewed Ground/3DS NJ levels: RED preloads Easy, ORANGE079 9 Medium. Approval for2DA remains pending. |
+| `2dayair-exceptions-nj-0784` | NJ 078 4 | RED | Easy | Assistant proposal consistent with owner-reviewed Ground/3DS NJ levels: RED preloads Easy, ORANGE079 9 Medium. Approval for2DA remains pending. |
+| `2dayair-exceptions-nj-0789` | NJ 078 9 | RED | Easy | Assistant proposal consistent with owner-reviewed Ground/3DS NJ levels: RED preloads Easy, ORANGE079 9 Medium. Approval for2DA remains pending. |
+| `2dayair-exceptions-nj-0799` | NJ 079 9 | ORANGE | Medium | Assistant proposal consistent with owner-reviewed Ground/3DS NJ levels: RED preloads Easy, ORANGE079 9 Medium. Approval for2DA remains pending. |
+| `2dayair-exceptions-nj-0819` | NJ 081 9 | RED | Easy | Assistant proposal consistent with owner-reviewed Ground/3DS NJ levels: RED preloads Easy, ORANGE079 9 Medium. Approval for2DA remains pending. |
+| `2dayair-exceptions-nj-0829` | NJ 082 9 | RED | Easy | Assistant proposal consistent with owner-reviewed Ground/3DS NJ levels: RED preloads Easy, ORANGE079 9 Medium. Approval for2DA remains pending. |
+| `2dayair-exceptions-nj-0839` | NJ 083 9 | RED | Easy | Assistant proposal consistent with owner-reviewed Ground/3DS NJ levels: RED preloads Easy, ORANGE079 9 Medium. Approval for2DA remains pending. |
+| `2dayair-exceptions-nj-0860` | NJ 086 0 | RED | Easy | Assistant proposal consistent with owner-reviewed Ground/3DS NJ levels: RED preloads Easy, ORANGE079 9 Medium. Approval for2DA remains pending. |
+| `2dayair-exceptions-nj-0871` | NJ 087 1 | RED | Easy | Assistant proposal consistent with owner-reviewed Ground/3DS NJ levels: RED preloads Easy, ORANGE079 9 Medium. Approval for2DA remains pending. |
+| `2dayair-exceptions-nj-0889` | NJ 088 9 | RED | Easy | Assistant proposal consistent with owner-reviewed Ground/3DS NJ levels: RED preloads Easy, ORANGE079 9 Medium. Approval for2DA remains pending. |
+| `2dayair-exceptions-nj-0899` | NJ 089 9 | RED | Easy | Assistant proposal consistent with owner-reviewed Ground/3DS NJ levels: RED preloads Easy, ORANGE079 9 Medium. Approval for2DA remains pending. |
 | `2dayair-exceptions-ny-1481` | NY 148 1 | GOLD | Hard | Specific exception, exact-code qualifier, suffix, or destination modifier. |
 | `2dayair-exceptions-anystate-ends2s` | Any state ends 2S | BLUE | Hard | Specific exception, exact-code qualifier, suffix, or destination modifier. |
 | `2dayair-exceptions-anystate-ends1s` | Any state ends 1S | PURPLE | Hard | Specific exception, exact-code qualifier, suffix, or destination modifier. |
