@@ -2,7 +2,7 @@
   "status": "Review-only inventory; not an executable or owner-approved full Ranked bank",
   "sourceRevision": "twilight-2026-11-08-r2",
   "existingApprovalsPreserved": 17,
-  "remainingDifficultyReviews": 56,
+  "remainingDifficultyReviews": 48,
   "scopeNote": "Every source row plus four explicit NY109 destination+1 service contexts. Raw review entries can require canonical merges/splits or clarified exception scope; not a proven unique-question count.",
   "countsByService": {
     "Ground": {
@@ -12,8 +12,8 @@
       "owner-approved": 85
     },
     "2 Day Air": {
-      "owner-approved": 53,
-      "proposed": 12
+      "owner-approved": 61,
+      "proposed": 4
     },
     "Next Day Air": {
       "proposed": 44
@@ -4172,11 +4172,12 @@
       "provenance": "owner-override-3",
       "destinationModifier": null,
       "difficulty": "Medium",
-      "difficultyStatus": "proposed",
-      "difficultyReason": "Assistant proposal consistent with owner-reviewed Ground/3DS NJ levels: RED preloads Easy, ORANGE079 9 Medium. Approval for2DA remains pending.",
+      "difficultyStatus": "owner-approved",
+      "difficultyReason": "Owner explicitly approved this recorded difficulty; question wording, explanations and any ambiguous source notation remain pending.",
       "wordingStatus": "not-yet-reviewed",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
-      "reviewNotes": []
+      "reviewNotes": [],
+      "approvedReview": "D49"
     },
     {
       "id": "2dayair-exceptions-nj-0819",
@@ -4188,11 +4189,12 @@
       "provenance": "photo",
       "destinationModifier": null,
       "difficulty": "Easy",
-      "difficultyStatus": "proposed",
-      "difficultyReason": "Assistant proposal consistent with owner-reviewed Ground/3DS NJ levels: RED preloads Easy, ORANGE079 9 Medium. Approval for2DA remains pending.",
+      "difficultyStatus": "owner-approved",
+      "difficultyReason": "Owner explicitly approved this recorded difficulty; question wording, explanations and any ambiguous source notation remain pending.",
       "wordingStatus": "not-yet-reviewed",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
-      "reviewNotes": []
+      "reviewNotes": [],
+      "approvedReview": "D50"
     },
     {
       "id": "2dayair-exceptions-nj-0829",
@@ -4204,11 +4206,12 @@
       "provenance": "owner-override-3",
       "destinationModifier": null,
       "difficulty": "Easy",
-      "difficultyStatus": "proposed",
-      "difficultyReason": "Assistant proposal consistent with owner-reviewed Ground/3DS NJ levels: RED preloads Easy, ORANGE079 9 Medium. Approval for2DA remains pending.",
+      "difficultyStatus": "owner-approved",
+      "difficultyReason": "Owner explicitly approved this recorded difficulty; question wording, explanations and any ambiguous source notation remain pending.",
       "wordingStatus": "not-yet-reviewed",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
-      "reviewNotes": []
+      "reviewNotes": [],
+      "approvedReview": "D51"
     },
     {
       "id": "2dayair-exceptions-nj-0839",
@@ -4220,11 +4223,12 @@
       "provenance": "owner-override-3",
       "destinationModifier": null,
       "difficulty": "Easy",
-      "difficultyStatus": "proposed",
-      "difficultyReason": "Assistant proposal consistent with owner-reviewed Ground/3DS NJ levels: RED preloads Easy, ORANGE079 9 Medium. Approval for2DA remains pending.",
+      "difficultyStatus": "owner-approved",
+      "difficultyReason": "Owner explicitly approved this recorded difficulty; question wording, explanations and any ambiguous source notation remain pending.",
       "wordingStatus": "not-yet-reviewed",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
-      "reviewNotes": []
+      "reviewNotes": [],
+      "approvedReview": "D52"
     },
     {
       "id": "2dayair-exceptions-nj-0860",
@@ -4236,11 +4240,12 @@
       "provenance": "photo",
       "destinationModifier": null,
       "difficulty": "Easy",
-      "difficultyStatus": "proposed",
-      "difficultyReason": "Assistant proposal consistent with owner-reviewed Ground/3DS NJ levels: RED preloads Easy, ORANGE079 9 Medium. Approval for2DA remains pending.",
+      "difficultyStatus": "owner-approved",
+      "difficultyReason": "Owner explicitly approved this recorded difficulty; question wording, explanations and any ambiguous source notation remain pending.",
       "wordingStatus": "not-yet-reviewed",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
-      "reviewNotes": []
+      "reviewNotes": [],
+      "approvedReview": "D53"
     },
     {
       "id": "2dayair-exceptions-nj-0871",
@@ -4252,11 +4257,12 @@
       "provenance": "photo",
       "destinationModifier": null,
       "difficulty": "Easy",
-      "difficultyStatus": "proposed",
-      "difficultyReason": "Assistant proposal consistent with owner-reviewed Ground/3DS NJ levels: RED preloads Easy, ORANGE079 9 Medium. Approval for2DA remains pending.",
+      "difficultyStatus": "owner-approved",
+      "difficultyReason": "Owner explicitly approved this recorded difficulty; question wording, explanations and any ambiguous source notation remain pending.",
       "wordingStatus": "not-yet-reviewed",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
-      "reviewNotes": []
+      "reviewNotes": [],
+      "approvedReview": "D54"
     },
     {
       "id": "2dayair-exceptions-nj-0889",
@@ -4268,11 +4274,12 @@
       "provenance": "photo",
       "destinationModifier": null,
       "difficulty": "Easy",
-      "difficultyStatus": "proposed",
-      "difficultyReason": "Assistant proposal consistent with owner-reviewed Ground/3DS NJ levels: RED preloads Easy, ORANGE079 9 Medium. Approval for2DA remains pending.",
+      "difficultyStatus": "owner-approved",
+      "difficultyReason": "Owner explicitly approved this recorded difficulty; question wording, explanations and any ambiguous source notation remain pending.",
       "wordingStatus": "not-yet-reviewed",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
-      "reviewNotes": []
+      "reviewNotes": [],
+      "approvedReview": "D55"
     },
     {
       "id": "2dayair-exceptions-nj-0899",
@@ -4284,11 +4291,12 @@
       "provenance": "photo",
       "destinationModifier": null,
       "difficulty": "Easy",
-      "difficultyStatus": "proposed",
-      "difficultyReason": "Assistant proposal consistent with owner-reviewed Ground/3DS NJ levels: RED preloads Easy, ORANGE079 9 Medium. Approval for2DA remains pending.",
+      "difficultyStatus": "owner-approved",
+      "difficultyReason": "Owner explicitly approved this recorded difficulty; question wording, explanations and any ambiguous source notation remain pending.",
       "wordingStatus": "not-yet-reviewed",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
-      "reviewNotes": []
+      "reviewNotes": [],
+      "approvedReview": "D56"
     },
     {
       "id": "2dayair-exceptions-ny-1481",
@@ -5182,5 +5190,5 @@
       "holdReason": "CHECK does not establish a belt; use listed NJ preload exceptions, do not invent an unlisted answer."
     }
   ],
-  "approvedDifficultyCount": 227
+  "approvedDifficultyCount": 235
 }

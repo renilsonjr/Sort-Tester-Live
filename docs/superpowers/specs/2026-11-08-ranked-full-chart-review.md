@@ -9,7 +9,7 @@
 - Active source: `twilight-2026-11-08-r2`, including owner corrections.
 - 283 source rows; hold four broad NJ CHECK rows without inventing belt answers. Retain listed NJ preload exceptions.
 - 279 belt-bearing source rows plus four NY109 destination+1 service contexts =283 review entries.
-- The original 17 owner-approved labels and bilingual explanations are preserved. Another 210 labels are approved, for 227 approved labels and 56 remaining difficulty proposals. Those additional labels still need wording/explanation review. Source rows are not a proven final unique-scenario count.
+- The original 17 owner-approved labels and bilingual explanations are preserved. Another 218 labels are approved, for 235 approved labels and 48 remaining difficulty proposals. Those additional labels still need wording/explanation review. Source rows are not a proven final unique-scenario count.
 - Question wording, exception exclusions, wildcard coverage and compound final-digit shorthand still need review for new entries. A suggestion of Easy never removes an applicable exception.
 - The game still selects15 questions, five per difficulty; expanding the bank increases the possible selections. No17-question runtime limit or fixed-ten-question repetition design remains.
 - Only the work-methods tie-question content is deferred; other tie-break policies remain unchanged.
@@ -18,10 +18,10 @@
 | --- | --- | --- |
 | Ground | 89 | 0 |
 | 3 Day Select | 85 | 0 |
-| 2 Day Air | 53 | 12 |
+| 2 Day Air | 61 | 4 |
 | Next Day Air | 0 | 44 |
 
-Proposed-label totals for remaining entries: Easy 7, Medium 25, Hard 24. These are draft classifications requiring owner review, not settled counts.
+Proposed-label totals for remaining entries: Easy 0, Medium 24, Hard 24. These are draft classifications requiring owner review, not settled counts.
 
 ## Previously approved — do not rank again
 
@@ -259,6 +259,14 @@ Proposed-label totals for remaining entries: Easy 7, Medium 25, Hard 24. These a
 | D46 | `2dayair-exceptions-nj-0770` | 2 Day Air | NJ 077 0 | RED | Easy |
 | D47 | `2dayair-exceptions-nj-0784` | 2 Day Air | NJ 078 4 | RED | Easy |
 | D48 | `2dayair-exceptions-nj-0789` | 2 Day Air | NJ 078 9 | RED | Easy |
+| D49 | `2dayair-exceptions-nj-0799` | 2 Day Air | NJ 079 9 | ORANGE | Medium |
+| D50 | `2dayair-exceptions-nj-0819` | 2 Day Air | NJ 081 9 | RED | Easy |
+| D51 | `2dayair-exceptions-nj-0829` | 2 Day Air | NJ 082 9 | RED | Easy |
+| D52 | `2dayair-exceptions-nj-0839` | 2 Day Air | NJ 083 9 | RED | Easy |
+| D53 | `2dayair-exceptions-nj-0860` | 2 Day Air | NJ 086 0 | RED | Easy |
+| D54 | `2dayair-exceptions-nj-0871` | 2 Day Air | NJ 087 1 | RED | Easy |
+| D55 | `2dayair-exceptions-nj-0889` | 2 Day Air | NJ 088 9 | RED | Easy |
+| D56 | `2dayair-exceptions-nj-0899` | 2 Day Air | NJ 089 9 | RED | Easy |
 
 ## Ground — new proposals only
 
@@ -274,14 +282,6 @@ Proposed-label totals for remaining entries: Easy 7, Medium 25, Hard 24. These a
 
 | Source review ID | State / route | Answer | Proposed difficulty | Review note |
 | --- | --- | --- | --- | --- |
-| `2dayair-exceptions-nj-0799` | NJ 079 9 | ORANGE | Medium | Assistant proposal consistent with owner-reviewed Ground/3DS NJ levels: RED preloads Easy, ORANGE079 9 Medium. Approval for2DA remains pending. |
-| `2dayair-exceptions-nj-0819` | NJ 081 9 | RED | Easy | Assistant proposal consistent with owner-reviewed Ground/3DS NJ levels: RED preloads Easy, ORANGE079 9 Medium. Approval for2DA remains pending. |
-| `2dayair-exceptions-nj-0829` | NJ 082 9 | RED | Easy | Assistant proposal consistent with owner-reviewed Ground/3DS NJ levels: RED preloads Easy, ORANGE079 9 Medium. Approval for2DA remains pending. |
-| `2dayair-exceptions-nj-0839` | NJ 083 9 | RED | Easy | Assistant proposal consistent with owner-reviewed Ground/3DS NJ levels: RED preloads Easy, ORANGE079 9 Medium. Approval for2DA remains pending. |
-| `2dayair-exceptions-nj-0860` | NJ 086 0 | RED | Easy | Assistant proposal consistent with owner-reviewed Ground/3DS NJ levels: RED preloads Easy, ORANGE079 9 Medium. Approval for2DA remains pending. |
-| `2dayair-exceptions-nj-0871` | NJ 087 1 | RED | Easy | Assistant proposal consistent with owner-reviewed Ground/3DS NJ levels: RED preloads Easy, ORANGE079 9 Medium. Approval for2DA remains pending. |
-| `2dayair-exceptions-nj-0889` | NJ 088 9 | RED | Easy | Assistant proposal consistent with owner-reviewed Ground/3DS NJ levels: RED preloads Easy, ORANGE079 9 Medium. Approval for2DA remains pending. |
-| `2dayair-exceptions-nj-0899` | NJ 089 9 | RED | Easy | Assistant proposal consistent with owner-reviewed Ground/3DS NJ levels: RED preloads Easy, ORANGE079 9 Medium. Approval for2DA remains pending. |
 | `2dayair-exceptions-ny-1481` | NY 148 1 | GOLD | Hard | Specific exception, exact-code qualifier, suffix, or destination modifier. |
 | `2dayair-exceptions-anystate-ends2s` | Any state ends 2S | BLUE | Hard | Specific exception, exact-code qualifier, suffix, or destination modifier. |
 | `2dayair-exceptions-anystate-ends1s` | Any state ends 1S | PURPLE | Hard | Specific exception, exact-code qualifier, suffix, or destination modifier. |
@@ -347,4 +347,4 @@ Proposed-label totals for remaining entries: Easy 7, Medium 25, Hard 24. These a
 
 ## Read-only inventory validation
 
-Validated all283 fixture IDs are accounted for exactly once as a source entry or held CHECK row; the four+1 contexts are additional explicit entries. All17 prior review references map exactly once with their original answer, difficulty and approval status preserved. The initial 266 new-label proposals now contain 210 owner-approved labels and 56 remaining proposals. There are no duplicate review IDs. Counts are inventory evidence, not executable-bank validation, content approval, hosted CI or deployment.
+Validated all283 fixture IDs are accounted for exactly once as a source entry or held CHECK row; the four+1 contexts are additional explicit entries. All17 prior review references map exactly once with their original answer, difficulty and approval status preserved. The initial 266 new-label proposals now contain 218 owner-approved labels and 48 remaining proposals. There are no duplicate review IDs. Counts are inventory evidence, not executable-bank validation, content approval, hosted CI or deployment.
