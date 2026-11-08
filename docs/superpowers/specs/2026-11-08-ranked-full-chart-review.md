@@ -21,7 +21,7 @@
 | 2 Day Air | 5 | 60 |
 | Next Day Air | 0 | 44 |
 
-Proposed-label totals for remaining entries: Easy 0, Medium 69, Hard 77. These are draft classifications requiring owner review, not settled counts.
+Proposed-label totals for remaining entries: Easy 14, Medium 70, Hard 62. These are draft classifications requiring owner review, not settled counts.
 
 ## Previously approved — do not rank again
 
@@ -186,21 +186,21 @@ Proposed-label totals for remaining entries: Easy 0, Medium 69, Hard 77. These a
 | `3dayselect-main-tx-785-799` | TX 785–799 | PURPLE | Medium | Check applicable exceptions and effective coverage before approving broad-range wording. |
 | `3dayselect-main-co-800-810` | CO 800–810 | ORANGE | Medium | Check applicable exceptions and effective coverage before approving broad-range wording. |
 | `3dayselect-main-all-811-999` | * 811–999 | PURPLE | Medium | Check applicable exceptions and effective coverage before approving broad-range wording. Wildcard fallback: explicitly exclude specific overrides; not a duplicate of a named-state row by text alone. |
-| `3dayselect-exceptions-nj-0703` | NJ 070 3 | RED | Hard | Specific exception, exact-code qualifier, suffix, or destination modifier. |
-| `3dayselect-exceptions-nj-0709` | NJ 070 9 | RED | Hard | Specific exception, exact-code qualifier, suffix, or destination modifier. |
-| `3dayselect-exceptions-nj-0759` | NJ 075 9 | RED | Hard | Specific exception, exact-code qualifier, suffix, or destination modifier. |
-| `3dayselect-exceptions-nj-0769` | NJ 076 9 | RED | Hard | Specific exception, exact-code qualifier, suffix, or destination modifier. |
-| `3dayselect-exceptions-nj-0770` | NJ 077 0 | RED | Hard | Specific exception, exact-code qualifier, suffix, or destination modifier. |
-| `3dayselect-exceptions-nj-0784` | NJ 078 4 | RED | Hard | Specific exception, exact-code qualifier, suffix, or destination modifier. |
-| `3dayselect-exceptions-nj-0789` | NJ 078 9 | RED | Hard | Specific exception, exact-code qualifier, suffix, or destination modifier. |
-| `3dayselect-exceptions-nj-0799` | NJ 079 9 | ORANGE | Hard | Specific exception, exact-code qualifier, suffix, or destination modifier. |
-| `3dayselect-exceptions-nj-0819` | NJ 081 9 | RED | Hard | Specific exception, exact-code qualifier, suffix, or destination modifier. |
-| `3dayselect-exceptions-nj-0829` | NJ 082 9 | RED | Hard | Specific exception, exact-code qualifier, suffix, or destination modifier. |
-| `3dayselect-exceptions-nj-0839` | NJ 083 9 | RED | Hard | Specific exception, exact-code qualifier, suffix, or destination modifier. |
-| `3dayselect-exceptions-nj-0860` | NJ 086 0 | RED | Hard | Specific exception, exact-code qualifier, suffix, or destination modifier. |
-| `3dayselect-exceptions-nj-0871` | NJ 087 1 | RED | Hard | Specific exception, exact-code qualifier, suffix, or destination modifier. |
-| `3dayselect-exceptions-nj-0889` | NJ 088 9 | RED | Hard | Specific exception, exact-code qualifier, suffix, or destination modifier. |
-| `3dayselect-exceptions-nj-0899` | NJ 089 9 | RED | Hard | Specific exception, exact-code qualifier, suffix, or destination modifier. |
+| `3dayselect-exceptions-nj-0703` | NJ 070 3 | RED | Easy | Assistant proposal informed by owner feedback on Ground NJ preloads: RED codes Easy, ORANGE079 9 Medium. Approval for this service remains pending. |
+| `3dayselect-exceptions-nj-0709` | NJ 070 9 | RED | Easy | Assistant proposal informed by owner feedback on Ground NJ preloads: RED codes Easy, ORANGE079 9 Medium. Approval for this service remains pending. |
+| `3dayselect-exceptions-nj-0759` | NJ 075 9 | RED | Easy | Assistant proposal informed by owner feedback on Ground NJ preloads: RED codes Easy, ORANGE079 9 Medium. Approval for this service remains pending. |
+| `3dayselect-exceptions-nj-0769` | NJ 076 9 | RED | Easy | Assistant proposal informed by owner feedback on Ground NJ preloads: RED codes Easy, ORANGE079 9 Medium. Approval for this service remains pending. |
+| `3dayselect-exceptions-nj-0770` | NJ 077 0 | RED | Easy | Assistant proposal informed by owner feedback on Ground NJ preloads: RED codes Easy, ORANGE079 9 Medium. Approval for this service remains pending. |
+| `3dayselect-exceptions-nj-0784` | NJ 078 4 | RED | Easy | Assistant proposal informed by owner feedback on Ground NJ preloads: RED codes Easy, ORANGE079 9 Medium. Approval for this service remains pending. |
+| `3dayselect-exceptions-nj-0789` | NJ 078 9 | RED | Easy | Assistant proposal informed by owner feedback on Ground NJ preloads: RED codes Easy, ORANGE079 9 Medium. Approval for this service remains pending. |
+| `3dayselect-exceptions-nj-0799` | NJ 079 9 | ORANGE | Medium | Assistant proposal informed by owner feedback on Ground NJ preloads: RED codes Easy, ORANGE079 9 Medium. Approval for this service remains pending. |
+| `3dayselect-exceptions-nj-0819` | NJ 081 9 | RED | Easy | Assistant proposal informed by owner feedback on Ground NJ preloads: RED codes Easy, ORANGE079 9 Medium. Approval for this service remains pending. |
+| `3dayselect-exceptions-nj-0829` | NJ 082 9 | RED | Easy | Assistant proposal informed by owner feedback on Ground NJ preloads: RED codes Easy, ORANGE079 9 Medium. Approval for this service remains pending. |
+| `3dayselect-exceptions-nj-0839` | NJ 083 9 | RED | Easy | Assistant proposal informed by owner feedback on Ground NJ preloads: RED codes Easy, ORANGE079 9 Medium. Approval for this service remains pending. |
+| `3dayselect-exceptions-nj-0860` | NJ 086 0 | RED | Easy | Assistant proposal informed by owner feedback on Ground NJ preloads: RED codes Easy, ORANGE079 9 Medium. Approval for this service remains pending. |
+| `3dayselect-exceptions-nj-0871` | NJ 087 1 | RED | Easy | Assistant proposal informed by owner feedback on Ground NJ preloads: RED codes Easy, ORANGE079 9 Medium. Approval for this service remains pending. |
+| `3dayselect-exceptions-nj-0889` | NJ 088 9 | RED | Easy | Assistant proposal informed by owner feedback on Ground NJ preloads: RED codes Easy, ORANGE079 9 Medium. Approval for this service remains pending. |
+| `3dayselect-exceptions-nj-0899` | NJ 089 9 | RED | Easy | Assistant proposal informed by owner feedback on Ground NJ preloads: RED codes Easy, ORANGE079 9 Medium. Approval for this service remains pending. |
 | `3dayselect-exceptions-ms-3950` | MS 395 0 | BLUE | Hard | Specific exception, exact-code qualifier, suffix, or destination modifier. |
 | `3dayselect-exceptions-sd-5119` | SD 511 9 | BLUE | Hard | Specific exception, exact-code qualifier, suffix, or destination modifier. |
 | `3dayselect-exceptions-sd-5719` | SD 571 9 | BROWN | Hard | Specific exception, exact-code qualifier, suffix, or destination modifier. |
