@@ -9,19 +9,19 @@
 - Active source: `twilight-2026-11-08-r2`, including owner corrections.
 - 283 source rows; hold four broad NJ CHECK rows without inventing belt answers. Retain listed NJ preload exceptions.
 - 279 belt-bearing source rows plus four NY109 destination+1 service contexts =283 review entries.
-- The original17 owner-approved labels and bilingual explanations are preserved. Another32 labels are approved, for49 approved labels and234 remaining difficulty proposals. The additional32 still need wording/explanation review. Existing source rows are not a proven final unique-scenario count.
+- The original17 owner-approved labels and bilingual explanations are preserved. Another40 labels are approved, for57 approved labels and226 remaining difficulty proposals. The additional40 still need wording/explanation review. Existing source rows are not a proven final unique-scenario count.
 - Question wording, exception exclusions, wildcard coverage and compound final-digit shorthand still need review for new entries. A suggestion of Easy never removes an applicable exception.
 - The game still selects15 questions, five per difficulty; expanding the bank increases the possible selections. No17-question runtime limit or fixed-ten-question repetition design remains.
 - Only the work-methods tie-question content is deferred; other tie-break policies remain unchanged.
 
 | Service | Approved difficulty labels | New difficulty proposals |
 | --- | --- | --- |
-| Ground | 41 | 48 |
+| Ground | 49 | 40 |
 | 3 Day Select | 3 | 82 |
 | 2 Day Air | 5 | 60 |
 | Next Day Air | 0 | 44 |
 
-Proposed-label totals for new entries: Easy20, Medium113, Hard101. These are draft classifications requiring owner review, not new settled counts.
+Proposed-label totals for new entries: Easy12, Medium113, Hard101. These are draft classifications requiring owner review, not new settled counts.
 
 ## Previously approved — do not rank again
 
@@ -81,19 +81,19 @@ Proposed-label totals for new entries: Easy20, Medium113, Hard101. These are dra
 | G30 | `ground-main-mt-590-599` | Ground | MT 590–599 | ORANGE | Easy |
 | G31 | `ground-main-il-600-608` | Ground | IL 600–608 | YELLOW | Easy |
 | G32 | `ground-main-il-609-619` | Ground | IL 609–619 | ORANGE | Easy |
+| G33 | `ground-main-il-620-629` | Ground | IL 620–629 | ORANGE | Easy |
+| G34 | `ground-main-moks-630-674` | Ground | MO, KS 630–674 | BLUE | Easy |
+| G35 | `ground-main-ks-675-679` | Ground | KS 675–679 | ORANGE | Easy |
+| G36 | `ground-main-ne-680-689` | Ground | NE 680–689 | BLUE | Easy |
+| G37 | `ground-main-ne-690-699` | Ground | NE 690–699 | ORANGE | Easy |
+| G38 | `ground-main-laar-700-729` | Ground | LA, AR 700–729 | BLUE | Easy |
+| G39 | `ground-main-ok-730-734` | Ground | OK 730–734 | ORANGE | Easy |
+| G40 | `ground-main-ok-735-749` | Ground | OK 735–749 | ORANGE | Easy |
 
 ## Ground — new proposals only
 
 | Source review ID | State / route | Answer | Proposed difficulty | Review note |
 | --- | --- | --- | --- | --- |
-| `ground-main-il-620-629` | IL 620–629 | ORANGE | Easy | Check applicable exceptions and effective coverage before approving broad-range wording. |
-| `ground-main-moks-630-674` | MO, KS 630–674 | BLUE | Easy | Check applicable exceptions and effective coverage before approving broad-range wording. |
-| `ground-main-ks-675-679` | KS 675–679 | ORANGE | Easy | Check applicable exceptions and effective coverage before approving broad-range wording. |
-| `ground-main-ne-680-689` | NE 680–689 | BLUE | Easy | Check applicable exceptions and effective coverage before approving broad-range wording. |
-| `ground-main-ne-690-699` | NE 690–699 | ORANGE | Easy | Check applicable exceptions and effective coverage before approving broad-range wording. |
-| `ground-main-laar-700-729` | LA, AR 700–729 | BLUE | Easy | Check applicable exceptions and effective coverage before approving broad-range wording. |
-| `ground-main-ok-730-734` | OK 730–734 | ORANGE | Easy | Check applicable exceptions and effective coverage before approving broad-range wording. |
-| `ground-main-ok-735-749` | OK 735–749 | ORANGE | Easy | Check applicable exceptions and effective coverage before approving broad-range wording. |
 | `ground-main-tx-750-779` | TX 750–779 | BLUE | Easy | Check applicable exceptions and effective coverage before approving broad-range wording. |
 | `ground-main-tx-780-784` | TX 780–784 | BLUE | Easy | Check applicable exceptions and effective coverage before approving broad-range wording. |
 | `ground-main-tx-785-799` | TX 785–799 | ORANGE | Easy | Check applicable exceptions and effective coverage before approving broad-range wording. |
@@ -347,4 +347,4 @@ Proposed-label totals for new entries: Easy20, Medium113, Hard101. These are dra
 
 ## Read-only inventory validation
 
-Validated all283 fixture IDs are accounted for exactly once as a source entry or held CHECK row; the four+1 contexts are additional explicit entries. All17 prior review references map exactly once with their original answer, difficulty and approval status preserved. The initial266 new-label proposals now contain 32 owner-approved labels and234 remaining proposals. There are no duplicate review IDs. Counts are inventory evidence, not executable-bank validation, content approval, hosted CI or deployment.
+Validated all283 fixture IDs are accounted for exactly once as a source entry or held CHECK row; the four+1 contexts are additional explicit entries. All17 prior review references map exactly once with their original answer, difficulty and approval status preserved. The initial266 new-label proposals now contain 40 owner-approved labels and226 remaining proposals. There are no duplicate review IDs. Counts are inventory evidence, not executable-bank validation, content approval, hosted CI or deployment.
