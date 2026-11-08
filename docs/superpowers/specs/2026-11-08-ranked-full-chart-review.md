@@ -9,7 +9,7 @@
 - Active source: `twilight-2026-11-08-r2`, including owner corrections.
 - 283 source rows; hold four broad NJ CHECK rows without inventing belt answers. Retain listed NJ preload exceptions.
 - 279 belt-bearing source rows plus four NY109 destination+1 service contexts =283 review entries.
-- The original 17 owner-approved labels and bilingual explanations are preserved. Another 162 labels are approved, for 179 approved labels and 104 remaining difficulty proposals. Those additional labels still need wording/explanation review. Source rows are not a proven final unique-scenario count.
+- The original 17 owner-approved labels and bilingual explanations are preserved. Another 170 labels are approved, for 187 approved labels and 96 remaining difficulty proposals. Those additional labels still need wording/explanation review. Source rows are not a proven final unique-scenario count.
 - Question wording, exception exclusions, wildcard coverage and compound final-digit shorthand still need review for new entries. A suggestion of Easy never removes an applicable exception.
 - The game still selects15 questions, five per difficulty; expanding the bank increases the possible selections. No17-question runtime limit or fixed-ten-question repetition design remains.
 - Only the work-methods tie-question content is deferred; other tie-break policies remain unchanged.
@@ -18,10 +18,10 @@
 | --- | --- | --- |
 | Ground | 89 | 0 |
 | 3 Day Select | 85 | 0 |
-| 2 Day Air | 5 | 60 |
+| 2 Day Air | 13 | 52 |
 | Next Day Air | 0 | 44 |
 
-Proposed-label totals for remaining entries: Easy 0, Medium 63, Hard 41. These are draft classifications requiring owner review, not settled counts.
+Proposed-label totals for remaining entries: Easy 0, Medium 56, Hard 40. These are draft classifications requiring owner review, not settled counts.
 
 ## Previously approved — do not rank again
 
@@ -211,6 +211,14 @@ Proposed-label totals for remaining entries: Easy 0, Medium 63, Hard 41. These a
 | S80 | `3dayselect-exceptions-anystate-ends2s` | 3 Day Select | Any state ends 2S | BLUE | Hard |
 | S81 | `3dayselect-exceptions-anystate-ends1s` | 3 Day Select | Any state ends 1S | PURPLE | Hard |
 | S82 | `destination-plus-one-3ds` | 3 Day Select | NY 109 | PURPLE | Hard |
+| D01 | `2dayair-main-ma-010-024` | 2 Day Air | MA 010–024 | GOLD | Medium |
+| D02 | `2dayair-main-ma-025-026` | 2 Day Air | MA 025–026 | BLUE | Hard |
+| D03 | `2dayair-main-mari-027-029` | 2 Day Air | MA, RI 027–029 | GOLD | Medium |
+| D04 | `2dayair-main-nh-030-033` | 2 Day Air | NH 030–033 | BLUE | Medium |
+| D05 | `2dayair-main-nh-0340` | 2 Day Air | NH 034 0 | GOLD | Hard |
+| D06 | `2dayair-main-nhme-035-049` | 2 Day Air | NH, ME 035–049 | BLUE | Medium |
+| D07 | `2dayair-main-vt-050-059` | 2 Day Air | VT 050–059 | GOLD | Medium |
+| D08 | `2dayair-main-ct-060-069` | 2 Day Air | CT 060–069 | GOLD | Medium |
 
 ## Ground — new proposals only
 
@@ -226,14 +234,6 @@ Proposed-label totals for remaining entries: Easy 0, Medium 63, Hard 41. These a
 
 | Source review ID | State / route | Answer | Proposed difficulty | Review note |
 | --- | --- | --- | --- | --- |
-| `2dayair-main-ma-010-024` | MA 010–024 | GOLD | Medium | Check applicable exceptions and effective coverage before approving broad-range wording. |
-| `2dayair-main-ma-025-026` | MA 025–026 | BLUE | Medium | Check applicable exceptions and effective coverage before approving broad-range wording. |
-| `2dayair-main-mari-027-029` | MA, RI 027–029 | GOLD | Medium | Check applicable exceptions and effective coverage before approving broad-range wording. |
-| `2dayair-main-nh-030-033` | NH 030–033 | BLUE | Medium | Check applicable exceptions and effective coverage before approving broad-range wording. |
-| `2dayair-main-nh-0340` | NH 034 0 | GOLD | Hard | Specific exception, exact-code qualifier, suffix, or destination modifier. |
-| `2dayair-main-nhme-035-049` | NH, ME 035–049 | BLUE | Medium | Check applicable exceptions and effective coverage before approving broad-range wording. |
-| `2dayair-main-vt-050-059` | VT 050–059 | GOLD | Medium | Check applicable exceptions and effective coverage before approving broad-range wording. |
-| `2dayair-main-ct-060-069` | CT 060–069 | GOLD | Medium | Check applicable exceptions and effective coverage before approving broad-range wording. |
 | `2dayair-main-ny-100-108` | NY 100–108 | YELLOW | Medium | Check applicable exceptions and effective coverage before approving broad-range wording. |
 | `2dayair-main-ny-109` | NY 109 | ORANGE | Medium | Service-specific chart direction; proposed independently of Practice deck names. |
 | `2dayair-main-ny-110-119` | NY 110–119 | PINK | Medium | Check applicable exceptions and effective coverage before approving broad-range wording. |
@@ -347,4 +347,4 @@ Proposed-label totals for remaining entries: Easy 0, Medium 63, Hard 41. These a
 
 ## Read-only inventory validation
 
-Validated all283 fixture IDs are accounted for exactly once as a source entry or held CHECK row; the four+1 contexts are additional explicit entries. All17 prior review references map exactly once with their original answer, difficulty and approval status preserved. The initial 266 new-label proposals now contain 162 owner-approved labels and 104 remaining proposals. There are no duplicate review IDs. Counts are inventory evidence, not executable-bank validation, content approval, hosted CI or deployment.
+Validated all283 fixture IDs are accounted for exactly once as a source entry or held CHECK row; the four+1 contexts are additional explicit entries. All17 prior review references map exactly once with their original answer, difficulty and approval status preserved. The initial 266 new-label proposals now contain 170 owner-approved labels and 96 remaining proposals. There are no duplicate review IDs. Counts are inventory evidence, not executable-bank validation, content approval, hosted CI or deployment.
