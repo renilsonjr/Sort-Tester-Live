@@ -36,6 +36,8 @@ The following labels were individually reviewed in chat; these rows do not appro
 | Ground | MA025–026 → BLUE | Hard; owner clarified Ground explicitly |
 | 2 Day Air | IN460–479 → ORANGE | Hard requested; owner corrected the answer explicitly |
 
+Proposed English question wording and explanations are in [[2026-11-08-ranked-question-wording-review]]; approval of the labels below does not approve that draft copy.
+
 Reviewed labels now total **five Easy, five Medium and seven Hard**. This meets the initial numerical minimum of five labels per difficulty, but the remaining content/explanation/canonical/version gates stay open; these labels alone do not approve a usable Ranked bank.
 
 The proposed Hard NJ0799 and NDA NY109+1 questions were replaced at the owner's request and are not approved as Hard by this discussion. Work-methods tie content remains a separate open gate. No product difficulty labels or assignment engine are added here.
