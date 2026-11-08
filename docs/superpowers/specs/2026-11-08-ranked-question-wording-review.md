@@ -10,6 +10,8 @@ Question: **Which belt does this go to?** Display the service/destination, state
 
 Only displayed modifiers apply: ordinary questions have no destination +1 or routing suffix. NY148 1 retains its explicit final digit; +1 is displayed in the destination, never appended to routing109. Review identifiers E1–H7 are document labels, not approved permanent canonical IDs.
 
+The owner explicitly confirmed that destination+1 goes PURPLE for **any state across all four services**. The NY109 question is an example, not a scope restriction. The existing approved +1 explanations remain valid; this clarification does not change their wording or difficulty.
+
 ## Proposed question sheet
 
 | Review label | Approved difficulty | Service / destination | State | Routing code | Correct belt | Proposed explanation |

@@ -339,6 +339,10 @@ Future executable bank records must discriminate exact literals from numeric pre
 
 The owner confirmed that EAM appears in the destination/service field as **Next Day Air EAM**, with routing code in its own separate field. The chart rule ALL 1DA EAM goes PURPLE and keeps its approved Hard label. The JSON source transcription remains ALL 1DA EAM for traceability; it is not a code to place in the routing-code field. Ordinary Next Day Air, Next Day Air EAM and destination+1 remain distinct contexts. This does not approve combined EAM/+1/suffix precedence or new question wording.
 
+## Confirmed +1 rule — any state
+
+Destination **+1 → PURPLE for any state**, across Ground,3 Day Select,2 Day Air and Next Day Air. The current four NY109 examples are authored examples of that general rule, not a New York-only or109-only restriction. Keep+1 in the destination/service field and routing code separate. All four existing example answers and Hard labels are unchanged. This clarifies rule scope; it does not inflate the283-entry ledger or approve additional canonical variants. Unapproved conflicting-marker precedence remains undecided.
+
 ## Held source rows
 
 | Source review ID | Service | State / route | Reason |

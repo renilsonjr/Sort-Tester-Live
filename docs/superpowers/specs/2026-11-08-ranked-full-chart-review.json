@@ -5185,7 +5185,18 @@
       "difficultyReason": "Preserved existing owner-reviewed label; do not ask to rank again.",
       "wordingStatus": "owner-approved-in-initial-sheet",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
-      "reviewNotes": []
+      "reviewNotes": [
+        "Owner explicitly confirmed destination+1 goes PURPLE for any state across all four services. NY109 is an authored example, not a state or ordinary routing-code restriction. Preserve separate destination/routing fields; combined conflicting marker precedence remains unapproved."
+      ],
+      "destinationInterpretation": {
+        "baseService": "Ground",
+        "modifier": "+1",
+        "stateScope": "any",
+        "exampleState": "NY",
+        "exampleRoutingCode": "109",
+        "examplesAreNotScopeRestrictions": true,
+        "ownerConfirmed": true
+      }
     },
     {
       "id": "destination-plus-one-nda",
@@ -5201,8 +5212,19 @@
       "difficultyReason": "Owner explicitly approved this recorded difficulty; question wording, explanations and any ambiguous source notation remain pending.",
       "wordingStatus": "not-yet-reviewed",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
-      "reviewNotes": [],
-      "approvedReview": "N44"
+      "reviewNotes": [
+        "Owner explicitly confirmed destination+1 goes PURPLE for any state across all four services. NY109 is an authored example, not a state or ordinary routing-code restriction. Preserve separate destination/routing fields; combined conflicting marker precedence remains unapproved."
+      ],
+      "approvedReview": "N44",
+      "destinationInterpretation": {
+        "baseService": "Next Day Air",
+        "modifier": "+1",
+        "stateScope": "any",
+        "exampleState": "NY",
+        "exampleRoutingCode": "109",
+        "examplesAreNotScopeRestrictions": true,
+        "ownerConfirmed": true
+      }
     },
     {
       "id": "destination-plus-one-2da",
@@ -5218,8 +5240,19 @@
       "difficultyReason": "Owner explicitly approved this recorded difficulty; question wording, explanations and any ambiguous source notation remain pending.",
       "wordingStatus": "not-yet-reviewed",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
-      "reviewNotes": [],
-      "approvedReview": "D60"
+      "reviewNotes": [
+        "Owner explicitly confirmed destination+1 goes PURPLE for any state across all four services. NY109 is an authored example, not a state or ordinary routing-code restriction. Preserve separate destination/routing fields; combined conflicting marker precedence remains unapproved."
+      ],
+      "approvedReview": "D60",
+      "destinationInterpretation": {
+        "baseService": "2 Day Air",
+        "modifier": "+1",
+        "stateScope": "any",
+        "exampleState": "NY",
+        "exampleRoutingCode": "109",
+        "examplesAreNotScopeRestrictions": true,
+        "ownerConfirmed": true
+      }
     },
     {
       "id": "destination-plus-one-3ds",
@@ -5235,8 +5268,19 @@
       "difficultyReason": "Owner explicitly approved this recorded difficulty; question wording, explanations and any ambiguous source notation remain pending.",
       "wordingStatus": "not-yet-reviewed",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
-      "reviewNotes": [],
-      "approvedReview": "S82"
+      "reviewNotes": [
+        "Owner explicitly confirmed destination+1 goes PURPLE for any state across all four services. NY109 is an authored example, not a state or ordinary routing-code restriction. Preserve separate destination/routing fields; combined conflicting marker precedence remains unapproved."
+      ],
+      "approvedReview": "S82",
+      "destinationInterpretation": {
+        "baseService": "3 Day Select",
+        "modifier": "+1",
+        "stateScope": "any",
+        "exampleState": "NY",
+        "exampleRoutingCode": "109",
+        "examplesAreNotScopeRestrictions": true,
+        "ownerConfirmed": true
+      }
     }
   ],
   "heldSourceRows": [
@@ -5287,5 +5331,24 @@
     "Hard": 53,
     "Medium": 127
   },
-  "confirmedExactLiteralCodeCount": 6
+  "confirmedExactLiteralCodeCount": 6,
+  "destinationModifierRule": {
+    "modifier": "+1",
+    "services": [
+      "Ground",
+      "3 Day Select",
+      "2 Day Air",
+      "Next Day Air"
+    ],
+    "stateScope": "any",
+    "expectedBelt": "PURPLE",
+    "ownerConfirmed": true,
+    "exampleReviewIDs": [
+      "H5",
+      "N44",
+      "D60",
+      "S82"
+    ],
+    "scopeNote": "NY109 examples do not restrict the rule to New York or routing109. This clarification does not create or approve additional canonical variants or decide conflicting combined-marker precedence."
+  }
 }
