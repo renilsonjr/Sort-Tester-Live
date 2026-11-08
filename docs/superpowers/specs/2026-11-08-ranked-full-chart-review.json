@@ -2,15 +2,15 @@
   "status": "Review-only inventory; not an executable or owner-approved full Ranked bank",
   "sourceRevision": "twilight-2026-11-08-r2",
   "existingApprovalsPreserved": 17,
-  "remainingDifficultyReviews": 162,
+  "remainingDifficultyReviews": 154,
   "scopeNote": "Every source row plus four explicit NY109 destination+1 service contexts. Raw review entries can require canonical merges/splits or clarified exception scope; not a proven unique-question count.",
   "countsByService": {
     "Ground": {
       "owner-approved": 89
     },
     "3 Day Select": {
-      "owner-approved": 27,
-      "proposed": 58
+      "owner-approved": 35,
+      "proposed": 50
     },
     "2 Day Air": {
       "proposed": 60,
@@ -2111,13 +2111,14 @@
       "provenance": "photo",
       "destinationModifier": null,
       "difficulty": "Medium",
-      "difficultyStatus": "proposed",
-      "difficultyReason": "Service-specific chart direction; proposed independently of Practice deck names.",
+      "difficultyStatus": "owner-approved",
+      "difficultyReason": "Owner explicitly approved this recorded difficulty; question wording, explanations and any ambiguous source notation remain pending.",
       "wordingStatus": "not-yet-reviewed",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [
         "Check applicable exceptions and effective coverage before approving broad-range wording."
-      ]
+      ],
+      "approvedReview": "S25"
     },
     {
       "id": "3dayselect-main-ga-300-319",
@@ -2129,13 +2130,14 @@
       "provenance": "photo",
       "destinationModifier": null,
       "difficulty": "Medium",
-      "difficultyStatus": "proposed",
-      "difficultyReason": "Service-specific chart direction; proposed independently of Practice deck names.",
+      "difficultyStatus": "owner-approved",
+      "difficultyReason": "Owner explicitly approved this recorded difficulty; question wording, explanations and any ambiguous source notation remain pending.",
       "wordingStatus": "not-yet-reviewed",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [
         "Check applicable exceptions and effective coverage before approving broad-range wording."
-      ]
+      ],
+      "approvedReview": "S26"
     },
     {
       "id": "3dayselect-main-fl-320-349",
@@ -2147,13 +2149,14 @@
       "provenance": "photo",
       "destinationModifier": null,
       "difficulty": "Medium",
-      "difficultyStatus": "proposed",
-      "difficultyReason": "Service-specific chart direction; proposed independently of Practice deck names.",
+      "difficultyStatus": "owner-approved",
+      "difficultyReason": "Owner explicitly approved this recorded difficulty; question wording, explanations and any ambiguous source notation remain pending.",
       "wordingStatus": "not-yet-reviewed",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [
         "Check applicable exceptions and effective coverage before approving broad-range wording."
-      ]
+      ],
+      "approvedReview": "S27"
     },
     {
       "id": "3dayselect-main-al-350-369",
@@ -2184,13 +2187,14 @@
       "provenance": "photo",
       "destinationModifier": null,
       "difficulty": "Medium",
-      "difficultyStatus": "proposed",
-      "difficultyReason": "Service-specific chart direction; proposed independently of Practice deck names.",
+      "difficultyStatus": "owner-approved",
+      "difficultyReason": "Owner explicitly approved this recorded difficulty; question wording, explanations and any ambiguous source notation remain pending.",
       "wordingStatus": "not-yet-reviewed",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [
         "Check applicable exceptions and effective coverage before approving broad-range wording."
-      ]
+      ],
+      "approvedReview": "S28"
     },
     {
       "id": "3dayselect-main-ms-386-399",
@@ -2202,13 +2206,14 @@
       "provenance": "photo",
       "destinationModifier": null,
       "difficulty": "Medium",
-      "difficultyStatus": "proposed",
-      "difficultyReason": "Service-specific chart direction; proposed independently of Practice deck names.",
+      "difficultyStatus": "owner-approved",
+      "difficultyReason": "Owner explicitly approved this recorded difficulty; question wording, explanations and any ambiguous source notation remain pending.",
       "wordingStatus": "not-yet-reviewed",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [
         "Check applicable exceptions and effective coverage before approving broad-range wording."
-      ]
+      ],
+      "approvedReview": "S29"
     },
     {
       "id": "3dayselect-main-ky-400-429",
@@ -2220,13 +2225,14 @@
       "provenance": "photo",
       "destinationModifier": null,
       "difficulty": "Medium",
-      "difficultyStatus": "proposed",
-      "difficultyReason": "Service-specific chart direction; proposed independently of Practice deck names.",
+      "difficultyStatus": "owner-approved",
+      "difficultyReason": "Owner explicitly approved this recorded difficulty; question wording, explanations and any ambiguous source notation remain pending.",
       "wordingStatus": "not-yet-reviewed",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [
         "Check applicable exceptions and effective coverage before approving broad-range wording."
-      ]
+      ],
+      "approvedReview": "S30"
     },
     {
       "id": "3dayselect-main-oh-430-459",
@@ -2238,13 +2244,14 @@
       "provenance": "photo",
       "destinationModifier": null,
       "difficulty": "Medium",
-      "difficultyStatus": "proposed",
-      "difficultyReason": "Service-specific chart direction; proposed independently of Practice deck names.",
+      "difficultyStatus": "owner-approved",
+      "difficultyReason": "Owner explicitly approved this recorded difficulty; question wording, explanations and any ambiguous source notation remain pending.",
       "wordingStatus": "not-yet-reviewed",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [
         "Check applicable exceptions and effective coverage before approving broad-range wording."
-      ]
+      ],
+      "approvedReview": "S31"
     },
     {
       "id": "3dayselect-main-in-460-479",
@@ -2256,13 +2263,14 @@
       "provenance": "photo",
       "destinationModifier": null,
       "difficulty": "Medium",
-      "difficultyStatus": "proposed",
-      "difficultyReason": "Service-specific chart direction; proposed independently of Practice deck names.",
+      "difficultyStatus": "owner-approved",
+      "difficultyReason": "Owner explicitly approved this recorded difficulty; question wording, explanations and any ambiguous source notation remain pending.",
       "wordingStatus": "not-yet-reviewed",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [
         "Check applicable exceptions and effective coverage before approving broad-range wording."
-      ]
+      ],
+      "approvedReview": "S32"
     },
     {
       "id": "3dayselect-main-mi-480-497",
@@ -5077,5 +5085,5 @@
       "holdReason": "CHECK does not establish a belt; use listed NJ preload exceptions, do not invent an unlisted answer."
     }
   ],
-  "approvedDifficultyCount": 121
+  "approvedDifficultyCount": 129
 }
