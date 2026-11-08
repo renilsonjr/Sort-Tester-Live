@@ -20,11 +20,11 @@ Apply this photo with only the owner's stated corrections; do not automatically 
 7. **Routing-code endings 2S → BLUE and 1S → PURPLE**, all four services, overriding ordinary range answers; retained by owner confirmation.
 8. **Destination/service indicator +1 → PURPLE**, all four services. Owner clarified that +1 appears where Ground / Next Day Air / the destination service is shown, **not as a routing-code suffix**. Keep it distinct from the route code and the base service. This rule is owner-supplied and not printed on the chart.
 
-### +1 presentation proposal and remaining scope
+### +1 scope confirmed; implementation proposal for review
 
 Proposed quiz example: destination **Ground +1**, state **NY**, routing code **109**, correct belt **PURPLE**. The route code remains 109; do not rewrite it as “109 +1” or infer this rule from a route ending in +1. Store a separate optional destination modifier while preserving the base service, and carry it through feedback, saved results and export. This is a proposed implementation approach, not working functionality or owner approval of a schema/property name.
 
-The owner is being asked whether new +1 questions should appear in existing Practice as well as the future Ranked bank, or only in the Ranked bank. Do not assume either placement, change Practice quiz length or implement a new question before that scope and the correction plan are reviewed. No precedence for a deliberately combined +1 and conflicting 2S marker has been chosen; keep such ambiguous combinations out of authored questions pending a decision, rather than invent a routing priority.
+The owner confirmed **Practice and Ranked bank** for new +1 destination questions. This approves coverage in both modes, not a change to quiz length, the proposed implementation or Ranked difficulty labels. Review [[2026-11-08-chart-corrections-and-destination-plus-one]] before code changes. No precedence for a deliberately combined +1 and conflicting 2S marker has been chosen; keep such ambiguous combinations out of authored questions pending a decision, rather than invent a routing priority.
 
 
 The previously displayed `primary-sort-chart-2026-09-17.jpeg` was removed from the private working folder at the owner's request. Other old chart/change images remain historical, not active reference sources. No history rewrite or public photo upload is part of this task.
