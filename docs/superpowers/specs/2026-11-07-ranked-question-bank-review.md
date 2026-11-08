@@ -4,7 +4,7 @@
 
 ## Full-chart difficulty milestone complete
 
-All283 review entries now have owner-approved labels:103 Easy /127 Medium /53 Hard. [[2026-11-08-ranked-full-chart-review]] contains the complete ledger and final consistency audit. Original17 bilingual approvals are preserved. Eight expanded bilingual explanations were subsequently approved (25 bilingual approvals total);258 English and258 Spanish explanations remain pending, tracked in [[2026-11-08-ranked-expanded-wording-review]]. Canonical identity/coverage and versioning/assignment validation remain open. Four broad NJ CHECK rows stay held without guessed answers; the six hyphenated Ground codes are now owner-confirmed exact literals, not ranges; their approved answers and Hard labels are unchanged. Only the work-methods tie-question content is deferred. This completes difficulty classification, not Issue5 or a usable Ranked bank.
+All283 review entries now have owner-approved labels:103 Easy /127 Medium /53 Hard. [[2026-11-08-ranked-full-chart-review]] contains the complete ledger and final consistency audit. Original17 bilingual approvals are preserved. The188-entry standard-feedback batch was approved in both languages, bringing the bilingual wording total to213 (original17 plus196 expanded entries);70 English and70 Spanish explanations remain pending, tracked in [[2026-11-08-ranked-expanded-wording-review]]. Canonical identity/coverage and versioning/assignment validation remain open. Four broad NJ CHECK rows stay held without guessed answers; the six hyphenated Ground codes are now owner-confirmed exact literals, not ranges; their approved answers and Hard labels are unchanged. Only the work-methods tie-question content is deferred. This completes difficulty classification, not Issue5 or a usable Ranked bank.
 
 ## Owner scope expansion — full-chart bank
 
@@ -47,7 +47,7 @@ The following labels were individually reviewed in chat. English wording/explana
 
 English question wording and explanations for all17 rows were separately approved in [[2026-11-08-ranked-question-wording-review]]; Spanish translations were subsequently approved in separate group reviews; the remaining technical bank gates stay open.
 
-Reviewed labels now total **five Easy, five Medium and seven Hard**. This meets the initial numerical minimum of five labels per difficulty, but the remaining content/explanation/canonical/version gates stay open; these labels alone do not approve a usable Ranked bank.
+The **initial17 reviewed subset** contains five Easy, five Medium and seven Hard labels; the full-chart totals are recorded above. This meets the initial numerical minimum of five labels per difficulty, but the remaining content/explanation/canonical/version gates stay open; these labels alone do not approve a usable Ranked bank.
 
 The proposed Hard NJ0799 and NDA NY109+1 questions were replaced at the owner's request and are not approved as Hard by this discussion. Work-methods tie content remains a separate open gate. No product difficulty labels or assignment engine are added here.
 

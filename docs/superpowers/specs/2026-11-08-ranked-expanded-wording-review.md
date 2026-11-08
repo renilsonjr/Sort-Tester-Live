@@ -1,6 +1,6 @@
 # Expanded Ranked question wording review
 
-**Status:** original17 bilingual approvals are preserved, and eight expanded entries are now bilingual-approved (25 total). All283 difficulty labels remain settled. The next 188 standard-feedback drafts are proposed for joint English/Spanish review; 70 focused cases remain for separate wording/coverage review. No product code or executable bank is created here.
+**Status:**213 entries now have approved English/Spanish explanations, including the original17, eight previously reviewed expanded entries and the188-entry standard-feedback batch. All283 difficulty labels are settled. Seventy focused entries remain pending; six exact-literal explanations are drafted below for review. No product code or executable bank is created here.
 
 **Related:** [[2026-11-08-ranked-full-chart-review]], [[2026-11-08-ranked-full-chart-review.json]], [[2026-11-08-ranked-question-wording-review]], [[2026-11-08-ranked-chart-reference]], [[2026-11-08-curated-ranked-bank-design]]. Tracker: [#5](https://github.com/renilsonjr/Sort-Tester-Live/issues/5), [PR #32](https://github.com/renilsonjr/Sort-Tester-Live/pull/32).
 
@@ -47,15 +47,15 @@ Source review mapping (not permanent canonical IDs):
 - [x] Owner approved English explanations G05–G08.
 - [x] Owner approved Spanish explanations G05–G08.
 
-## Standard-route feedback batch — proposed (188 entries)
+## Standard-route feedback batch — approved (188 entries)
 
 This batch applies the already-reviewed feedback style to ordinary numeric chart directions and listed RED NJ preload codes. English uses “SERVICE STATE CODE goes to BELT.” Spanish uses “En SERVICE, STATE CODE va a BELT.” Codes, leading zeros, service-specific answers and difficulty labels come unchanged from the reviewed source ledger. The original25 bilingual-approved entries are excluded from this batch and are not reopened.
 
-These are feedback drafts pending explicit owner approval in both languages. Service/destination, state and routing code stay separate in the future question display; only the feedback sentence is reviewed here. This grouping is conservative editorial triage, not an executable overlap validator or a new competition rule. Cases with wildcard/qualifier/suffix/exact-code explanation needs, or possible answer-changing exception overlap, remain in the focused queue below. Approving this batch does not approve unbuilt canonical/assignment behavior.
+The owner explicitly approved all188 feedback explanations in both languages. Service/destination, state and routing code stay separate in the future question display; only the feedback sentence is reviewed here. This grouping is conservative editorial triage, not an executable overlap validator or a new competition rule. Cases with wildcard/qualifier/suffix/exact-code explanation needs, or possible answer-changing exception overlap, remain in the focused queue below. Approving this batch does not approve unbuilt canonical/assignment behavior.
 
-### Ground — 52 proposed explanations
+### Ground — 52 approved explanations
 
-| Review reference | Route | Answer | Proposed English feedback | Proposed Spanish feedback |
+| Review reference | Route | Answer | Approved English feedback | Approved Spanish feedback |
 | --- | --- | --- | --- | --- |
 | G09 | NY 122–127 | ORANGE | Ground NY 122–127 goes to ORANGE. | En Terrestre, NY 122–127 va a ORANGE. |
 | G10 | NY 128–139 | GOLD | Ground NY 128–139 goes to GOLD. | En Terrestre, NY 128–139 va a GOLD. |
@@ -110,9 +110,9 @@ These are feedback drafts pending explicit owner approval in both languages. Ser
 | G71 | NJ 088 9 | RED | Ground NJ 088 9 goes to RED. | En Terrestre, NJ 088 9 va a RED. |
 | G72 | NJ 089 9 | RED | Ground NJ 089 9 goes to RED. | En Terrestre, NJ 089 9 va a RED. |
 
-### 3 Day Select — 52 proposed explanations
+### 3 Day Select — 52 approved explanations
 
-| Review reference | Route | Answer | Proposed English feedback | Proposed Spanish feedback |
+| Review reference | Route | Answer | Approved English feedback | Approved Spanish feedback |
 | --- | --- | --- | --- | --- |
 | S01 | MA 010–024 | GOLD | 3 Day Select MA 010–024 goes to GOLD. | En Select 3 días, MA 010–024 va a GOLD. |
 | S02 | MA 025–026 | BLUE | 3 Day Select MA 025–026 goes to BLUE. | En Select 3 días, MA 025–026 va a BLUE. |
@@ -167,9 +167,9 @@ These are feedback drafts pending explicit owner approval in both languages. Ser
 | S61 | NJ 088 9 | RED | 3 Day Select NJ 088 9 goes to RED. | En Select 3 días, NJ 088 9 va a RED. |
 | S62 | NJ 089 9 | RED | 3 Day Select NJ 089 9 goes to RED. | En Select 3 días, NJ 089 9 va a RED. |
 
-### 2 Day Air — 48 proposed explanations
+### 2 Day Air — 48 approved explanations
 
-| Review reference | Route | Answer | Proposed English feedback | Proposed Spanish feedback |
+| Review reference | Route | Answer | Approved English feedback | Approved Spanish feedback |
 | --- | --- | --- | --- | --- |
 | D01 | MA 010–024 | GOLD | 2 Day Air MA 010–024 goes to GOLD. | En Aéreo 2 días, MA 010–024 va a GOLD. |
 | D02 | MA 025–026 | BLUE | 2 Day Air MA 025–026 goes to BLUE. | En Aéreo 2 días, MA 025–026 va a BLUE. |
@@ -220,9 +220,9 @@ These are feedback drafts pending explicit owner approval in both languages. Ser
 | D55 | NJ 088 9 | RED | 2 Day Air NJ 088 9 goes to RED. | En Aéreo 2 días, NJ 088 9 va a RED. |
 | D56 | NJ 089 9 | RED | 2 Day Air NJ 089 9 goes to RED. | En Aéreo 2 días, NJ 089 9 va a RED. |
 
-### Next Day Air — 36 proposed explanations
+### Next Day Air — 36 approved explanations
 
-| Review reference | Route | Answer | Proposed English feedback | Proposed Spanish feedback |
+| Review reference | Route | Answer | Approved English feedback | Approved Spanish feedback |
 | --- | --- | --- | --- | --- |
 | N01 | MA 010–024 | GOLD | Next Day Air MA 010–024 goes to GOLD. | En Aéreo 1 día, MA 010–024 va a GOLD. |
 | N02 | MA 025–026 | PURPLE | Next Day Air MA 025–026 goes to PURPLE. | En Aéreo 1 día, MA 025–026 va a PURPLE. |
@@ -261,12 +261,28 @@ These are feedback drafts pending explicit owner approval in both languages. Ser
 | N40 | NJ 088 9 | RED | Next Day Air NJ 088 9 goes to RED. | En Aéreo 1 día, NJ 088 9 va a RED. |
 | N41 | NJ 089 9 | RED | Next Day Air NJ 089 9 goes to RED. | En Aéreo 1 día, NJ 089 9 va a RED. |
 
-- [ ] Owner approves the standard-feedback batch in English.
-- [ ] Owner approves the standard-feedback batch in Spanish.
+- [x] Owner approved all188 standard-feedback explanations in English.
+- [x] Owner approved all188 standard-feedback explanations in Spanish.
+
+## Exact literal-code feedback batch — proposed (six entries)
+
+These six codes already have owner-approved meanings, answers and Hard labels. Only the English/Spanish feedback wording below needs review. Preserve every code's spaces and hyphen exactly; no numeric endpoints or expanded codes are inferred.
+
+| Review reference | Ground exact code | Answer | Proposed English feedback | Proposed Spanish feedback |
+| --- | --- | --- | --- | --- |
+| G73 | NE 575 3-6 | ORANGE | Ground NE 575 3-6 goes to ORANGE. This is one exact code, not a range. | En Terrestre, NE 575 3-6 va a ORANGE. Es un código exacto, no un rango. |
+| G74 | NV 833 9-7 | ORANGE | Ground NV 833 9-7 goes to ORANGE. This is one exact code, not a range. | En Terrestre, NV 833 9-7 va a ORANGE. Es un código exacto, no un rango. |
+| G75 | AZ 847 2-7 | BLUE | Ground AZ 847 2-7 goes to BLUE. This is one exact code, not a range. | En Terrestre, AZ 847 2-7 va a BLUE. Es un código exacto, no un rango. |
+| G76 | NV 864 4-7 | ORANGE | Ground NV 864 4-7 goes to ORANGE. This is one exact code, not a range. | En Terrestre, NV 864 4-7 va a ORANGE. Es un código exacto, no un rango. |
+| G77 | NV 890 0-0 | ORANGE | Ground NV 890 0-0 goes to ORANGE. This is one exact code, not a range. | En Terrestre, NV 890 0-0 va a ORANGE. Es un código exacto, no un rango. |
+| G78 | AZ 922 2-0 | BLUE | Ground AZ 922 2-0 goes to BLUE. This is one exact code, not a range. | En Terrestre, AZ 922 2-0 va a BLUE. Es un código exacto, no un rango. |
+
+- [ ] Owner approves the six exact-literal explanations in English.
+- [ ] Owner approves the six exact-literal explanations in Spanish.
 
 ## Focused wording queue — 70 entries
 
-These entries are not included in the standard batch. Possible prefix overlap is only a reason to review; it does not establish that a different-state exception actually applies. Confirm coverage before adding exclusions. No new wording approval is inferred here.
+These70 entries are not included in the approved standard batch. Six have drafts in the exact-literal section above; the other64 await focused wording/coverage work. Possible prefix overlap is only a reason to review; it does not establish that a different-state exception actually applies. Confirm coverage before adding exclusions. No new wording approval is inferred here.
 
 | Review reference | Service | Source state / code | Answer | Review need |
 | --- | --- | --- | --- | --- |
@@ -343,4 +359,4 @@ These entries are not included in the standard batch. Possible prefix overlap is
 
 ## Current wording counts
 
-Including the original17:25 English and25 Spanish explanations are approved, with258 pending in each language. Twenty-five entries have both languages approved. Of the remaining258, 188 have standard-feedback drafts and 70 remain in focused wording review. All283 answers/difficulty labels are unchanged; no original approval is reopened. Only work-methods tie-question content is deferred; other tie-break policies remain unchanged.
+Including the original17:213 English and213 Spanish explanations are approved, with70 pending in each language. Of those70, six exact-literal explanations are drafted for review and64 remain to be drafted/resolved. All283 answers/difficulty labels are unchanged. Only work-methods tie-question content is deferred; other tie-break policies remain unchanged.
