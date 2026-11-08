@@ -35,7 +35,7 @@ Only displayed modifiers apply: ordinary questions have no destination +1 or rou
 ## Remaining review
 
 - [x] Owner approved Easy question wording/explanation style E1–E5 in chat, including the Ground FL versus 2 Day Air service comparison.
-- [ ] Owner approves Medium wording/explanations M1–M5.
+- [x] Owner approved Medium wording/explanations M1–M5 in chat, including the service comparisons and Texas boundary explanations.
 - [ ] Owner approves Hard wording/explanations H1–H7.
 - [ ] Check Spanish wording separately before bilingual Ranked use; existing Practice translation tests do not approve new Ranked copy.
 - [ ] Complete canonical identity/overlap/exception handling and immutable bank/assignment versions before implementation.
