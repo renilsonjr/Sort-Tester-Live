@@ -28,13 +28,15 @@ The following labels were individually reviewed in chat; these rows do not appro
 | 3 Day Select | TX770–784 → BLUE | Medium |
 | 2 Day Air | NY140–147 → ORANGE | Medium |
 | 3 Day Select | TX750–768 → BLUE | Medium |
+| 2 Day Air | FL320–349 → PURPLE | Medium |
+| 3 Day Select | AL350–369 → BLUE | Medium |
 | Ground | TN376–378 → BLUE | Hard |
 | Ground | NY148 1 → GOLD | Hard |
 | Ground | NY109, destination +1 → PURPLE | Hard |
 | Ground | MA025–026 → BLUE | Hard; owner clarified Ground explicitly |
 | 2 Day Air | IN460–479 → ORANGE | Hard requested; owner corrected the answer explicitly |
 
-Reviewed labels now total **five Easy, three Medium and seven Hard**. Two additional Medium scenarios still need owner approval before this initial set can supply five per difficulty; the remaining content/explanation/canonical/version gates also stay open.
+Reviewed labels now total **five Easy, five Medium and seven Hard**. This meets the initial numerical minimum of five labels per difficulty, but the remaining content/explanation/canonical/version gates stay open; these labels alone do not approve a usable Ranked bank.
 
 The proposed Hard NJ0799 and NDA NY109+1 questions were replaced at the owner's request and are not approved as Hard by this discussion. Work-methods tie content remains a separate open gate. No product difficulty labels or assignment engine are added here.
 
