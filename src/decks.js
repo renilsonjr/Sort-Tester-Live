@@ -1,6 +1,6 @@
-import { ROUTE_REFERENCE_VERSION } from './chart.js?v=chart-destination-20261108';
-import { COMMON_CORE, NJ_TWILIGHT } from './questions.js?v=chart-destination-20261108';
-import { LEVEL_DECKS } from './levels.js?v=chart-destination-20261108';
+import { ROUTE_REFERENCE_VERSION } from './chart.js?v=chart-destination-20261108-r2';
+import { COMMON_CORE, NJ_TWILIGHT } from './questions.js?v=chart-destination-20261108-r2';
+import { LEVEL_DECKS } from './levels.js?v=chart-destination-20261108-r2';
 
 // Manual Practice cards checked against the current Twilight reference.
 // A verified Practice deck does not establish Ranked difficulty approval.
@@ -345,12 +345,12 @@ const mixed = (id, svc, state, code, belt, confusions, why) => ({
 // A fixed mixed set for the routes selected by the supervisor. Service is part
 // of every card because the same state/range can change belt by service.
 const MIXED_MISSORTS = [
-  mixed('in-2da', '2DA', 'IN', '460-479', 'PURPLE', ['ORANGE', 'BLUE', 'GOLD'],
-    'Indiana is ORANGE on Ground, but PURPLE on 2 Day Air.'),
+  mixed('in-2da', '2DA', 'IN', '460-479', 'ORANGE', ['PURPLE', 'BLUE', 'GOLD'],
+    'Indiana 460-479 is ORANGE on 2 Day Air, as confirmed by the supervisor; it is also ORANGE on Ground.'),
   mixed('oh-2da', '2DA', 'OH', '430-459', 'ORANGE', ['PURPLE', 'YELLOW', 'BROWN'],
-    'Ohio stays ORANGE on 2 Day Air; do not carry Indiana’s PURPLE rule across the state line.'),
+    'Ohio 430-459 is ORANGE on 2 Day Air, as is the neighboring Indiana 460-479 range.'),
   mixed('mi-2da', '2DA', 'MI', '480-497', 'ORANGE', ['PURPLE', 'YELLOW', 'BROWN'],
-    'Michigan stays ORANGE on 2 Day Air, while Indiana immediately before it is PURPLE.'),
+    'Michigan 480-497 is ORANGE on 2 Day Air, as is Indiana 460-479 immediately before it.'),
   mixed('il-600-608-2da', '2DA', 'IL', '600-608', 'YELLOW', ['PURPLE', 'ORANGE', 'BLUE'],
     'Illinois 600-608 is YELLOW on 2 Day Air. The next range, 609-629, is ORANGE.'),
   mixed('il-609-619-2da', '2DA', 'IL', '609-619', 'ORANGE', ['PURPLE', 'YELLOW', 'BLUE'],

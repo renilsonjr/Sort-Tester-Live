@@ -82,7 +82,7 @@ test('destination plus-one never changes the routing code', () => {
   const response = quiz.answerCard(run, 'PURPLE', 1000);
   assert.equal(response.code, '109');
   assert.equal(response.destinationModifier, '+1');
-  assert.equal(response.referenceVersion, 'twilight-2026-11-08-r1');
+  assert.equal(response.referenceVersion, 'twilight-2026-11-08-r2');
 });
 
 for (const outcome of ['correct', 'wrong', 'timeout']) test(`${outcome} records preserve the actual card metadata`, () => {
@@ -119,7 +119,7 @@ for (const outcome of ['wrong', 'timeout']) test(`${outcome} destination survive
   assert.match(reloaded.markup, /Terrestre \+1 &middot; NY &middot; 109/);
   const response = JSON.parse(app.values.get('sortTest.shiftLog.v1'))[0].missed[0];
   assert.equal(response.destinationModifier, '+1');
-  assert.equal(response.referenceVersion, 'twilight-2026-11-08-r1');
+  assert.equal(response.referenceVersion, 'twilight-2026-11-08-r2');
   const row = reloaded.evaluate('buildWorkbook(log.all())').Missorts.rows[0];
   assert.equal(row.Service, 'Terrestre +1');
   assert.equal(row['Routing code'], '109');
@@ -193,7 +193,7 @@ test('all four base services keep translated destination labels separate from wo
 test('ordinary recording preserves provenance and leaves absent optional metadata absent', () => {
   const current = quiz.answerCard(quiz.createRun({ name: '', cards: [ordinary] }), 'ORANGE', 100);
   assert.equal(current.code, '109');
-  assert.equal(current.referenceVersion, 'twilight-2026-11-08-r1');
+  assert.equal(current.referenceVersion, 'twilight-2026-11-08-r2');
   assert.equal(Object.hasOwn(current, 'destinationModifier'), false);
   const { referenceVersion, ...legacyCard } = ordinary;
   const legacy = quiz.timeoutCard(quiz.createRun({ name: '', cards: [legacyCard] }));
@@ -215,4 +215,18 @@ test('service and modifier text remain inert in card, feedback and missed-summar
   assert.equal(app.view.querySelector('.p-line').textContent, `${service} ${modifier} · NY`);
   app.evaluate("showFeedback(answerCard(run, 'ORANGE', 800));"); escaped();
   app.evaluate('showResults();'); escaped();
+});
+
+// Loading a prior reference revision must not silently rewrite historical answers.
+test('saved r1 Indiana missorts keep their historical PURPLE belt after the correction', () => {
+  const legacy = { svc: '2DA', state: 'IN', code: '460-479', correctBelt: 'PURPLE', why: 'Historical Indiana explanation.', referenceVersion: 'twilight-2026-11-08-r1', outcome: 'wrong', answered: 'ORANGE', elapsedMs: 800 };
+  const entry = { name: 'Fictional legacy tester', total: 1, correct: 0, totalMs: 800, takenAt: 1700000000000, missed: [legacy] };
+  const values = new Map([['sortTest.shiftLog.v1', JSON.stringify([entry])]]);
+  const app = appHarness(values);
+  const before = values.get('sortTest.shiftLog.v1');
+  app.evaluate('showLog();');
+  assert.equal(values.get('sortTest.shiftLog.v1'), before);
+  const row = app.evaluate('buildWorkbook(log.all())').Missorts.rows[0];
+  assert.equal(row['Correct belt'], 'PURPLE');
+  assert.equal(JSON.parse(values.get('sortTest.shiftLog.v1'))[0].missed[0].referenceVersion, 'twilight-2026-11-08-r1');
 });

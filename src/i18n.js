@@ -1,4 +1,4 @@
-import { CHART, STATE_NAMES_ES } from './chart.js?v=chart-destination-20261108';
+import { CHART, STATE_NAMES_ES } from './chart.js?v=chart-destination-20261108-r2';
 
 const KEY = 'sortTest.language.v1';
 

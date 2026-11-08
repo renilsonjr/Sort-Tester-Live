@@ -2,9 +2,11 @@
 
 **Owner instruction, November 8, 2026:** use the photo supplied as “Talk with Hasan 2.jpeg” instead of the earlier displayed chart. This approves the reference and the explicit corrections below; it does not approve every application's transcription, Ranked difficulty or a Hard work-methods bank.
 
-**Implementation status, November 8, 2026:** Implemented on `codex/ranked-mode` through application commit `929f189`, locally verified; not live or published. Source provenance is `twilight-2026-11-08-r1`. Owner Ranked difficulty/canonical/version/work-methods approvals remain pending in Issue #5.
+**Historical r1 implementation status, before PR #31 merge:** Implemented on `codex/ranked-mode` through application commit `929f189`, locally verified; not live or published. Source provenance is `twilight-2026-11-08-r1`. Owner Ranked difficulty/canonical/version/work-methods approvals remain pending in Issue #5.
 
 **Related:** [[2026-11-07-ranked-question-bank-review]], [[2026-11-07-ranked-decision-record]]. Implementation/review tracker: [#5](https://github.com/renilsonjr/Sort-Tester-Live/issues/5).
+
+**Current follow-up:** PR #31 was merged and deployed. The subsequent Indiana correction (clause 9) is being prepared on `codex/ranked-mode` for review; it is not live yet. Earlier r1 test/review statements below describe the previous milestone. Follow-up local checks passed: `node --test tests/*.test.mjs` (386 tests), backend unittest discovery (10 tests), and `git diff --check`. The new regression verifies ORANGE accepted/PURPLE rejected, EN/ES feedback, and saved r1 Indiana answers remaining unchanged. No follow-up browser, phone, hosted or live result is claimed by these local checks.
 
 ## Source and exact owner corrections
 
@@ -21,6 +23,8 @@ Apply this photo with only the owner's stated corrections; do not automatically 
 6. **NY 120–121 → GOLD on all four services**, retaining the broader rule despite the photo showing only 120 0. The owner clarified the initially ambiguous “yes” and explicitly confirmed this scope.
 7. **Routing-code endings 2S → BLUE and 1S → PURPLE**, all four services, overriding ordinary range answers; retained by owner confirmation.
 8. **Destination/service indicator +1 → PURPLE**, all four services. Owner clarified that +1 appears where Ground / Next Day Air / the destination service is shown, **not as a routing-code suffix**. Keep it distinct from the route code and the base service. This rule is owner-supplied and not printed on the chart.
+
+9. **2 Day Air IN 460–479 → ORANGE.** Subsequent explicit owner correction supersedes the photo's PURPLE entry. Update Study, generated/manual cards and neighboring Indiana/Ohio/Michigan explanations. Ground/3 Day Select remain ORANGE. Ordinary-route correction does not override destination +1 or routing suffix rules. Source revision becomes `twilight-2026-11-08-r2`; existing saved results retain their original answers and version.
 
 ### +1 scope and implemented branch behavior
 

@@ -1,14 +1,14 @@
 import { BELT_STYLE } from './belts.js';
-import { formatDestinationLabel } from './destination.js?v=chart-destination-20261108';
-import { SERVICE_LABEL } from './questions.js?v=chart-destination-20261108';
-import { DECKS, deckById, deckLabel } from './decks.js?v=chart-destination-20261108';
-import { CARD_SECONDS, createRun, currentCard, answerCard, timeoutCard, summarize } from './quiz.js?v=chart-destination-20261108';
+import { formatDestinationLabel } from './destination.js?v=chart-destination-20261108-r2';
+import { SERVICE_LABEL } from './questions.js?v=chart-destination-20261108-r2';
+import { DECKS, deckById, deckLabel } from './decks.js?v=chart-destination-20261108-r2';
+import { CARD_SECONDS, createRun, currentCard, answerCard, timeoutCard, summarize } from './quiz.js?v=chart-destination-20261108-r2';
 import { createClock } from './clock.js';
 import { createShiftLog } from './shiftLog.js';
 import { saveWorkbook } from './exportFile.js';
-import { CHART, searchChart } from './study.js?v=chart-destination-20261108';
-import { selectLevelCards } from './levels.js?v=chart-destination-20261108';
-import { createLanguage } from './i18n.js?v=chart-destination-20261108';
+import { CHART, searchChart } from './study.js?v=chart-destination-20261108-r2';
+import { selectLevelCards } from './levels.js?v=chart-destination-20261108-r2';
+import { createLanguage } from './i18n.js?v=chart-destination-20261108-r2';
 
 const app = document.getElementById('app');
 const log = createShiftLog(typeof localStorage === 'undefined' ? null : localStorage);

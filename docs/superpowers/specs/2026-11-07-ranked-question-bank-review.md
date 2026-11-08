@@ -2,6 +2,40 @@
 
 **Status, November 8, 2026:** Chart corrections and destination +1 are implemented and locally verified on `codex/ranked-mode` through application commit `929f189`. They are **not live or published**. Counts are candidate inventory, not owner-approved Ranked content. Implementation owner: [#5](https://github.com/renilsonjr/Sort-Tester-Live/issues/5). Policy: [[2026-11-07-ranked-decision-record]]; proposed versioning: [[2026-11-07-ranked-security-operations-design]]. Active source: [[2026-11-08-ranked-chart-reference]]; implementation plan: [[2026-11-08-chart-corrections-and-destination-plus-one]].
 
+## Subsequent owner decisions — November 8, after PR #31 merge
+
+PR #31 is merged and deployed. The r1 evidence below is historical; the subsequent 2DA Indiana ORANGE correction is pending review/publication as source revision `twilight-2026-11-08-r2`. Source details: [[2026-11-08-ranked-chart-reference]].
+
+Settled rules for future Ranked assignment (not implemented by Practice code):
+
+- Copies of the same scenario across Practice decks count once. Different base services and ordinary versus destination +1 remain distinct contexts.
+- Overlapping ZIP ranges for the same service/destination context cannot appear together in a Ranked quiz.
+- Broad-range question wording must explicitly exclude answer-changing exceptions.
+- Each scenario receives one owner-reviewed fixed difficulty, independent of Practice deck membership.
+- Starting guideline: standard routes Easy; narrower ranges/service distinctions Medium; exact exceptions/suffixes/destination modifiers Hard. Owner review can override this guideline.
+
+The following labels were individually reviewed in chat; these rows do not approve a canonical schema, complete explanations, immutable assignments or a usable Ranked bank.
+
+| Service | Scenario | Owner difficulty / status |
+| --- | --- | --- |
+| Ground | MA010–024 → GOLD | Easy |
+| Ground | GA300–319 → BLUE | Easy |
+| Ground | FL320–349 → PINK | Easy |
+| Ground | VT050–059 → GOLD | Easy |
+| Ground | CT060–069 → GOLD | Easy |
+| 2 Day Air | IL600–608 → YELLOW | Medium previously approved; owner subsequently requested Hard Illinois content, exact range scope awaiting confirmation |
+| 2 Day Air | IL609–629 → ORANGE | Medium previously approved; same pending Hard clarification |
+| 3 Day Select | TX770–784 → BLUE | Medium |
+| 2 Day Air | NY140–147 → ORANGE | Medium |
+| 3 Day Select | TX750–768 → BLUE | Medium |
+| Ground | TN376–378 → BLUE | Hard |
+| Ground | NY148 1 → GOLD | Hard |
+| Ground | NY109, destination +1 → PURPLE | Hard |
+| Ground | MA025–026 → BLUE | Hard; owner clarified Ground explicitly |
+| 2 Day Air | IN460–479 → ORANGE | Hard requested; owner corrected the answer explicitly |
+
+The proposed Hard NJ0799 and NDA NY109+1 questions were replaced at the owner's request and are not approved as Hard by this discussion. Work-methods tie content remains a separate open gate. No product difficulty labels or assignment engine are added here.
+
 ## Current branch inventory — November 8, 2026
 
 Loaded the real `src/decks.js` and `src/chart.js` modules with `tests/helpers/load-app-modules.mjs` in a temporary ESM sandbox at `929f189`. Every current card carries source provenance `twilight-2026-11-08-r1`. Candidate arrays overlap; their memberships are not unique scenarios or per-run counts.

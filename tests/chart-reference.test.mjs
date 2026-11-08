@@ -37,6 +37,7 @@ test('2DA Georgia uses the owner-selected reference', () => {
 // Search endpoints catch wrong inclusive boundaries without reimplementing routing.
 for (const [service, state, lower, upper, belt] of [
   ['2 Day Air', 'GA', '300', '319', 'BLUE'],
+  ['2 Day Air', 'IN', '460', '479', 'ORANGE'],
   ['2 Day Air', 'IL', '600', '608', 'YELLOW'],
   ['2 Day Air', 'IL', '609', '629', 'ORANGE'],
   ['3 Day Select', 'TX', '750', '768', 'BLUE'],
@@ -111,9 +112,9 @@ test('existing deck run lengths are retained', () => {
 });
 
 test('current cards carry route provenance without claiming Ranked approval', () => {
-  assert.equal(chart.ROUTE_REFERENCE_VERSION, 'twilight-2026-11-08-r1');
+  assert.equal(chart.ROUTE_REFERENCE_VERSION, 'twilight-2026-11-08-r2');
   for (const deck of DECKS) for (const card of deck.cards) {
-    assert.equal(card.referenceVersion, 'twilight-2026-11-08-r1', card.id);
+    assert.equal(card.referenceVersion, 'twilight-2026-11-08-r2', card.id);
     assert.equal(card.rankedApproved, undefined);
   }
 });
@@ -126,4 +127,28 @@ test('NJ Spanish feedback teaches the specific reviewed code without a blanket r
     assert.ok(text.includes('RED'));
     assert.ok(!text.includes('Solo 079 9'));
   }
+});
+
+// The owner correction must reach quiz scoring, not just the Study chart.
+test('2DA Indiana accepts ORANGE and rejects the superseded PURPLE answer', async () => {
+  const { modules: [{ createRun, answerCard }], cleanup: cleanQuiz } = await loadAppModules(['src/quiz.js']);
+  try {
+    const card = DECKS.find(deck => deck.id === 'mixed-missorts').cards.find(card => card.id === 'mixed-in-2da');
+    assert.ok(card);
+    assert.ok(!card.confusions.includes('ORANGE'), 'correct belt must not appear among distractors');
+    for (const [answer, expected] of [['ORANGE', 'correct'], ['PURPLE', 'wrong']]) {
+      const run = createRun({ name: 'Fictional correction test', cards: [card] });
+      const response = answerCard(run, answer, 1000);
+      assert.equal(response.outcome, expected);
+      assert.equal(response.correctBelt, 'ORANGE');
+      assert.equal(response.referenceVersion, 'twilight-2026-11-08-r2');
+    }
+    const language = createLanguage();
+    for (const lang of ['en', 'es']) {
+      language.set(lang);
+      const text = language.explanation({ ...card, correctBelt: card.belt });
+      assert.match(text, /ORANGE/);
+      assert.ok(!text.includes('PURPLE'), 'feedback must not teach the superseded Indiana belt');
+    }
+  } finally { await cleanQuiz(); }
 });
