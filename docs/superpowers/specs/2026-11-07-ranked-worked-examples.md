@@ -1,6 +1,6 @@
 # Ranked worked examples and state transitions
 
-**Status:** The owner confirmed examples 1–27 individually in chat on November 7, 2026. The state-transition table below is a proposed consolidation for review, not a separately approved implementation. Documentation only: no Ranked engine or executable business-rule tests are added here. Issue [#4](https://github.com/renilsonjr/Sort-Tester-Live/issues/4) remains open.
+**Status:** The owner confirmed examples 1–27 individually in chat on November 7, 2026. The owner also reviewed and approved the state-transition contract one step at a time, concluding November 8, 2026. This approves the required behavior, not an engine implementation or implementation plan. Documentation only: no Ranked engine or executable business-rule tests are added here. Issue [#4](https://github.com/renilsonjr/Sort-Tester-Live/issues/4) remains open.
 
 **Controlling policy:** [[2026-11-07-ranked-decision-record]]. Technical defaults and operational evidence gates: [[2026-11-07-ranked-security-operations-design]]. Build order: [[2026-11-06-ranked-roadmap]]. Do not reinterpret a future verification target as a passing feature test.
 
@@ -42,7 +42,7 @@ For regular attempts in a capped badge, calculate the whole result and any Quit 
 | 26 | Distinct server losses at 0/4/8/12 seconds, with recovery between | Four losses with each gap<5 seconds create private review flag | Exactly five-second gap resets sequence. No deduction, suspension, Ranked block or automatic ticket; not cheating proof |
 | 27 | Two lower-rank tied players both incomplete at round deadline | Unlike Challenger, no automatic prize exclusion; unresolved incomplete group goes to owner selection below completed players | Frozen seasonal points unchanged; no extra round solely for that incomplete group |
 
-## Proposed state-transition contract — review still required
+## Owner-approved state-transition contract
 
 These names explain behavior; they do not dictate database enum names or new API routes. Attempt progress (question versus feedback) is separate from connection status (connected versus grace), so reconnecting can return to the same feedback without creating another question.
 
@@ -78,4 +78,4 @@ These names explain behavior; they do not dictate database enum names or new API
 
 ## Issue #4 completion boundary
 
-Examples 1–27 are owner-reviewed expectations. The transition table and its implementation ordering still need review; executable business-rule tests are future #8/#9/#23/#24/#25 work under their own plans. Existing health/CORS/browser tests do not exercise these outcomes. Keep #4 open until its documentation/protocol acceptance is reviewed; do not wait for every downstream feature to be built to finish a requirements issue, and do not mark downstream features complete merely because #4 is accepted.
+Examples 1–27 and the state-transition behavior are owner-reviewed expectations. Documentation/protocol review is complete as of November 8, 2026; keep #4 open until this record is merged. Detailed implementation ordering and executable business-rule tests remain future #8/#9/#23/#24/#25 work under their own reviewed plans. Existing health/CORS/browser tests do not exercise these outcomes. Accepting this requirements issue does not mark any downstream feature implemented or verified.
