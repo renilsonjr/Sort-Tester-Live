@@ -1,5 +1,5 @@
 {
-  "status": "Review-only full-chart inventory:283 approved difficulty labels;213 entries have approved bilingual explanations. Seventy focused entries remain unapproved, including six proposed exact-literal explanations. Canonical/coverage validation is incomplete; not an executable bank.",
+  "status": "Review-only full-chart inventory:283 approved difficulty labels;219 approved bilingual explanations. Sixty-four focused entries remain unapproved, including eight proposed suffix explanations. Canonical/coverage validation remains incomplete; not an executable bank.",
   "sourceRevision": "twilight-2026-11-08-r2",
   "existingApprovalsPreserved": 17,
   "remainingDifficultyReviews": 0,
@@ -2273,7 +2273,7 @@
       "difficulty": "Hard",
       "difficultyStatus": "owner-approved",
       "difficultyReason": "Owner-approved Hard label; exact literal-code meaning is now confirmed. Question wording/explanations remain pending.",
-      "wordingStatus": "not-yet-reviewed",
+      "wordingStatus": "owner-approved-bilingual",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [
         "Owner confirmed this is one exact code, not a range. Preserve the complete literal including its space and hyphen; do not infer numeric endpoints or remove punctuation."
@@ -2291,12 +2291,12 @@
         "en": {
           "prompt": "Which belt does this go to?",
           "explanation": "Ground NE 575 3-6 goes to ORANGE. This is one exact code, not a range.",
-          "approvalStatus": "proposed"
+          "approvalStatus": "owner-approved"
         },
         "es": {
           "prompt": "¿A qué color va?",
           "explanation": "En Terrestre, NE 575 3-6 va a ORANGE. Es un código exacto, no un rango.",
-          "approvalStatus": "proposed"
+          "approvalStatus": "owner-approved"
         }
       }
     },
@@ -2312,7 +2312,7 @@
       "difficulty": "Hard",
       "difficultyStatus": "owner-approved",
       "difficultyReason": "Owner-approved Hard label; exact literal-code meaning is now confirmed. Question wording/explanations remain pending.",
-      "wordingStatus": "not-yet-reviewed",
+      "wordingStatus": "owner-approved-bilingual",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [
         "Owner confirmed this is one exact code, not a range. Preserve the complete literal including its space and hyphen; do not infer numeric endpoints or remove punctuation."
@@ -2330,12 +2330,12 @@
         "en": {
           "prompt": "Which belt does this go to?",
           "explanation": "Ground NV 833 9-7 goes to ORANGE. This is one exact code, not a range.",
-          "approvalStatus": "proposed"
+          "approvalStatus": "owner-approved"
         },
         "es": {
           "prompt": "¿A qué color va?",
           "explanation": "En Terrestre, NV 833 9-7 va a ORANGE. Es un código exacto, no un rango.",
-          "approvalStatus": "proposed"
+          "approvalStatus": "owner-approved"
         }
       }
     },
@@ -2351,7 +2351,7 @@
       "difficulty": "Hard",
       "difficultyStatus": "owner-approved",
       "difficultyReason": "Owner-approved Hard label; exact literal-code meaning is now confirmed. Question wording/explanations remain pending.",
-      "wordingStatus": "not-yet-reviewed",
+      "wordingStatus": "owner-approved-bilingual",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [
         "Owner confirmed this is one exact code, not a range. Preserve the complete literal including its space and hyphen; do not infer numeric endpoints or remove punctuation."
@@ -2369,12 +2369,12 @@
         "en": {
           "prompt": "Which belt does this go to?",
           "explanation": "Ground AZ 847 2-7 goes to BLUE. This is one exact code, not a range.",
-          "approvalStatus": "proposed"
+          "approvalStatus": "owner-approved"
         },
         "es": {
           "prompt": "¿A qué color va?",
           "explanation": "En Terrestre, AZ 847 2-7 va a BLUE. Es un código exacto, no un rango.",
-          "approvalStatus": "proposed"
+          "approvalStatus": "owner-approved"
         }
       }
     },
@@ -2390,7 +2390,7 @@
       "difficulty": "Hard",
       "difficultyStatus": "owner-approved",
       "difficultyReason": "Owner-approved Hard label; exact literal-code meaning is now confirmed. Question wording/explanations remain pending.",
-      "wordingStatus": "not-yet-reviewed",
+      "wordingStatus": "owner-approved-bilingual",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [
         "Owner confirmed this is one exact code, not a range. Preserve the complete literal including its space and hyphen; do not infer numeric endpoints or remove punctuation."
@@ -2408,12 +2408,12 @@
         "en": {
           "prompt": "Which belt does this go to?",
           "explanation": "Ground NV 864 4-7 goes to ORANGE. This is one exact code, not a range.",
-          "approvalStatus": "proposed"
+          "approvalStatus": "owner-approved"
         },
         "es": {
           "prompt": "¿A qué color va?",
           "explanation": "En Terrestre, NV 864 4-7 va a ORANGE. Es un código exacto, no un rango.",
-          "approvalStatus": "proposed"
+          "approvalStatus": "owner-approved"
         }
       }
     },
@@ -2429,7 +2429,7 @@
       "difficulty": "Hard",
       "difficultyStatus": "owner-approved",
       "difficultyReason": "Owner-approved Hard label; exact literal-code meaning is now confirmed. Question wording/explanations remain pending.",
-      "wordingStatus": "not-yet-reviewed",
+      "wordingStatus": "owner-approved-bilingual",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [
         "Owner confirmed this is one exact code, not a range. Preserve the complete literal including its space and hyphen; do not infer numeric endpoints or remove punctuation."
@@ -2447,12 +2447,12 @@
         "en": {
           "prompt": "Which belt does this go to?",
           "explanation": "Ground NV 890 0-0 goes to ORANGE. This is one exact code, not a range.",
-          "approvalStatus": "proposed"
+          "approvalStatus": "owner-approved"
         },
         "es": {
           "prompt": "¿A qué color va?",
           "explanation": "En Terrestre, NV 890 0-0 va a ORANGE. Es un código exacto, no un rango.",
-          "approvalStatus": "proposed"
+          "approvalStatus": "owner-approved"
         }
       }
     },
@@ -2468,7 +2468,7 @@
       "difficulty": "Hard",
       "difficultyStatus": "owner-approved",
       "difficultyReason": "Owner-approved Hard label; exact literal-code meaning is now confirmed. Question wording/explanations remain pending.",
-      "wordingStatus": "not-yet-reviewed",
+      "wordingStatus": "owner-approved-bilingual",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [
         "Owner confirmed this is one exact code, not a range. Preserve the complete literal including its space and hyphen; do not infer numeric endpoints or remove punctuation."
@@ -2486,12 +2486,12 @@
         "en": {
           "prompt": "Which belt does this go to?",
           "explanation": "Ground AZ 922 2-0 goes to BLUE. This is one exact code, not a range.",
-          "approvalStatus": "proposed"
+          "approvalStatus": "owner-approved"
         },
         "es": {
           "prompt": "¿A qué color va?",
           "explanation": "En Terrestre, AZ 922 2-0 va a BLUE. Es un código exacto, no un rango.",
-          "approvalStatus": "proposed"
+          "approvalStatus": "owner-approved"
         }
       }
     },
@@ -2545,8 +2545,20 @@
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [],
       "approvedReview": "G79",
-      "wordingReviewGroup": "focused-review",
-      "wordingReviewReason": "Specific exception or suffix: review its explanatory wording separately."
+      "wordingReviewGroup": "routing-suffix-batch-1",
+      "wordingReviewReason": "Specific exception or suffix: review its explanatory wording separately.",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "A routing code ending in 2S goes to BLUE on all four services, regardless of its ordinary ZIP range.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "Un código de ruta terminado en 2S va a BLUE en los cuatro servicios, sin importar el rango ZIP habitual.",
+          "approvalStatus": "proposed"
+        }
+      }
     },
     {
       "id": "ground-exceptions-anystate-ends1s",
@@ -2564,8 +2576,20 @@
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [],
       "approvedReview": "G80",
-      "wordingReviewGroup": "focused-review",
-      "wordingReviewReason": "Specific exception or suffix: review its explanatory wording separately."
+      "wordingReviewGroup": "routing-suffix-batch-1",
+      "wordingReviewReason": "Specific exception or suffix: review its explanatory wording separately.",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "A routing code ending in 1S goes to PURPLE on all four services, regardless of its ordinary ZIP range.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "Un código de ruta terminado en 1S va a PURPLE en los cuatro servicios, sin importar el rango ZIP habitual.",
+          "approvalStatus": "proposed"
+        }
+      }
     },
     {
       "id": "3dayselect-main-ma-010-024",
@@ -4805,8 +4829,20 @@
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [],
       "approvedReview": "S80",
-      "wordingReviewGroup": "focused-review",
-      "wordingReviewReason": "Specific exception or suffix: review its explanatory wording separately."
+      "wordingReviewGroup": "routing-suffix-batch-1",
+      "wordingReviewReason": "Specific exception or suffix: review its explanatory wording separately.",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "A routing code ending in 2S goes to BLUE on all four services, regardless of its ordinary ZIP range.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "Un código de ruta terminado en 2S va a BLUE en los cuatro servicios, sin importar el rango ZIP habitual.",
+          "approvalStatus": "proposed"
+        }
+      }
     },
     {
       "id": "3dayselect-exceptions-anystate-ends1s",
@@ -4824,8 +4860,20 @@
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [],
       "approvedReview": "S81",
-      "wordingReviewGroup": "focused-review",
-      "wordingReviewReason": "Specific exception or suffix: review its explanatory wording separately."
+      "wordingReviewGroup": "routing-suffix-batch-1",
+      "wordingReviewReason": "Specific exception or suffix: review its explanatory wording separately.",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "A routing code ending in 1S goes to PURPLE on all four services, regardless of its ordinary ZIP range.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "Un código de ruta terminado en 1S va a PURPLE en los cuatro servicios, sin importar el rango ZIP habitual.",
+          "approvalStatus": "proposed"
+        }
+      }
     },
     {
       "id": "2dayair-main-ma-010-024",
@@ -6626,8 +6674,20 @@
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [],
       "approvedReview": "D58",
-      "wordingReviewGroup": "focused-review",
-      "wordingReviewReason": "Specific exception or suffix: review its explanatory wording separately."
+      "wordingReviewGroup": "routing-suffix-batch-1",
+      "wordingReviewReason": "Specific exception or suffix: review its explanatory wording separately.",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "A routing code ending in 2S goes to BLUE on all four services, regardless of its ordinary ZIP range.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "Un código de ruta terminado en 2S va a BLUE en los cuatro servicios, sin importar el rango ZIP habitual.",
+          "approvalStatus": "proposed"
+        }
+      }
     },
     {
       "id": "2dayair-exceptions-anystate-ends1s",
@@ -6645,8 +6705,20 @@
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [],
       "approvedReview": "D59",
-      "wordingReviewGroup": "focused-review",
-      "wordingReviewReason": "Specific exception or suffix: review its explanatory wording separately."
+      "wordingReviewGroup": "routing-suffix-batch-1",
+      "wordingReviewReason": "Specific exception or suffix: review its explanatory wording separately.",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "A routing code ending in 1S goes to PURPLE on all four services, regardless of its ordinary ZIP range.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "Un código de ruta terminado en 1S va a PURPLE en los cuatro servicios, sin importar el rango ZIP habitual.",
+          "approvalStatus": "proposed"
+        }
+      }
     },
     {
       "id": "nextdayair-main-ma-010-024",
@@ -7894,8 +7966,20 @@
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [],
       "approvedReview": "N42",
-      "wordingReviewGroup": "focused-review",
-      "wordingReviewReason": "Specific exception or suffix: review its explanatory wording separately."
+      "wordingReviewGroup": "routing-suffix-batch-1",
+      "wordingReviewReason": "Specific exception or suffix: review its explanatory wording separately.",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "A routing code ending in 2S goes to BLUE on all four services, regardless of its ordinary ZIP range.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "Un código de ruta terminado en 2S va a BLUE en los cuatro servicios, sin importar el rango ZIP habitual.",
+          "approvalStatus": "proposed"
+        }
+      }
     },
     {
       "id": "nextdayair-exceptions-anystate-ends1s",
@@ -7913,8 +7997,20 @@
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [],
       "approvedReview": "N43",
-      "wordingReviewGroup": "focused-review",
-      "wordingReviewReason": "Specific exception or suffix: review its explanatory wording separately."
+      "wordingReviewGroup": "routing-suffix-batch-1",
+      "wordingReviewReason": "Specific exception or suffix: review its explanatory wording separately.",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "A routing code ending in 1S goes to PURPLE on all four services, regardless of its ordinary ZIP range.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "Un código de ruta terminado en 1S va a PURPLE en los cuatro servicios, sin importar el rango ZIP habitual.",
+          "approvalStatus": "proposed"
+        }
+      }
     },
     {
       "id": "destination-plus-one-gnd",
@@ -8104,11 +8200,11 @@
     "scopeNote": "NY109 examples do not restrict the rule to New York or routing109. This clarification does not create or approve additional canonical variants or decide conflicting combined-marker precedence."
   },
   "wordingReviewCounts": {
-    "enOwnerApproved": 213,
-    "esOwnerApproved": 213,
-    "enPending": 70,
-    "esPending": 70,
-    "bilingualOwnerApproved": 213
+    "enOwnerApproved": 219,
+    "esOwnerApproved": 219,
+    "enPending": 64,
+    "esPending": 64,
+    "bilingualOwnerApproved": 219
   },
   "wordingReviewBatches": [
     {
@@ -8314,7 +8410,7 @@
     },
     {
       "id": "exact-literal-batch-1",
-      "status": "proposed",
+      "status": "owner-approved",
       "languages": [
         "en",
         "es"
@@ -8328,7 +8424,28 @@
         "G77",
         "G78"
       ],
-      "scope": "Wording only; exact-code meaning, source answers and Hard labels are already approved and remain unchanged."
+      "scope": "Wording only; exact-code meaning, source answers and Hard labels are already approved and remain unchanged.",
+      "approvalScope": "Owner explicitly approved both language explanations for all six exact literals; existing code meaning, answers and Hard labels unchanged."
+    },
+    {
+      "id": "routing-suffix-batch-1",
+      "status": "proposed",
+      "languages": [
+        "en",
+        "es"
+      ],
+      "entryCount": 8,
+      "entryReviewRefs": [
+        "G79",
+        "G80",
+        "S80",
+        "S81",
+        "D58",
+        "D59",
+        "N42",
+        "N43"
+      ],
+      "scope": "Feedback wording for1S/2S across four ordinary-service contexts. Does not approve combined suffix/+1/EAM precedence or alter existing Hard labels."
     }
   ]
 }

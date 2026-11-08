@@ -1,6 +1,6 @@
 # Expanded Ranked question wording review
 
-**Status:**213 entries now have approved English/Spanish explanations, including the original17, eight previously reviewed expanded entries and the188-entry standard-feedback batch. All283 difficulty labels are settled. Seventy focused entries remain pending; six exact-literal explanations are drafted below for review. No product code or executable bank is created here.
+**Status:**219 entries have approved English/Spanish explanations, including the original17, eight expanded entries,188 standard explanations and six exact literals. All283 difficulty labels are settled. Sixty-four focused wording cases remain pending; eight suffix explanations are drafted below. No product code or executable bank is created here.
 
 **Related:** [[2026-11-08-ranked-full-chart-review]], [[2026-11-08-ranked-full-chart-review.json]], [[2026-11-08-ranked-question-wording-review]], [[2026-11-08-ranked-chart-reference]], [[2026-11-08-curated-ranked-bank-design]]. Tracker: [#5](https://github.com/renilsonjr/Sort-Tester-Live/issues/5), [PR #32](https://github.com/renilsonjr/Sort-Tester-Live/pull/32).
 
@@ -264,11 +264,11 @@ The owner explicitly approved all188 feedback explanations in both languages. Se
 - [x] Owner approved all188 standard-feedback explanations in English.
 - [x] Owner approved all188 standard-feedback explanations in Spanish.
 
-## Exact literal-code feedback batch — proposed (six entries)
+## Exact literal-code feedback batch — approved (six entries)
 
-These six codes already have owner-approved meanings, answers and Hard labels. Only the English/Spanish feedback wording below needs review. Preserve every code's spaces and hyphen exactly; no numeric endpoints or expanded codes are inferred.
+These six codes already have owner-approved meanings, answers and Hard labels. The owner approved the English/Spanish feedback wording below. Preserve every code's spaces and hyphen exactly; no numeric endpoints or expanded codes are inferred.
 
-| Review reference | Ground exact code | Answer | Proposed English feedback | Proposed Spanish feedback |
+| Review reference | Ground exact code | Answer | Approved English feedback | Approved Spanish feedback |
 | --- | --- | --- | --- | --- |
 | G73 | NE 575 3-6 | ORANGE | Ground NE 575 3-6 goes to ORANGE. This is one exact code, not a range. | En Terrestre, NE 575 3-6 va a ORANGE. Es un código exacto, no un rango. |
 | G74 | NV 833 9-7 | ORANGE | Ground NV 833 9-7 goes to ORANGE. This is one exact code, not a range. | En Terrestre, NV 833 9-7 va a ORANGE. Es un código exacto, no un rango. |
@@ -277,12 +277,30 @@ These six codes already have owner-approved meanings, answers and Hard labels. O
 | G77 | NV 890 0-0 | ORANGE | Ground NV 890 0-0 goes to ORANGE. This is one exact code, not a range. | En Terrestre, NV 890 0-0 va a ORANGE. Es un código exacto, no un rango. |
 | G78 | AZ 922 2-0 | BLUE | Ground AZ 922 2-0 goes to BLUE. This is one exact code, not a range. | En Terrestre, AZ 922 2-0 va a BLUE. Es un código exacto, no un rango. |
 
-- [ ] Owner approves the six exact-literal explanations in English.
-- [ ] Owner approves the six exact-literal explanations in Spanish.
+- [x] Owner approved all six exact-literal explanations in English.
+- [x] Owner approved all six exact-literal explanations in Spanish.
 
-## Focused wording queue — 70 entries
+## Routing-suffix feedback batch — proposed (eight entries)
 
-These70 entries are not included in the approved standard batch. Six have drafts in the exact-literal section above; the other64 await focused wording/coverage work. Possible prefix overlap is only a reason to review; it does not establish that a different-state exception actually applies. Confirm coverage before adding exclusions. No new wording approval is inferred here.
+The source rules1S→PURPLE and2S→BLUE already apply to all four services and have approved Hard labels. This review covers the English/Spanish feedback in ordinary service contexts. No combined suffix/+1/EAM precedence is inferred.
+
+| Review reference | Service | Routing-code ending | Answer | Proposed English feedback | Proposed Spanish feedback |
+| --- | --- | --- | --- | --- | --- |
+| G79 | Ground | 2S | BLUE | A routing code ending in 2S goes to BLUE on all four services, regardless of its ordinary ZIP range. | Un código de ruta terminado en 2S va a BLUE en los cuatro servicios, sin importar el rango ZIP habitual. |
+| G80 | Ground | 1S | PURPLE | A routing code ending in 1S goes to PURPLE on all four services, regardless of its ordinary ZIP range. | Un código de ruta terminado en 1S va a PURPLE en los cuatro servicios, sin importar el rango ZIP habitual. |
+| S80 | 3 Day Select | 2S | BLUE | A routing code ending in 2S goes to BLUE on all four services, regardless of its ordinary ZIP range. | Un código de ruta terminado en 2S va a BLUE en los cuatro servicios, sin importar el rango ZIP habitual. |
+| S81 | 3 Day Select | 1S | PURPLE | A routing code ending in 1S goes to PURPLE on all four services, regardless of its ordinary ZIP range. | Un código de ruta terminado en 1S va a PURPLE en los cuatro servicios, sin importar el rango ZIP habitual. |
+| D58 | 2 Day Air | 2S | BLUE | A routing code ending in 2S goes to BLUE on all four services, regardless of its ordinary ZIP range. | Un código de ruta terminado en 2S va a BLUE en los cuatro servicios, sin importar el rango ZIP habitual. |
+| D59 | 2 Day Air | 1S | PURPLE | A routing code ending in 1S goes to PURPLE on all four services, regardless of its ordinary ZIP range. | Un código de ruta terminado en 1S va a PURPLE en los cuatro servicios, sin importar el rango ZIP habitual. |
+| N42 | Next Day Air | 2S | BLUE | A routing code ending in 2S goes to BLUE on all four services, regardless of its ordinary ZIP range. | Un código de ruta terminado en 2S va a BLUE en los cuatro servicios, sin importar el rango ZIP habitual. |
+| N43 | Next Day Air | 1S | PURPLE | A routing code ending in 1S goes to PURPLE on all four services, regardless of its ordinary ZIP range. | Un código de ruta terminado en 1S va a PURPLE en los cuatro servicios, sin importar el rango ZIP habitual. |
+
+- [ ] Owner approves all eight suffix explanations in English.
+- [ ] Owner approves all eight suffix explanations in Spanish.
+
+## Focused wording queue — 64 entries
+
+These64 entries remain unapproved. Eight routing-suffix explanations are drafted above; the other56 await focused wording/coverage work. Possible prefix overlap is only a reason to review; it does not establish that a different-state exception actually applies. Confirm coverage before adding exclusions. No new wording approval is inferred here.
 
 | Review reference | Service | Source state / code | Answer | Review need |
 | --- | --- | --- | --- | --- |
@@ -298,12 +316,6 @@ These70 entries are not included in the approved standard batch. Six have drafts
 | G56 | Ground | CAN CANADA | PURPLE | Exact code or named destination: review wording that preserves the source meaning. |
 | G57 | Ground | PRI PR | PINK | Exact code or named destination: review wording that preserves the source meaning. |
 | G65 | Ground | NJ 079 9 | ORANGE | Specific exception or suffix: review its explanatory wording separately. |
-| G73 | Ground | NE 575 3-6 | ORANGE | Specific exception or suffix: review its explanatory wording separately. |
-| G74 | Ground | NV 833 9-7 | ORANGE | Specific exception or suffix: review its explanatory wording separately. |
-| G75 | Ground | AZ 847 2-7 | BLUE | Specific exception or suffix: review its explanatory wording separately. |
-| G76 | Ground | NV 864 4-7 | ORANGE | Specific exception or suffix: review its explanatory wording separately. |
-| G77 | Ground | NV 890 0-0 | ORANGE | Specific exception or suffix: review its explanatory wording separately. |
-| G78 | Ground | AZ 922 2-0 | BLUE | Specific exception or suffix: review its explanatory wording separately. |
 | G79 | Ground | Any state ends 2S | BLUE | Specific exception or suffix: review its explanatory wording separately. |
 | G80 | Ground | Any state ends 1S | PURPLE | Specific exception or suffix: review its explanatory wording separately. |
 | S05 | 3 Day Select | NH 034 0 | GOLD | Exact code or named destination: review wording that preserves the source meaning. |
@@ -359,4 +371,4 @@ These70 entries are not included in the approved standard batch. Six have drafts
 
 ## Current wording counts
 
-Including the original17:213 English and213 Spanish explanations are approved, with70 pending in each language. Of those70, six exact-literal explanations are drafted for review and64 remain to be drafted/resolved. All283 answers/difficulty labels are unchanged. Only work-methods tie-question content is deferred; other tie-break policies remain unchanged.
+Including the original17:219 English and219 Spanish explanations are approved, with64 pending in each language. Eight suffix explanations are drafted for review;56 remain to be drafted/resolved. All283 answers/difficulty labels are unchanged. Only work-methods tie-question content is deferred; other tie-break policies remain unchanged.
