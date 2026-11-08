@@ -1,6 +1,6 @@
 # Expanded Ranked question wording review
 
-**Status:**219 entries have approved English/Spanish explanations, including the original17, eight expanded entries,188 standard explanations and six exact literals. All283 difficulty labels are settled. Sixty-four focused wording cases remain pending; eight suffix explanations are drafted below. No product code or executable bank is created here.
+**Status:**227 entries have approved English/Spanish explanations; all283 difficulty labels remain settled. Fifty-six focused wording cases remain pending. Four destination-context explanations are drafted below for the remaining three+1 examples and Next Day Air EAM. Original17 approvals are preserved. No product code or executable bank is created here.
 
 **Related:** [[2026-11-08-ranked-full-chart-review]], [[2026-11-08-ranked-full-chart-review.json]], [[2026-11-08-ranked-question-wording-review]], [[2026-11-08-ranked-chart-reference]], [[2026-11-08-curated-ranked-bank-design]]. Tracker: [#5](https://github.com/renilsonjr/Sort-Tester-Live/issues/5), [PR #32](https://github.com/renilsonjr/Sort-Tester-Live/pull/32).
 
@@ -280,11 +280,11 @@ These six codes already have owner-approved meanings, answers and Hard labels. T
 - [x] Owner approved all six exact-literal explanations in English.
 - [x] Owner approved all six exact-literal explanations in Spanish.
 
-## Routing-suffix feedback batch — proposed (eight entries)
+## Routing-suffix feedback batch — approved (eight entries)
 
 The source rules1S→PURPLE and2S→BLUE already apply to all four services and have approved Hard labels. This review covers the English/Spanish feedback in ordinary service contexts. No combined suffix/+1/EAM precedence is inferred.
 
-| Review reference | Service | Routing-code ending | Answer | Proposed English feedback | Proposed Spanish feedback |
+| Review reference | Service | Routing-code ending | Answer | Approved English feedback | Approved Spanish feedback |
 | --- | --- | --- | --- | --- | --- |
 | G79 | Ground | 2S | BLUE | A routing code ending in 2S goes to BLUE on all four services, regardless of its ordinary ZIP range. | Un código de ruta terminado en 2S va a BLUE en los cuatro servicios, sin importar el rango ZIP habitual. |
 | G80 | Ground | 1S | PURPLE | A routing code ending in 1S goes to PURPLE on all four services, regardless of its ordinary ZIP range. | Un código de ruta terminado en 1S va a PURPLE en los cuatro servicios, sin importar el rango ZIP habitual. |
@@ -295,12 +295,26 @@ The source rules1S→PURPLE and2S→BLUE already apply to all four services and 
 | N42 | Next Day Air | 2S | BLUE | A routing code ending in 2S goes to BLUE on all four services, regardless of its ordinary ZIP range. | Un código de ruta terminado en 2S va a BLUE en los cuatro servicios, sin importar el rango ZIP habitual. |
 | N43 | Next Day Air | 1S | PURPLE | A routing code ending in 1S goes to PURPLE on all four services, regardless of its ordinary ZIP range. | Un código de ruta terminado en 1S va a PURPLE en los cuatro servicios, sin importar el rango ZIP habitual. |
 
-- [ ] Owner approves all eight suffix explanations in English.
-- [ ] Owner approves all eight suffix explanations in Spanish.
+- [x] Owner approved all eight suffix explanations in English.
+- [x] Owner approved all eight suffix explanations in Spanish.
 
-## Focused wording queue — 64 entries
+## Destination-context feedback batch — proposed (four entries)
 
-These64 entries remain unapproved. Eight routing-suffix explanations are drafted above; the other56 await focused wording/coverage work. Possible prefix overlap is only a reason to review; it does not establish that a different-state exception actually applies. Confirm coverage before adding exclusions. No new wording approval is inferred here.
+Ground+1 already has approved bilingual wording and is not reopened. These drafts cover only3 Day Select+1,2 Day Air+1,Next Day Air+1 and Next Day Air EAM. Destination+1 applies to any state across all four services; the NY109 records are examples, not restrictions. EAM belongs in the destination/service field as Next Day Air EAM. Routing code remains separate in all cases. This review does not decide combined-marker precedence.
+
+| Review reference | Destination/service context | Answer | Proposed English feedback | Proposed Spanish feedback |
+| --- | --- | --- | --- | --- |
+| N26 | Next Day Air EAM | PURPLE | Next Day Air EAM goes to PURPLE, regardless of the ordinary routing code. | Aéreo 1 día EAM va a PURPLE, sin importar el código de ruta habitual. |
+| N44 | Next Day Air +1 | PURPLE | A destination marked +1 goes to PURPLE for any state across all four services. The routing code remains unchanged. | Un destino marcado +1 va a PURPLE para cualquier estado en los cuatro servicios. El código de ruta no cambia. |
+| D60 | 2 Day Air +1 | PURPLE | A destination marked +1 goes to PURPLE for any state across all four services. The routing code remains unchanged. | Un destino marcado +1 va a PURPLE para cualquier estado en los cuatro servicios. El código de ruta no cambia. |
+| S82 | 3 Day Select +1 | PURPLE | A destination marked +1 goes to PURPLE for any state across all four services. The routing code remains unchanged. | Un destino marcado +1 va a PURPLE para cualquier estado en los cuatro servicios. El código de ruta no cambia. |
+
+- [ ] Owner approves all four destination-context explanations in English.
+- [ ] Owner approves all four destination-context explanations in Spanish.
+
+## Focused wording queue — 56 entries
+
+These56 entries remain unapproved. Four destination-context explanations are drafted above; the other52 await focused wording/coverage work. Possible prefix overlap is only a reason to review; it does not establish that a different-state exception actually applies. Confirm coverage before adding exclusions. No new wording approval is inferred here.
 
 | Review reference | Service | Source state / code | Answer | Review need |
 | --- | --- | --- | --- | --- |
@@ -316,8 +330,6 @@ These64 entries remain unapproved. Eight routing-suffix explanations are drafted
 | G56 | Ground | CAN CANADA | PURPLE | Exact code or named destination: review wording that preserves the source meaning. |
 | G57 | Ground | PRI PR | PINK | Exact code or named destination: review wording that preserves the source meaning. |
 | G65 | Ground | NJ 079 9 | ORANGE | Specific exception or suffix: review its explanatory wording separately. |
-| G79 | Ground | Any state ends 2S | BLUE | Specific exception or suffix: review its explanatory wording separately. |
-| G80 | Ground | Any state ends 1S | PURPLE | Specific exception or suffix: review its explanatory wording separately. |
 | S05 | 3 Day Select | NH 034 0 | GOLD | Exact code or named destination: review wording that preserves the source meaning. |
 | S16 | 3 Day Select | NY 148–149 | ORANGE | Conservative prefix-overlap hold for S79: verify actual state/context applicability before drafting exclusions. |
 | S29 | 3 Day Select | MS 386–399 | BROWN | Conservative prefix-overlap hold for S63: verify actual state/context applicability before drafting exclusions. |
@@ -345,8 +357,6 @@ These64 entries remain unapproved. Eight routing-suffix explanations are drafted
 | S77 | 3 Day Select | WY 820 0 | ORANGE | Specific exception or suffix: review its explanatory wording separately. |
 | S78 | 3 Day Select | WY 820 1 | ORANGE | Specific exception or suffix: review its explanatory wording separately. |
 | S79 | 3 Day Select | NY 148 1 | GOLD | Specific exception or suffix: review its explanatory wording separately. |
-| S80 | 3 Day Select | Any state ends 2S | BLUE | Specific exception or suffix: review its explanatory wording separately. |
-| S81 | 3 Day Select | Any state ends 1S | PURPLE | Specific exception or suffix: review its explanatory wording separately. |
 | D05 | 2 Day Air | NH 034 0 | GOLD | Exact code or named destination: review wording that preserves the source meaning. |
 | D15 | 2 Day Air | NY 148–149 | ORANGE | Conservative prefix-overlap hold for D57: verify actual state/context applicability before drafting exclusions. |
 | D34 | 2 Day Air | * 498–599 | PURPLE | Wildcard or named destination: review its scope and any explicit exception wording. |
@@ -356,19 +366,15 @@ These64 entries remain unapproved. Eight routing-suffix explanations are drafted
 | D41 | 2 Day Air | * WORLD | PURPLE | Wildcard or named destination: review its scope and any explicit exception wording. |
 | D49 | 2 Day Air | NJ 079 9 | ORANGE | Specific exception or suffix: review its explanatory wording separately. |
 | D57 | 2 Day Air | NY 148 1 | GOLD | Specific exception or suffix: review its explanatory wording separately. |
-| D58 | 2 Day Air | Any state ends 2S | BLUE | Specific exception or suffix: review its explanatory wording separately. |
-| D59 | 2 Day Air | Any state ends 1S | PURPLE | Specific exception or suffix: review its explanatory wording separately. |
 | N05 | Next Day Air | NH 034 0 | GOLD | Exact code or named destination: review wording that preserves the source meaning. |
 | N24 | Next Day Air | * 220–999 | PURPLE | Wildcard or named destination: review its scope and any explicit exception wording. |
 | N25 | Next Day Air | * WORLD | PURPLE | Wildcard or named destination: review its scope and any explicit exception wording. |
 | N26 | Next Day Air | * ALL 1DA EAM | PURPLE | Service qualifier: review EAM destination presentation with separate routing field. |
 | N34 | Next Day Air | NJ 079 9 | ORANGE | Specific exception or suffix: review its explanatory wording separately. |
-| N42 | Next Day Air | Any state ends 2S | BLUE | Specific exception or suffix: review its explanatory wording separately. |
-| N43 | Next Day Air | Any state ends 1S | PURPLE | Specific exception or suffix: review its explanatory wording separately. |
 | N44 | Next Day Air | NY 109 | PURPLE | Destination modifier: review field separation and global scope. |
 | D60 | 2 Day Air | NY 109 | PURPLE | Destination modifier: review field separation and global scope. |
 | S82 | 3 Day Select | NY 109 | PURPLE | Destination modifier: review field separation and global scope. |
 
 ## Current wording counts
 
-Including the original17:219 English and219 Spanish explanations are approved, with64 pending in each language. Eight suffix explanations are drafted for review;56 remain to be drafted/resolved. All283 answers/difficulty labels are unchanged. Only work-methods tie-question content is deferred; other tie-break policies remain unchanged.
+Including the original17:227 English and227 Spanish explanations are approved, with56 pending in each language. Four destination-context explanations are drafted for review;52 remain to be drafted/resolved. All283 answers/difficulty labels are unchanged. Only work-methods tie-question content is deferred; other tie-break policies remain unchanged.

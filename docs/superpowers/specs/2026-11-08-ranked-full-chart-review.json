@@ -1,5 +1,5 @@
 {
-  "status": "Review-only full-chart inventory:283 approved difficulty labels;219 approved bilingual explanations. Sixty-four focused entries remain unapproved, including eight proposed suffix explanations. Canonical/coverage validation remains incomplete; not an executable bank.",
+  "status": "Review-only full-chart inventory:283 approved difficulty labels;227 approved bilingual explanations. Fifty-six focused entries remain unapproved, including four proposed destination-context explanations. Canonical/coverage validation remains incomplete; not an executable bank.",
   "sourceRevision": "twilight-2026-11-08-r2",
   "existingApprovalsPreserved": 17,
   "remainingDifficultyReviews": 0,
@@ -2541,7 +2541,7 @@
       "difficulty": "Hard",
       "difficultyStatus": "owner-approved",
       "difficultyReason": "Owner explicitly approved this recorded difficulty; question wording, explanations and any ambiguous source notation remain pending.",
-      "wordingStatus": "not-yet-reviewed",
+      "wordingStatus": "owner-approved-bilingual",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [],
       "approvedReview": "G79",
@@ -2551,12 +2551,12 @@
         "en": {
           "prompt": "Which belt does this go to?",
           "explanation": "A routing code ending in 2S goes to BLUE on all four services, regardless of its ordinary ZIP range.",
-          "approvalStatus": "proposed"
+          "approvalStatus": "owner-approved"
         },
         "es": {
           "prompt": "¿A qué color va?",
           "explanation": "Un código de ruta terminado en 2S va a BLUE en los cuatro servicios, sin importar el rango ZIP habitual.",
-          "approvalStatus": "proposed"
+          "approvalStatus": "owner-approved"
         }
       }
     },
@@ -2572,7 +2572,7 @@
       "difficulty": "Hard",
       "difficultyStatus": "owner-approved",
       "difficultyReason": "Owner explicitly approved this recorded difficulty; question wording, explanations and any ambiguous source notation remain pending.",
-      "wordingStatus": "not-yet-reviewed",
+      "wordingStatus": "owner-approved-bilingual",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [],
       "approvedReview": "G80",
@@ -2582,12 +2582,12 @@
         "en": {
           "prompt": "Which belt does this go to?",
           "explanation": "A routing code ending in 1S goes to PURPLE on all four services, regardless of its ordinary ZIP range.",
-          "approvalStatus": "proposed"
+          "approvalStatus": "owner-approved"
         },
         "es": {
           "prompt": "¿A qué color va?",
           "explanation": "Un código de ruta terminado en 1S va a PURPLE en los cuatro servicios, sin importar el rango ZIP habitual.",
-          "approvalStatus": "proposed"
+          "approvalStatus": "owner-approved"
         }
       }
     },
@@ -4825,7 +4825,7 @@
       "difficulty": "Hard",
       "difficultyStatus": "owner-approved",
       "difficultyReason": "Owner explicitly approved this recorded difficulty; question wording, explanations and any ambiguous source notation remain pending.",
-      "wordingStatus": "not-yet-reviewed",
+      "wordingStatus": "owner-approved-bilingual",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [],
       "approvedReview": "S80",
@@ -4835,12 +4835,12 @@
         "en": {
           "prompt": "Which belt does this go to?",
           "explanation": "A routing code ending in 2S goes to BLUE on all four services, regardless of its ordinary ZIP range.",
-          "approvalStatus": "proposed"
+          "approvalStatus": "owner-approved"
         },
         "es": {
           "prompt": "¿A qué color va?",
           "explanation": "Un código de ruta terminado en 2S va a BLUE en los cuatro servicios, sin importar el rango ZIP habitual.",
-          "approvalStatus": "proposed"
+          "approvalStatus": "owner-approved"
         }
       }
     },
@@ -4856,7 +4856,7 @@
       "difficulty": "Hard",
       "difficultyStatus": "owner-approved",
       "difficultyReason": "Owner explicitly approved this recorded difficulty; question wording, explanations and any ambiguous source notation remain pending.",
-      "wordingStatus": "not-yet-reviewed",
+      "wordingStatus": "owner-approved-bilingual",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [],
       "approvedReview": "S81",
@@ -4866,12 +4866,12 @@
         "en": {
           "prompt": "Which belt does this go to?",
           "explanation": "A routing code ending in 1S goes to PURPLE on all four services, regardless of its ordinary ZIP range.",
-          "approvalStatus": "proposed"
+          "approvalStatus": "owner-approved"
         },
         "es": {
           "prompt": "¿A qué color va?",
           "explanation": "Un código de ruta terminado en 1S va a PURPLE en los cuatro servicios, sin importar el rango ZIP habitual.",
-          "approvalStatus": "proposed"
+          "approvalStatus": "owner-approved"
         }
       }
     },
@@ -6670,7 +6670,7 @@
       "difficulty": "Hard",
       "difficultyStatus": "owner-approved",
       "difficultyReason": "Owner explicitly approved this recorded difficulty; question wording, explanations and any ambiguous source notation remain pending.",
-      "wordingStatus": "not-yet-reviewed",
+      "wordingStatus": "owner-approved-bilingual",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [],
       "approvedReview": "D58",
@@ -6680,12 +6680,12 @@
         "en": {
           "prompt": "Which belt does this go to?",
           "explanation": "A routing code ending in 2S goes to BLUE on all four services, regardless of its ordinary ZIP range.",
-          "approvalStatus": "proposed"
+          "approvalStatus": "owner-approved"
         },
         "es": {
           "prompt": "¿A qué color va?",
           "explanation": "Un código de ruta terminado en 2S va a BLUE en los cuatro servicios, sin importar el rango ZIP habitual.",
-          "approvalStatus": "proposed"
+          "approvalStatus": "owner-approved"
         }
       }
     },
@@ -6701,7 +6701,7 @@
       "difficulty": "Hard",
       "difficultyStatus": "owner-approved",
       "difficultyReason": "Owner explicitly approved this recorded difficulty; question wording, explanations and any ambiguous source notation remain pending.",
-      "wordingStatus": "not-yet-reviewed",
+      "wordingStatus": "owner-approved-bilingual",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [],
       "approvedReview": "D59",
@@ -6711,12 +6711,12 @@
         "en": {
           "prompt": "Which belt does this go to?",
           "explanation": "A routing code ending in 1S goes to PURPLE on all four services, regardless of its ordinary ZIP range.",
-          "approvalStatus": "proposed"
+          "approvalStatus": "owner-approved"
         },
         "es": {
           "prompt": "¿A qué color va?",
           "explanation": "Un código de ruta terminado en 1S va a PURPLE en los cuatro servicios, sin importar el rango ZIP habitual.",
-          "approvalStatus": "proposed"
+          "approvalStatus": "owner-approved"
         }
       }
     },
@@ -7508,8 +7508,20 @@
         "routingCodeSeparate": true,
         "ownerConfirmed": true
       },
-      "wordingReviewGroup": "focused-review",
-      "wordingReviewReason": "Service qualifier: review EAM destination presentation with separate routing field."
+      "wordingReviewGroup": "destination-context-batch-1",
+      "wordingReviewReason": "Service qualifier: review EAM destination presentation with separate routing field.",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "Next Day Air EAM goes to PURPLE, regardless of the ordinary routing code.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "Aéreo 1 día EAM va a PURPLE, sin importar el código de ruta habitual.",
+          "approvalStatus": "proposed"
+        }
+      }
     },
     {
       "id": "nextdayair-exceptions-nj-0703",
@@ -7962,7 +7974,7 @@
       "difficulty": "Hard",
       "difficultyStatus": "owner-approved",
       "difficultyReason": "Owner explicitly approved this recorded difficulty; question wording, explanations and any ambiguous source notation remain pending.",
-      "wordingStatus": "not-yet-reviewed",
+      "wordingStatus": "owner-approved-bilingual",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [],
       "approvedReview": "N42",
@@ -7972,12 +7984,12 @@
         "en": {
           "prompt": "Which belt does this go to?",
           "explanation": "A routing code ending in 2S goes to BLUE on all four services, regardless of its ordinary ZIP range.",
-          "approvalStatus": "proposed"
+          "approvalStatus": "owner-approved"
         },
         "es": {
           "prompt": "¿A qué color va?",
           "explanation": "Un código de ruta terminado en 2S va a BLUE en los cuatro servicios, sin importar el rango ZIP habitual.",
-          "approvalStatus": "proposed"
+          "approvalStatus": "owner-approved"
         }
       }
     },
@@ -7993,7 +8005,7 @@
       "difficulty": "Hard",
       "difficultyStatus": "owner-approved",
       "difficultyReason": "Owner explicitly approved this recorded difficulty; question wording, explanations and any ambiguous source notation remain pending.",
-      "wordingStatus": "not-yet-reviewed",
+      "wordingStatus": "owner-approved-bilingual",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [],
       "approvedReview": "N43",
@@ -8003,12 +8015,12 @@
         "en": {
           "prompt": "Which belt does this go to?",
           "explanation": "A routing code ending in 1S goes to PURPLE on all four services, regardless of its ordinary ZIP range.",
-          "approvalStatus": "proposed"
+          "approvalStatus": "owner-approved"
         },
         "es": {
           "prompt": "¿A qué color va?",
           "explanation": "Un código de ruta terminado en 1S va a PURPLE en los cuatro servicios, sin importar el rango ZIP habitual.",
-          "approvalStatus": "proposed"
+          "approvalStatus": "owner-approved"
         }
       }
     },
@@ -8067,8 +8079,20 @@
         "examplesAreNotScopeRestrictions": true,
         "ownerConfirmed": true
       },
-      "wordingReviewGroup": "focused-review",
-      "wordingReviewReason": "Destination modifier: review field separation and global scope."
+      "wordingReviewGroup": "destination-context-batch-1",
+      "wordingReviewReason": "Destination modifier: review field separation and global scope.",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "A destination marked +1 goes to PURPLE for any state across all four services. The routing code remains unchanged.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "Un destino marcado +1 va a PURPLE para cualquier estado en los cuatro servicios. El código de ruta no cambia.",
+          "approvalStatus": "proposed"
+        }
+      }
     },
     {
       "id": "destination-plus-one-2da",
@@ -8097,8 +8121,20 @@
         "examplesAreNotScopeRestrictions": true,
         "ownerConfirmed": true
       },
-      "wordingReviewGroup": "focused-review",
-      "wordingReviewReason": "Destination modifier: review field separation and global scope."
+      "wordingReviewGroup": "destination-context-batch-1",
+      "wordingReviewReason": "Destination modifier: review field separation and global scope.",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "A destination marked +1 goes to PURPLE for any state across all four services. The routing code remains unchanged.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "Un destino marcado +1 va a PURPLE para cualquier estado en los cuatro servicios. El código de ruta no cambia.",
+          "approvalStatus": "proposed"
+        }
+      }
     },
     {
       "id": "destination-plus-one-3ds",
@@ -8127,8 +8163,20 @@
         "examplesAreNotScopeRestrictions": true,
         "ownerConfirmed": true
       },
-      "wordingReviewGroup": "focused-review",
-      "wordingReviewReason": "Destination modifier: review field separation and global scope."
+      "wordingReviewGroup": "destination-context-batch-1",
+      "wordingReviewReason": "Destination modifier: review field separation and global scope.",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "A destination marked +1 goes to PURPLE for any state across all four services. The routing code remains unchanged.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "Un destino marcado +1 va a PURPLE para cualquier estado en los cuatro servicios. El código de ruta no cambia.",
+          "approvalStatus": "proposed"
+        }
+      }
     }
   ],
   "heldSourceRows": [
@@ -8200,11 +8248,11 @@
     "scopeNote": "NY109 examples do not restrict the rule to New York or routing109. This clarification does not create or approve additional canonical variants or decide conflicting combined-marker precedence."
   },
   "wordingReviewCounts": {
-    "enOwnerApproved": 219,
-    "esOwnerApproved": 219,
-    "enPending": 64,
-    "esPending": 64,
-    "bilingualOwnerApproved": 219
+    "enOwnerApproved": 227,
+    "esOwnerApproved": 227,
+    "enPending": 56,
+    "esPending": 56,
+    "bilingualOwnerApproved": 227
   },
   "wordingReviewBatches": [
     {
@@ -8429,7 +8477,7 @@
     },
     {
       "id": "routing-suffix-batch-1",
-      "status": "proposed",
+      "status": "owner-approved",
       "languages": [
         "en",
         "es"
@@ -8445,7 +8493,24 @@
         "N42",
         "N43"
       ],
-      "scope": "Feedback wording for1S/2S across four ordinary-service contexts. Does not approve combined suffix/+1/EAM precedence or alter existing Hard labels."
+      "scope": "Feedback wording for1S/2S across four ordinary-service contexts. Does not approve combined suffix/+1/EAM precedence or alter existing Hard labels.",
+      "approvalScope": "Owner explicitly approved both languages for all eight1S/2S entries across the four services; existing answers/Hard labels unchanged."
+    },
+    {
+      "id": "destination-context-batch-1",
+      "status": "proposed",
+      "languages": [
+        "en",
+        "es"
+      ],
+      "entryCount": 4,
+      "entryReviewRefs": [
+        "N26",
+        "N44",
+        "D60",
+        "S82"
+      ],
+      "scope": "Feedback only for the remaining three+1 examples and one NDA EAM rule; preserve separate routing/destination fields. Existing Ground+1 wording remains unchanged. Combined-marker precedence is not approved here."
     }
   ]
 }
