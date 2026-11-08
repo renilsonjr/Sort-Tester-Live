@@ -9,7 +9,7 @@
 - Active source: `twilight-2026-11-08-r2`, including owner corrections.
 - 283 source rows; hold four broad NJ CHECK rows without inventing belt answers. Retain listed NJ preload exceptions.
 - 279 belt-bearing source rows plus four NY109 destination+1 service contexts =283 review entries.
-- The original 17 owner-approved labels and bilingual explanations are preserved. Another 230 labels are approved, for 247 approved labels and 36 remaining difficulty proposals. Those additional labels still need wording/explanation review. Source rows are not a proven final unique-scenario count.
+- The original 17 owner-approved labels and bilingual explanations are preserved. Another 238 labels are approved, for 255 approved labels and 28 remaining difficulty proposals. Those additional labels still need wording/explanation review. Source rows are not a proven final unique-scenario count.
 - Question wording, exception exclusions, wildcard coverage and compound final-digit shorthand still need review for new entries. A suggestion of Easy never removes an applicable exception.
 - The game still selects15 questions, five per difficulty; expanding the bank increases the possible selections. No17-question runtime limit or fixed-ten-question repetition design remains.
 - Only the work-methods tie-question content is deferred; other tie-break policies remain unchanged.
@@ -19,9 +19,9 @@
 | Ground | 89 | 0 |
 | 3 Day Select | 85 | 0 |
 | 2 Day Air | 65 | 0 |
-| Next Day Air | 8 | 36 |
+| Next Day Air | 16 | 28 |
 
-Proposed-label totals for remaining entries: Easy 0, Medium 17, Hard 19. These are draft classifications requiring owner review, not settled counts.
+Proposed-label totals for remaining entries: Easy 0, Medium 9, Hard 19. These are draft classifications requiring owner review, not settled counts.
 
 ## Previously approved — do not rank again
 
@@ -279,6 +279,14 @@ Proposed-label totals for remaining entries: Easy 0, Medium 17, Hard 19. These a
 | N06 | `nextdayair-main-nhme-035-049` | Next Day Air | NH, ME 035–049 | PURPLE | Medium |
 | N07 | `nextdayair-main-vt-050-059` | Next Day Air | VT 050–059 | GOLD | Medium |
 | N08 | `nextdayair-main-ct-060-069` | Next Day Air | CT 060–069 | GOLD | Medium |
+| N09 | `nextdayair-main-ny-100-108` | Next Day Air | NY 100–108 | YELLOW | Medium |
+| N10 | `nextdayair-main-ny-109` | Next Day Air | NY 109 | ORANGE | Medium |
+| N11 | `nextdayair-main-ny-110-119` | Next Day Air | NY 110–119 | PINK | Medium |
+| N12 | `nextdayair-main-ny-120-121` | Next Day Air | NY 120–121 | GOLD | Medium |
+| N13 | `nextdayair-main-ny-122-127` | Next Day Air | NY 122–127 | ORANGE | Medium |
+| N14 | `nextdayair-main-ny-128-135` | Next Day Air | NY 128–135 | GOLD | Medium |
+| N15 | `nextdayair-main-ny-136` | Next Day Air | NY 136 | PURPLE | Medium |
+| N16 | `nextdayair-main-ny-137-139` | Next Day Air | NY 137–139 | GOLD | Medium |
 
 ## Ground — new proposals only
 
@@ -299,14 +307,6 @@ Proposed-label totals for remaining entries: Easy 0, Medium 17, Hard 19. These a
 
 | Source review ID | State / route | Answer | Proposed difficulty | Review note |
 | --- | --- | --- | --- | --- |
-| `nextdayair-main-ny-100-108` | NY 100–108 | YELLOW | Medium | Check applicable exceptions and effective coverage before approving broad-range wording. |
-| `nextdayair-main-ny-109` | NY 109 | ORANGE | Medium | Service-specific chart direction; proposed independently of Practice deck names. |
-| `nextdayair-main-ny-110-119` | NY 110–119 | PINK | Medium | Check applicable exceptions and effective coverage before approving broad-range wording. |
-| `nextdayair-main-ny-120-121` | NY 120–121 | GOLD | Medium | Check applicable exceptions and effective coverage before approving broad-range wording. |
-| `nextdayair-main-ny-122-127` | NY 122–127 | ORANGE | Medium | Check applicable exceptions and effective coverage before approving broad-range wording. |
-| `nextdayair-main-ny-128-135` | NY 128–135 | GOLD | Medium | Check applicable exceptions and effective coverage before approving broad-range wording. |
-| `nextdayair-main-ny-136` | NY 136 | PURPLE | Medium | Service-specific chart direction; proposed independently of Practice deck names. |
-| `nextdayair-main-ny-137-139` | NY 137–139 | GOLD | Medium | Check applicable exceptions and effective coverage before approving broad-range wording. |
 | `nextdayair-main-ny-140-149` | NY 140–149 | PURPLE | Medium | Check applicable exceptions and effective coverage before approving broad-range wording. |
 | `nextdayair-main-pa-150-167` | PA 150–167 | PURPLE | Medium | Check applicable exceptions and effective coverage before approving broad-range wording. |
 | `nextdayair-main-pa-168-178` | PA 168–178 | GREEN | Medium | Check applicable exceptions and effective coverage before approving broad-range wording. |
@@ -347,4 +347,4 @@ Proposed-label totals for remaining entries: Easy 0, Medium 17, Hard 19. These a
 
 ## Read-only inventory validation
 
-Validated all283 fixture IDs are accounted for exactly once as a source entry or held CHECK row; the four+1 contexts are additional explicit entries. All17 prior review references map exactly once with their original answer, difficulty and approval status preserved. The initial 266 new-label proposals now contain 230 owner-approved labels and 36 remaining proposals. There are no duplicate review IDs. Counts are inventory evidence, not executable-bank validation, content approval, hosted CI or deployment.
+Validated all283 fixture IDs are accounted for exactly once as a source entry or held CHECK row; the four+1 contexts are additional explicit entries. All17 prior review references map exactly once with their original answer, difficulty and approval status preserved. The initial 266 new-label proposals now contain 238 owner-approved labels and 28 remaining proposals. There are no duplicate review IDs. Counts are inventory evidence, not executable-bank validation, content approval, hosted CI or deployment.
