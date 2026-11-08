@@ -1,4 +1,4 @@
-import { CHART, STATE_NAMES_ES } from './chart.js?v=tn-370-brown-20261105';
+import { CHART, STATE_NAMES_ES } from './chart.js?v=chart-destination-20261108';
 
 const KEY = 'sortTest.language.v1';
 
@@ -13,7 +13,7 @@ const ES = {
   'the chart.': 'la tabla.',
   'Learn the belt. Then test your recall.': 'Aprende el color. Luego comprueba lo que recuerdas.',
   'Recent sort changes': 'Cambios recientes de clasificación',
-  'Next Day Air stays PURPLE. NY 148–149 stays ORANGE, except 148 1 goes GOLD.': 'Aéreo 1 día sigue en PURPLE. NY 148–149 sigue en ORANGE, excepto 148 1, que va a GOLD.',
+  'For NY 140–147, 2 Day Air and 3 Day Select stay ORANGE; Next Day Air stays PURPLE. NY 148–149 stays ORANGE on Ground, 2 Day Air and 3 Day Select, except 148 1 goes GOLD.': 'Para NY 140–147, Aéreo 2 días y Select 3 días siguen en ORANGE; Aéreo 1 día sigue en PURPLE. NY 148–149 sigue en ORANGE en Terrestre, Aéreo 2 días y Select 3 días, excepto 148 1, que va a GOLD.',
   'Where do you want to start?': '¿Por dónde quieres empezar?',
   'Know the chart': 'Conoce la tabla',
   'Browse every service by state and ZIP range.': 'Consulta cada servicio por estado y rango de ZIP.',
@@ -175,6 +175,9 @@ export function createLanguage(storage) {
       return source.split(',').map(part => STATE_NAMES_ES[part.trim()] ?? part.trim()).join(', ');
     },
     explanation(response) {
+      if (response.destinationModifier === '+1') return code === 'es'
+        ? 'El indicador de destino +1 va a PURPLE en los cuatro servicios. El código de ruta no cambia.'
+        : 'The destination indicator +1 goes to PURPLE on all four services. The routing code stays unchanged.';
       if (code !== 'es') return response.why;
       if (response.code.endsWith('2S')) return 'La terminación 2S va a BLUE en todos los servicios, sin importar el rango ZIP.';
       if (response.code.endsWith('1S')) return 'La terminación 1S va a PURPLE en todos los servicios, sin importar el rango ZIP.';

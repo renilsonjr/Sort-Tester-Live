@@ -1,6 +1,6 @@
-import { ROUTE_REFERENCE_VERSION } from './chart.js?v=tn-370-brown-20261105';
-import { COMMON_CORE, NJ_TWILIGHT } from './questions.js?v=tn-370-brown-20261105';
-import { LEVEL_DECKS } from './levels.js?v=tn-370-brown-20261105';
+import { ROUTE_REFERENCE_VERSION } from './chart.js?v=chart-destination-20261108';
+import { COMMON_CORE, NJ_TWILIGHT } from './questions.js?v=chart-destination-20261108';
+import { LEVEL_DECKS } from './levels.js?v=chart-destination-20261108';
 
 // Manual Practice cards checked against the current Twilight reference.
 // A verified Practice deck does not establish Ranked difficulty approval.
