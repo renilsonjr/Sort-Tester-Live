@@ -2,6 +2,10 @@
 
 **Status, November 8, 2026:** Chart corrections and destination +1 are implemented and locally verified on `codex/ranked-mode` through application commit `929f189`. They are **not live or published**. Counts are candidate inventory, not owner-approved Ranked content. Implementation owner: [#5](https://github.com/renilsonjr/Sort-Tester-Live/issues/5). Policy: [[2026-11-07-ranked-decision-record]]; proposed versioning: [[2026-11-07-ranked-security-operations-design]]. Active source: [[2026-11-08-ranked-chart-reference]]; implementation plan: [[2026-11-08-chart-corrections-and-destination-plus-one]].
 
+## Full-chart difficulty milestone complete
+
+All283 review entries now have owner-approved labels:103 Easy /127 Medium /53 Hard. [[2026-11-08-ranked-full-chart-review]] contains the complete ledger and final consistency audit. Original17 bilingual approvals are preserved;266 expanded question wordings/explanations remain pending, along with canonical identity/coverage and versioning/assignment validation. Four broad NJ CHECK rows stay held without guessed answers; six Ground compound-shorthand meanings need clarification. Only the work-methods tie-question content is deferred. This completes difficulty classification, not Issue5 or a usable Ranked bank.
+
 ## Owner scope expansion — full-chart bank
 
 The owner explicitly requested classifying all usable chart directions to randomize the15-question quiz, preserving the17 existing difficulty approvals without asking to rank them again. The17 are a reviewed subset, not the bank-size limit. [[2026-11-08-ranked-full-chart-review]] accounts for every source row and the four+1 contexts, tracks the new difficulty proposals and subsequent approvals while keeping four broad-NJ CHECK rows on hold. New labels and wording are not automatically approved. Source entries may need canonical merges/splits or exception clarifications before becoming executable questions. The proposed bank design was revised to this expanded scope; it still needs owner review.

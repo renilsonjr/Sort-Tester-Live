@@ -1,5 +1,5 @@
 {
-  "status": "Review-only inventory; not an executable or owner-approved full Ranked bank",
+  "status": "Review-only full-chart inventory: all283 difficulty labels owner-approved;266 expanded question wordings still need review; not an executable canonical bank.",
   "sourceRevision": "twilight-2026-11-08-r2",
   "existingApprovalsPreserved": 17,
   "remainingDifficultyReviews": 0,
@@ -5237,5 +5237,10 @@
       "holdReason": "CHECK does not establish a belt; use listed NJ preload exceptions, do not invent an unlisted answer."
     }
   ],
-  "approvedDifficultyCount": 283
+  "approvedDifficultyCount": 283,
+  "approvedDifficultyTotals": {
+    "Easy": 103,
+    "Hard": 53,
+    "Medium": 127
+  }
 }

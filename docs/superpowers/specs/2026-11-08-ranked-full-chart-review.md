@@ -1,6 +1,6 @@
 # Full-chart Ranked difficulty review
 
-**Status:** owner requested full-chart coverage and preservation of the17 existing labels. New labels below are assistant proposals, not owner approval. Review-only documents; no product code or Ranked bank is implemented.
+**Status:** all283 review entries now have explicit owner-approved difficulty labels:103 Easy,127 Medium,53 Hard. The original17 bilingual question approvals are preserved. The other266 entries still need wording/explanation and canonical/exception checks. This is review documentation, not an executable bank or a final unique-question count.
 
 **Related:** [[2026-11-08-ranked-full-chart-review.json]], [[2026-11-08-ranked-question-wording-review]], [[2026-11-08-ranked-chart-reference]], [[2026-11-08-curated-ranked-bank-design]]. Tracker: [#5](https://github.com/renilsonjr/Sort-Tester-Live/issues/5).
 
@@ -14,14 +14,14 @@
 - The game still selects15 questions, five per difficulty; expanding the bank increases the possible selections. No17-question runtime limit or fixed-ten-question repetition design remains.
 - Only the work-methods tie-question content is deferred; other tie-break policies remain unchanged.
 
-| Service | Approved difficulty labels | New difficulty proposals |
+| Service | Approved difficulty labels | Awaiting difficulty review |
 | --- | --- | --- |
 | Ground | 89 | 0 |
 | 3 Day Select | 85 | 0 |
 | 2 Day Air | 65 | 0 |
 | Next Day Air | 44 | 0 |
 
-Proposed-label totals for remaining entries: Easy 0, Medium 0, Hard 0. These are draft classifications requiring owner review, not settled counts.
+Approved-label totals: **103 Easy,127 Medium,53 Hard**. No difficulty proposals remain pending. Approval of difficulty does not approve unresolved shorthand, new wording or executable assignment behavior.
 
 ## Previously approved — do not rank again
 
@@ -316,25 +316,9 @@ Proposed-label totals for remaining entries: Easy 0, Medium 0, Hard 0. These are
 | N43 | `nextdayair-exceptions-anystate-ends1s` | Next Day Air | Any state ends 1S | PURPLE | Hard |
 | N44 | `destination-plus-one-nda` | Next Day Air | NY 109 | PURPLE | Hard |
 
-## Ground — new proposals only
+## Difficulty review complete
 
-| Source review ID | State / route | Answer | Proposed difficulty | Review note |
-| --- | --- | --- | --- | --- |
-
-## 3 Day Select — new proposals only
-
-| Source review ID | State / route | Answer | Proposed difficulty | Review note |
-| --- | --- | --- | --- | --- |
-
-## 2 Day Air — new proposals only
-
-| Source review ID | State / route | Answer | Proposed difficulty | Review note |
-| --- | --- | --- | --- | --- |
-
-## Next Day Air — new proposals only
-
-| Source review ID | State / route | Answer | Proposed difficulty | Review note |
-| --- | --- | --- | --- | --- |
+Ground89,3 Day Select85,2 Day Air65,Next Day Air44. All283 review entries have approved labels; no further ranking of these unchanged scenarios is required. Only the work-methods tie-question content is deferred, not the other tie-break policies.
 
 ## Held source rows
 
@@ -348,3 +332,9 @@ Proposed-label totals for remaining entries: Easy 0, Medium 0, Hard 0. These are
 ## Read-only inventory validation
 
 Validated all283 fixture IDs are accounted for exactly once as a source entry or held CHECK row; the four+1 contexts are additional explicit entries. All17 prior review references map exactly once with their original answer, difficulty and approval status preserved. The initial 266 new-label proposals now contain 266 owner-approved labels and 0 remaining proposals. There are no duplicate review IDs. Counts are inventory evidence, not executable-bank validation, content approval, hosted CI or deployment.
+
+## Final classification audit
+
+Verified all283 source rows are accounted for:279 belt-bearing rows and four held broad-NJ CHECK rows; four explicit NY109 destination+1 service contexts bring the review ledger to283 entries. All source answers/provenance remain unchanged from revision r2. Every entry has exactly one approved difficulty and one unique review reference. All17 initial answer/label/context mappings remain unchanged; only those17 have approved bilingual wording. The other266 still need wording and explanation review, with six Ground compound-shorthand entries explicitly held for semantic clarification before executable use.
+
+Verified the explicit owner changes: Ground MA025–026 Hard;2DA MA025–026,AL350–369,MS386–399,OH430–459 Hard; all listed RED NJ preloads Easy and ORANGE0799 Medium in each service. Held CHECK rows have no invented answer or difficulty. This audit verifies inventory consistency; it does not approve canonical merges/splits, unbuilt selection logic or a deployed Ranked mode.
