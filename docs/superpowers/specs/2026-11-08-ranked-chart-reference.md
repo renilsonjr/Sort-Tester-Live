@@ -13,6 +13,20 @@ Apply this photo with only the owner's stated corrections; do not automatically 
 1. **Ground, NY 128–147 → GOLD.** The printed Ground 140–147 ORANGE row is superseded. This correction is Ground-specific; it does not change the photo's 2 Day Air, 3 Day Select or Next Day Air NY rows.
 2. **3 Day Select, `* 811–999 → PURPLE`.** This is the cropped bottom row supplied by the owner. “Third day air” in the message refers here to the photo's 3 Day Select column, not 2 Day Air.
 
+3. **NJ preload codes, all four services:** 078 4 → RED; 082 9 → RED; 083 9 → RED; 079 9 → ORANGE. The three RED answers explicitly override the photo's BLUE entries. The app already matches these four specific answers; this confirmation does not by itself classify every unlisted NJ code.
+4. **Ground TN 376–378 → BLUE** remains an exception inside the surrounding 370–385 BROWN range.
+5. **NY 148 1 → GOLD** remains an exception to 148–149 ORANGE on Ground, 2 Day Air and 3 Day Select. No such override is added to Next Day Air.
+6. **NY 120–121 → GOLD on all four services**, retaining the broader rule despite the photo showing only 120 0. The owner clarified the initially ambiguous “yes” and explicitly confirmed this scope.
+7. **Routing-code endings 2S → BLUE and 1S → PURPLE**, all four services, overriding ordinary range answers; retained by owner confirmation.
+8. **Destination/service indicator +1 → PURPLE**, all four services. Owner clarified that +1 appears where Ground / Next Day Air / the destination service is shown, **not as a routing-code suffix**. Keep it distinct from the route code and the base service. This rule is owner-supplied and not printed on the chart.
+
+### +1 presentation proposal and remaining scope
+
+Proposed quiz example: destination **Ground +1**, state **NY**, routing code **109**, correct belt **PURPLE**. The route code remains 109; do not rewrite it as “109 +1” or infer this rule from a route ending in +1. Store a separate optional destination modifier while preserving the base service, and carry it through feedback, saved results and export. This is a proposed implementation approach, not working functionality or owner approval of a schema/property name.
+
+The owner is being asked whether new +1 questions should appear in existing Practice as well as the future Ranked bank, or only in the Ranked bank. Do not assume either placement, change Practice quiz length or implement a new question before that scope and the correction plan are reviewed. No precedence for a deliberately combined +1 and conflicting 2S marker has been chosen; keep such ambiguous combinations out of authored questions pending a decision, rather than invent a routing priority.
+
+
 The previously displayed `primary-sort-chart-2026-09-17.jpeg` was removed from the private working folder at the owner's request. Other old chart/change images remain historical, not active reference sources. No history rewrite or public photo upload is part of this task.
 
 ## First conflict resolved at the source level
@@ -32,7 +46,7 @@ These are observations against the new source, not a complete comparison or auth
 | 3 Day Select TX 770–784 | BLUE in photo | Current chart uses PURPLE |
 | 3 Day Select `* 811–999` | PURPLE, owner-supplied cropped row | Current chart already contains this row |
 
-Perform a full service-specific row/exception/overlap and explanation audit before proposing code corrections. The old shared-East helper applies NY changes across multiple services; owner correction here is Ground only. Existing NJ and Tennessee overrides also need comparison with the new photo rather than assumption. Do not confuse route ranges with single-code exceptions or treat candidate Practice difficulty labels as owner-approved Ranked labels.
+Perform a full service-specific row/exception/overlap and explanation audit before proposing code corrections. The old shared-East helper applies NY changes across multiple services; owner correction here is Ground only. Use the explicitly retained NJ/Tennessee/New York/termination overrides above; other unlisted cases still require source-specific review. Do not confuse route ranges with single-code exceptions or treat candidate Practice difficulty labels as owner-approved Ranked labels.
 
 ## Still pending
 
