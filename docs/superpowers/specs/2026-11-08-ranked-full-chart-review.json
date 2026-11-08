@@ -2,12 +2,11 @@
   "status": "Review-only inventory; not an executable or owner-approved full Ranked bank",
   "sourceRevision": "twilight-2026-11-08-r2",
   "existingApprovalsPreserved": 17,
-  "remainingDifficultyReviews": 194,
+  "remainingDifficultyReviews": 186,
   "scopeNote": "Every source row plus four explicit NY109 destination+1 service contexts. Raw review entries can require canonical merges/splits or clarified exception scope; not a proven unique-question count.",
   "countsByService": {
     "Ground": {
-      "owner-approved": 81,
-      "proposed": 8
+      "owner-approved": 89
     },
     "3 Day Select": {
       "proposed": 82,
@@ -1478,13 +1477,14 @@
       "provenance": "photo",
       "destinationModifier": null,
       "difficulty": "Hard",
-      "difficultyStatus": "proposed",
-      "difficultyReason": "Specific exception, exact-code qualifier, suffix, or destination modifier.",
+      "difficultyStatus": "owner-approved",
+      "difficultyReason": "Owner explicitly approved this recorded difficulty; question wording, explanations and any ambiguous source notation remain pending.",
       "wordingStatus": "not-yet-reviewed",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [
         "Compound final-digit shorthand: preserve source; do not infer an expanded numeric range."
-      ]
+      ],
+      "approvedReview": "G73"
     },
     {
       "id": "ground-exceptions-nv-8339-7",
@@ -1496,13 +1496,14 @@
       "provenance": "photo",
       "destinationModifier": null,
       "difficulty": "Hard",
-      "difficultyStatus": "proposed",
-      "difficultyReason": "Specific exception, exact-code qualifier, suffix, or destination modifier.",
+      "difficultyStatus": "owner-approved",
+      "difficultyReason": "Owner explicitly approved this recorded difficulty; question wording, explanations and any ambiguous source notation remain pending.",
       "wordingStatus": "not-yet-reviewed",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [
         "Compound final-digit shorthand: preserve source; do not infer an expanded numeric range."
-      ]
+      ],
+      "approvedReview": "G74"
     },
     {
       "id": "ground-exceptions-az-8472-7",
@@ -1514,13 +1515,14 @@
       "provenance": "photo",
       "destinationModifier": null,
       "difficulty": "Hard",
-      "difficultyStatus": "proposed",
-      "difficultyReason": "Specific exception, exact-code qualifier, suffix, or destination modifier.",
+      "difficultyStatus": "owner-approved",
+      "difficultyReason": "Owner explicitly approved this recorded difficulty; question wording, explanations and any ambiguous source notation remain pending.",
       "wordingStatus": "not-yet-reviewed",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [
         "Compound final-digit shorthand: preserve source; do not infer an expanded numeric range."
-      ]
+      ],
+      "approvedReview": "G75"
     },
     {
       "id": "ground-exceptions-nv-8644-7",
@@ -1532,13 +1534,14 @@
       "provenance": "photo",
       "destinationModifier": null,
       "difficulty": "Hard",
-      "difficultyStatus": "proposed",
-      "difficultyReason": "Specific exception, exact-code qualifier, suffix, or destination modifier.",
+      "difficultyStatus": "owner-approved",
+      "difficultyReason": "Owner explicitly approved this recorded difficulty; question wording, explanations and any ambiguous source notation remain pending.",
       "wordingStatus": "not-yet-reviewed",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [
         "Compound final-digit shorthand: preserve source; do not infer an expanded numeric range."
-      ]
+      ],
+      "approvedReview": "G76"
     },
     {
       "id": "ground-exceptions-nv-8900-0",
@@ -1550,13 +1553,14 @@
       "provenance": "photo",
       "destinationModifier": null,
       "difficulty": "Hard",
-      "difficultyStatus": "proposed",
-      "difficultyReason": "Specific exception, exact-code qualifier, suffix, or destination modifier.",
+      "difficultyStatus": "owner-approved",
+      "difficultyReason": "Owner explicitly approved this recorded difficulty; question wording, explanations and any ambiguous source notation remain pending.",
       "wordingStatus": "not-yet-reviewed",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [
         "Compound final-digit shorthand: preserve source; do not infer an expanded numeric range."
-      ]
+      ],
+      "approvedReview": "G77"
     },
     {
       "id": "ground-exceptions-az-9222-0",
@@ -1568,13 +1572,14 @@
       "provenance": "photo",
       "destinationModifier": null,
       "difficulty": "Hard",
-      "difficultyStatus": "proposed",
-      "difficultyReason": "Specific exception, exact-code qualifier, suffix, or destination modifier.",
+      "difficultyStatus": "owner-approved",
+      "difficultyReason": "Owner explicitly approved this recorded difficulty; question wording, explanations and any ambiguous source notation remain pending.",
       "wordingStatus": "not-yet-reviewed",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [
         "Compound final-digit shorthand: preserve source; do not infer an expanded numeric range."
-      ]
+      ],
+      "approvedReview": "G78"
     },
     {
       "id": "ground-exceptions-tn-376-378",
@@ -1620,11 +1625,12 @@
       "provenance": "owner-override-7",
       "destinationModifier": null,
       "difficulty": "Hard",
-      "difficultyStatus": "proposed",
-      "difficultyReason": "Specific exception, exact-code qualifier, suffix, or destination modifier.",
+      "difficultyStatus": "owner-approved",
+      "difficultyReason": "Owner explicitly approved this recorded difficulty; question wording, explanations and any ambiguous source notation remain pending.",
       "wordingStatus": "not-yet-reviewed",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
-      "reviewNotes": []
+      "reviewNotes": [],
+      "approvedReview": "G79"
     },
     {
       "id": "ground-exceptions-anystate-ends1s",
@@ -1636,11 +1642,12 @@
       "provenance": "owner-override-7",
       "destinationModifier": null,
       "difficulty": "Hard",
-      "difficultyStatus": "proposed",
-      "difficultyReason": "Specific exception, exact-code qualifier, suffix, or destination modifier.",
+      "difficultyStatus": "owner-approved",
+      "difficultyReason": "Owner explicitly approved this recorded difficulty; question wording, explanations and any ambiguous source notation remain pending.",
       "wordingStatus": "not-yet-reviewed",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
-      "reviewNotes": []
+      "reviewNotes": [],
+      "approvedReview": "G80"
     },
     {
       "id": "3dayselect-main-ma-010-024",
@@ -5046,5 +5053,5 @@
       "holdReason": "CHECK does not establish a belt; use listed NJ preload exceptions, do not invent an unlisted answer."
     }
   ],
-  "approvedDifficultyCount": 89
+  "approvedDifficultyCount": 97
 }
