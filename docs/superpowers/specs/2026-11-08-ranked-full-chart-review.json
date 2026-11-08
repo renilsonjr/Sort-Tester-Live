@@ -2,7 +2,7 @@
   "status": "Review-only inventory; not an executable or owner-approved full Ranked bank",
   "sourceRevision": "twilight-2026-11-08-r2",
   "existingApprovalsPreserved": 17,
-  "remainingDifficultyReviews": 72,
+  "remainingDifficultyReviews": 64,
   "scopeNote": "Every source row plus four explicit NY109 destination+1 service contexts. Raw review entries can require canonical merges/splits or clarified exception scope; not a proven unique-question count.",
   "countsByService": {
     "Ground": {
@@ -12,8 +12,8 @@
       "owner-approved": 85
     },
     "2 Day Air": {
-      "owner-approved": 37,
-      "proposed": 28
+      "owner-approved": 45,
+      "proposed": 20
     },
     "Next Day Air": {
       "proposed": 44
@@ -3843,13 +3843,14 @@
       "provenance": "photo",
       "destinationModifier": null,
       "difficulty": "Medium",
-      "difficultyStatus": "proposed",
-      "difficultyReason": "Service-specific chart direction; proposed independently of Practice deck names.",
+      "difficultyStatus": "owner-approved",
+      "difficultyReason": "Owner explicitly approved this recorded difficulty; question wording, explanations and any ambiguous source notation remain pending.",
       "wordingStatus": "not-yet-reviewed",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [
         "Check applicable exceptions and effective coverage before approving broad-range wording."
-      ]
+      ],
+      "approvedReview": "D33"
     },
     {
       "id": "2dayair-main-all-498-599",
@@ -3861,14 +3862,15 @@
       "provenance": "photo",
       "destinationModifier": null,
       "difficulty": "Medium",
-      "difficultyStatus": "proposed",
-      "difficultyReason": "Service-specific chart direction; proposed independently of Practice deck names.",
+      "difficultyStatus": "owner-approved",
+      "difficultyReason": "Owner explicitly approved this recorded difficulty; question wording, explanations and any ambiguous source notation remain pending.",
       "wordingStatus": "not-yet-reviewed",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [
         "Check applicable exceptions and effective coverage before approving broad-range wording.",
         "Wildcard fallback: explicitly exclude specific overrides; not a duplicate of a named-state row by text alone."
-      ]
+      ],
+      "approvedReview": "D34"
     },
     {
       "id": "2dayair-main-il-600-608",
@@ -3918,13 +3920,14 @@
       "provenance": "photo",
       "destinationModifier": null,
       "difficulty": "Medium",
-      "difficultyStatus": "proposed",
-      "difficultyReason": "Service-specific chart direction; proposed independently of Practice deck names.",
+      "difficultyStatus": "owner-approved",
+      "difficultyReason": "Owner explicitly approved this recorded difficulty; question wording, explanations and any ambiguous source notation remain pending.",
       "wordingStatus": "not-yet-reviewed",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [
         "Check applicable exceptions and effective coverage before approving broad-range wording."
-      ]
+      ],
+      "approvedReview": "D35"
     },
     {
       "id": "2dayair-main-all-640-729",
@@ -3936,14 +3939,15 @@
       "provenance": "photo",
       "destinationModifier": null,
       "difficulty": "Medium",
-      "difficultyStatus": "proposed",
-      "difficultyReason": "Service-specific chart direction; proposed independently of Practice deck names.",
+      "difficultyStatus": "owner-approved",
+      "difficultyReason": "Owner explicitly approved this recorded difficulty; question wording, explanations and any ambiguous source notation remain pending.",
       "wordingStatus": "not-yet-reviewed",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [
         "Check applicable exceptions and effective coverage before approving broad-range wording.",
         "Wildcard fallback: explicitly exclude specific overrides; not a duplicate of a named-state row by text alone."
-      ]
+      ],
+      "approvedReview": "D36"
     },
     {
       "id": "2dayair-main-ok-730-740",
@@ -3955,13 +3959,14 @@
       "provenance": "photo",
       "destinationModifier": null,
       "difficulty": "Medium",
-      "difficultyStatus": "proposed",
-      "difficultyReason": "Service-specific chart direction; proposed independently of Practice deck names.",
+      "difficultyStatus": "owner-approved",
+      "difficultyReason": "Owner explicitly approved this recorded difficulty; question wording, explanations and any ambiguous source notation remain pending.",
       "wordingStatus": "not-yet-reviewed",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [
         "Check applicable exceptions and effective coverage before approving broad-range wording."
-      ]
+      ],
+      "approvedReview": "D37"
     },
     {
       "id": "2dayair-main-ok-7419",
@@ -3973,11 +3978,12 @@
       "provenance": "photo",
       "destinationModifier": null,
       "difficulty": "Hard",
-      "difficultyStatus": "proposed",
-      "difficultyReason": "Specific exception, exact-code qualifier, suffix, or destination modifier.",
+      "difficultyStatus": "owner-approved",
+      "difficultyReason": "Owner explicitly approved this recorded difficulty; question wording, explanations and any ambiguous source notation remain pending.",
       "wordingStatus": "not-yet-reviewed",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
-      "reviewNotes": []
+      "reviewNotes": [],
+      "approvedReview": "D38"
     },
     {
       "id": "2dayair-main-ok-742-749",
@@ -3989,13 +3995,14 @@
       "provenance": "photo",
       "destinationModifier": null,
       "difficulty": "Medium",
-      "difficultyStatus": "proposed",
-      "difficultyReason": "Service-specific chart direction; proposed independently of Practice deck names.",
+      "difficultyStatus": "owner-approved",
+      "difficultyReason": "Owner explicitly approved this recorded difficulty; question wording, explanations and any ambiguous source notation remain pending.",
       "wordingStatus": "not-yet-reviewed",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [
         "Check applicable exceptions and effective coverage before approving broad-range wording."
-      ]
+      ],
+      "approvedReview": "D39"
     },
     {
       "id": "2dayair-main-all-750-999",
@@ -4007,14 +4014,15 @@
       "provenance": "photo",
       "destinationModifier": null,
       "difficulty": "Medium",
-      "difficultyStatus": "proposed",
-      "difficultyReason": "Service-specific chart direction; proposed independently of Practice deck names.",
+      "difficultyStatus": "owner-approved",
+      "difficultyReason": "Owner explicitly approved this recorded difficulty; question wording, explanations and any ambiguous source notation remain pending.",
       "wordingStatus": "not-yet-reviewed",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [
         "Check applicable exceptions and effective coverage before approving broad-range wording.",
         "Wildcard fallback: explicitly exclude specific overrides; not a duplicate of a named-state row by text alone."
-      ]
+      ],
+      "approvedReview": "D40"
     },
     {
       "id": "2dayair-main-all-world",
@@ -5166,5 +5174,5 @@
       "holdReason": "CHECK does not establish a belt; use listed NJ preload exceptions, do not invent an unlisted answer."
     }
   ],
-  "approvedDifficultyCount": 211
+  "approvedDifficultyCount": 219
 }

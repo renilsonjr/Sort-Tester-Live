@@ -9,7 +9,7 @@
 - Active source: `twilight-2026-11-08-r2`, including owner corrections.
 - 283 source rows; hold four broad NJ CHECK rows without inventing belt answers. Retain listed NJ preload exceptions.
 - 279 belt-bearing source rows plus four NY109 destination+1 service contexts =283 review entries.
-- The original 17 owner-approved labels and bilingual explanations are preserved. Another 194 labels are approved, for 211 approved labels and 72 remaining difficulty proposals. Those additional labels still need wording/explanation review. Source rows are not a proven final unique-scenario count.
+- The original 17 owner-approved labels and bilingual explanations are preserved. Another 202 labels are approved, for 219 approved labels and 64 remaining difficulty proposals. Those additional labels still need wording/explanation review. Source rows are not a proven final unique-scenario count.
 - Question wording, exception exclusions, wildcard coverage and compound final-digit shorthand still need review for new entries. A suggestion of Easy never removes an applicable exception.
 - The game still selects15 questions, five per difficulty; expanding the bank increases the possible selections. No17-question runtime limit or fixed-ten-question repetition design remains.
 - Only the work-methods tie-question content is deferred; other tie-break policies remain unchanged.
@@ -18,10 +18,10 @@
 | --- | --- | --- |
 | Ground | 89 | 0 |
 | 3 Day Select | 85 | 0 |
-| 2 Day Air | 37 | 28 |
+| 2 Day Air | 45 | 20 |
 | Next Day Air | 0 | 44 |
 
-Proposed-label totals for remaining entries: Easy 0, Medium 32, Hard 40. These are draft classifications requiring owner review, not settled counts.
+Proposed-label totals for remaining entries: Easy 0, Medium 25, Hard 39. These are draft classifications requiring owner review, not settled counts.
 
 ## Previously approved — do not rank again
 
@@ -243,6 +243,14 @@ Proposed-label totals for remaining entries: Easy 0, Medium 32, Hard 40. These a
 | D30 | `2dayair-main-ky-420` | 2 Day Air | KY 420 | PURPLE | Medium |
 | D31 | `2dayair-main-ky-421-429` | 2 Day Air | KY 421–429 | BROWN | Medium |
 | D32 | `2dayair-main-oh-430-459` | 2 Day Air | OH 430–459 | ORANGE | Hard |
+| D33 | `2dayair-main-mi-480-497` | 2 Day Air | MI 480–497 | ORANGE | Medium |
+| D34 | `2dayair-main-all-498-599` | 2 Day Air | * 498–599 | PURPLE | Medium |
+| D35 | `2dayair-main-mo-630-639` | 2 Day Air | MO 630–639 | BLUE | Medium |
+| D36 | `2dayair-main-all-640-729` | 2 Day Air | * 640–729 | PURPLE | Medium |
+| D37 | `2dayair-main-ok-730-740` | 2 Day Air | OK 730–740 | PURPLE | Medium |
+| D38 | `2dayair-main-ok-7419` | 2 Day Air | OK 741 9 | ORANGE | Hard |
+| D39 | `2dayair-main-ok-742-749` | 2 Day Air | OK 742–749 | PURPLE | Medium |
+| D40 | `2dayair-main-all-750-999` | 2 Day Air | * 750–999 | PURPLE | Medium |
 
 ## Ground — new proposals only
 
@@ -258,14 +266,6 @@ Proposed-label totals for remaining entries: Easy 0, Medium 32, Hard 40. These a
 
 | Source review ID | State / route | Answer | Proposed difficulty | Review note |
 | --- | --- | --- | --- | --- |
-| `2dayair-main-mi-480-497` | MI 480–497 | ORANGE | Medium | Check applicable exceptions and effective coverage before approving broad-range wording. |
-| `2dayair-main-all-498-599` | * 498–599 | PURPLE | Medium | Check applicable exceptions and effective coverage before approving broad-range wording. Wildcard fallback: explicitly exclude specific overrides; not a duplicate of a named-state row by text alone. |
-| `2dayair-main-mo-630-639` | MO 630–639 | BLUE | Medium | Check applicable exceptions and effective coverage before approving broad-range wording. |
-| `2dayair-main-all-640-729` | * 640–729 | PURPLE | Medium | Check applicable exceptions and effective coverage before approving broad-range wording. Wildcard fallback: explicitly exclude specific overrides; not a duplicate of a named-state row by text alone. |
-| `2dayair-main-ok-730-740` | OK 730–740 | PURPLE | Medium | Check applicable exceptions and effective coverage before approving broad-range wording. |
-| `2dayair-main-ok-7419` | OK 741 9 | ORANGE | Hard | Specific exception, exact-code qualifier, suffix, or destination modifier. |
-| `2dayair-main-ok-742-749` | OK 742–749 | PURPLE | Medium | Check applicable exceptions and effective coverage before approving broad-range wording. |
-| `2dayair-main-all-750-999` | * 750–999 | PURPLE | Medium | Check applicable exceptions and effective coverage before approving broad-range wording. Wildcard fallback: explicitly exclude specific overrides; not a duplicate of a named-state row by text alone. |
 | `2dayair-main-all-world` | * WORLD | PURPLE | Medium | Wildcard fallback: explicitly exclude specific overrides; not a duplicate of a named-state row by text alone. |
 | `2dayair-exceptions-nj-0703` | NJ 070 3 | RED | Hard | Specific exception, exact-code qualifier, suffix, or destination modifier. |
 | `2dayair-exceptions-nj-0709` | NJ 070 9 | RED | Hard | Specific exception, exact-code qualifier, suffix, or destination modifier. |
@@ -347,4 +347,4 @@ Proposed-label totals for remaining entries: Easy 0, Medium 32, Hard 40. These a
 
 ## Read-only inventory validation
 
-Validated all283 fixture IDs are accounted for exactly once as a source entry or held CHECK row; the four+1 contexts are additional explicit entries. All17 prior review references map exactly once with their original answer, difficulty and approval status preserved. The initial 266 new-label proposals now contain 194 owner-approved labels and 72 remaining proposals. There are no duplicate review IDs. Counts are inventory evidence, not executable-bank validation, content approval, hosted CI or deployment.
+Validated all283 fixture IDs are accounted for exactly once as a source entry or held CHECK row; the four+1 contexts are additional explicit entries. All17 prior review references map exactly once with their original answer, difficulty and approval status preserved. The initial 266 new-label proposals now contain 202 owner-approved labels and 64 remaining proposals. There are no duplicate review IDs. Counts are inventory evidence, not executable-bank validation, content approval, hosted CI or deployment.
