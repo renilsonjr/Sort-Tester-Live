@@ -2,6 +2,8 @@
 
 **Owner instruction, November 8, 2026:** use the photo supplied as “Talk with Hasan 2.jpeg” instead of the earlier displayed chart. This approves the reference and the explicit corrections below; it does not approve every application's transcription, Ranked difficulty or a Hard work-methods bank.
 
+**Implementation status, November 8, 2026:** Implemented on `codex/ranked-mode` through application commit `929f189`, locally verified; not live or published. Source provenance is `twilight-2026-11-08-r1`. Owner Ranked difficulty/canonical/version/work-methods approvals remain pending in Issue #5.
+
 **Related:** [[2026-11-07-ranked-question-bank-review]], [[2026-11-07-ranked-decision-record]]. Implementation/review tracker: [#5](https://github.com/renilsonjr/Sort-Tester-Live/issues/5).
 
 ## Source and exact owner corrections
@@ -20,39 +22,46 @@ Apply this photo with only the owner's stated corrections; do not automatically 
 7. **Routing-code endings 2S → BLUE and 1S → PURPLE**, all four services, overriding ordinary range answers; retained by owner confirmation.
 8. **Destination/service indicator +1 → PURPLE**, all four services. Owner clarified that +1 appears where Ground / Next Day Air / the destination service is shown, **not as a routing-code suffix**. Keep it distinct from the route code and the base service. This rule is owner-supplied and not printed on the chart.
 
-### +1 scope confirmed; implementation proposal for review
+### +1 scope and implemented branch behavior
 
-Proposed quiz example: destination **Ground +1**, state **NY**, routing code **109**, correct belt **PURPLE**. The route code remains 109; do not rewrite it as “109 +1” or infer this rule from a route ending in +1. Store a separate optional destination modifier while preserving the base service, and carry it through feedback, saved results and export. This is a proposed implementation approach, not working functionality or owner approval of a schema/property name.
+The owner approved the plan in [[2026-11-08-chart-corrections-and-destination-plus-one]] and coverage in **Practice and the future Ranked bank**. Four explicit NY109 candidates now store optional `destinationModifier: '+1'` separately from unchanged base `svc` and routing `code`; each answer is PURPLE. The destination label shows e.g. **Ground +1 · NY**, while routing code stays **109**. The metadata survives translated questions/feedback, response records, saved results and workbook Service text. Old saved results without metadata retain their historical answers/counts and render normally.
 
-The owner confirmed **Practice and Ranked bank** for new +1 destination questions. This approves coverage in both modes, not a change to quiz length, the proposed implementation or Ranked difficulty labels. Review [[2026-11-08-chart-corrections-and-destination-plus-one]] before code changes. No precedence for a deliberately combined +1 and conflicting 2S marker has been chosen; keep such ambiguous combinations out of authored questions pending a decision, rather than invent a routing priority.
-
+Each Common pool expands 14→18 candidates but still selects 14 questions, reserving at least one +1 candidate. Mixed expands 16→17 after the Illinois split but still selects 16; level and service/NY run lengths and picker groups remain unchanged. Practice remains 15 seconds/question. This does not approve Ranked difficulty labels or implement the Ranked engine. No precedence for deliberately combined +1/conflicting 2S markers is approved; none are authored.
 
 The previously displayed `primary-sort-chart-2026-09-17.jpeg` was removed from the private working folder at the owner's request. Other old chart/change images remain historical, not active reference sources. No history rewrite or public photo upload is part of this task.
 
-## First conflict resolved at the source level
+## Corrected against the active source on the branch
 
-For **2 Day Air / GA / 300–319**, the new photo says **BLUE**. Therefore the earlier PURPLE conclusion from the superseded chart must not be used. Current `src/chart.js` still says PURPLE while the explicit Mixed Missorts card says BLUE; code changes and regression checks remain pending a reviewed correction plan. The current Practice answer for this scenario is inconsistent across decks.
+The independent literal fixture contains **283 main/exception rows** transcribed from the photo plus confirmed owner overrides, with source provenance. The full source/card suite checks this matrix, inclusive boundaries and emitted cards; expected answers were not generated from application CHART.
 
-## Initial additional differences to audit
+| Scenario | Active reference and implemented branch answer |
+| --- | --- |
+| 2 Day Air GA300–319 | BLUE; old chart-derived PURPLE conflict resolved |
+| Ground NY128–147 | GOLD, owner correction; service scope preserved |
+| 2 Day Air / 3 Day Select NY140–147 | ORANGE; Ground override does not leak into these services |
+| 2 Day Air IL600–608 | YELLOW |
+| 2 Day Air IL609–629 | ORANGE; ambiguous Mixed 600–619 retired and split into 600–608 and 609–619 |
+| 3 Day Select TX750–768 / 770–784 | BLUE; TX7690/785–799 stay PURPLE |
+| 3 Day Select `* 811–999` | PURPLE, owner-supplied cropped row |
+| NJ generic 070–089 | CHECK from the photo; specific confirmed preload exceptions retained; unreviewed broad NJ scenarios excluded from assignment |
+| Retained exceptions | TN376–378 Ground BLUE; NY120–121 all-service GOLD; NY1481 GOLD only on Ground/2DA/3DS; NDA136 PURPLE; 1S/2S retained |
 
-These are observations against the new source, not a complete comparison or authorization to silently change every quiz:
+Manual cards and English/Spanish explanations were audited alongside generated chart cards. Changed Illinois spans have new IDs; answer-only corrections retain their scenario IDs. `referenceVersion: 'twilight-2026-11-08-r1'` records source provenance, not owner approval of Ranked versions or difficulty.
 
-| Scenario | New active reference | Current app data observation |
-| --- | --- | --- |
-| Ground NY 128–147 | GOLD, owner correction | Existing shared rows already give GOLD; verify correct service scope in other columns |
-| 2 Day Air IL 600–608 | YELLOW in photo | Current main chart and explicit mixed card use PURPLE from the old reference |
-| 2 Day Air IL 609–629 | ORANGE in photo | Current chart uses PURPLE through 619, then ORANGE 620–629 |
-| 3 Day Select TX 750–768 | BLUE in photo | Current chart uses PURPLE |
-| 3 Day Select TX 770–784 | BLUE in photo | Current chart uses PURPLE |
-| 3 Day Select `* 811–999` | PURPLE, owner-supplied cropped row | Current chart already contains this row |
+## Verified evidence and limits
 
-Perform a full service-specific row/exception/overlap and explanation audit before proposing code corrections. The old shared-East helper applies NY changes across multiple services; owner correction here is Ground only. Use the explicitly retained NJ/Tennessee/New York/termination overrides above; other unlisted cases still require source-specific review. Do not confuse route ranges with single-code exceptions or treat candidate Practice difficulty labels as owner-approved Ranked labels.
+At application commit `929f189`, the final local commands passed: **382 Node tests**, **10 backend tests**, and `pip check` with no broken requirements. `git diff --check` is clean. Reference, destination, deterministic selection, display/history/export and escaping tests are included; backend foundation checks alone would not prove the content correct.
+
+Actual Chrome acceptance on the local branch verified ordinary legacy 5/10 retained after reload and a new Common 14-question run 5/14, with all four +1 services observed. Question/feedback English↔Spanish, wrong/timeout, history and reload retained +1 separately from 109. At 390×844 there was no horizontal page overflow, and basic Tab/Enter worked. No physical-phone test or full accessibility audit is claimed.
+
+The actual 24,401-byte XLSX download was reopened as ZIP/XML and visually viewed with Finder Quick Look on both Results and Missorts: two result rows, 14 missorts, four translated +1 Service rows, code 109/PURPLE, including a timeout. Legacy rows gained no modifier. Microsoft Excel/Numbers and physical Windows UI were not tested. Long existing Test labels can clip at fixed preview widths; underlying values remain. Browser warn/error logs were empty during the flows. Evidence screenshots remain local; no photo or screenshot binary is committed.
+
+The refreshed candidate inventory is **583 memberships / 379 distinct IDs / 292 route-only heuristic keys / 296 destination-aware heuristic keys**, with unchanged playable run lengths. See [[2026-11-07-ranked-question-bank-review]] for per-deck counts and the limits of these heuristics. Neither establishes owner-approved canonical deduplication or a usable Ranked bank.
 
 ## Still pending
 
-- Review the complete transcription and all card explanations against this active reference.
-- Propose the minimal data correction plan and appropriate route/deck regression checks before code edits; preserve UI and unrelated Practice behavior.
-- Obtain owner-reviewed Easy/Medium/Hard labels, stable canonical scenario/version rules and a separate Hard work-methods pool.
-- Re-run the bank inventory after actual corrections; the November 7 counts remain a historical snapshot, not a new approved bank count.
+- Final whole-branch review, PR update and exact-head hosted CI are separate controller-owned gates; local evidence does not claim push, hosted success, merge or publication.
+- Owner-reviewed Easy/Medium/Hard labels, canonical duplicate identity and approved scenario/version rules.
+- Separate authoritative Hard work-methods content and enough reviewed fresh tie sets, including replacement rounds.
 
-No application, backend or quiz data is modified by this reference record. Issue #5 remains open.
+Issue #5 remains open. These branch changes implement Practice corrections and future Ranked candidates, not the Ranked engine/auth/scoring or approval of its bank.

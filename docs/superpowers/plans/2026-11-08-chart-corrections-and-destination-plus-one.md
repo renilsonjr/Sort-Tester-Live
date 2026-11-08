@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development; the owner approved task agents on November 8, 2026. Do not implement this document merely because it is committed.
 
-**Status:** Owner approved the plan and selected task agents, November 8, 2026. Confirmed outcomes: active chart/retained exceptions and +1 coverage in Practice and the future Ranked bank. The field design, pool sampling and tasks below are approved for implementation. Product behavior remains unverified until the task evidence is recorded.
+**Status:** Owner approved the plan and selected task agents, November 8, 2026. Confirmed outcomes: active chart/retained exceptions and +1 coverage in Practice and the future Ranked bank. The field design, pool sampling and tasks below are approved for implementation. Tasks 1–3 are implemented through application commit `929f189` on `codex/ranked-mode` and locally verified, including real browser/XLSX acceptance. Documentation/inventory are refreshed below. Final whole-branch review, PR update and exact-head hosted CI remain pending; this is not live or published.
 
 **Goal:** Make current route answers/explanations consistent with the selected chart and owner overrides, and teach destination +1 PURPLE without changing existing Practice run lengths or screen layouts.
 
@@ -24,10 +24,10 @@ Owner approval covers approach2 and the destination-label example: **Ground +1 �
 
 - Work only on shared `codex/ranked-mode` in Sort-Tester-Live. Never push main or modify the private source application's code. Keep chart photos private.
 - Use the photo plus every confirmed exception in the spec, not historical sort-change assumptions. No new broad NJ rule for unlisted codes.
-- Practice stays 15 seconds/question. Preserve current run lengths: Basic15, Medium20, Hard30; Common Missorts1/2 each14; Mixed16; NY/NDA/2DA/3DS each10. Ordinary decks remain in their current picker group.
+- Practice stays 15 seconds/question. Preserve current run lengths: Basic15, Medium20, Hard30; Common Missorts1/2 each14; Mixed 16; NY/NDA/2DA/3DS each10. Ordinary decks remain in their current picker group.
 - Scope is content corrections and +1 support. No Ranked engine/auth/scoring, new visual design, employee data migration or publication. Ranked candidates still need owner difficulty/work-methods review in Issue5.
 - +1 is a destination modifier, not a ZIP/routing suffix or a fifth base service. Correct belt PURPLE on all four services. 2S/1S retain their approved routing-ending meanings.
-- Do not author combined +1/conflicting2S scenarios until precedence is approved. Existing valid ordinary/1S/2S cards remain available.
+- Do not author combined +1/conflicting 2S scenarios until precedence is approved. Existing valid ordinary/1S/2S cards remain available.
 - Old saved Practice results keep their historical answer/explanation/count; do not rewrite or rescore them. Missing modifier/version fields must render normally.
 - All new/changed text must be escaped at HTML boundaries and correct in English and Spanish. Preserve existing export structure; put +1 in its Service text, not Routing code.
 
@@ -37,7 +37,7 @@ Owner approval covers approach2 and the destination-label example: **Ground +1 �
 - Ground-only NY140–147 GOLD must not leak through sharedEast into 2DA/3DS, and NY1481/NDA136 exceptions must survive (Task1).
 - New candidate pools must not move ordinary decks into the level picker, alter run counts or fail to produce a full run under belt/service sampling constraints (Task2).
 - Correct destination display on initial render can be lost on language toggle, feedback/history or Excel export; old saved rows have no new field (Task3).
-- +1 PURPLE can look accidentally correct where a base route is already PURPLE: demonstrate it with NY109, normally ORANGE, for each base service; never infer +1 from route text (Tasks2/3).
+- +1 PURPLE can look accidentally correct where a base route is already PURPLE: demonstrate it with NY109, normally ORANGE, for each base service; never infer +1 from route text (Tasks 2/3).
 
 ## Task 1: Independent reference cases and content corrections
 
@@ -45,20 +45,20 @@ Owner approval covers approach2 and the destination-label example: **Ground +1 �
 
 **Interfaces:** Fixture cases carry stable case ID, service, state, code/range, expected belt and photo/owner-override provenance. Temporary test loader provides `loadAppModules(relativePaths) -> { modules, cleanup }`: copy source modules to an isolated temporary directory with `type: module`, import their actual ESM/query-string dependencies, then remove it after tests. No repository package/module-mode change.
 
-- [ ] Transcribe the complete main/exception source matrix independently from the private photo and all eight confirmed spec clauses. Do not generate expected values from current CHART. If a row is unreadable or conflicts with an unconfirmed rule, stop that case for owner review before changing it.
-- [ ] Write failing reference/card tests covering: 2DA GA300–319 BLUE; IL600–608 YELLOW,609–629 ORANGE; 3DS TX750–768/770–784 BLUE,7690/785–799 PURPLE; cropped811–999 PURPLE. Include lower/upper boundaries and special-code exceptions.
-- [ ] Add explicit tests for Ground NY128–147 GOLD; 2DA/3DS140–147 ORANGE; NY120–121 GOLD allfour; NY1481 GOLD on Ground/2DA/3DS only; NDA136 PURPLE; retained TN376–378 BLUE; four approved NJ codes across allservices; preserved1S/2S rules.
+- [x] Transcribe the complete main/exception source matrix independently from the private photo and all eight confirmed spec clauses. Do not generate expected values from current CHART. If a row is unreadable or conflicts with an unconfirmed rule, stop that case for owner review before changing it.
+- [x] Write failing reference/card tests covering: 2DA GA300–319 BLUE; IL600–608 YELLOW,609–629 ORANGE; 3DS TX750–768/ 770–784 BLUE,7690/785–799 PURPLE; cropped811–999 PURPLE. Include lower/upper boundaries and special-code exceptions.
+- [x] Add explicit tests for Ground NY128–147 GOLD; 2DA/3DS140–147 ORANGE; NY120–121 GOLD allfour; NY1481 GOLD on Ground/2DA/3DS only; NDA136 PURPLE; retained TN376–378 BLUE; four approved NJ codes across allservices; preserved1S/2S rules.
   Exact example assertion in `test('2DA Georgia uses the owner-selected reference')`:
 
 ```js
 assert.equal(CHART['2 Day Air'].main.find(([state, code]) => state === 'GA' && code === '300–319')?.[2], 'BLUE');
 ```
 
-- [ ] Run `node --test tests/chart-reference.test.mjs`; confirm relevant source inconsistencies fail, not just harness setup. A passing NJ/exception case is expected protection for unchanged correct rules.
-- [ ] Correct CHART per the independently checked matrix. Separate service-specific NY overrides from sharedEast. The photo's generic NJ070–089 CHECK is not evidence every unspecified code is RED; retain the explicit owner-confirmed preload overrides, and keep broad unreviewed NJ scenarios out of question assignment.
-- [ ] Correct manual cards and explanations in Common/NewYork/service/Mixed arrays and Spanish feedback. Retire `mixed-il-600-619-2da`; replace it with `mixed-il-600-608-2da` YELLOW and `mixed-il-609-619-2da` ORANGE. Keep620–629 ORANGE with a corrected explanation. Change existing `2da-il-600-608` to YELLOW. Update stale multi-service NY140–147 explanations and neighbouring-belt descriptions.
-- [ ] Give changed routes new IDs when their meaning changes; preserve IDs for unchanged scenarios. Add/export `ROUTE_REFERENCE_VERSION = 'twilight-2026-11-08-r1'` in `src/chart.js`; attach that provenance to current cards without treating it as Ranked difficulty approval. Audit every card against its referenced scenario, not just the initially flagged GA conflict.
-- [ ] Run reference tests, all existing Node tests and `git diff --check`; inspect the independent matrix versus actual changes. Commit the tested content correction.
+- [x] Run `node --test tests/chart-reference.test.mjs`; confirm relevant source inconsistencies fail, not just harness setup. A passing NJ/exception case is expected protection for unchanged correct rules.
+- [x] Correct CHART per the independently checked matrix. Separate service-specific NY overrides from sharedEast. The photo's generic NJ070–089 CHECK is not evidence every unspecified code is RED; retain the explicit owner-confirmed preload overrides, and keep broad unreviewed NJ scenarios out of question assignment.
+- [x] Correct manual cards and explanations in Common/NewYork/service/Mixed arrays and Spanish feedback. Retire `mixed-il-600-619-2da`; replace it with `mixed-il-600-608-2da` YELLOW and `mixed-il-609-619-2da` ORANGE. Keep620–629 ORANGE with a corrected explanation. Change existing `2da-il-600-608` to YELLOW. Update stale multi-service NY140–147 explanations and neighbouring-belt descriptions.
+- [x] Give changed routes new IDs when their meaning changes; preserve IDs for unchanged scenarios. Add/export `ROUTE_REFERENCE_VERSION = 'twilight-2026-11-08-r1'` in `src/chart.js`; attach that provenance to current cards without treating it as Ranked difficulty approval. Audit every card against its referenced scenario, not just the initially flagged GA conflict.
+- [x] Run reference tests, all existing Node tests and `git diff --check`; inspect the independent matrix versus actual changes. Commit the tested content correction.
 
 ## Task 2: +1 candidates and stable Practice lengths
 
@@ -66,8 +66,8 @@ assert.equal(CHART['2 Day Air'].main.find(([state, code]) => state === 'GA' && c
 
 **Interfaces:** Cards keep `{id,svc,state,code,belt,confusions,why,tags}` and may add `destinationModifier: '+1'`, `referenceVersion`. Ordinary decks may add `practiceRunSize`; existing `questionCount` retains its current level-deck/picker meaning. `selectLevelCards(deck, rand)` returns the requested count for either size property, otherwise the whole ordinary deck as today.
 
-- [ ] Write failing tests for four explicit +1 candidates: `destination-plus-one-gnd`, `destination-plus-one-nda`, `destination-plus-one-2da`, `destination-plus-one-3ds`; each NY109, respective base service, `destinationModifier:'+1'`, beltPURPLE, three distinct non-PURPLE distractors and clear destination-based explanation. Code stays109. Include synthetic control without modifier showing base NY109 ORANGE.
-- [ ] Add those candidates to shared COMMON_CORE; all four are eligible future Ranked candidates, with difficulty still unapproved. Add authoring assertions to `tests/destination-plus-one.test.mjs`: every defined modifier must be +1, no authored routing code may contain literal +1, and a +1 card cannot also carry a conflicting2S ending. These tests reject ambiguous future seed content in CI; no runtime authoring API is introduced. Do not invent priority or rewrite arbitrary route strings.
+- [x] Write failing tests for four explicit +1 candidates: `destination-plus-one-gnd`, `destination-plus-one-nda`, `destination-plus-one-2da`, `destination-plus-one-3ds`; each NY109, respective base service, `destinationModifier:'+1'`, belt PURPLE, three distinct non-PURPLE distractors and clear destination-based explanation. Code stays109. Include synthetic control without modifier showing base NY109 ORANGE.
+- [x] Add those candidates to shared COMMON_CORE; all four are eligible future Ranked candidates, with difficulty still unapproved. Add authoring assertions to `tests/destination-plus-one.test.mjs`: every defined modifier must be +1, no authored routing code may contain literal +1, and a +1 card cannot also carry a conflicting 2S ending. These tests reject ambiguous future seed content in CI; no runtime authoring API is introduced. Do not invent priority or rewrite arbitrary route strings.
   In `test('plus-one cards carry separate destination metadata')`, for each of the four exact IDs above:
 
 ```js
@@ -77,10 +77,10 @@ assert.equal(card.belt, 'PURPLE');
 assert.ok(['GND', 'NDA', '2DA', '3DS'].includes(card.svc));
 ```
 
-- [ ] Add `practiceRunSize:14` to each Common Missorts deck and `practiceRunSize:16` to Mixed. Do not set `questionCount` on ordinary decks. Common candidate arrays expand14→18; Mixed16→17 after the IL split, but playable counts remain14/16.
-- [ ] Extend selection to use `questionCount ?? practiceRunSize` while preserving existing service/belt constraints and shuffle behavior. Keep non-sized service decks unchanged. Ensure every Common run includes at least one +1 candidate without repeating an ID; do not assume shuffle alone guarantees coverage. Reserve one randomly chosen +1 candidate, then fill remaining slots with the same constraints, counting that reservation toward the belt cap.
-- [ ] Test counts, unique IDs, service/marker coverage and full selection under deterministic RNG seeds0–99 plus all-zero/near-one generators for both expanded Common pools and Mixed; level15/20/30 and four10-card decks remain valid. The `verified` status is not owner Ranked-content approval.
-- [ ] Run new selection/destination tests and all Node tests; commit only after they pass. Do not resample or rewrite previously saved results.
+- [x] Add `practiceRunSize:14` to each Common Missorts deck and `practiceRunSize:16` to Mixed. Do not set `questionCount` on ordinary decks. Common candidate arrays expand14→18; Mixed16→17 after the IL split, but playable counts remain14/16.
+- [x] Extend selection to use `questionCount ?? practiceRunSize` while preserving existing service/belt constraints and shuffle behavior. Keep non-sized service decks unchanged. Ensure every Common run includes at least one +1 candidate without repeating an ID; do not assume shuffle alone guarantees coverage. Reserve one randomly chosen +1 candidate, then fill remaining slots with the same constraints, counting that reservation toward the belt cap.
+- [x] Test counts, unique IDs, service/marker coverage and full selection under deterministic RNG seeds0–99 plus all-zero/near-one generators for both expanded Common pools and Mixed; level15/20/30 and four10-card decks remain valid. The `verified` status is not owner Ranked-content approval.
+- [x] Run new selection/destination tests and all Node tests; commit only after they pass. Do not resample or rewrite previously saved results.
 
 ## Task 3: Destination label, recorded response and export
 
@@ -88,7 +88,7 @@ assert.ok(['GND', 'NDA', '2DA', '3DS'].includes(card.svc));
 
 **Interfaces:** `formatDestinationLabel(serviceLabel, destinationModifier) -> string` is pure display formatting with absent marker returning the existing label and +1 producing e.g. `Ground +1`. It is not a routing/scoring engine; bank validation constrains authored modifier values. `serviceName(svc, destinationModifier)` in app combines the existing translated base service with that formatter. `record()` in quiz preserves `destinationModifier` and `referenceVersion` from the actual card in each response; historical absent values remain supported.
 
-- [ ] Write failing tests asserting `formatDestinationLabel('Ground','+1') === 'Ground +1'` and absent marker returnsGround. Test ordinary and +1 response records preserve code109 separately; wrong/timeout outcomes retain marker/provenance too.
+- [x] Write failing tests asserting `formatDestinationLabel('Ground','+1') === 'Ground +1'` and absent marker returnsGround. Test ordinary and +1 response records preserve code 109 separately; wrong/timeout outcomes retain marker/provenance too.
   Exact display assertions in `test('destination plus-one never changes the routing code')`:
 
 ```js
@@ -98,21 +98,29 @@ assert.equal(response.code, '109');
 assert.equal(response.destinationModifier, '+1');
 ```
 
-- [ ] Implement the small formatter and response metadata. No string parsing of ZIP codes to infer +1; correct answers remain authored card data. Do not mutate persisted old results.
-- [ ] Update all destination call sites: initial card, language-toggle refresh, feedback/review, missed summaries, saved-log detail and workbook Service value. Preserve Routing code column109. Use `deck.practiceRunSize ?? deck.cards.length` for ordinary picker count text without changing its grouping filter.
-- [ ] Add English/Spanish +1 explanation before generic/suffix explanation branches; use the destination modifier, not route text. Keep 1S/2S explanations correct and preserve the confirmed NJ answers. Escape marker/service text at every existing HTML sink; locally altered stored text must remain inert.
-- [ ] Exercise real renderer/export functions with the existing VM/fake-DOM test pattern. Assert Ground +1 persists through language change, incorrect answer/timeout, reload and Excel data; legacy rows without modifier render/export identically. Confirm marker stays out of Routing code. No fake successful XLSX download claim from testing only workbook-row objects.
-- [ ] Update existing module-version query strings for every changed module/importer so a future approved Pages deployment cannot mix old and new data/rendering. Keep dependency pins/permissions unchanged and chart photos absent from release files.
-- [ ] Run all Node tests; manually walk a fictional +1 Practice quiz in both languages and an ordinary quiz, reload its saved result, generate/open a real Excel export, and inspect mobile/keyboard behavior. Record observed versus untested steps. Commit after required checks.
+- [x] Implement the small formatter and response metadata. No string parsing of ZIP codes to infer +1; correct answers remain authored card data. Do not mutate persisted old results.
+- [x] Update all destination call sites: initial card, language-toggle refresh, feedback/review, missed summaries, saved-log detail and workbook Service value. Preserve Routing code column109. Use `deck.practiceRunSize ?? deck.cards.length` for ordinary picker count text without changing its grouping filter.
+- [x] Add English/Spanish +1 explanation before generic/suffix explanation branches; use the destination modifier, not route text. Keep 1S/2S explanations correct and preserve the confirmed NJ answers. Escape marker/service text at every existing HTML sink; locally altered stored text must remain inert.
+- [x] Exercise real renderer/export functions with the existing VM/fake-DOM test pattern. Assert Ground +1 persists through language change, incorrect answer/timeout, reload and Excel data; legacy rows without modifier render/export identically. Confirm marker stays out of Routing code. No fake successful XLSX download claim from testing only workbook-row objects.
+- [x] Update existing module-version query strings for every changed module/importer so a future approved Pages deployment cannot mix old and new data/rendering. Keep dependency pins/permissions unchanged and chart photos absent from release files.
+- [x] Run all Node tests; manually walk a fictional +1 Practice quiz in both languages and an ordinary quiz, reload its saved result, generate/open a real Excel export, and inspect mobile/keyboard behavior. Record observed versus untested steps. Commit after required checks.
 
 ## Task 4: Review, CI and remaining Issue5 gates
 
 **Files:** Update [[2026-11-07-ranked-question-bank-review]] and [[2026-11-08-ranked-chart-reference]] with verified source/count/version evidence; existing workflow already runs `node --test tests/*.test.mjs`, no workflow change planned.
 
-- [ ] Run `node --test tests/*.test.mjs`, `backend/.venv/bin/python -m unittest discover -s backend/tests -v`, `backend/.venv/bin/python -m pip check`, and `git diff --check`. Record actual totals; none of these foundation checks substitutes for new content/display tests.
-- [ ] Re-run deck/canonical-scenario inventory after corrections; report candidate memberships versus unique scenarios versus per-run sizes. Do not reuse the November7 counts as if unchanged or declare all questions approved from counts alone.
+- [x] Run `node --test tests/*.test.mjs`, `backend/.venv/bin/python -m unittest discover -s backend/tests -v`, `backend/.venv/bin/python -m pip check`, and `git diff --check`. Record actual totals; none of these foundation checks substitutes for new content/display tests.
+- [x] Re-run deck/canonical-scenario inventory after corrections; report candidate memberships versus unique scenarios versus per-run sizes. Do not reuse the November7 counts as if unchanged or declare all questions approved from counts alone.
 - [ ] Prepare/update one review PR on the shared Ranked branch with confirmed source, new metadata/sampling behavior, browser/export evidence, risks and exact-head hosted checks. Owner reviews/merges; no auto-merge/public publication in execution authorization.
-- [ ] Keep Issue5 open: owner Easy/Medium/Hard labels, reviewed separate Hard work-methods content, canonical duplicate/version approvals and sufficient fresh tie sets still need their own review. Do not call the Ranked bank usable merely because Practice corrections pass.
+- [x] Keep Issue5 open: owner Easy/Medium/Hard labels, reviewed separate Hard work-methods content, canonical duplicate/version approvals and sufficient fresh tie sets still need their own review. Do not call the Ranked bank usable merely because Practice corrections pass.
+
+## Recorded branch evidence — November 8, 2026
+
+- Task 1 `dd69fa5`: independent 283-row source matrix, service-specific corrections/retained exceptions, manual explanation audit and `twilight-2026-11-08-r1` provenance. Tasks 2/3 `a69e782`/`929f189`: four destination +1 candidates, stable run sampling, translated display/record/history/export and cache-version propagation. Increment reviews completed before Task 4; final whole-branch review remains pending.
+- Final local checks at application head `929f189`: Node 382/382; backend 10/10; `pip check` no broken requirements; `git diff --check` clean. Content/display tests execute alongside the foundation checks.
+- Real-module inventory: 583 memberships, 379 IDs, 292 route-only heuristic keys, 296 destination-aware heuristic keys. No destination-aware answer or ID/scenario/answer conflicts found. These are heuristics, not approved canonical counts. Full per-deck/run counts: [[2026-11-07-ranked-question-bank-review]].
+- Chrome local acceptance: legacy 5/10 retained after reload; new Common 14-question run 5/14 with all four +1 services observed; English/Spanish question/feedback, wrong/timeout/history/reload; 390×844 without horizontal overflow; basic Tab/Enter. Actual XLSX 24,401 bytes reopened as ZIP/XML and Finder Quick Look Results/Missorts: 2 results, 14 missorts, four translated +1 Service rows with code 109/PURPLE, including timeout. Microsoft Excel/Numbers, physical Windows UI and physical phone were not tested; this is not a full accessibility audit. Console warn/error logs were empty during flows.
+- No application publication, main change, chart-photo/screenshot commit, employee migration or Ranked engine/auth/scoring. Owner curation gates in Issue 5 remain open. PR/hosted CI and final review must be recorded separately when actually completed.
 
 ## Self-review / handoff
 
