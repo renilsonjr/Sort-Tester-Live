@@ -1,6 +1,6 @@
 # Expanded Ranked question wording review
 
-**Status:**227 entries have approved English/Spanish explanations; all283 difficulty labels remain settled. Fifty-six focused wording cases remain pending. Four destination-context explanations are drafted below for the remaining three+1 examples and Next Day Air EAM. Original17 approvals are preserved. No product code or executable bank is created here.
+**Status:** 231 entries have approved English/Spanish explanations; all 283 difficulty labels remain settled. The next 32 specific-code/named-destination explanations are drafts pending review. Twenty broad-range entries await coverage/wording review. Original 17 approvals are preserved. No product code or executable bank is created here.
 
 **Related:** [[2026-11-08-ranked-full-chart-review]], [[2026-11-08-ranked-full-chart-review.json]], [[2026-11-08-ranked-question-wording-review]], [[2026-11-08-ranked-chart-reference]], [[2026-11-08-curated-ranked-bank-design]]. Tracker: [#5](https://github.com/renilsonjr/Sort-Tester-Live/issues/5), [PR #32](https://github.com/renilsonjr/Sort-Tester-Live/pull/32).
 
@@ -298,23 +298,72 @@ The source rules1S→PURPLE and2S→BLUE already apply to all four services and 
 - [x] Owner approved all eight suffix explanations in English.
 - [x] Owner approved all eight suffix explanations in Spanish.
 
-## Destination-context feedback batch — proposed (four entries)
+## Destination-context feedback batch — approved (four entries)
 
-Ground+1 already has approved bilingual wording and is not reopened. These drafts cover only3 Day Select+1,2 Day Air+1,Next Day Air+1 and Next Day Air EAM. Destination+1 applies to any state across all four services; the NY109 records are examples, not restrictions. EAM belongs in the destination/service field as Next Day Air EAM. Routing code remains separate in all cases. This review does not decide combined-marker precedence.
+Ground+1 already has approved bilingual wording and is not reopened. These approved explanations cover only3 Day Select+1,2 Day Air+1,Next Day Air+1 and Next Day Air EAM. Destination+1 applies to any state across all four services; the NY109 records are examples, not restrictions. EAM belongs in the destination/service field as Next Day Air EAM. Routing code remains separate in all cases. This review does not decide combined-marker precedence.
 
-| Review reference | Destination/service context | Answer | Proposed English feedback | Proposed Spanish feedback |
+| Review reference | Destination/service context | Answer | Approved English feedback | Approved Spanish feedback |
 | --- | --- | --- | --- | --- |
 | N26 | Next Day Air EAM | PURPLE | Next Day Air EAM goes to PURPLE, regardless of the ordinary routing code. | Aéreo 1 día EAM va a PURPLE, sin importar el código de ruta habitual. |
 | N44 | Next Day Air +1 | PURPLE | A destination marked +1 goes to PURPLE for any state across all four services. The routing code remains unchanged. | Un destino marcado +1 va a PURPLE para cualquier estado en los cuatro servicios. El código de ruta no cambia. |
 | D60 | 2 Day Air +1 | PURPLE | A destination marked +1 goes to PURPLE for any state across all four services. The routing code remains unchanged. | Un destino marcado +1 va a PURPLE para cualquier estado en los cuatro servicios. El código de ruta no cambia. |
 | S82 | 3 Day Select +1 | PURPLE | A destination marked +1 goes to PURPLE for any state across all four services. The routing code remains unchanged. | Un destino marcado +1 va a PURPLE para cualquier estado en los cuatro servicios. El código de ruta no cambia. |
 
-- [ ] Owner approves all four destination-context explanations in English.
-- [ ] Owner approves all four destination-context explanations in Spanish.
+- [x] Owner approved all four destination-context explanations in English.
+- [x] Owner approved all four destination-context explanations in Spanish.
 
-## Focused wording queue — 56 entries
+## Specific-code and named-destination batch — proposed (32 entries)
 
-These56 entries remain unapproved. Four destination-context explanations are drafted above; the other52 await focused wording/coverage work. Possible prefix overlap is only a reason to review; it does not establish that a different-state exception actually applies. Confirm coverage before adding exclusions. No new wording approval is inferred here.
+This review covers 27 specific-code explanations using the previously approved “The final digit matters” wording, and five named-destination explanations. Exact displayed code spacing, service-specific answers and approved difficulties remain unchanged. No blanket NJ classification, numeric-range expansion or new exception precedence is inferred. Broad-range questions are excluded from this batch and remain in the coverage queue.
+
+### Specific codes — 27 proposed explanations
+
+| Review reference | Service | State / code | Answer | Proposed English feedback | Proposed Spanish feedback |
+| --- | --- | --- | --- | --- | --- |
+| G65 | Ground | NJ 079 9 | ORANGE | Ground NJ 079 9 goes to ORANGE. The final digit matters. | En Terrestre, NJ 079 9 va a ORANGE. El último dígito importa. |
+| S05 | 3 Day Select | NH 034 0 | GOLD | 3 Day Select NH 034 0 goes to GOLD. The final digit matters. | En Select 3 días, NH 034 0 va a GOLD. El último dígito importa. |
+| S44 | 3 Day Select | TX 769 0 | PURPLE | 3 Day Select TX 769 0 goes to PURPLE. The final digit matters. | En Select 3 días, TX 769 0 va a PURPLE. El último dígito importa. |
+| S55 | 3 Day Select | NJ 079 9 | ORANGE | 3 Day Select NJ 079 9 goes to ORANGE. The final digit matters. | En Select 3 días, NJ 079 9 va a ORANGE. El último dígito importa. |
+| S63 | 3 Day Select | MS 395 0 | BLUE | 3 Day Select MS 395 0 goes to BLUE. The final digit matters. | En Select 3 días, MS 395 0 va a BLUE. El último dígito importa. |
+| S64 | 3 Day Select | SD 511 9 | BLUE | 3 Day Select SD 511 9 goes to BLUE. The final digit matters. | En Select 3 días, SD 511 9 va a BLUE. El último dígito importa. |
+| S65 | 3 Day Select | SD 571 9 | BROWN | 3 Day Select SD 571 9 goes to BROWN. The final digit matters. | En Select 3 días, SD 571 9 va a BROWN. El último dígito importa. |
+| S66 | 3 Day Select | ND 581 9 | BROWN | 3 Day Select ND 581 9 goes to BROWN. The final digit matters. | En Select 3 días, ND 581 9 va a BROWN. El último dígito importa. |
+| S67 | 3 Day Select | ND 582 0 | BROWN | 3 Day Select ND 582 0 goes to BROWN. The final digit matters. | En Select 3 días, ND 582 0 va a BROWN. El último dígito importa. |
+| S68 | 3 Day Select | TX 786 4 | ORANGE | 3 Day Select TX 786 4 goes to ORANGE. The final digit matters. | En Select 3 días, TX 786 4 va a ORANGE. El último dígito importa. |
+| S69 | 3 Day Select | TX 787 9 | ORANGE | 3 Day Select TX 787 9 goes to ORANGE. The final digit matters. | En Select 3 días, TX 787 9 va a ORANGE. El último dígito importa. |
+| S70 | 3 Day Select | TX 796 0 | ORANGE | 3 Day Select TX 796 0 goes to ORANGE. The final digit matters. | En Select 3 días, TX 796 0 va a ORANGE. El último dígito importa. |
+| S71 | 3 Day Select | TX 799 9 | ORANGE | 3 Day Select TX 799 9 goes to ORANGE. The final digit matters. | En Select 3 días, TX 799 9 va a ORANGE. El último dígito importa. |
+| S72 | 3 Day Select | CO 811 3 | ORANGE | 3 Day Select CO 811 3 goes to ORANGE. The final digit matters. | En Select 3 días, CO 811 3 va a ORANGE. El último dígito importa. |
+| S73 | 3 Day Select | CO 812 0 | ORANGE | 3 Day Select CO 812 0 goes to ORANGE. The final digit matters. | En Select 3 días, CO 812 0 va a ORANGE. El último dígito importa. |
+| S74 | 3 Day Select | CO 813 7 | ORANGE | 3 Day Select CO 813 7 goes to ORANGE. The final digit matters. | En Select 3 días, CO 813 7 va a ORANGE. El último dígito importa. |
+| S75 | 3 Day Select | CO 816 0 | ORANGE | 3 Day Select CO 816 0 goes to ORANGE. The final digit matters. | En Select 3 días, CO 816 0 va a ORANGE. El último dígito importa. |
+| S76 | 3 Day Select | CO 816 1 | ORANGE | 3 Day Select CO 816 1 goes to ORANGE. The final digit matters. | En Select 3 días, CO 816 1 va a ORANGE. El último dígito importa. |
+| S77 | 3 Day Select | WY 820 0 | ORANGE | 3 Day Select WY 820 0 goes to ORANGE. The final digit matters. | En Select 3 días, WY 820 0 va a ORANGE. El último dígito importa. |
+| S78 | 3 Day Select | WY 820 1 | ORANGE | 3 Day Select WY 820 1 goes to ORANGE. The final digit matters. | En Select 3 días, WY 820 1 va a ORANGE. El último dígito importa. |
+| S79 | 3 Day Select | NY 148 1 | GOLD | 3 Day Select NY 148 1 goes to GOLD. The final digit matters. | En Select 3 días, NY 148 1 va a GOLD. El último dígito importa. |
+| D05 | 2 Day Air | NH 034 0 | GOLD | 2 Day Air NH 034 0 goes to GOLD. The final digit matters. | En Aéreo 2 días, NH 034 0 va a GOLD. El último dígito importa. |
+| D38 | 2 Day Air | OK 741 9 | ORANGE | 2 Day Air OK 741 9 goes to ORANGE. The final digit matters. | En Aéreo 2 días, OK 741 9 va a ORANGE. El último dígito importa. |
+| D49 | 2 Day Air | NJ 079 9 | ORANGE | 2 Day Air NJ 079 9 goes to ORANGE. The final digit matters. | En Aéreo 2 días, NJ 079 9 va a ORANGE. El último dígito importa. |
+| D57 | 2 Day Air | NY 148 1 | GOLD | 2 Day Air NY 148 1 goes to GOLD. The final digit matters. | En Aéreo 2 días, NY 148 1 va a GOLD. El último dígito importa. |
+| N05 | Next Day Air | NH 034 0 | GOLD | Next Day Air NH 034 0 goes to GOLD. The final digit matters. | En Aéreo 1 día, NH 034 0 va a GOLD. El último dígito importa. |
+| N34 | Next Day Air | NJ 079 9 | ORANGE | Next Day Air NJ 079 9 goes to ORANGE. The final digit matters. | En Aéreo 1 día, NJ 079 9 va a ORANGE. El último dígito importa. |
+
+### Named destinations — five proposed explanations
+
+| Review reference | Service | Source destination | Answer | Proposed English feedback | Proposed Spanish feedback |
+| --- | --- | --- | --- | --- | --- |
+| G55 | Ground | MEXICO | GREEN | Ground to Mexico goes to GREEN. | En Terrestre, los envíos a México van a GREEN. |
+| G56 | Ground | CANADA | PURPLE | Ground to Canada goes to PURPLE. | En Terrestre, los envíos a Canadá van a PURPLE. |
+| G57 | Ground | PR | PINK | Ground to Puerto Rico goes to PINK. | En Terrestre, los envíos a Puerto Rico van a PINK. |
+| D41 | 2 Day Air | WORLD | PURPLE | 2 Day Air destinations marked WORLD go to PURPLE. | Los destinos marcados WORLD en Aéreo 2 días van a PURPLE. |
+| N25 | Next Day Air | WORLD | PURPLE | Next Day Air destinations marked WORLD go to PURPLE. | Los destinos marcados WORLD en Aéreo 1 día van a PURPLE. |
+
+- [ ] Owner approves all 32 explanations in English.
+- [ ] Owner approves all 32 explanations in Spanish.
+
+## Focused wording queue — 52 entries
+
+These 52 entries remain unapproved. Thirty-two specific-code/named-destination explanations are drafted above; the other 20 broad-range entries await coverage/wording review. Possible prefix overlap is only a reason to review; it does not establish that a different-state exception actually applies. Confirm coverage before adding exclusions. No new wording approval is inferred here.
 
 | Review reference | Service | Source state / code | Answer | Review need |
 | --- | --- | --- | --- | --- |
@@ -369,12 +418,8 @@ These56 entries remain unapproved. Four destination-context explanations are dra
 | N05 | Next Day Air | NH 034 0 | GOLD | Exact code or named destination: review wording that preserves the source meaning. |
 | N24 | Next Day Air | * 220–999 | PURPLE | Wildcard or named destination: review its scope and any explicit exception wording. |
 | N25 | Next Day Air | * WORLD | PURPLE | Wildcard or named destination: review its scope and any explicit exception wording. |
-| N26 | Next Day Air | * ALL 1DA EAM | PURPLE | Service qualifier: review EAM destination presentation with separate routing field. |
 | N34 | Next Day Air | NJ 079 9 | ORANGE | Specific exception or suffix: review its explanatory wording separately. |
-| N44 | Next Day Air | NY 109 | PURPLE | Destination modifier: review field separation and global scope. |
-| D60 | 2 Day Air | NY 109 | PURPLE | Destination modifier: review field separation and global scope. |
-| S82 | 3 Day Select | NY 109 | PURPLE | Destination modifier: review field separation and global scope. |
 
 ## Current wording counts
 
-Including the original17:227 English and227 Spanish explanations are approved, with56 pending in each language. Four destination-context explanations are drafted for review;52 remain to be drafted/resolved. All283 answers/difficulty labels are unchanged. Only work-methods tie-question content is deferred; other tie-break policies remain unchanged.
+Including the original 17: 231 English and 231 Spanish explanations are approved, with 52 pending in each language. Thirty-two specific-code/named-destination explanations are drafted for review; 20 broad-range entries remain for coverage/wording work. All 283 answers/difficulty labels are unchanged. Only work-methods tie-question content is deferred; other tie-break policies remain unchanged.

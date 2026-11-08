@@ -1,5 +1,5 @@
 {
-  "status": "Review-only full-chart inventory:283 approved difficulty labels;227 approved bilingual explanations. Fifty-six focused entries remain unapproved, including four proposed destination-context explanations. Canonical/coverage validation remains incomplete; not an executable bank.",
+  "status": "Review-only full-chart inventory:283 approved difficulty labels;231 approved bilingual explanations. Thirty-two specific/named feedback drafts await approval;20 broad-range entries await coverage/wording review. Canonical validation remains incomplete; not an executable bank.",
   "sourceRevision": "twilight-2026-11-08-r2",
   "existingApprovalsPreserved": 17,
   "remainingDifficultyReviews": 0,
@@ -1781,8 +1781,20 @@
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [],
       "approvedReview": "G55",
-      "wordingReviewGroup": "focused-review",
-      "wordingReviewReason": "Exact code or named destination: review wording that preserves the source meaning."
+      "wordingReviewGroup": "specific-and-named-batch-1",
+      "wordingReviewReason": "Exact code or named destination: review wording that preserves the source meaning.",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "Ground to Mexico goes to GREEN.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Terrestre, los envíos a México van a GREEN.",
+          "approvalStatus": "proposed"
+        }
+      }
     },
     {
       "id": "ground-main-can-canada",
@@ -1800,8 +1812,20 @@
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [],
       "approvedReview": "G56",
-      "wordingReviewGroup": "focused-review",
-      "wordingReviewReason": "Exact code or named destination: review wording that preserves the source meaning."
+      "wordingReviewGroup": "specific-and-named-batch-1",
+      "wordingReviewReason": "Exact code or named destination: review wording that preserves the source meaning.",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "Ground to Canada goes to PURPLE.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Terrestre, los envíos a Canadá van a PURPLE.",
+          "approvalStatus": "proposed"
+        }
+      }
     },
     {
       "id": "ground-main-pri-pr",
@@ -1819,8 +1843,20 @@
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [],
       "approvedReview": "G57",
-      "wordingReviewGroup": "focused-review",
-      "wordingReviewReason": "Exact code or named destination: review wording that preserves the source meaning."
+      "wordingReviewGroup": "specific-and-named-batch-1",
+      "wordingReviewReason": "Exact code or named destination: review wording that preserves the source meaning.",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "Ground to Puerto Rico goes to PINK.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Terrestre, los envíos a Puerto Rico van a PINK.",
+          "approvalStatus": "proposed"
+        }
+      }
     },
     {
       "id": "ground-exceptions-nj-0703",
@@ -2048,8 +2084,20 @@
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [],
       "approvedReview": "G65",
-      "wordingReviewGroup": "focused-review",
-      "wordingReviewReason": "Specific exception or suffix: review its explanatory wording separately."
+      "wordingReviewGroup": "specific-and-named-batch-1",
+      "wordingReviewReason": "Specific exception or suffix: review its explanatory wording separately.",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "Ground NJ 079 9 goes to ORANGE. The final digit matters.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Terrestre, NJ 079 9 va a ORANGE. El último dígito importa.",
+          "approvalStatus": "proposed"
+        }
+      }
     },
     {
       "id": "ground-exceptions-nj-0819",
@@ -2735,8 +2783,20 @@
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [],
       "approvedReview": "S05",
-      "wordingReviewGroup": "focused-review",
-      "wordingReviewReason": "Exact code or named destination: review wording that preserves the source meaning."
+      "wordingReviewGroup": "specific-and-named-batch-1",
+      "wordingReviewReason": "Exact code or named destination: review wording that preserves the source meaning.",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "3 Day Select NH 034 0 goes to GOLD. The final digit matters.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Select 3 días, NH 034 0 va a GOLD. El último dígito importa.",
+          "approvalStatus": "proposed"
+        }
+      }
     },
     {
       "id": "3dayselect-main-nhme-035-049",
@@ -3954,8 +4014,20 @@
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [],
       "approvedReview": "S44",
-      "wordingReviewGroup": "focused-review",
-      "wordingReviewReason": "Exact code or named destination: review wording that preserves the source meaning."
+      "wordingReviewGroup": "specific-and-named-batch-1",
+      "wordingReviewReason": "Exact code or named destination: review wording that preserves the source meaning.",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "3 Day Select TX 769 0 goes to PURPLE. The final digit matters.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Select 3 días, TX 769 0 va a PURPLE. El último dígito importa.",
+          "approvalStatus": "proposed"
+        }
+      }
     },
     {
       "id": "3dayselect-main-tx-770-784",
@@ -4277,8 +4349,20 @@
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [],
       "approvedReview": "S55",
-      "wordingReviewGroup": "focused-review",
-      "wordingReviewReason": "Specific exception or suffix: review its explanatory wording separately."
+      "wordingReviewGroup": "specific-and-named-batch-1",
+      "wordingReviewReason": "Specific exception or suffix: review its explanatory wording separately.",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "3 Day Select NJ 079 9 goes to ORANGE. The final digit matters.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Select 3 días, NJ 079 9 va a ORANGE. El último dígito importa.",
+          "approvalStatus": "proposed"
+        }
+      }
     },
     {
       "id": "3dayselect-exceptions-nj-0819",
@@ -4506,8 +4590,20 @@
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [],
       "approvedReview": "S63",
-      "wordingReviewGroup": "focused-review",
-      "wordingReviewReason": "Specific exception or suffix: review its explanatory wording separately."
+      "wordingReviewGroup": "specific-and-named-batch-1",
+      "wordingReviewReason": "Specific exception or suffix: review its explanatory wording separately.",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "3 Day Select MS 395 0 goes to BLUE. The final digit matters.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Select 3 días, MS 395 0 va a BLUE. El último dígito importa.",
+          "approvalStatus": "proposed"
+        }
+      }
     },
     {
       "id": "3dayselect-exceptions-sd-5119",
@@ -4525,8 +4621,20 @@
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [],
       "approvedReview": "S64",
-      "wordingReviewGroup": "focused-review",
-      "wordingReviewReason": "Specific exception or suffix: review its explanatory wording separately."
+      "wordingReviewGroup": "specific-and-named-batch-1",
+      "wordingReviewReason": "Specific exception or suffix: review its explanatory wording separately.",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "3 Day Select SD 511 9 goes to BLUE. The final digit matters.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Select 3 días, SD 511 9 va a BLUE. El último dígito importa.",
+          "approvalStatus": "proposed"
+        }
+      }
     },
     {
       "id": "3dayselect-exceptions-sd-5719",
@@ -4544,8 +4652,20 @@
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [],
       "approvedReview": "S65",
-      "wordingReviewGroup": "focused-review",
-      "wordingReviewReason": "Specific exception or suffix: review its explanatory wording separately."
+      "wordingReviewGroup": "specific-and-named-batch-1",
+      "wordingReviewReason": "Specific exception or suffix: review its explanatory wording separately.",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "3 Day Select SD 571 9 goes to BROWN. The final digit matters.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Select 3 días, SD 571 9 va a BROWN. El último dígito importa.",
+          "approvalStatus": "proposed"
+        }
+      }
     },
     {
       "id": "3dayselect-exceptions-nd-5819",
@@ -4563,8 +4683,20 @@
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [],
       "approvedReview": "S66",
-      "wordingReviewGroup": "focused-review",
-      "wordingReviewReason": "Specific exception or suffix: review its explanatory wording separately."
+      "wordingReviewGroup": "specific-and-named-batch-1",
+      "wordingReviewReason": "Specific exception or suffix: review its explanatory wording separately.",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "3 Day Select ND 581 9 goes to BROWN. The final digit matters.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Select 3 días, ND 581 9 va a BROWN. El último dígito importa.",
+          "approvalStatus": "proposed"
+        }
+      }
     },
     {
       "id": "3dayselect-exceptions-nd-5820",
@@ -4582,8 +4714,20 @@
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [],
       "approvedReview": "S67",
-      "wordingReviewGroup": "focused-review",
-      "wordingReviewReason": "Specific exception or suffix: review its explanatory wording separately."
+      "wordingReviewGroup": "specific-and-named-batch-1",
+      "wordingReviewReason": "Specific exception or suffix: review its explanatory wording separately.",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "3 Day Select ND 582 0 goes to BROWN. The final digit matters.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Select 3 días, ND 582 0 va a BROWN. El último dígito importa.",
+          "approvalStatus": "proposed"
+        }
+      }
     },
     {
       "id": "3dayselect-exceptions-tx-7864",
@@ -4601,8 +4745,20 @@
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [],
       "approvedReview": "S68",
-      "wordingReviewGroup": "focused-review",
-      "wordingReviewReason": "Specific exception or suffix: review its explanatory wording separately."
+      "wordingReviewGroup": "specific-and-named-batch-1",
+      "wordingReviewReason": "Specific exception or suffix: review its explanatory wording separately.",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "3 Day Select TX 786 4 goes to ORANGE. The final digit matters.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Select 3 días, TX 786 4 va a ORANGE. El último dígito importa.",
+          "approvalStatus": "proposed"
+        }
+      }
     },
     {
       "id": "3dayselect-exceptions-tx-7879",
@@ -4620,8 +4776,20 @@
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [],
       "approvedReview": "S69",
-      "wordingReviewGroup": "focused-review",
-      "wordingReviewReason": "Specific exception or suffix: review its explanatory wording separately."
+      "wordingReviewGroup": "specific-and-named-batch-1",
+      "wordingReviewReason": "Specific exception or suffix: review its explanatory wording separately.",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "3 Day Select TX 787 9 goes to ORANGE. The final digit matters.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Select 3 días, TX 787 9 va a ORANGE. El último dígito importa.",
+          "approvalStatus": "proposed"
+        }
+      }
     },
     {
       "id": "3dayselect-exceptions-tx-7960",
@@ -4639,8 +4807,20 @@
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [],
       "approvedReview": "S70",
-      "wordingReviewGroup": "focused-review",
-      "wordingReviewReason": "Specific exception or suffix: review its explanatory wording separately."
+      "wordingReviewGroup": "specific-and-named-batch-1",
+      "wordingReviewReason": "Specific exception or suffix: review its explanatory wording separately.",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "3 Day Select TX 796 0 goes to ORANGE. The final digit matters.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Select 3 días, TX 796 0 va a ORANGE. El último dígito importa.",
+          "approvalStatus": "proposed"
+        }
+      }
     },
     {
       "id": "3dayselect-exceptions-tx-7999",
@@ -4658,8 +4838,20 @@
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [],
       "approvedReview": "S71",
-      "wordingReviewGroup": "focused-review",
-      "wordingReviewReason": "Specific exception or suffix: review its explanatory wording separately."
+      "wordingReviewGroup": "specific-and-named-batch-1",
+      "wordingReviewReason": "Specific exception or suffix: review its explanatory wording separately.",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "3 Day Select TX 799 9 goes to ORANGE. The final digit matters.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Select 3 días, TX 799 9 va a ORANGE. El último dígito importa.",
+          "approvalStatus": "proposed"
+        }
+      }
     },
     {
       "id": "3dayselect-exceptions-co-8113",
@@ -4677,8 +4869,20 @@
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [],
       "approvedReview": "S72",
-      "wordingReviewGroup": "focused-review",
-      "wordingReviewReason": "Specific exception or suffix: review its explanatory wording separately."
+      "wordingReviewGroup": "specific-and-named-batch-1",
+      "wordingReviewReason": "Specific exception or suffix: review its explanatory wording separately.",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "3 Day Select CO 811 3 goes to ORANGE. The final digit matters.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Select 3 días, CO 811 3 va a ORANGE. El último dígito importa.",
+          "approvalStatus": "proposed"
+        }
+      }
     },
     {
       "id": "3dayselect-exceptions-co-8120",
@@ -4696,8 +4900,20 @@
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [],
       "approvedReview": "S73",
-      "wordingReviewGroup": "focused-review",
-      "wordingReviewReason": "Specific exception or suffix: review its explanatory wording separately."
+      "wordingReviewGroup": "specific-and-named-batch-1",
+      "wordingReviewReason": "Specific exception or suffix: review its explanatory wording separately.",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "3 Day Select CO 812 0 goes to ORANGE. The final digit matters.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Select 3 días, CO 812 0 va a ORANGE. El último dígito importa.",
+          "approvalStatus": "proposed"
+        }
+      }
     },
     {
       "id": "3dayselect-exceptions-co-8137",
@@ -4715,8 +4931,20 @@
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [],
       "approvedReview": "S74",
-      "wordingReviewGroup": "focused-review",
-      "wordingReviewReason": "Specific exception or suffix: review its explanatory wording separately."
+      "wordingReviewGroup": "specific-and-named-batch-1",
+      "wordingReviewReason": "Specific exception or suffix: review its explanatory wording separately.",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "3 Day Select CO 813 7 goes to ORANGE. The final digit matters.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Select 3 días, CO 813 7 va a ORANGE. El último dígito importa.",
+          "approvalStatus": "proposed"
+        }
+      }
     },
     {
       "id": "3dayselect-exceptions-co-8160",
@@ -4734,8 +4962,20 @@
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [],
       "approvedReview": "S75",
-      "wordingReviewGroup": "focused-review",
-      "wordingReviewReason": "Specific exception or suffix: review its explanatory wording separately."
+      "wordingReviewGroup": "specific-and-named-batch-1",
+      "wordingReviewReason": "Specific exception or suffix: review its explanatory wording separately.",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "3 Day Select CO 816 0 goes to ORANGE. The final digit matters.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Select 3 días, CO 816 0 va a ORANGE. El último dígito importa.",
+          "approvalStatus": "proposed"
+        }
+      }
     },
     {
       "id": "3dayselect-exceptions-co-8161",
@@ -4753,8 +4993,20 @@
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [],
       "approvedReview": "S76",
-      "wordingReviewGroup": "focused-review",
-      "wordingReviewReason": "Specific exception or suffix: review its explanatory wording separately."
+      "wordingReviewGroup": "specific-and-named-batch-1",
+      "wordingReviewReason": "Specific exception or suffix: review its explanatory wording separately.",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "3 Day Select CO 816 1 goes to ORANGE. The final digit matters.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Select 3 días, CO 816 1 va a ORANGE. El último dígito importa.",
+          "approvalStatus": "proposed"
+        }
+      }
     },
     {
       "id": "3dayselect-exceptions-wy-8200",
@@ -4772,8 +5024,20 @@
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [],
       "approvedReview": "S77",
-      "wordingReviewGroup": "focused-review",
-      "wordingReviewReason": "Specific exception or suffix: review its explanatory wording separately."
+      "wordingReviewGroup": "specific-and-named-batch-1",
+      "wordingReviewReason": "Specific exception or suffix: review its explanatory wording separately.",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "3 Day Select WY 820 0 goes to ORANGE. The final digit matters.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Select 3 días, WY 820 0 va a ORANGE. El último dígito importa.",
+          "approvalStatus": "proposed"
+        }
+      }
     },
     {
       "id": "3dayselect-exceptions-wy-8201",
@@ -4791,8 +5055,20 @@
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [],
       "approvedReview": "S78",
-      "wordingReviewGroup": "focused-review",
-      "wordingReviewReason": "Specific exception or suffix: review its explanatory wording separately."
+      "wordingReviewGroup": "specific-and-named-batch-1",
+      "wordingReviewReason": "Specific exception or suffix: review its explanatory wording separately.",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "3 Day Select WY 820 1 goes to ORANGE. The final digit matters.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Select 3 días, WY 820 1 va a ORANGE. El último dígito importa.",
+          "approvalStatus": "proposed"
+        }
+      }
     },
     {
       "id": "3dayselect-exceptions-ny-1481",
@@ -4810,8 +5086,20 @@
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [],
       "approvedReview": "S79",
-      "wordingReviewGroup": "focused-review",
-      "wordingReviewReason": "Specific exception or suffix: review its explanatory wording separately."
+      "wordingReviewGroup": "specific-and-named-batch-1",
+      "wordingReviewReason": "Specific exception or suffix: review its explanatory wording separately.",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "3 Day Select NY 148 1 goes to GOLD. The final digit matters.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Select 3 días, NY 148 1 va a GOLD. El último dígito importa.",
+          "approvalStatus": "proposed"
+        }
+      }
     },
     {
       "id": "3dayselect-exceptions-anystate-ends2s",
@@ -5019,8 +5307,20 @@
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [],
       "approvedReview": "D05",
-      "wordingReviewGroup": "focused-review",
-      "wordingReviewReason": "Exact code or named destination: review wording that preserves the source meaning."
+      "wordingReviewGroup": "specific-and-named-batch-1",
+      "wordingReviewReason": "Exact code or named destination: review wording that preserves the source meaning.",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "2 Day Air NH 034 0 goes to GOLD. The final digit matters.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Aéreo 2 días, NH 034 0 va a GOLD. El último dígito importa.",
+          "approvalStatus": "proposed"
+        }
+      }
     },
     {
       "id": "2dayair-main-nhme-035-049",
@@ -6122,8 +6422,20 @@
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [],
       "approvedReview": "D38",
-      "wordingReviewGroup": "focused-review",
-      "wordingReviewReason": "Exact code or named destination: review wording that preserves the source meaning."
+      "wordingReviewGroup": "specific-and-named-batch-1",
+      "wordingReviewReason": "Exact code or named destination: review wording that preserves the source meaning.",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "2 Day Air OK 741 9 goes to ORANGE. The final digit matters.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Aéreo 2 días, OK 741 9 va a ORANGE. El último dígito importa.",
+          "approvalStatus": "proposed"
+        }
+      }
     },
     {
       "id": "2dayair-main-ok-742-749",
@@ -6197,8 +6509,20 @@
         "Wildcard fallback: explicitly exclude specific overrides; not a duplicate of a named-state row by text alone."
       ],
       "approvedReview": "D41",
-      "wordingReviewGroup": "focused-review",
-      "wordingReviewReason": "Wildcard or named destination: review its scope and any explicit exception wording."
+      "wordingReviewGroup": "specific-and-named-batch-1",
+      "wordingReviewReason": "Wildcard or named destination: review its scope and any explicit exception wording.",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "2 Day Air destinations marked WORLD go to PURPLE.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "Los destinos marcados WORLD en Aéreo 2 días van a PURPLE.",
+          "approvalStatus": "proposed"
+        }
+      }
     },
     {
       "id": "2dayair-exceptions-nj-0703",
@@ -6426,8 +6750,20 @@
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [],
       "approvedReview": "D49",
-      "wordingReviewGroup": "focused-review",
-      "wordingReviewReason": "Specific exception or suffix: review its explanatory wording separately."
+      "wordingReviewGroup": "specific-and-named-batch-1",
+      "wordingReviewReason": "Specific exception or suffix: review its explanatory wording separately.",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "2 Day Air NJ 079 9 goes to ORANGE. The final digit matters.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Aéreo 2 días, NJ 079 9 va a ORANGE. El último dígito importa.",
+          "approvalStatus": "proposed"
+        }
+      }
     },
     {
       "id": "2dayair-exceptions-nj-0819",
@@ -6655,8 +6991,20 @@
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [],
       "approvedReview": "D57",
-      "wordingReviewGroup": "focused-review",
-      "wordingReviewReason": "Specific exception or suffix: review its explanatory wording separately."
+      "wordingReviewGroup": "specific-and-named-batch-1",
+      "wordingReviewReason": "Specific exception or suffix: review its explanatory wording separately.",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "2 Day Air NY 148 1 goes to GOLD. The final digit matters.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Aéreo 2 días, NY 148 1 va a GOLD. El último dígito importa.",
+          "approvalStatus": "proposed"
+        }
+      }
     },
     {
       "id": "2dayair-exceptions-anystate-ends2s",
@@ -6864,8 +7212,20 @@
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [],
       "approvedReview": "N05",
-      "wordingReviewGroup": "focused-review",
-      "wordingReviewReason": "Exact code or named destination: review wording that preserves the source meaning."
+      "wordingReviewGroup": "specific-and-named-batch-1",
+      "wordingReviewReason": "Exact code or named destination: review wording that preserves the source meaning.",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "Next Day Air NH 034 0 goes to GOLD. The final digit matters.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Aéreo 1 día, NH 034 0 va a GOLD. El último dígito importa.",
+          "approvalStatus": "proposed"
+        }
+      }
     },
     {
       "id": "nextdayair-main-nhme-035-049",
@@ -7479,8 +7839,20 @@
         "Wildcard fallback: explicitly exclude specific overrides; not a duplicate of a named-state row by text alone."
       ],
       "approvedReview": "N25",
-      "wordingReviewGroup": "focused-review",
-      "wordingReviewReason": "Wildcard or named destination: review its scope and any explicit exception wording."
+      "wordingReviewGroup": "specific-and-named-batch-1",
+      "wordingReviewReason": "Wildcard or named destination: review its scope and any explicit exception wording.",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "Next Day Air destinations marked WORLD go to PURPLE.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "Los destinos marcados WORLD en Aéreo 1 día van a PURPLE.",
+          "approvalStatus": "proposed"
+        }
+      }
     },
     {
       "id": "nextdayair-main-all-all1daeam",
@@ -7494,7 +7866,7 @@
       "difficulty": "Hard",
       "difficultyStatus": "owner-approved",
       "difficultyReason": "Owner explicitly approved this recorded difficulty; question wording, explanations and any ambiguous source notation remain pending.",
-      "wordingStatus": "not-yet-reviewed",
+      "wordingStatus": "owner-approved-bilingual",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [
         "Wildcard fallback: explicitly exclude specific overrides; not a duplicate of a named-state row by text alone.",
@@ -7514,12 +7886,12 @@
         "en": {
           "prompt": "Which belt does this go to?",
           "explanation": "Next Day Air EAM goes to PURPLE, regardless of the ordinary routing code.",
-          "approvalStatus": "proposed"
+          "approvalStatus": "owner-approved"
         },
         "es": {
           "prompt": "¿A qué color va?",
           "explanation": "Aéreo 1 día EAM va a PURPLE, sin importar el código de ruta habitual.",
-          "approvalStatus": "proposed"
+          "approvalStatus": "owner-approved"
         }
       }
     },
@@ -7749,8 +8121,20 @@
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [],
       "approvedReview": "N34",
-      "wordingReviewGroup": "focused-review",
-      "wordingReviewReason": "Specific exception or suffix: review its explanatory wording separately."
+      "wordingReviewGroup": "specific-and-named-batch-1",
+      "wordingReviewReason": "Specific exception or suffix: review its explanatory wording separately.",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "Next Day Air NJ 079 9 goes to ORANGE. The final digit matters.",
+          "approvalStatus": "proposed"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Aéreo 1 día, NJ 079 9 va a ORANGE. El último dígito importa.",
+          "approvalStatus": "proposed"
+        }
+      }
     },
     {
       "id": "nextdayair-exceptions-nj-0819",
@@ -8064,7 +8448,7 @@
       "difficulty": "Hard",
       "difficultyStatus": "owner-approved",
       "difficultyReason": "Owner explicitly approved this recorded difficulty; question wording, explanations and any ambiguous source notation remain pending.",
-      "wordingStatus": "not-yet-reviewed",
+      "wordingStatus": "owner-approved-bilingual",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [
         "Owner explicitly confirmed destination+1 goes PURPLE for any state across all four services. NY109 is an authored example, not a state or ordinary routing-code restriction. Preserve separate destination/routing fields; combined conflicting marker precedence remains unapproved."
@@ -8085,12 +8469,12 @@
         "en": {
           "prompt": "Which belt does this go to?",
           "explanation": "A destination marked +1 goes to PURPLE for any state across all four services. The routing code remains unchanged.",
-          "approvalStatus": "proposed"
+          "approvalStatus": "owner-approved"
         },
         "es": {
           "prompt": "¿A qué color va?",
           "explanation": "Un destino marcado +1 va a PURPLE para cualquier estado en los cuatro servicios. El código de ruta no cambia.",
-          "approvalStatus": "proposed"
+          "approvalStatus": "owner-approved"
         }
       }
     },
@@ -8106,7 +8490,7 @@
       "difficulty": "Hard",
       "difficultyStatus": "owner-approved",
       "difficultyReason": "Owner explicitly approved this recorded difficulty; question wording, explanations and any ambiguous source notation remain pending.",
-      "wordingStatus": "not-yet-reviewed",
+      "wordingStatus": "owner-approved-bilingual",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [
         "Owner explicitly confirmed destination+1 goes PURPLE for any state across all four services. NY109 is an authored example, not a state or ordinary routing-code restriction. Preserve separate destination/routing fields; combined conflicting marker precedence remains unapproved."
@@ -8127,12 +8511,12 @@
         "en": {
           "prompt": "Which belt does this go to?",
           "explanation": "A destination marked +1 goes to PURPLE for any state across all four services. The routing code remains unchanged.",
-          "approvalStatus": "proposed"
+          "approvalStatus": "owner-approved"
         },
         "es": {
           "prompt": "¿A qué color va?",
           "explanation": "Un destino marcado +1 va a PURPLE para cualquier estado en los cuatro servicios. El código de ruta no cambia.",
-          "approvalStatus": "proposed"
+          "approvalStatus": "owner-approved"
         }
       }
     },
@@ -8148,7 +8532,7 @@
       "difficulty": "Hard",
       "difficultyStatus": "owner-approved",
       "difficultyReason": "Owner explicitly approved this recorded difficulty; question wording, explanations and any ambiguous source notation remain pending.",
-      "wordingStatus": "not-yet-reviewed",
+      "wordingStatus": "owner-approved-bilingual",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [
         "Owner explicitly confirmed destination+1 goes PURPLE for any state across all four services. NY109 is an authored example, not a state or ordinary routing-code restriction. Preserve separate destination/routing fields; combined conflicting marker precedence remains unapproved."
@@ -8169,12 +8553,12 @@
         "en": {
           "prompt": "Which belt does this go to?",
           "explanation": "A destination marked +1 goes to PURPLE for any state across all four services. The routing code remains unchanged.",
-          "approvalStatus": "proposed"
+          "approvalStatus": "owner-approved"
         },
         "es": {
           "prompt": "¿A qué color va?",
           "explanation": "Un destino marcado +1 va a PURPLE para cualquier estado en los cuatro servicios. El código de ruta no cambia.",
-          "approvalStatus": "proposed"
+          "approvalStatus": "owner-approved"
         }
       }
     }
@@ -8248,11 +8632,11 @@
     "scopeNote": "NY109 examples do not restrict the rule to New York or routing109. This clarification does not create or approve additional canonical variants or decide conflicting combined-marker precedence."
   },
   "wordingReviewCounts": {
-    "enOwnerApproved": 227,
-    "esOwnerApproved": 227,
-    "enPending": 56,
-    "esPending": 56,
-    "bilingualOwnerApproved": 227
+    "enOwnerApproved": 231,
+    "esOwnerApproved": 231,
+    "enPending": 52,
+    "esPending": 52,
+    "bilingualOwnerApproved": 231
   },
   "wordingReviewBatches": [
     {
@@ -8498,7 +8882,7 @@
     },
     {
       "id": "destination-context-batch-1",
-      "status": "proposed",
+      "status": "owner-approved",
       "languages": [
         "en",
         "es"
@@ -8510,7 +8894,52 @@
         "D60",
         "S82"
       ],
-      "scope": "Feedback only for the remaining three+1 examples and one NDA EAM rule; preserve separate routing/destination fields. Existing Ground+1 wording remains unchanged. Combined-marker precedence is not approved here."
+      "scope": "Feedback only for the remaining three+1 examples and one NDA EAM rule; preserve separate routing/destination fields. Existing Ground+1 wording remains unchanged. Combined-marker precedence is not approved here.",
+      "approvalScope": "Owner approved both languages for the remaining three+1 entries and Next Day Air EAM. Existing Ground+1 wording, fields, answers and difficulties remain unchanged."
+    },
+    {
+      "id": "specific-and-named-batch-1",
+      "status": "proposed",
+      "languages": [
+        "en",
+        "es"
+      ],
+      "entryCount": 32,
+      "entryReviewRefs": [
+        "G55",
+        "G56",
+        "G57",
+        "G65",
+        "S05",
+        "S44",
+        "S55",
+        "S63",
+        "S64",
+        "S65",
+        "S66",
+        "S67",
+        "S68",
+        "S69",
+        "S70",
+        "S71",
+        "S72",
+        "S73",
+        "S74",
+        "S75",
+        "S76",
+        "S77",
+        "S78",
+        "S79",
+        "D05",
+        "D38",
+        "D41",
+        "D49",
+        "D57",
+        "N05",
+        "N25",
+        "N34"
+      ],
+      "scope": "Feedback for27 specific-code cases and five named destinations; no new range/exclusion interpretation or changes to settled answers/difficulties."
     }
   ]
 }
