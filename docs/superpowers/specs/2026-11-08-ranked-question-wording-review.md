@@ -39,6 +39,6 @@ Only displayed modifiers apply: ordinary questions have no destination +1 or rou
 - [x] Owner approved Hard wording/explanations H1–H7 in chat, including exact-code exceptions, destination +1 and the Indiana owner override.
 - [ ] Check Spanish wording separately before bilingual Ranked use; existing Practice translation tests do not approve new Ranked copy.
 - [ ] Complete canonical identity/overlap/exception handling and immutable bank/assignment versions before implementation.
-- [ ] Obtain separate authoritative work-methods questions for tie rounds; this route sheet does not supply them.
+- [ ] **Deferred at the owner’s request:** obtain separate authoritative work-methods questions for tie rounds. Resume this content review later; this route sheet does not supply or replace that bank. Existing tie-break rules and the approved owner-selection fallback remain unchanged pending any explicit new decision.
 
 Seventeen reviewed labels provide five Easy, five Medium and seven Hard candidates. This is a small initial candidate set, not proof of broad content coverage, fairness, fresh tie sets or an implemented Ranked engine.
