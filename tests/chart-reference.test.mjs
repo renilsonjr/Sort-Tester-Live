@@ -55,6 +55,10 @@ for (const [service, state, lower, upper, belt] of [
 // Find the independently transcribed ordinary scenario. Range cards describe the
 // base row; a listed single-code exception is tested separately above.
 function referenceFor(card, service) {
+  if (card.destinationModifier !== undefined) {
+    const rule = reference.destinationModifierRule;
+    return card.destinationModifier === rule.modifier && rule.services.includes(service) ? rule : null;
+  }
   if (/ (1S|2S)$/.test(card.code)) return reference.cases.find(item =>
     item.service === service && item.code === `ends ${card.code.slice(-2)}`);
   const candidates = reference.cases.filter(item => item.service === service);

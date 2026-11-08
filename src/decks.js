@@ -385,6 +385,7 @@ export const DECKS = [
   ...LEVEL_DECKS,
   {
     id: 'common-twilight-1',
+    practiceRunSize: 14,
     name: 'Common Missorts · Set 1',
     sort: 'Twilight',
     blurb: 'The usual traps, including the updated New Jersey rule',
@@ -393,6 +394,7 @@ export const DECKS = [
   },
   {
     id: 'common-twilight-2',
+    practiceRunSize: 14,
     name: 'Common Missorts · Set 2',
     sort: 'Twilight',
     blurb: 'A second familiar set with different New Jersey examples',

@@ -58,7 +58,7 @@ export const LEVEL_DECKS = [
 // Every run gets a new selection. Spread questions across services and cap how
 // often one belt can be right, so a quiz cannot be passed by repeating a belt.
 export function selectLevelCards(deck, rand = Math.random) {
-  const runSize = deck.practiceRunSize ?? deck.questionCount;
+  const runSize = deck.questionCount ?? deck.practiceRunSize;
   if (!runSize) return deck.cards;
   const shuffle = (items) => {
     const out = [...items];
@@ -68,15 +68,23 @@ export function selectLevelCards(deck, rand = Math.random) {
     }
     return out;
   };
+  // Reserve destination coverage before filling the usual service/belt mix.
+  // Count the reserved card toward the cap and remove its ID from the pool.
+  const plusOne = deck.cards.filter(card => card.destinationModifier === '+1');
+  const reserved = plusOne.length ? plusOne[Math.floor(rand() * plusOne.length)] : null;
+  const picked = reserved ? [reserved] : [];
+  const beltCounts = new Map(reserved ? [[reserved.belt, 1]] : []);
   const groups = new Map();
   for (const card of deck.cards) {
+    if (card.id === reserved?.id) continue;
     if (!groups.has(card.svc)) groups.set(card.svc, []);
     groups.get(card.svc).push(card);
   }
   for (const [service, cards] of groups) groups.set(service, shuffle(cards));
   const services = [...groups.keys()];
-  const picked = [];
-  const beltCounts = new Map();
+  // Give unrepresented services their first turn before revisiting the reserved
+  // service, so its PURPLE answer cannot crowd out another service at the cap.
+  if (reserved) services.sort((left, right) => Number(left === reserved.svc) - Number(right === reserved.svc));
   const beltCap = Math.ceil(runSize / 3);
   while (picked.length < runSize) {
     let added = false;

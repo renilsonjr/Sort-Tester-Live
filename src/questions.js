@@ -13,9 +13,10 @@ export const SERVICE_LABEL = {
 
 // The 2S and 1S terminations OVERRIDE the range table: a ZIP ending 2S goes
 // BLUE and one ending 1S goes PURPLE, whatever the chart says for that range.
-// Every other card in the app shows a bare code, which means no termination.
+// The +1 destination modifier is separate from both the base service and code.
+// Do not author +1 with a conflicting 2S ending until precedence is approved.
 //
-// Eleven common traps from the Twilight chart.
+// Shared common traps from the Twilight chart and confirmed owner rules.
 export const COMMON_CORE = [
   {
     id: 'ny-136-nda',
@@ -105,6 +106,19 @@ export const COMMON_CORE = [
     why: 'It sits inside the 832-839 BROWN block, but the ground exception table pulls it to ORANGE.',
     tags: ['exception'],
   },
+  ...[
+    ['gnd', 'GND', 'Ground'],
+    ['nda', 'NDA', 'Next Day Air'],
+    ['2da', '2DA', '2 Day Air'],
+    ['3ds', '3DS', '3 Day Select'],
+  ].map(([id, svc, service]) => ({
+    id: `destination-plus-one-${id}`,
+    svc, state: 'NY', code: '109', destinationModifier: '+1',
+    belt: 'PURPLE',
+    confusions: ['ORANGE', 'BLUE', 'GOLD'],
+    why: `The +1 destination indicator sends ${service} to PURPLE. NY 109 without that destination modifier is ORANGE; the routing code stays 109.`,
+    tags: ['destination-modifier', 'override'],
+  })),
 ].map(card => ({ ...card, referenceVersion: ROUTE_REFERENCE_VERSION }));
 
 // Twilight NJ cards used across the two Common Missorts sets.
