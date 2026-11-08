@@ -9,7 +9,7 @@
 - Active source: `twilight-2026-11-08-r2`, including owner corrections.
 - 283 source rows; hold four broad NJ CHECK rows without inventing belt answers. Retain listed NJ preload exceptions.
 - 279 belt-bearing source rows plus four NY109 destination+1 service contexts =283 review entries.
-- The original 17 owner-approved labels and bilingual explanations are preserved. Another 262 labels are approved, for 279 approved labels and 4 remaining difficulty proposals. Those additional labels still need wording/explanation review. Source rows are not a proven final unique-scenario count.
+- The original 17 owner-approved labels and bilingual explanations are preserved. Another 266 labels are approved, for 283 approved labels and 0 remaining difficulty proposals. Those additional labels still need wording/explanation review. Source rows are not a proven final unique-scenario count.
 - Question wording, exception exclusions, wildcard coverage and compound final-digit shorthand still need review for new entries. A suggestion of Easy never removes an applicable exception.
 - The game still selects15 questions, five per difficulty; expanding the bank increases the possible selections. No17-question runtime limit or fixed-ten-question repetition design remains.
 - Only the work-methods tie-question content is deferred; other tie-break policies remain unchanged.
@@ -19,9 +19,9 @@
 | Ground | 89 | 0 |
 | 3 Day Select | 85 | 0 |
 | 2 Day Air | 65 | 0 |
-| Next Day Air | 40 | 4 |
+| Next Day Air | 44 | 0 |
 
-Proposed-label totals for remaining entries: Easy 1, Medium 0, Hard 3. These are draft classifications requiring owner review, not settled counts.
+Proposed-label totals for remaining entries: Easy 0, Medium 0, Hard 0. These are draft classifications requiring owner review, not settled counts.
 
 ## Previously approved — do not rank again
 
@@ -311,6 +311,10 @@ Proposed-label totals for remaining entries: Easy 1, Medium 0, Hard 3. These are
 | N38 | `nextdayair-exceptions-nj-0860` | Next Day Air | NJ 086 0 | RED | Easy |
 | N39 | `nextdayair-exceptions-nj-0871` | Next Day Air | NJ 087 1 | RED | Easy |
 | N40 | `nextdayair-exceptions-nj-0889` | Next Day Air | NJ 088 9 | RED | Easy |
+| N41 | `nextdayair-exceptions-nj-0899` | Next Day Air | NJ 089 9 | RED | Easy |
+| N42 | `nextdayair-exceptions-anystate-ends2s` | Next Day Air | Any state ends 2S | BLUE | Hard |
+| N43 | `nextdayair-exceptions-anystate-ends1s` | Next Day Air | Any state ends 1S | PURPLE | Hard |
+| N44 | `destination-plus-one-nda` | Next Day Air | NY 109 | PURPLE | Hard |
 
 ## Ground — new proposals only
 
@@ -331,10 +335,6 @@ Proposed-label totals for remaining entries: Easy 1, Medium 0, Hard 3. These are
 
 | Source review ID | State / route | Answer | Proposed difficulty | Review note |
 | --- | --- | --- | --- | --- |
-| `nextdayair-exceptions-nj-0899` | NJ 089 9 | RED | Easy | Assistant proposal consistent with owner-reviewed NJ levels for other services: RED preloads Easy, ORANGE079 9 Medium. Approval for NDA remains pending. |
-| `nextdayair-exceptions-anystate-ends2s` | Any state ends 2S | BLUE | Hard | Specific exception, exact-code qualifier, suffix, or destination modifier. |
-| `nextdayair-exceptions-anystate-ends1s` | Any state ends 1S | PURPLE | Hard | Specific exception, exact-code qualifier, suffix, or destination modifier. |
-| `destination-plus-one-nda` | NY 109 · destination +1 | PURPLE | Hard | Specific exception, exact-code qualifier, suffix, or destination modifier. |
 
 ## Held source rows
 
@@ -347,4 +347,4 @@ Proposed-label totals for remaining entries: Easy 1, Medium 0, Hard 3. These are
 
 ## Read-only inventory validation
 
-Validated all283 fixture IDs are accounted for exactly once as a source entry or held CHECK row; the four+1 contexts are additional explicit entries. All17 prior review references map exactly once with their original answer, difficulty and approval status preserved. The initial 266 new-label proposals now contain 262 owner-approved labels and 4 remaining proposals. There are no duplicate review IDs. Counts are inventory evidence, not executable-bank validation, content approval, hosted CI or deployment.
+Validated all283 fixture IDs are accounted for exactly once as a source entry or held CHECK row; the four+1 contexts are additional explicit entries. All17 prior review references map exactly once with their original answer, difficulty and approval status preserved. The initial 266 new-label proposals now contain 266 owner-approved labels and 0 remaining proposals. There are no duplicate review IDs. Counts are inventory evidence, not executable-bank validation, content approval, hosted CI or deployment.
