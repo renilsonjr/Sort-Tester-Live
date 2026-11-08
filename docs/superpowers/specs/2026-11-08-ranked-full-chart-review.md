@@ -45,6 +45,10 @@ Proposed-label totals for new entries: Easy40, Medium117, Hard101. These are dra
 | H2 | `2dayair-main-il-609-629` | 2 Day Air | IL 609–629 | ORANGE | Hard |
 | H5 | `destination-plus-one-gnd` | Ground +1 | NY 109 | PURPLE | Hard |
 
+## Additional approved labels — wording pending
+
+| Review reference | Source review ID | Service | State / route | Answer | Fixed difficulty |
+| --- | --- | --- | --- | --- | --- |
 | G01 | `ground-main-mari-027-029` | Ground | MA, RI 027–029 | GOLD | Medium |
 | G02 | `ground-main-nh-030-033` | Ground | NH 030–033 | BLUE | Medium |
 | G03 | `ground-main-nh-0340` | Ground | NH 034 0 | GOLD | Hard |
