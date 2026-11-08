@@ -2,7 +2,7 @@
   "status": "Review-only inventory; not an executable or owner-approved full Ranked bank",
   "sourceRevision": "twilight-2026-11-08-r2",
   "existingApprovalsPreserved": 17,
-  "remainingDifficultyReviews": 48,
+  "remainingDifficultyReviews": 44,
   "scopeNote": "Every source row plus four explicit NY109 destination+1 service contexts. Raw review entries can require canonical merges/splits or clarified exception scope; not a proven unique-question count.",
   "countsByService": {
     "Ground": {
@@ -12,8 +12,7 @@
       "owner-approved": 85
     },
     "2 Day Air": {
-      "owner-approved": 61,
-      "proposed": 4
+      "owner-approved": 65
     },
     "Next Day Air": {
       "proposed": 44
@@ -4308,11 +4307,12 @@
       "provenance": "owner-override-5",
       "destinationModifier": null,
       "difficulty": "Hard",
-      "difficultyStatus": "proposed",
-      "difficultyReason": "Specific exception, exact-code qualifier, suffix, or destination modifier.",
+      "difficultyStatus": "owner-approved",
+      "difficultyReason": "Owner explicitly approved this recorded difficulty; question wording, explanations and any ambiguous source notation remain pending.",
       "wordingStatus": "not-yet-reviewed",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
-      "reviewNotes": []
+      "reviewNotes": [],
+      "approvedReview": "D57"
     },
     {
       "id": "2dayair-exceptions-anystate-ends2s",
@@ -4324,11 +4324,12 @@
       "provenance": "owner-override-7",
       "destinationModifier": null,
       "difficulty": "Hard",
-      "difficultyStatus": "proposed",
-      "difficultyReason": "Specific exception, exact-code qualifier, suffix, or destination modifier.",
+      "difficultyStatus": "owner-approved",
+      "difficultyReason": "Owner explicitly approved this recorded difficulty; question wording, explanations and any ambiguous source notation remain pending.",
       "wordingStatus": "not-yet-reviewed",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
-      "reviewNotes": []
+      "reviewNotes": [],
+      "approvedReview": "D58"
     },
     {
       "id": "2dayair-exceptions-anystate-ends1s",
@@ -4340,11 +4341,12 @@
       "provenance": "owner-override-7",
       "destinationModifier": null,
       "difficulty": "Hard",
-      "difficultyStatus": "proposed",
-      "difficultyReason": "Specific exception, exact-code qualifier, suffix, or destination modifier.",
+      "difficultyStatus": "owner-approved",
+      "difficultyReason": "Owner explicitly approved this recorded difficulty; question wording, explanations and any ambiguous source notation remain pending.",
       "wordingStatus": "not-yet-reviewed",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
-      "reviewNotes": []
+      "reviewNotes": [],
+      "approvedReview": "D59"
     },
     {
       "id": "nextdayair-main-ma-010-024",
@@ -5124,11 +5126,12 @@
       "provenance": "owner-override-8",
       "destinationModifier": "+1",
       "difficulty": "Hard",
-      "difficultyStatus": "proposed",
-      "difficultyReason": "Specific exception, exact-code qualifier, suffix, or destination modifier.",
+      "difficultyStatus": "owner-approved",
+      "difficultyReason": "Owner explicitly approved this recorded difficulty; question wording, explanations and any ambiguous source notation remain pending.",
       "wordingStatus": "not-yet-reviewed",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
-      "reviewNotes": []
+      "reviewNotes": [],
+      "approvedReview": "D60"
     },
     {
       "id": "destination-plus-one-3ds",
@@ -5190,5 +5193,5 @@
       "holdReason": "CHECK does not establish a belt; use listed NJ preload exceptions, do not invent an unlisted answer."
     }
   ],
-  "approvedDifficultyCount": 235
+  "approvedDifficultyCount": 239
 }
