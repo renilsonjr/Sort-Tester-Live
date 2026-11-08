@@ -65,7 +65,7 @@ Use the same review labels, service/state/routing data, answer and difficulty as
 - [x] Owner approved Hard wording/explanations H1–H7 in chat, including exact-code exceptions, destination +1 and the Indiana owner override.
 - [x] Owner approved the Spanish translation style separately; individual translations still require review.
 - [x] Owner approved Spanish Easy translations E1–E5 in chat, including the Florida service comparison.
-- [ ] Owner approves Spanish Medium translations M1–M5.
+- [x] Owner approved Spanish Medium translations M1–M5 in chat, including the Texas boundaries and service comparisons.
 - [ ] Owner approves Spanish Hard translations H1–H7. Existing Practice translation tests do not approve this new Ranked copy.
 - [ ] Complete canonical identity/overlap/exception handling and immutable bank/assignment versions before implementation.
 - [ ] **Deferred at the owner’s request:** obtain separate authoritative work-methods questions for tie rounds. Resume this content review later; this route sheet does not supply or replace that bank. Existing tie-break rules and the approved owner-selection fallback remain unchanged pending any explicit new decision.
