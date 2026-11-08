@@ -1,5 +1,6 @@
-// The active Saddle Brook practice chart is Twilight. The updated New Jersey
-// rule sends NJ to RED except 079 9, which goes ORANGE on every service.
+import { ROUTE_REFERENCE_VERSION } from './chart.js?v=tn-370-brown-20261105';
+
+// Current Twilight cards use only reviewed ranges and listed preload codes.
 
 export const SERVICE_LABEL = {
   GND: 'Ground',
@@ -21,7 +22,7 @@ export const COMMON_CORE = [
     svc: 'NDA', state: 'NY', code: '136',
     belt: 'PURPLE',
     confusions: ['GOLD', 'ORANGE', 'BLUE'],
-    why: 'The sort change moved all of NY 128-139 to GOLD, but 136 on Next Day Air stays PURPLE. Sorting from the new chart alone sends it GOLD.',
+    why: 'Next Day Air sends 128-135 and 137-139 to GOLD, but the single code 136 to PURPLE.',
     tags: ['sort-change', 'service-split', 'exception'],
   },
   {
@@ -29,7 +30,7 @@ export const COMMON_CORE = [
     svc: 'GND', state: 'NY', code: '148 1',
     belt: 'GOLD',
     confusions: ['ORANGE', 'PURPLE', 'PINK'],
-    why: '148 1 stays GOLD inside the ORANGE 148-149 block on Ground, 2 Day Air and 3 Day Select. The preceding 140-147 block is now GOLD too.',
+    why: '148 1 stays GOLD inside the ORANGE 148-149 block on Ground, 2 Day Air and 3 Day Select. The preceding 140-147 block is GOLD on Ground and ORANGE on 2 Day Air and 3 Day Select.',
     tags: ['sort-change', 'exception'],
   },
   {
@@ -37,7 +38,7 @@ export const COMMON_CORE = [
     svc: 'NDA', state: 'NY', code: '140-149',
     belt: 'PURPLE',
     confusions: ['ORANGE', 'GOLD', 'PINK'],
-    why: 'Next Day Air keeps all of 140-149 PURPLE. Ground, 2 Day Air and 3 Day Select split it: 140-147 is now GOLD; 148-149 is ORANGE except 148 1 GOLD.',
+    why: 'Next Day Air keeps all of 140-149 PURPLE. Ground sends 140-147 to GOLD; 2 Day Air and 3 Day Select send it to ORANGE. On those three services, 148-149 is ORANGE except 148 1 GOLD.',
     tags: ['service-split'],
   },
   {
@@ -93,7 +94,7 @@ export const COMMON_CORE = [
     svc: 'ALL', state: 'PA', code: '150 1S',
     belt: 'PURPLE',
     confusions: ['GREEN', 'BLUE', 'ORANGE'],
-    why: 'Anything ending 1S goes PURPLE. The ZIP does not matter — PA 150-167 on its own would be GREEN, and the same package ending 2S would go BLUE.',
+    why: 'Anything ending 1S goes PURPLE. The ZIP does not matter — PA 150-167 is GREEN on Ground, 2 Day Air and 3 Day Select, but PURPLE on Next Day Air. The same package ending 2S would go BLUE.',
     tags: ['termination', 'override'],
   },
   {
@@ -104,7 +105,7 @@ export const COMMON_CORE = [
     why: 'It sits inside the 832-839 BROWN block, but the ground exception table pulls it to ORANGE.',
     tags: ['exception'],
   },
-];
+].map(card => ({ ...card, referenceVersion: ROUTE_REFERENCE_VERSION }));
 
 // Twilight NJ cards used across the two Common Missorts sets.
 export const NJ_TWILIGHT = [
@@ -113,7 +114,7 @@ export const NJ_TWILIGHT = [
     svc: 'ALL', state: 'NJ', code: '078 4',
     belt: 'RED',
     confusions: ['BLUE', 'CHECK', 'ORANGE'],
-    why: 'New Jersey routes to RED on the current Twilight rule. Only 079 9 breaks to ORANGE.',
+    why: 'This listed New Jersey preload code goes RED on all four services. Use the preload list; the broad NJ range says CHECK.',
     tags: ['twilight'],
   },
   {
@@ -121,7 +122,7 @@ export const NJ_TWILIGHT = [
     svc: 'ALL', state: 'NJ', code: '082 9',
     belt: 'RED',
     confusions: ['BLUE', 'CHECK', 'ORANGE'],
-    why: 'New Jersey routes to RED on the current Twilight rule. Only 079 9 breaks to ORANGE.',
+    why: 'This listed New Jersey preload code goes RED on all four services. Use the preload list; the broad NJ range says CHECK.',
     tags: ['twilight'],
   },
   {
@@ -129,7 +130,7 @@ export const NJ_TWILIGHT = [
     svc: 'ALL', state: 'NJ', code: '079 9',
     belt: 'ORANGE',
     confusions: ['RED', 'BLUE', 'CHECK'],
-    why: '079 9 is the single New Jersey exception: ORANGE instead of RED.',
+    why: 'The listed New Jersey preload code 079 9 goes ORANGE on all four services.',
     tags: ['twilight', 'exception'],
   },
   {
@@ -137,7 +138,7 @@ export const NJ_TWILIGHT = [
     svc: 'ALL', state: 'NJ', code: '070 3',
     belt: 'RED',
     confusions: ['BLUE', 'CHECK', 'ORANGE'],
-    why: 'New Jersey routes to RED on the current Twilight rule. Only 079 9 breaks to ORANGE.',
+    why: 'This listed New Jersey preload code goes RED on all four services. Use the preload list; the broad NJ range says CHECK.',
     tags: ['twilight'],
   },
   {
@@ -145,7 +146,7 @@ export const NJ_TWILIGHT = [
     svc: 'ALL', state: 'NJ', code: '083 9',
     belt: 'RED',
     confusions: ['BLUE', 'CHECK', 'ORANGE'],
-    why: 'New Jersey routes to RED on the current Twilight rule. Only 079 9 breaks to ORANGE.',
+    why: 'This listed New Jersey preload code goes RED on all four services. Use the preload list; the broad NJ range says CHECK.',
     tags: ['twilight'],
   },
-];
+].map(card => ({ ...card, referenceVersion: ROUTE_REFERENCE_VERSION }));

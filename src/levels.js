@@ -1,5 +1,5 @@
 import { BELTS } from './belts.js';
-import { CHART } from './chart.js?v=tn-370-brown-20261105';
+import { CHART, ROUTE_REFERENCE_VERSION } from './chart.js?v=tn-370-brown-20261105';
 
 const SERVICE_CODES = {
   Ground: 'GND',
@@ -20,6 +20,7 @@ function cardsFromChart(service, includeExceptions = false, filter = () => true)
     state: state === '*' ? 'All states' : state,
     code,
     belt,
+    referenceVersion: ROUTE_REFERENCE_VERSION,
     confusions: BELTS.filter((other) => other !== belt && other !== 'CHECK'),
     why: detail
       ? `${detail}. On the Twilight ${service} chart, ${state} ${code} goes to ${belt}.`
@@ -57,7 +58,8 @@ export const LEVEL_DECKS = [
 // Every run gets a new selection. Spread questions across services and cap how
 // often one belt can be right, so a quiz cannot be passed by repeating a belt.
 export function selectLevelCards(deck, rand = Math.random) {
-  if (!deck.questionCount) return deck.cards;
+  const runSize = deck.practiceRunSize ?? deck.questionCount;
+  if (!runSize) return deck.cards;
   const shuffle = (items) => {
     const out = [...items];
     for (let i = out.length - 1; i > 0; i--) {
@@ -75,11 +77,11 @@ export function selectLevelCards(deck, rand = Math.random) {
   const services = [...groups.keys()];
   const picked = [];
   const beltCounts = new Map();
-  const beltCap = Math.ceil(deck.questionCount / 3);
-  while (picked.length < deck.questionCount) {
+  const beltCap = Math.ceil(runSize / 3);
+  while (picked.length < runSize) {
     let added = false;
     for (const service of services) {
-      if (picked.length >= deck.questionCount) break;
+      if (picked.length >= runSize) break;
       const cards = groups.get(service);
       const index = cards.findIndex((card) => (beltCounts.get(card.belt) || 0) < beltCap);
       if (index < 0) continue;

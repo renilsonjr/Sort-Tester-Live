@@ -125,7 +125,9 @@ const DETAIL_ES = {
   'Ground exception': 'Excepción de Ground',
   'Ground, 2 Day Air, 3 Day Select only': 'Solo terrestre, aéreo de 2 días y Select de 3 días',
   'NJ list': 'Lista de Nueva Jersey',
-  'Only orange NJ code': 'Único código de NJ que va a ORANGE',
+  'Listed NJ preload exception': 'Excepción indicada en la lista de precarga de NJ',
+  'Use listed NJ preload codes': 'Consulta los códigos indicados en la lista de precarga de NJ',
+  'Ground-only owner correction': 'Corrección confirmada solo para el servicio terrestre',
   'Single-code exception': 'Excepción de un solo código',
   'Sort change': 'Cambio de clasificación',
   'Sort change; overrides BROWN': 'Cambio de clasificación; reemplaza BROWN',
@@ -177,8 +179,8 @@ export function createLanguage(storage) {
       if (response.code.endsWith('2S')) return 'La terminación 2S va a BLUE en todos los servicios, sin importar el rango ZIP.';
       if (response.code.endsWith('1S')) return 'La terminación 1S va a PURPLE en todos los servicios, sin importar el rango ZIP.';
       if (response.state === 'NJ') return response.code === '079 9'
-        ? '079 9 es la excepción de Nueva Jersey: ORANGE en lugar de RED.'
-        : 'Nueva Jersey va a RED. Solo 079 9 va a ORANGE.';
+        ? 'El código de precarga de Nueva Jersey 079 9 va a ORANGE en todos los servicios.'
+        : `El código de precarga de Nueva Jersey ${response.code} va a ${response.correctBelt}. Consulta la lista de precarga; el rango general de NJ indica CHECK.`;
       const service = { GND: 'Ground', GRD: 'Ground', NDA: 'Next Day Air', '2DA': '2 Day Air', '3DS': '3 Day Select', ALL: 'All Services' }[response.svc];
       const normalize = value => String(value).replace(/[^A-Z0-9]/gi, '').toUpperCase();
       const section = CHART[service];
