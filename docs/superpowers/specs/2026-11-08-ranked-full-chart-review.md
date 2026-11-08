@@ -9,19 +9,19 @@
 - Active source: `twilight-2026-11-08-r2`, including owner corrections.
 - 283 source rows; hold four broad NJ CHECK rows without inventing belt answers. Retain listed NJ preload exceptions.
 - 279 belt-bearing source rows plus four NY109 destination+1 service contexts =283 review entries.
-- The original17 owner-approved labels and bilingual explanations are preserved. Another48 labels are approved, for65 approved labels and218 remaining difficulty proposals. The additional48 still need wording/explanation review. Existing source rows are not a proven final unique-scenario count.
+- The original17 owner-approved labels and bilingual explanations are preserved. Another56 labels are approved, for73 approved labels and210 remaining difficulty proposals. The additional56 still need wording/explanation review. Existing source rows are not a proven final unique-scenario count.
 - Question wording, exception exclusions, wildcard coverage and compound final-digit shorthand still need review for new entries. A suggestion of Easy never removes an applicable exception.
 - The game still selects15 questions, five per difficulty; expanding the bank increases the possible selections. No17-question runtime limit or fixed-ten-question repetition design remains.
 - Only the work-methods tie-question content is deferred; other tie-break policies remain unchanged.
 
 | Service | Approved difficulty labels | New difficulty proposals |
 | --- | --- | --- |
-| Ground | 57 | 32 |
+| Ground | 65 | 24 |
 | 3 Day Select | 3 | 82 |
 | 2 Day Air | 5 | 60 |
 | Next Day Air | 0 | 44 |
 
-Proposed-label totals for new entries: Easy5, Medium112, Hard101. These are draft classifications requiring owner review, not new settled counts.
+Proposed-label totals for new entries: Easy0, Medium109, Hard101. These are draft classifications requiring owner review, not new settled counts.
 
 ## Previously approved — do not rank again
 
@@ -97,19 +97,19 @@ Proposed-label totals for new entries: Easy5, Medium112, Hard101. These are draf
 | G46 | `ground-main-ut-840-849` | Ground | UT 840–849 | ORANGE | Easy |
 | G47 | `ground-main-aznm-850-884` | Ground | AZ, NM 850–884 | BLUE | Easy |
 | G48 | `ground-main-nv-889-891` | Ground | NV 889–891 | BLUE | Medium |
+| G49 | `ground-main-nv-893-899` | Ground | NV 893–899 | ORANGE | Easy |
+| G50 | `ground-main-ca-900-935` | Ground | CA 900–935 | RED | Easy |
+| G51 | `ground-main-ca-936-961` | Ground | CA 936–961 | BROWN | Easy |
+| G52 | `ground-main-hi-967-968` | Ground | HI 967–968 | ORANGE | Medium |
+| G53 | `ground-main-orwa-970-994` | Ground | OR, WA 970–994 | BROWN | Easy |
+| G54 | `ground-main-ak-995-999` | Ground | AK 995–999 | BROWN | Easy |
+| G55 | `ground-main-mex-mexico` | Ground | MEX MEXICO | GREEN | Medium |
+| G56 | `ground-main-can-canada` | Ground | CAN CANADA | PURPLE | Medium |
 
 ## Ground — new proposals only
 
 | Source review ID | State / route | Answer | Proposed difficulty | Review note |
 | --- | --- | --- | --- | --- |
-| `ground-main-nv-893-899` | NV 893–899 | ORANGE | Easy | Check applicable exceptions and effective coverage before approving broad-range wording. |
-| `ground-main-ca-900-935` | CA 900–935 | RED | Easy | Check applicable exceptions and effective coverage before approving broad-range wording. |
-| `ground-main-ca-936-961` | CA 936–961 | BROWN | Easy | Check applicable exceptions and effective coverage before approving broad-range wording. |
-| `ground-main-hi-967-968` | HI 967–968 | ORANGE | Medium | Check applicable exceptions and effective coverage before approving broad-range wording. |
-| `ground-main-orwa-970-994` | OR, WA 970–994 | BROWN | Easy | Check applicable exceptions and effective coverage before approving broad-range wording. |
-| `ground-main-ak-995-999` | AK 995–999 | BROWN | Easy | Check applicable exceptions and effective coverage before approving broad-range wording. |
-| `ground-main-mex-mexico` | MEX MEXICO | GREEN | Medium | Narrow/boundary-sensitive range or named non-ZIP destination. |
-| `ground-main-can-canada` | CAN CANADA | PURPLE | Medium | Narrow/boundary-sensitive range or named non-ZIP destination. |
 | `ground-main-pri-pr` | PRI PR | PINK | Medium | Narrow/boundary-sensitive range or named non-ZIP destination. |
 | `ground-exceptions-nj-0703` | NJ 070 3 | RED | Hard | Specific exception, exact-code qualifier, suffix, or destination modifier. |
 | `ground-exceptions-nj-0709` | NJ 070 9 | RED | Hard | Specific exception, exact-code qualifier, suffix, or destination modifier. |
@@ -347,4 +347,4 @@ Proposed-label totals for new entries: Easy5, Medium112, Hard101. These are draf
 
 ## Read-only inventory validation
 
-Validated all283 fixture IDs are accounted for exactly once as a source entry or held CHECK row; the four+1 contexts are additional explicit entries. All17 prior review references map exactly once with their original answer, difficulty and approval status preserved. The initial266 new-label proposals now contain 48 owner-approved labels and218 remaining proposals. There are no duplicate review IDs. Counts are inventory evidence, not executable-bank validation, content approval, hosted CI or deployment.
+Validated all283 fixture IDs are accounted for exactly once as a source entry or held CHECK row; the four+1 contexts are additional explicit entries. All17 prior review references map exactly once with their original answer, difficulty and approval status preserved. The initial266 new-label proposals now contain 56 owner-approved labels and210 remaining proposals. There are no duplicate review IDs. Counts are inventory evidence, not executable-bank validation, content approval, hosted CI or deployment.

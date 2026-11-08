@@ -2,12 +2,12 @@
   "status": "Review-only inventory; not an executable or owner-approved full Ranked bank",
   "sourceRevision": "twilight-2026-11-08-r2",
   "existingApprovalsPreserved": 17,
-  "remainingDifficultyReviews": 218,
+  "remainingDifficultyReviews": 210,
   "scopeNote": "Every source row plus four explicit NY109 destination+1 service contexts. Raw review entries can require canonical merges/splits or clarified exception scope; not a proven unique-question count.",
   "countsByService": {
     "Ground": {
-      "owner-approved": 57,
-      "proposed": 32
+      "owner-approved": 65,
+      "proposed": 24
     },
     "3 Day Select": {
       "proposed": 82,
@@ -1058,13 +1058,14 @@
       "provenance": "photo",
       "destinationModifier": null,
       "difficulty": "Easy",
-      "difficultyStatus": "proposed",
-      "difficultyReason": "Standard Ground range; question must exclude any answer-changing exceptions.",
+      "difficultyStatus": "owner-approved",
+      "difficultyReason": "Owner approved this direction at its recorded difficulty; question wording/explanations remain pending.",
       "wordingStatus": "not-yet-reviewed",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [
         "Check applicable exceptions and effective coverage before approving broad-range wording."
-      ]
+      ],
+      "approvedReview": "G49"
     },
     {
       "id": "ground-main-ca-900-935",
@@ -1076,13 +1077,14 @@
       "provenance": "photo",
       "destinationModifier": null,
       "difficulty": "Easy",
-      "difficultyStatus": "proposed",
-      "difficultyReason": "Standard Ground range; question must exclude any answer-changing exceptions.",
+      "difficultyStatus": "owner-approved",
+      "difficultyReason": "Owner approved this direction at its recorded difficulty; question wording/explanations remain pending.",
       "wordingStatus": "not-yet-reviewed",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [
         "Check applicable exceptions and effective coverage before approving broad-range wording."
-      ]
+      ],
+      "approvedReview": "G50"
     },
     {
       "id": "ground-main-ca-936-961",
@@ -1094,13 +1096,14 @@
       "provenance": "photo",
       "destinationModifier": null,
       "difficulty": "Easy",
-      "difficultyStatus": "proposed",
-      "difficultyReason": "Standard Ground range; question must exclude any answer-changing exceptions.",
+      "difficultyStatus": "owner-approved",
+      "difficultyReason": "Owner approved this direction at its recorded difficulty; question wording/explanations remain pending.",
       "wordingStatus": "not-yet-reviewed",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [
         "Check applicable exceptions and effective coverage before approving broad-range wording."
-      ]
+      ],
+      "approvedReview": "G51"
     },
     {
       "id": "ground-main-hi-967-968",
@@ -1112,13 +1115,14 @@
       "provenance": "photo",
       "destinationModifier": null,
       "difficulty": "Medium",
-      "difficultyStatus": "proposed",
-      "difficultyReason": "Narrow/boundary-sensitive range or named non-ZIP destination.",
+      "difficultyStatus": "owner-approved",
+      "difficultyReason": "Owner approved this direction at its recorded difficulty; question wording/explanations remain pending.",
       "wordingStatus": "not-yet-reviewed",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [
         "Check applicable exceptions and effective coverage before approving broad-range wording."
-      ]
+      ],
+      "approvedReview": "G52"
     },
     {
       "id": "ground-main-orwa-970-994",
@@ -1130,13 +1134,14 @@
       "provenance": "photo",
       "destinationModifier": null,
       "difficulty": "Easy",
-      "difficultyStatus": "proposed",
-      "difficultyReason": "Standard Ground range; question must exclude any answer-changing exceptions.",
+      "difficultyStatus": "owner-approved",
+      "difficultyReason": "Owner approved this direction at its recorded difficulty; question wording/explanations remain pending.",
       "wordingStatus": "not-yet-reviewed",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [
         "Check applicable exceptions and effective coverage before approving broad-range wording."
-      ]
+      ],
+      "approvedReview": "G53"
     },
     {
       "id": "ground-main-ak-995-999",
@@ -1148,13 +1153,14 @@
       "provenance": "photo",
       "destinationModifier": null,
       "difficulty": "Easy",
-      "difficultyStatus": "proposed",
-      "difficultyReason": "Standard Ground range; question must exclude any answer-changing exceptions.",
+      "difficultyStatus": "owner-approved",
+      "difficultyReason": "Owner approved this direction at its recorded difficulty; question wording/explanations remain pending.",
       "wordingStatus": "not-yet-reviewed",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [
         "Check applicable exceptions and effective coverage before approving broad-range wording."
-      ]
+      ],
+      "approvedReview": "G54"
     },
     {
       "id": "ground-main-mex-mexico",
@@ -1166,11 +1172,12 @@
       "provenance": "photo",
       "destinationModifier": null,
       "difficulty": "Medium",
-      "difficultyStatus": "proposed",
-      "difficultyReason": "Narrow/boundary-sensitive range or named non-ZIP destination.",
+      "difficultyStatus": "owner-approved",
+      "difficultyReason": "Owner approved this direction at its recorded difficulty; question wording/explanations remain pending.",
       "wordingStatus": "not-yet-reviewed",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
-      "reviewNotes": []
+      "reviewNotes": [],
+      "approvedReview": "G55"
     },
     {
       "id": "ground-main-can-canada",
@@ -1182,11 +1189,12 @@
       "provenance": "photo",
       "destinationModifier": null,
       "difficulty": "Medium",
-      "difficultyStatus": "proposed",
-      "difficultyReason": "Narrow/boundary-sensitive range or named non-ZIP destination.",
+      "difficultyStatus": "owner-approved",
+      "difficultyReason": "Owner approved this direction at its recorded difficulty; question wording/explanations remain pending.",
       "wordingStatus": "not-yet-reviewed",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
-      "reviewNotes": []
+      "reviewNotes": [],
+      "approvedReview": "G56"
     },
     {
       "id": "ground-main-pri-pr",
@@ -5022,5 +5030,5 @@
       "holdReason": "CHECK does not establish a belt; use listed NJ preload exceptions, do not invent an unlisted answer."
     }
   ],
-  "approvedDifficultyCount": 65
+  "approvedDifficultyCount": 73
 }
