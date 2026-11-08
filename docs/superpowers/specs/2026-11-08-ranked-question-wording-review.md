@@ -1,6 +1,6 @@
 # Ranked question wording and explanation review
 
-**Status:** owner approved the English question wording/explanations for all17 route scenarios in three separate group reviews, in addition to the previously reviewed answers/difficulty labels. This does not approve Spanish copy, a canonical schema, immutable assignments or a usable Ranked bank. Source revision: `twilight-2026-11-08-r2`, including the owner Indiana ORANGE override, pending publication through [PR #32](https://github.com/renilsonjr/Sort-Tester-Live/pull/32).
+**Status:** owner approved the English question wording/explanations for all17 route scenarios in three separate group reviews, in addition to the previously reviewed answers/difficulty labels. The owner subsequently approved the Spanish translations for all17 scenarios in separate Easy/Medium/Hard reviews. This does not approve a canonical schema, immutable assignments or a usable Ranked bank. Source revision: `twilight-2026-11-08-r2`, including the owner Indiana ORANGE override, pending publication through [PR #32](https://github.com/renilsonjr/Sort-Tester-Live/pull/32).
 
 **Related:** [[2026-11-07-ranked-question-bank-review]], [[2026-11-08-ranked-chart-reference]]. Tracker: [#5](https://github.com/renilsonjr/Sort-Tester-Live/issues/5).
 
@@ -34,7 +34,7 @@ Only displayed modifiers apply: ordinary questions have no destination +1 or rou
 
 ## Spanish wording draft
 
-**Owner-approved style:** prompt “¿A qué color va?”, Ground translated as “Terrestre”, belt names unchanged (GOLD, BLUE, etc.), and concise service-specific feedback. Individual translations below remain proposed until their group is reviewed; style approval alone does not approve every explanation. Service translations follow existing Practice labels.
+**Owner-approved style:** prompt “¿A qué color va?”, Ground translated as “Terrestre”, belt names unchanged (GOLD, BLUE, etc.), and concise service-specific feedback. The owner separately approved all three translation groups below; this is explicit content approval, beyond the earlier style approval. Service translations follow existing Practice labels.
 
 Use the same review labels, service/state/routing data, answer and difficulty as the English scenarios. Translation does not create another canonical question or additional assignment slot. This is draft content, not a product implementation.
 
@@ -66,7 +66,7 @@ Use the same review labels, service/state/routing data, answer and difficulty as
 - [x] Owner approved the Spanish translation style separately; individual translations still require review.
 - [x] Owner approved Spanish Easy translations E1–E5 in chat, including the Florida service comparison.
 - [x] Owner approved Spanish Medium translations M1–M5 in chat, including the Texas boundaries and service comparisons.
-- [ ] Owner approves Spanish Hard translations H1–H7. Existing Practice translation tests do not approve this new Ranked copy.
+- [x] Owner approved Spanish Hard translations H1–H7 in chat, including exact-code exceptions, destination +1 and the Indiana correction. Existing Practice translation tests do not approve this new Ranked copy.
 - [ ] Complete canonical identity/overlap/exception handling and immutable bank/assignment versions before implementation.
 - [ ] **Deferred at the owner’s request:** obtain separate authoritative work-methods questions for tie rounds. Resume this content review later; this route sheet does not supply or replace that bank. Existing tie-break rules and the approved owner-selection fallback remain unchanged pending any explicit new decision.
 

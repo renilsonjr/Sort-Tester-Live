@@ -15,7 +15,7 @@ Settled rules for future Ranked assignment (not implemented by Practice code):
 - Each scenario receives one owner-reviewed fixed difficulty, independent of Practice deck membership.
 - Starting guideline: standard routes Easy; narrower ranges/service distinctions Medium; exact exceptions/suffixes/destination modifiers Hard. Owner review can override this guideline.
 
-The following labels were individually reviewed in chat. English wording/explanations were subsequently approved separately in [[2026-11-08-ranked-question-wording-review]]. These reviews do not approve Spanish copy, a canonical schema, immutable assignments or a usable Ranked bank.
+The following labels were individually reviewed in chat. English wording/explanations were subsequently approved separately in [[2026-11-08-ranked-question-wording-review]]. Spanish translations were subsequently approved in three separate group reviews as well. These reviews do not approve a canonical schema, immutable assignments or a usable Ranked bank.
 
 | Service | Scenario | Owner difficulty / status |
 | --- | --- | --- |
@@ -37,7 +37,7 @@ The following labels were individually reviewed in chat. English wording/explana
 | Ground | MA025–026 → BLUE | Hard; owner clarified Ground explicitly |
 | 2 Day Air | IN460–479 → ORANGE | Hard requested; owner corrected the answer explicitly |
 
-English question wording and explanations for all17 rows were separately approved in [[2026-11-08-ranked-question-wording-review]]; Spanish review and the remaining bank gates stay open.
+English question wording and explanations for all17 rows were separately approved in [[2026-11-08-ranked-question-wording-review]]; Spanish translations were subsequently approved in separate group reviews; the remaining technical bank gates stay open.
 
 Reviewed labels now total **five Easy, five Medium and seven Hard**. This meets the initial numerical minimum of five labels per difficulty, but the remaining content/explanation/canonical/version gates stay open; these labels alone do not approve a usable Ranked bank.
 
