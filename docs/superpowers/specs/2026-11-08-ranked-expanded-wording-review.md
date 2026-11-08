@@ -1,6 +1,6 @@
 # Expanded Ranked question wording review
 
-**Status:** 231 entries have approved English/Spanish explanations; all 283 difficulty labels remain settled. The next 32 specific-code/named-destination explanations are drafts pending review. Twenty broad-range entries await coverage/wording review. Original 17 approvals are preserved. No product code or executable bank is created here.
+**Status:** 263 entries have approved English/Spanish explanations; all 283 difficulty labels remain settled. Twenty broad-range entries await coverage/wording review. The 32-entry specific-code/named-destination batch is approved. Four cross-state range/exception pairs need applicability clarification before drafting exclusions. Original 17 approvals are preserved. No product code or executable bank is created here.
 
 **Related:** [[2026-11-08-ranked-full-chart-review]], [[2026-11-08-ranked-full-chart-review.json]], [[2026-11-08-ranked-question-wording-review]], [[2026-11-08-ranked-chart-reference]], [[2026-11-08-curated-ranked-bank-design]]. Tracker: [#5](https://github.com/renilsonjr/Sort-Tester-Live/issues/5), [PR #32](https://github.com/renilsonjr/Sort-Tester-Live/pull/32).
 
@@ -312,13 +312,13 @@ Ground+1 already has approved bilingual wording and is not reopened. These appro
 - [x] Owner approved all four destination-context explanations in English.
 - [x] Owner approved all four destination-context explanations in Spanish.
 
-## Specific-code and named-destination batch — proposed (32 entries)
+## Specific-code and named-destination batch — approved (32 entries)
 
-This review covers 27 specific-code explanations using the previously approved “The final digit matters” wording, and five named-destination explanations. Exact displayed code spacing, service-specific answers and approved difficulties remain unchanged. No blanket NJ classification, numeric-range expansion or new exception precedence is inferred. Broad-range questions are excluded from this batch and remain in the coverage queue.
+The owner approved 27 specific-code explanations using the previously approved “The final digit matters” wording, and five named-destination explanations. Exact displayed code spacing, service-specific answers and approved difficulties remain unchanged. No blanket NJ classification, numeric-range expansion or new exception precedence is inferred. Broad-range questions are excluded from this batch and remain in the coverage queue.
 
-### Specific codes — 27 proposed explanations
+### Specific codes — 27 approved explanations
 
-| Review reference | Service | State / code | Answer | Proposed English feedback | Proposed Spanish feedback |
+| Review reference | Service | State / code | Answer | Approved English feedback | Approved Spanish feedback |
 | --- | --- | --- | --- | --- | --- |
 | G65 | Ground | NJ 079 9 | ORANGE | Ground NJ 079 9 goes to ORANGE. The final digit matters. | En Terrestre, NJ 079 9 va a ORANGE. El último dígito importa. |
 | S05 | 3 Day Select | NH 034 0 | GOLD | 3 Day Select NH 034 0 goes to GOLD. The final digit matters. | En Select 3 días, NH 034 0 va a GOLD. El último dígito importa. |
@@ -348,9 +348,9 @@ This review covers 27 specific-code explanations using the previously approved �
 | N05 | Next Day Air | NH 034 0 | GOLD | Next Day Air NH 034 0 goes to GOLD. The final digit matters. | En Aéreo 1 día, NH 034 0 va a GOLD. El último dígito importa. |
 | N34 | Next Day Air | NJ 079 9 | ORANGE | Next Day Air NJ 079 9 goes to ORANGE. The final digit matters. | En Aéreo 1 día, NJ 079 9 va a ORANGE. El último dígito importa. |
 
-### Named destinations — five proposed explanations
+### Named destinations — five approved explanations
 
-| Review reference | Service | Source destination | Answer | Proposed English feedback | Proposed Spanish feedback |
+| Review reference | Service | Source destination | Answer | Approved English feedback | Approved Spanish feedback |
 | --- | --- | --- | --- | --- | --- |
 | G55 | Ground | MEXICO | GREEN | Ground to Mexico goes to GREEN. | En Terrestre, los envíos a México van a GREEN. |
 | G56 | Ground | CANADA | PURPLE | Ground to Canada goes to PURPLE. | En Terrestre, los envíos a Canadá van a PURPLE. |
@@ -358,12 +358,12 @@ This review covers 27 specific-code explanations using the previously approved �
 | D41 | 2 Day Air | WORLD | PURPLE | 2 Day Air destinations marked WORLD go to PURPLE. | Los destinos marcados WORLD en Aéreo 2 días van a PURPLE. |
 | N25 | Next Day Air | WORLD | PURPLE | Next Day Air destinations marked WORLD go to PURPLE. | Los destinos marcados WORLD en Aéreo 1 día van a PURPLE. |
 
-- [ ] Owner approves all 32 explanations in English.
-- [ ] Owner approves all 32 explanations in Spanish.
+- [x] Owner approved all 32 explanations in English.
+- [x] Owner approved all 32 explanations in Spanish.
 
-## Focused wording queue — 52 entries
+## Focused wording queue — 20 entries
 
-These 52 entries remain unapproved. Thirty-two specific-code/named-destination explanations are drafted above; the other 20 broad-range entries await coverage/wording review. Possible prefix overlap is only a reason to review; it does not establish that a different-state exception actually applies. Confirm coverage before adding exclusions. No new wording approval is inferred here.
+These 20 broad-range entries remain pending coverage/wording review. No explanation drafts are approved or inferred for them yet. Possible prefix overlap is only a reason to review; it does not establish that a different-state exception actually applies. Confirm coverage before adding exclusions. No new wording approval is inferred here.
 
 | Review reference | Service | Source state / code | Answer | Review need |
 | --- | --- | --- | --- | --- |
@@ -375,51 +375,32 @@ These 52 entries remain unapproved. Thirty-two specific-code/named-destination e
 | G47 | Ground | AZ, NM 850–884 | BLUE | Conservative prefix-overlap hold for G76: verify actual state/context applicability before drafting exclusions. |
 | G48 | Ground | NV 889–891 | BLUE | Conservative prefix-overlap hold for G77: verify actual state/context applicability before drafting exclusions. |
 | G50 | Ground | CA 900–935 | RED | Conservative prefix-overlap hold for G78: verify actual state/context applicability before drafting exclusions. |
-| G55 | Ground | MEX MEXICO | GREEN | Exact code or named destination: review wording that preserves the source meaning. |
-| G56 | Ground | CAN CANADA | PURPLE | Exact code or named destination: review wording that preserves the source meaning. |
-| G57 | Ground | PRI PR | PINK | Exact code or named destination: review wording that preserves the source meaning. |
-| G65 | Ground | NJ 079 9 | ORANGE | Specific exception or suffix: review its explanatory wording separately. |
-| S05 | 3 Day Select | NH 034 0 | GOLD | Exact code or named destination: review wording that preserves the source meaning. |
 | S16 | 3 Day Select | NY 148–149 | ORANGE | Conservative prefix-overlap hold for S79: verify actual state/context applicability before drafting exclusions. |
 | S29 | 3 Day Select | MS 386–399 | BROWN | Conservative prefix-overlap hold for S63: verify actual state/context applicability before drafting exclusions. |
 | S34 | 3 Day Select | * 498–566 | BROWN | Wildcard or named destination: review its scope and any explicit exception wording. |
 | S35 | 3 Day Select | * 567–599 | BLUE | Wildcard or named destination: review its scope and any explicit exception wording. |
 | S42 | 3 Day Select | * 700–734 | BLUE | Wildcard or named destination: review its scope and any explicit exception wording. |
-| S44 | 3 Day Select | TX 769 0 | PURPLE | Exact code or named destination: review wording that preserves the source meaning. |
 | S45 | 3 Day Select | TX 785–799 | PURPLE | Conservative prefix-overlap hold for S68, S69, S70, S71: verify actual state/context applicability before drafting exclusions. |
 | S47 | 3 Day Select | * 811–999 | PURPLE | Wildcard or named destination: review its scope and any explicit exception wording. |
-| S55 | 3 Day Select | NJ 079 9 | ORANGE | Specific exception or suffix: review its explanatory wording separately. |
-| S63 | 3 Day Select | MS 395 0 | BLUE | Specific exception or suffix: review its explanatory wording separately. |
-| S64 | 3 Day Select | SD 511 9 | BLUE | Specific exception or suffix: review its explanatory wording separately. |
-| S65 | 3 Day Select | SD 571 9 | BROWN | Specific exception or suffix: review its explanatory wording separately. |
-| S66 | 3 Day Select | ND 581 9 | BROWN | Specific exception or suffix: review its explanatory wording separately. |
-| S67 | 3 Day Select | ND 582 0 | BROWN | Specific exception or suffix: review its explanatory wording separately. |
-| S68 | 3 Day Select | TX 786 4 | ORANGE | Specific exception or suffix: review its explanatory wording separately. |
-| S69 | 3 Day Select | TX 787 9 | ORANGE | Specific exception or suffix: review its explanatory wording separately. |
-| S70 | 3 Day Select | TX 796 0 | ORANGE | Specific exception or suffix: review its explanatory wording separately. |
-| S71 | 3 Day Select | TX 799 9 | ORANGE | Specific exception or suffix: review its explanatory wording separately. |
-| S72 | 3 Day Select | CO 811 3 | ORANGE | Specific exception or suffix: review its explanatory wording separately. |
-| S73 | 3 Day Select | CO 812 0 | ORANGE | Specific exception or suffix: review its explanatory wording separately. |
-| S74 | 3 Day Select | CO 813 7 | ORANGE | Specific exception or suffix: review its explanatory wording separately. |
-| S75 | 3 Day Select | CO 816 0 | ORANGE | Specific exception or suffix: review its explanatory wording separately. |
-| S76 | 3 Day Select | CO 816 1 | ORANGE | Specific exception or suffix: review its explanatory wording separately. |
-| S77 | 3 Day Select | WY 820 0 | ORANGE | Specific exception or suffix: review its explanatory wording separately. |
-| S78 | 3 Day Select | WY 820 1 | ORANGE | Specific exception or suffix: review its explanatory wording separately. |
-| S79 | 3 Day Select | NY 148 1 | GOLD | Specific exception or suffix: review its explanatory wording separately. |
-| D05 | 2 Day Air | NH 034 0 | GOLD | Exact code or named destination: review wording that preserves the source meaning. |
 | D15 | 2 Day Air | NY 148–149 | ORANGE | Conservative prefix-overlap hold for D57: verify actual state/context applicability before drafting exclusions. |
 | D34 | 2 Day Air | * 498–599 | PURPLE | Wildcard or named destination: review its scope and any explicit exception wording. |
 | D36 | 2 Day Air | * 640–729 | PURPLE | Wildcard or named destination: review its scope and any explicit exception wording. |
-| D38 | 2 Day Air | OK 741 9 | ORANGE | Exact code or named destination: review wording that preserves the source meaning. |
 | D40 | 2 Day Air | * 750–999 | PURPLE | Wildcard or named destination: review its scope and any explicit exception wording. |
-| D41 | 2 Day Air | * WORLD | PURPLE | Wildcard or named destination: review its scope and any explicit exception wording. |
-| D49 | 2 Day Air | NJ 079 9 | ORANGE | Specific exception or suffix: review its explanatory wording separately. |
-| D57 | 2 Day Air | NY 148 1 | GOLD | Specific exception or suffix: review its explanatory wording separately. |
-| N05 | Next Day Air | NH 034 0 | GOLD | Exact code or named destination: review wording that preserves the source meaning. |
 | N24 | Next Day Air | * 220–999 | PURPLE | Wildcard or named destination: review its scope and any explicit exception wording. |
-| N25 | Next Day Air | * WORLD | PURPLE | Wildcard or named destination: review its scope and any explicit exception wording. |
-| N34 | Next Day Air | NJ 079 9 | ORANGE | Specific exception or suffix: review its explanatory wording separately. |
+
+## Pending coverage decision — different printed state labels
+
+The owner already approved explicit exclusions for applicable answer-changing exceptions. The unresolved boundary is applicability when the printed state label differs between a broad row and a listed exact-code exception. Do not assume the label is either an independent matching condition or only a chart grouping without owner clarification. Prefix overlap alone is not an approved precedence rule.
+
+| Broad Ground row | Broad answer | Listed exact-code exception | Exception answer |
+| --- | --- | --- | --- |
+| ID 832–839 (G45) | BROWN | NV 833 9-7 (G74) | ORANGE |
+| UT 840–849 (G46) | ORANGE | AZ 847 2-7 (G75) | BLUE |
+| AZ, NM 850–884 (G47) | BLUE | NV 864 4-7 (G76) | ORANGE |
+| CA 900–935 (G50) | RED | AZ 922 2-0 (G78) | BLUE |
+
+- [ ] Owner clarifies whether these listed exact-code exceptions override the broad prefix ranges across different printed state labels.
 
 ## Current wording counts
 
-Including the original 17: 231 English and 231 Spanish explanations are approved, with 52 pending in each language. Thirty-two specific-code/named-destination explanations are drafted for review; 20 broad-range entries remain for coverage/wording work. All 283 answers/difficulty labels are unchanged. Only work-methods tie-question content is deferred; other tie-break policies remain unchanged.
+Including the original 17: 263 English and 263 Spanish explanations are approved, with 20 pending in each language. Only broad-range coverage/wording remains; four cross-state range/exception pairs are explicitly awaiting clarification. All 283 answers/difficulty labels are unchanged. Only work-methods tie-question content is deferred; other tie-break policies remain unchanged.

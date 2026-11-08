@@ -1,5 +1,5 @@
 {
-  "status": "Review-only full-chart inventory:283 approved difficulty labels;231 approved bilingual explanations. Thirty-two specific/named feedback drafts await approval;20 broad-range entries await coverage/wording review. Canonical validation remains incomplete; not an executable bank.",
+  "status": "Review-only full-chart inventory:283 approved difficulty labels;263 approved bilingual explanations. Twenty broad-range entries await coverage/wording review. Cross-state exact-code exception applicability needs owner clarification. Canonical validation remains incomplete; not an executable bank.",
   "sourceRevision": "twilight-2026-11-08-r2",
   "existingApprovalsPreserved": 17,
   "remainingDifficultyReviews": 0,
@@ -1777,7 +1777,7 @@
       "difficulty": "Medium",
       "difficultyStatus": "owner-approved",
       "difficultyReason": "Owner approved this direction at its recorded difficulty; question wording/explanations remain pending.",
-      "wordingStatus": "not-yet-reviewed",
+      "wordingStatus": "owner-approved-bilingual",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [],
       "approvedReview": "G55",
@@ -1787,12 +1787,12 @@
         "en": {
           "prompt": "Which belt does this go to?",
           "explanation": "Ground to Mexico goes to GREEN.",
-          "approvalStatus": "proposed"
+          "approvalStatus": "owner-approved"
         },
         "es": {
           "prompt": "¿A qué color va?",
           "explanation": "En Terrestre, los envíos a México van a GREEN.",
-          "approvalStatus": "proposed"
+          "approvalStatus": "owner-approved"
         }
       }
     },
@@ -1808,7 +1808,7 @@
       "difficulty": "Medium",
       "difficultyStatus": "owner-approved",
       "difficultyReason": "Owner approved this direction at its recorded difficulty; question wording/explanations remain pending.",
-      "wordingStatus": "not-yet-reviewed",
+      "wordingStatus": "owner-approved-bilingual",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [],
       "approvedReview": "G56",
@@ -1818,12 +1818,12 @@
         "en": {
           "prompt": "Which belt does this go to?",
           "explanation": "Ground to Canada goes to PURPLE.",
-          "approvalStatus": "proposed"
+          "approvalStatus": "owner-approved"
         },
         "es": {
           "prompt": "¿A qué color va?",
           "explanation": "En Terrestre, los envíos a Canadá van a PURPLE.",
-          "approvalStatus": "proposed"
+          "approvalStatus": "owner-approved"
         }
       }
     },
@@ -1839,7 +1839,7 @@
       "difficulty": "Easy",
       "difficultyStatus": "owner-approved",
       "difficultyReason": "Owner explicitly classified this batch as Easy, superseding the draft Medium/Hard labels; wording/explanations remain pending.",
-      "wordingStatus": "not-yet-reviewed",
+      "wordingStatus": "owner-approved-bilingual",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [],
       "approvedReview": "G57",
@@ -1849,12 +1849,12 @@
         "en": {
           "prompt": "Which belt does this go to?",
           "explanation": "Ground to Puerto Rico goes to PINK.",
-          "approvalStatus": "proposed"
+          "approvalStatus": "owner-approved"
         },
         "es": {
           "prompt": "¿A qué color va?",
           "explanation": "En Terrestre, los envíos a Puerto Rico van a PINK.",
-          "approvalStatus": "proposed"
+          "approvalStatus": "owner-approved"
         }
       }
     },
@@ -2080,7 +2080,7 @@
       "difficulty": "Medium",
       "difficultyStatus": "owner-approved",
       "difficultyReason": "Owner explicitly approved this recorded difficulty; question wording, explanations and any ambiguous source notation remain pending.",
-      "wordingStatus": "not-yet-reviewed",
+      "wordingStatus": "owner-approved-bilingual",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [],
       "approvedReview": "G65",
@@ -2090,12 +2090,12 @@
         "en": {
           "prompt": "Which belt does this go to?",
           "explanation": "Ground NJ 079 9 goes to ORANGE. The final digit matters.",
-          "approvalStatus": "proposed"
+          "approvalStatus": "owner-approved"
         },
         "es": {
           "prompt": "¿A qué color va?",
           "explanation": "En Terrestre, NJ 079 9 va a ORANGE. El último dígito importa.",
-          "approvalStatus": "proposed"
+          "approvalStatus": "owner-approved"
         }
       }
     },
@@ -2779,7 +2779,7 @@
       "difficulty": "Hard",
       "difficultyStatus": "owner-approved",
       "difficultyReason": "Owner explicitly approved this recorded difficulty; question wording, explanations and any ambiguous source notation remain pending.",
-      "wordingStatus": "not-yet-reviewed",
+      "wordingStatus": "owner-approved-bilingual",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [],
       "approvedReview": "S05",
@@ -2789,12 +2789,12 @@
         "en": {
           "prompt": "Which belt does this go to?",
           "explanation": "3 Day Select NH 034 0 goes to GOLD. The final digit matters.",
-          "approvalStatus": "proposed"
+          "approvalStatus": "owner-approved"
         },
         "es": {
           "prompt": "¿A qué color va?",
           "explanation": "En Select 3 días, NH 034 0 va a GOLD. El último dígito importa.",
-          "approvalStatus": "proposed"
+          "approvalStatus": "owner-approved"
         }
       }
     },
@@ -4010,7 +4010,7 @@
       "difficulty": "Hard",
       "difficultyStatus": "owner-approved",
       "difficultyReason": "Owner explicitly approved this recorded difficulty; question wording, explanations and any ambiguous source notation remain pending.",
-      "wordingStatus": "not-yet-reviewed",
+      "wordingStatus": "owner-approved-bilingual",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [],
       "approvedReview": "S44",
@@ -4020,12 +4020,12 @@
         "en": {
           "prompt": "Which belt does this go to?",
           "explanation": "3 Day Select TX 769 0 goes to PURPLE. The final digit matters.",
-          "approvalStatus": "proposed"
+          "approvalStatus": "owner-approved"
         },
         "es": {
           "prompt": "¿A qué color va?",
           "explanation": "En Select 3 días, TX 769 0 va a PURPLE. El último dígito importa.",
-          "approvalStatus": "proposed"
+          "approvalStatus": "owner-approved"
         }
       }
     },
@@ -4345,7 +4345,7 @@
       "difficulty": "Medium",
       "difficultyStatus": "owner-approved",
       "difficultyReason": "Owner explicitly approved this recorded difficulty; question wording, explanations and any ambiguous source notation remain pending.",
-      "wordingStatus": "not-yet-reviewed",
+      "wordingStatus": "owner-approved-bilingual",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [],
       "approvedReview": "S55",
@@ -4355,12 +4355,12 @@
         "en": {
           "prompt": "Which belt does this go to?",
           "explanation": "3 Day Select NJ 079 9 goes to ORANGE. The final digit matters.",
-          "approvalStatus": "proposed"
+          "approvalStatus": "owner-approved"
         },
         "es": {
           "prompt": "¿A qué color va?",
           "explanation": "En Select 3 días, NJ 079 9 va a ORANGE. El último dígito importa.",
-          "approvalStatus": "proposed"
+          "approvalStatus": "owner-approved"
         }
       }
     },
@@ -4586,7 +4586,7 @@
       "difficulty": "Hard",
       "difficultyStatus": "owner-approved",
       "difficultyReason": "Owner explicitly approved this recorded difficulty; question wording, explanations and any ambiguous source notation remain pending.",
-      "wordingStatus": "not-yet-reviewed",
+      "wordingStatus": "owner-approved-bilingual",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [],
       "approvedReview": "S63",
@@ -4596,12 +4596,12 @@
         "en": {
           "prompt": "Which belt does this go to?",
           "explanation": "3 Day Select MS 395 0 goes to BLUE. The final digit matters.",
-          "approvalStatus": "proposed"
+          "approvalStatus": "owner-approved"
         },
         "es": {
           "prompt": "¿A qué color va?",
           "explanation": "En Select 3 días, MS 395 0 va a BLUE. El último dígito importa.",
-          "approvalStatus": "proposed"
+          "approvalStatus": "owner-approved"
         }
       }
     },
@@ -4617,7 +4617,7 @@
       "difficulty": "Hard",
       "difficultyStatus": "owner-approved",
       "difficultyReason": "Owner explicitly approved this recorded difficulty; question wording, explanations and any ambiguous source notation remain pending.",
-      "wordingStatus": "not-yet-reviewed",
+      "wordingStatus": "owner-approved-bilingual",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [],
       "approvedReview": "S64",
@@ -4627,12 +4627,12 @@
         "en": {
           "prompt": "Which belt does this go to?",
           "explanation": "3 Day Select SD 511 9 goes to BLUE. The final digit matters.",
-          "approvalStatus": "proposed"
+          "approvalStatus": "owner-approved"
         },
         "es": {
           "prompt": "¿A qué color va?",
           "explanation": "En Select 3 días, SD 511 9 va a BLUE. El último dígito importa.",
-          "approvalStatus": "proposed"
+          "approvalStatus": "owner-approved"
         }
       }
     },
@@ -4648,7 +4648,7 @@
       "difficulty": "Hard",
       "difficultyStatus": "owner-approved",
       "difficultyReason": "Owner explicitly approved this recorded difficulty; question wording, explanations and any ambiguous source notation remain pending.",
-      "wordingStatus": "not-yet-reviewed",
+      "wordingStatus": "owner-approved-bilingual",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [],
       "approvedReview": "S65",
@@ -4658,12 +4658,12 @@
         "en": {
           "prompt": "Which belt does this go to?",
           "explanation": "3 Day Select SD 571 9 goes to BROWN. The final digit matters.",
-          "approvalStatus": "proposed"
+          "approvalStatus": "owner-approved"
         },
         "es": {
           "prompt": "¿A qué color va?",
           "explanation": "En Select 3 días, SD 571 9 va a BROWN. El último dígito importa.",
-          "approvalStatus": "proposed"
+          "approvalStatus": "owner-approved"
         }
       }
     },
@@ -4679,7 +4679,7 @@
       "difficulty": "Hard",
       "difficultyStatus": "owner-approved",
       "difficultyReason": "Owner explicitly approved this recorded difficulty; question wording, explanations and any ambiguous source notation remain pending.",
-      "wordingStatus": "not-yet-reviewed",
+      "wordingStatus": "owner-approved-bilingual",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [],
       "approvedReview": "S66",
@@ -4689,12 +4689,12 @@
         "en": {
           "prompt": "Which belt does this go to?",
           "explanation": "3 Day Select ND 581 9 goes to BROWN. The final digit matters.",
-          "approvalStatus": "proposed"
+          "approvalStatus": "owner-approved"
         },
         "es": {
           "prompt": "¿A qué color va?",
           "explanation": "En Select 3 días, ND 581 9 va a BROWN. El último dígito importa.",
-          "approvalStatus": "proposed"
+          "approvalStatus": "owner-approved"
         }
       }
     },
@@ -4710,7 +4710,7 @@
       "difficulty": "Hard",
       "difficultyStatus": "owner-approved",
       "difficultyReason": "Owner explicitly approved this recorded difficulty; question wording, explanations and any ambiguous source notation remain pending.",
-      "wordingStatus": "not-yet-reviewed",
+      "wordingStatus": "owner-approved-bilingual",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [],
       "approvedReview": "S67",
@@ -4720,12 +4720,12 @@
         "en": {
           "prompt": "Which belt does this go to?",
           "explanation": "3 Day Select ND 582 0 goes to BROWN. The final digit matters.",
-          "approvalStatus": "proposed"
+          "approvalStatus": "owner-approved"
         },
         "es": {
           "prompt": "¿A qué color va?",
           "explanation": "En Select 3 días, ND 582 0 va a BROWN. El último dígito importa.",
-          "approvalStatus": "proposed"
+          "approvalStatus": "owner-approved"
         }
       }
     },
@@ -4741,7 +4741,7 @@
       "difficulty": "Hard",
       "difficultyStatus": "owner-approved",
       "difficultyReason": "Owner explicitly approved this recorded difficulty; question wording, explanations and any ambiguous source notation remain pending.",
-      "wordingStatus": "not-yet-reviewed",
+      "wordingStatus": "owner-approved-bilingual",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [],
       "approvedReview": "S68",
@@ -4751,12 +4751,12 @@
         "en": {
           "prompt": "Which belt does this go to?",
           "explanation": "3 Day Select TX 786 4 goes to ORANGE. The final digit matters.",
-          "approvalStatus": "proposed"
+          "approvalStatus": "owner-approved"
         },
         "es": {
           "prompt": "¿A qué color va?",
           "explanation": "En Select 3 días, TX 786 4 va a ORANGE. El último dígito importa.",
-          "approvalStatus": "proposed"
+          "approvalStatus": "owner-approved"
         }
       }
     },
@@ -4772,7 +4772,7 @@
       "difficulty": "Hard",
       "difficultyStatus": "owner-approved",
       "difficultyReason": "Owner explicitly approved this recorded difficulty; question wording, explanations and any ambiguous source notation remain pending.",
-      "wordingStatus": "not-yet-reviewed",
+      "wordingStatus": "owner-approved-bilingual",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [],
       "approvedReview": "S69",
@@ -4782,12 +4782,12 @@
         "en": {
           "prompt": "Which belt does this go to?",
           "explanation": "3 Day Select TX 787 9 goes to ORANGE. The final digit matters.",
-          "approvalStatus": "proposed"
+          "approvalStatus": "owner-approved"
         },
         "es": {
           "prompt": "¿A qué color va?",
           "explanation": "En Select 3 días, TX 787 9 va a ORANGE. El último dígito importa.",
-          "approvalStatus": "proposed"
+          "approvalStatus": "owner-approved"
         }
       }
     },
@@ -4803,7 +4803,7 @@
       "difficulty": "Hard",
       "difficultyStatus": "owner-approved",
       "difficultyReason": "Owner explicitly approved this recorded difficulty; question wording, explanations and any ambiguous source notation remain pending.",
-      "wordingStatus": "not-yet-reviewed",
+      "wordingStatus": "owner-approved-bilingual",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [],
       "approvedReview": "S70",
@@ -4813,12 +4813,12 @@
         "en": {
           "prompt": "Which belt does this go to?",
           "explanation": "3 Day Select TX 796 0 goes to ORANGE. The final digit matters.",
-          "approvalStatus": "proposed"
+          "approvalStatus": "owner-approved"
         },
         "es": {
           "prompt": "¿A qué color va?",
           "explanation": "En Select 3 días, TX 796 0 va a ORANGE. El último dígito importa.",
-          "approvalStatus": "proposed"
+          "approvalStatus": "owner-approved"
         }
       }
     },
@@ -4834,7 +4834,7 @@
       "difficulty": "Hard",
       "difficultyStatus": "owner-approved",
       "difficultyReason": "Owner explicitly approved this recorded difficulty; question wording, explanations and any ambiguous source notation remain pending.",
-      "wordingStatus": "not-yet-reviewed",
+      "wordingStatus": "owner-approved-bilingual",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [],
       "approvedReview": "S71",
@@ -4844,12 +4844,12 @@
         "en": {
           "prompt": "Which belt does this go to?",
           "explanation": "3 Day Select TX 799 9 goes to ORANGE. The final digit matters.",
-          "approvalStatus": "proposed"
+          "approvalStatus": "owner-approved"
         },
         "es": {
           "prompt": "¿A qué color va?",
           "explanation": "En Select 3 días, TX 799 9 va a ORANGE. El último dígito importa.",
-          "approvalStatus": "proposed"
+          "approvalStatus": "owner-approved"
         }
       }
     },
@@ -4865,7 +4865,7 @@
       "difficulty": "Hard",
       "difficultyStatus": "owner-approved",
       "difficultyReason": "Owner explicitly approved this recorded difficulty; question wording, explanations and any ambiguous source notation remain pending.",
-      "wordingStatus": "not-yet-reviewed",
+      "wordingStatus": "owner-approved-bilingual",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [],
       "approvedReview": "S72",
@@ -4875,12 +4875,12 @@
         "en": {
           "prompt": "Which belt does this go to?",
           "explanation": "3 Day Select CO 811 3 goes to ORANGE. The final digit matters.",
-          "approvalStatus": "proposed"
+          "approvalStatus": "owner-approved"
         },
         "es": {
           "prompt": "¿A qué color va?",
           "explanation": "En Select 3 días, CO 811 3 va a ORANGE. El último dígito importa.",
-          "approvalStatus": "proposed"
+          "approvalStatus": "owner-approved"
         }
       }
     },
@@ -4896,7 +4896,7 @@
       "difficulty": "Hard",
       "difficultyStatus": "owner-approved",
       "difficultyReason": "Owner explicitly approved this recorded difficulty; question wording, explanations and any ambiguous source notation remain pending.",
-      "wordingStatus": "not-yet-reviewed",
+      "wordingStatus": "owner-approved-bilingual",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [],
       "approvedReview": "S73",
@@ -4906,12 +4906,12 @@
         "en": {
           "prompt": "Which belt does this go to?",
           "explanation": "3 Day Select CO 812 0 goes to ORANGE. The final digit matters.",
-          "approvalStatus": "proposed"
+          "approvalStatus": "owner-approved"
         },
         "es": {
           "prompt": "¿A qué color va?",
           "explanation": "En Select 3 días, CO 812 0 va a ORANGE. El último dígito importa.",
-          "approvalStatus": "proposed"
+          "approvalStatus": "owner-approved"
         }
       }
     },
@@ -4927,7 +4927,7 @@
       "difficulty": "Hard",
       "difficultyStatus": "owner-approved",
       "difficultyReason": "Owner explicitly approved this recorded difficulty; question wording, explanations and any ambiguous source notation remain pending.",
-      "wordingStatus": "not-yet-reviewed",
+      "wordingStatus": "owner-approved-bilingual",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [],
       "approvedReview": "S74",
@@ -4937,12 +4937,12 @@
         "en": {
           "prompt": "Which belt does this go to?",
           "explanation": "3 Day Select CO 813 7 goes to ORANGE. The final digit matters.",
-          "approvalStatus": "proposed"
+          "approvalStatus": "owner-approved"
         },
         "es": {
           "prompt": "¿A qué color va?",
           "explanation": "En Select 3 días, CO 813 7 va a ORANGE. El último dígito importa.",
-          "approvalStatus": "proposed"
+          "approvalStatus": "owner-approved"
         }
       }
     },
@@ -4958,7 +4958,7 @@
       "difficulty": "Hard",
       "difficultyStatus": "owner-approved",
       "difficultyReason": "Owner explicitly approved this recorded difficulty; question wording, explanations and any ambiguous source notation remain pending.",
-      "wordingStatus": "not-yet-reviewed",
+      "wordingStatus": "owner-approved-bilingual",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [],
       "approvedReview": "S75",
@@ -4968,12 +4968,12 @@
         "en": {
           "prompt": "Which belt does this go to?",
           "explanation": "3 Day Select CO 816 0 goes to ORANGE. The final digit matters.",
-          "approvalStatus": "proposed"
+          "approvalStatus": "owner-approved"
         },
         "es": {
           "prompt": "¿A qué color va?",
           "explanation": "En Select 3 días, CO 816 0 va a ORANGE. El último dígito importa.",
-          "approvalStatus": "proposed"
+          "approvalStatus": "owner-approved"
         }
       }
     },
@@ -4989,7 +4989,7 @@
       "difficulty": "Hard",
       "difficultyStatus": "owner-approved",
       "difficultyReason": "Owner explicitly approved this recorded difficulty; question wording, explanations and any ambiguous source notation remain pending.",
-      "wordingStatus": "not-yet-reviewed",
+      "wordingStatus": "owner-approved-bilingual",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [],
       "approvedReview": "S76",
@@ -4999,12 +4999,12 @@
         "en": {
           "prompt": "Which belt does this go to?",
           "explanation": "3 Day Select CO 816 1 goes to ORANGE. The final digit matters.",
-          "approvalStatus": "proposed"
+          "approvalStatus": "owner-approved"
         },
         "es": {
           "prompt": "¿A qué color va?",
           "explanation": "En Select 3 días, CO 816 1 va a ORANGE. El último dígito importa.",
-          "approvalStatus": "proposed"
+          "approvalStatus": "owner-approved"
         }
       }
     },
@@ -5020,7 +5020,7 @@
       "difficulty": "Hard",
       "difficultyStatus": "owner-approved",
       "difficultyReason": "Owner explicitly approved this recorded difficulty; question wording, explanations and any ambiguous source notation remain pending.",
-      "wordingStatus": "not-yet-reviewed",
+      "wordingStatus": "owner-approved-bilingual",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [],
       "approvedReview": "S77",
@@ -5030,12 +5030,12 @@
         "en": {
           "prompt": "Which belt does this go to?",
           "explanation": "3 Day Select WY 820 0 goes to ORANGE. The final digit matters.",
-          "approvalStatus": "proposed"
+          "approvalStatus": "owner-approved"
         },
         "es": {
           "prompt": "¿A qué color va?",
           "explanation": "En Select 3 días, WY 820 0 va a ORANGE. El último dígito importa.",
-          "approvalStatus": "proposed"
+          "approvalStatus": "owner-approved"
         }
       }
     },
@@ -5051,7 +5051,7 @@
       "difficulty": "Hard",
       "difficultyStatus": "owner-approved",
       "difficultyReason": "Owner explicitly approved this recorded difficulty; question wording, explanations and any ambiguous source notation remain pending.",
-      "wordingStatus": "not-yet-reviewed",
+      "wordingStatus": "owner-approved-bilingual",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [],
       "approvedReview": "S78",
@@ -5061,12 +5061,12 @@
         "en": {
           "prompt": "Which belt does this go to?",
           "explanation": "3 Day Select WY 820 1 goes to ORANGE. The final digit matters.",
-          "approvalStatus": "proposed"
+          "approvalStatus": "owner-approved"
         },
         "es": {
           "prompt": "¿A qué color va?",
           "explanation": "En Select 3 días, WY 820 1 va a ORANGE. El último dígito importa.",
-          "approvalStatus": "proposed"
+          "approvalStatus": "owner-approved"
         }
       }
     },
@@ -5082,7 +5082,7 @@
       "difficulty": "Hard",
       "difficultyStatus": "owner-approved",
       "difficultyReason": "Owner explicitly approved this recorded difficulty; question wording, explanations and any ambiguous source notation remain pending.",
-      "wordingStatus": "not-yet-reviewed",
+      "wordingStatus": "owner-approved-bilingual",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [],
       "approvedReview": "S79",
@@ -5092,12 +5092,12 @@
         "en": {
           "prompt": "Which belt does this go to?",
           "explanation": "3 Day Select NY 148 1 goes to GOLD. The final digit matters.",
-          "approvalStatus": "proposed"
+          "approvalStatus": "owner-approved"
         },
         "es": {
           "prompt": "¿A qué color va?",
           "explanation": "En Select 3 días, NY 148 1 va a GOLD. El último dígito importa.",
-          "approvalStatus": "proposed"
+          "approvalStatus": "owner-approved"
         }
       }
     },
@@ -5303,7 +5303,7 @@
       "difficulty": "Hard",
       "difficultyStatus": "owner-approved",
       "difficultyReason": "Owner explicitly approved this recorded difficulty; question wording, explanations and any ambiguous source notation remain pending.",
-      "wordingStatus": "not-yet-reviewed",
+      "wordingStatus": "owner-approved-bilingual",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [],
       "approvedReview": "D05",
@@ -5313,12 +5313,12 @@
         "en": {
           "prompt": "Which belt does this go to?",
           "explanation": "2 Day Air NH 034 0 goes to GOLD. The final digit matters.",
-          "approvalStatus": "proposed"
+          "approvalStatus": "owner-approved"
         },
         "es": {
           "prompt": "¿A qué color va?",
           "explanation": "En Aéreo 2 días, NH 034 0 va a GOLD. El último dígito importa.",
-          "approvalStatus": "proposed"
+          "approvalStatus": "owner-approved"
         }
       }
     },
@@ -6418,7 +6418,7 @@
       "difficulty": "Hard",
       "difficultyStatus": "owner-approved",
       "difficultyReason": "Owner explicitly approved this recorded difficulty; question wording, explanations and any ambiguous source notation remain pending.",
-      "wordingStatus": "not-yet-reviewed",
+      "wordingStatus": "owner-approved-bilingual",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [],
       "approvedReview": "D38",
@@ -6428,12 +6428,12 @@
         "en": {
           "prompt": "Which belt does this go to?",
           "explanation": "2 Day Air OK 741 9 goes to ORANGE. The final digit matters.",
-          "approvalStatus": "proposed"
+          "approvalStatus": "owner-approved"
         },
         "es": {
           "prompt": "¿A qué color va?",
           "explanation": "En Aéreo 2 días, OK 741 9 va a ORANGE. El último dígito importa.",
-          "approvalStatus": "proposed"
+          "approvalStatus": "owner-approved"
         }
       }
     },
@@ -6503,7 +6503,7 @@
       "difficulty": "Medium",
       "difficultyStatus": "owner-approved",
       "difficultyReason": "Owner explicitly approved this recorded difficulty; question wording, explanations and any ambiguous source notation remain pending.",
-      "wordingStatus": "not-yet-reviewed",
+      "wordingStatus": "owner-approved-bilingual",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [
         "Wildcard fallback: explicitly exclude specific overrides; not a duplicate of a named-state row by text alone."
@@ -6515,12 +6515,12 @@
         "en": {
           "prompt": "Which belt does this go to?",
           "explanation": "2 Day Air destinations marked WORLD go to PURPLE.",
-          "approvalStatus": "proposed"
+          "approvalStatus": "owner-approved"
         },
         "es": {
           "prompt": "¿A qué color va?",
           "explanation": "Los destinos marcados WORLD en Aéreo 2 días van a PURPLE.",
-          "approvalStatus": "proposed"
+          "approvalStatus": "owner-approved"
         }
       }
     },
@@ -6746,7 +6746,7 @@
       "difficulty": "Medium",
       "difficultyStatus": "owner-approved",
       "difficultyReason": "Owner explicitly approved this recorded difficulty; question wording, explanations and any ambiguous source notation remain pending.",
-      "wordingStatus": "not-yet-reviewed",
+      "wordingStatus": "owner-approved-bilingual",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [],
       "approvedReview": "D49",
@@ -6756,12 +6756,12 @@
         "en": {
           "prompt": "Which belt does this go to?",
           "explanation": "2 Day Air NJ 079 9 goes to ORANGE. The final digit matters.",
-          "approvalStatus": "proposed"
+          "approvalStatus": "owner-approved"
         },
         "es": {
           "prompt": "¿A qué color va?",
           "explanation": "En Aéreo 2 días, NJ 079 9 va a ORANGE. El último dígito importa.",
-          "approvalStatus": "proposed"
+          "approvalStatus": "owner-approved"
         }
       }
     },
@@ -6987,7 +6987,7 @@
       "difficulty": "Hard",
       "difficultyStatus": "owner-approved",
       "difficultyReason": "Owner explicitly approved this recorded difficulty; question wording, explanations and any ambiguous source notation remain pending.",
-      "wordingStatus": "not-yet-reviewed",
+      "wordingStatus": "owner-approved-bilingual",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [],
       "approvedReview": "D57",
@@ -6997,12 +6997,12 @@
         "en": {
           "prompt": "Which belt does this go to?",
           "explanation": "2 Day Air NY 148 1 goes to GOLD. The final digit matters.",
-          "approvalStatus": "proposed"
+          "approvalStatus": "owner-approved"
         },
         "es": {
           "prompt": "¿A qué color va?",
           "explanation": "En Aéreo 2 días, NY 148 1 va a GOLD. El último dígito importa.",
-          "approvalStatus": "proposed"
+          "approvalStatus": "owner-approved"
         }
       }
     },
@@ -7208,7 +7208,7 @@
       "difficulty": "Hard",
       "difficultyStatus": "owner-approved",
       "difficultyReason": "Owner explicitly approved this recorded difficulty; question wording, explanations and any ambiguous source notation remain pending.",
-      "wordingStatus": "not-yet-reviewed",
+      "wordingStatus": "owner-approved-bilingual",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [],
       "approvedReview": "N05",
@@ -7218,12 +7218,12 @@
         "en": {
           "prompt": "Which belt does this go to?",
           "explanation": "Next Day Air NH 034 0 goes to GOLD. The final digit matters.",
-          "approvalStatus": "proposed"
+          "approvalStatus": "owner-approved"
         },
         "es": {
           "prompt": "¿A qué color va?",
           "explanation": "En Aéreo 1 día, NH 034 0 va a GOLD. El último dígito importa.",
-          "approvalStatus": "proposed"
+          "approvalStatus": "owner-approved"
         }
       }
     },
@@ -7833,7 +7833,7 @@
       "difficulty": "Medium",
       "difficultyStatus": "owner-approved",
       "difficultyReason": "Owner explicitly approved this recorded difficulty; question wording, explanations and any ambiguous source notation remain pending.",
-      "wordingStatus": "not-yet-reviewed",
+      "wordingStatus": "owner-approved-bilingual",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [
         "Wildcard fallback: explicitly exclude specific overrides; not a duplicate of a named-state row by text alone."
@@ -7845,12 +7845,12 @@
         "en": {
           "prompt": "Which belt does this go to?",
           "explanation": "Next Day Air destinations marked WORLD go to PURPLE.",
-          "approvalStatus": "proposed"
+          "approvalStatus": "owner-approved"
         },
         "es": {
           "prompt": "¿A qué color va?",
           "explanation": "Los destinos marcados WORLD en Aéreo 1 día van a PURPLE.",
-          "approvalStatus": "proposed"
+          "approvalStatus": "owner-approved"
         }
       }
     },
@@ -8117,7 +8117,7 @@
       "difficulty": "Medium",
       "difficultyStatus": "owner-approved",
       "difficultyReason": "Owner explicitly approved this recorded difficulty; question wording, explanations and any ambiguous source notation remain pending.",
-      "wordingStatus": "not-yet-reviewed",
+      "wordingStatus": "owner-approved-bilingual",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [],
       "approvedReview": "N34",
@@ -8127,12 +8127,12 @@
         "en": {
           "prompt": "Which belt does this go to?",
           "explanation": "Next Day Air NJ 079 9 goes to ORANGE. The final digit matters.",
-          "approvalStatus": "proposed"
+          "approvalStatus": "owner-approved"
         },
         "es": {
           "prompt": "¿A qué color va?",
           "explanation": "En Aéreo 1 día, NJ 079 9 va a ORANGE. El último dígito importa.",
-          "approvalStatus": "proposed"
+          "approvalStatus": "owner-approved"
         }
       }
     },
@@ -8632,11 +8632,11 @@
     "scopeNote": "NY109 examples do not restrict the rule to New York or routing109. This clarification does not create or approve additional canonical variants or decide conflicting combined-marker precedence."
   },
   "wordingReviewCounts": {
-    "enOwnerApproved": 231,
-    "esOwnerApproved": 231,
-    "enPending": 52,
-    "esPending": 52,
-    "bilingualOwnerApproved": 231
+    "enOwnerApproved": 263,
+    "esOwnerApproved": 263,
+    "enPending": 20,
+    "esPending": 20,
+    "bilingualOwnerApproved": 263
   },
   "wordingReviewBatches": [
     {
@@ -8899,7 +8899,7 @@
     },
     {
       "id": "specific-and-named-batch-1",
-      "status": "proposed",
+      "status": "owner-approved",
       "languages": [
         "en",
         "es"
@@ -8939,7 +8939,34 @@
         "N25",
         "N34"
       ],
-      "scope": "Feedback for27 specific-code cases and five named destinations; no new range/exclusion interpretation or changes to settled answers/difficulties."
+      "scope": "Feedback for27 specific-code cases and five named destinations; no new range/exclusion interpretation or changes to settled answers/difficulties.",
+      "approvalScope": "Owner explicitly approved all32 explanations in both languages:27 specific codes and five named destinations. Answers, displayed code literals and difficulty labels remain unchanged."
+    }
+  ],
+  "pendingCoverageQuestions": [
+    {
+      "id": "cross-state-literal-precedence",
+      "status": "awaiting-owner-decision",
+      "question": "Do listed exact-code exceptions override a broad routing-prefix range even when the chart state labels differ?",
+      "cases": [
+        {
+          "rangeReviewRef": "G45",
+          "exceptionReviewRef": "G74"
+        },
+        {
+          "rangeReviewRef": "G46",
+          "exceptionReviewRef": "G75"
+        },
+        {
+          "rangeReviewRef": "G47",
+          "exceptionReviewRef": "G76"
+        },
+        {
+          "rangeReviewRef": "G50",
+          "exceptionReviewRef": "G78"
+        }
+      ],
+      "scopeNote": "Earlier approval to exclude applicable answer-changing exceptions remains settled. This asks which exceptions are applicable across different printed state labels; no answer or runtime rule is inferred."
     }
   ]
 }
