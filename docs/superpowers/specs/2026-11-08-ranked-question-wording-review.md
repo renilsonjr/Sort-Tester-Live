@@ -1,6 +1,6 @@
 # Ranked question wording and explanation review
 
-**Status:** proposed English wording and explanations; owner-reviewed answers/difficulty labels are recorded separately. No wording approval is inferred from label approval. Review one group at a time before implementation. Source revision: `twilight-2026-11-08-r2`, including the owner Indiana ORANGE override, pending publication through [PR #32](https://github.com/renilsonjr/Sort-Tester-Live/pull/32).
+**Status:** owner approved the English question wording/explanations for all17 route scenarios in three separate group reviews, in addition to the previously reviewed answers/difficulty labels. This does not approve Spanish copy, a canonical schema, immutable assignments or a usable Ranked bank. Source revision: `twilight-2026-11-08-r2`, including the owner Indiana ORANGE override, pending publication through [PR #32](https://github.com/renilsonjr/Sort-Tester-Live/pull/32).
 
 **Related:** [[2026-11-07-ranked-question-bank-review]], [[2026-11-08-ranked-chart-reference]]. Tracker: [#5](https://github.com/renilsonjr/Sort-Tester-Live/issues/5).
 
@@ -36,7 +36,7 @@ Only displayed modifiers apply: ordinary questions have no destination +1 or rou
 
 - [x] Owner approved Easy question wording/explanation style E1–E5 in chat, including the Ground FL versus 2 Day Air service comparison.
 - [x] Owner approved Medium wording/explanations M1–M5 in chat, including the service comparisons and Texas boundary explanations.
-- [ ] Owner approves Hard wording/explanations H1–H7.
+- [x] Owner approved Hard wording/explanations H1–H7 in chat, including exact-code exceptions, destination +1 and the Indiana owner override.
 - [ ] Check Spanish wording separately before bilingual Ranked use; existing Practice translation tests do not approve new Ranked copy.
 - [ ] Complete canonical identity/overlap/exception handling and immutable bank/assignment versions before implementation.
 - [ ] Obtain separate authoritative work-methods questions for tie rounds; this route sheet does not supply them.
