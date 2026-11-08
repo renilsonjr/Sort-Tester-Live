@@ -4,7 +4,7 @@
 
 ## Full-chart difficulty milestone complete
 
-All283 review entries now have owner-approved labels:103 Easy /127 Medium /53 Hard. [[2026-11-08-ranked-full-chart-review]] contains the complete ledger and final consistency audit. Original17 bilingual approvals are preserved;266 expanded question wordings/explanations remain pending, along with canonical identity/coverage and versioning/assignment validation. Four broad NJ CHECK rows stay held without guessed answers; six Ground compound-shorthand meanings need clarification. Only the work-methods tie-question content is deferred. This completes difficulty classification, not Issue5 or a usable Ranked bank.
+All283 review entries now have owner-approved labels:103 Easy /127 Medium /53 Hard. [[2026-11-08-ranked-full-chart-review]] contains the complete ledger and final consistency audit. Original17 bilingual approvals are preserved;266 expanded question wordings/explanations remain pending, along with canonical identity/coverage and versioning/assignment validation. Four broad NJ CHECK rows stay held without guessed answers; the six hyphenated Ground codes are now owner-confirmed exact literals, not ranges; their approved answers and Hard labels are unchanged. Only the work-methods tie-question content is deferred. This completes difficulty classification, not Issue5 or a usable Ranked bank.
 
 ## Owner scope expansion — full-chart bank
 

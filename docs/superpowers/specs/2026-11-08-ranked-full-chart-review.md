@@ -10,7 +10,7 @@
 - 283 source rows; hold four broad NJ CHECK rows without inventing belt answers. Retain listed NJ preload exceptions.
 - 279 belt-bearing source rows plus four NY109 destination+1 service contexts =283 review entries.
 - The original 17 owner-approved labels and bilingual explanations are preserved. Another 266 labels are approved, for 283 approved labels and 0 remaining difficulty proposals. Those additional labels still need wording/explanation review. Source rows are not a proven final unique-scenario count.
-- Question wording, exception exclusions, wildcard coverage and compound final-digit shorthand still need review for new entries. A suggestion of Easy never removes an applicable exception.
+- Question wording, exception exclusions and wildcard coverage still need review for new entries. The six hyphenated Ground codes are now confirmed exact literals, not ranges. A suggestion of Easy never removes an applicable exception.
 - The game still selects15 questions, five per difficulty; expanding the bank increases the possible selections. No17-question runtime limit or fixed-ten-question repetition design remains.
 - Only the work-methods tie-question content is deferred; other tie-break policies remain unchanged.
 
@@ -21,7 +21,7 @@
 | 2 Day Air | 65 | 0 |
 | Next Day Air | 44 | 0 |
 
-Approved-label totals: **103 Easy,127 Medium,53 Hard**. No difficulty proposals remain pending. Approval of difficulty does not approve unresolved shorthand, new wording or executable assignment behavior.
+Approved-label totals: **103 Easy,127 Medium,53 Hard**. No difficulty proposals remain pending. Approval of difficulty does not approve new wording or executable assignment behavior. The six hyphenated Ground literals were clarified separately by the owner.
 
 ## Previously approved — do not rank again
 
@@ -320,6 +320,21 @@ Approved-label totals: **103 Easy,127 Medium,53 Hard**. No difficulty proposals 
 
 Ground89,3 Day Select85,2 Day Air65,Next Day Air44. All283 review entries have approved labels; no further ranking of these unchanged scenarios is required. Only the work-methods tie-question content is deferred, not the other tie-break policies.
 
+## Confirmed exact literal codes
+
+The owner corrected the earlier range interpretation and confirmed all six similarly formatted Ground entries are single exact codes. Preserve the complete displayed code, including spaces and hyphens. The hyphen is part of the code, not a range delimiter. Do not expand into endpoints or silently convert a code such as `575 3-6` into `57536`. These clarifications do not change source answers, Hard labels or wording-approval status.
+
+| Service | State | Exact literal code | Answer | Approved difficulty |
+| --- | --- | --- | --- | --- |
+| Ground | NE | 575 3-6 | ORANGE | Hard |
+| Ground | NV | 833 9-7 | ORANGE | Hard |
+| Ground | AZ | 847 2-7 | BLUE | Hard |
+| Ground | NV | 864 4-7 | ORANGE | Hard |
+| Ground | NV | 890 0-0 | ORANGE | Hard |
+| Ground | AZ | 922 2-0 | BLUE | Hard |
+
+Future executable bank records must discriminate exact literals from numeric prefix ranges before normalization or overlap checks. A literal code must not be processed by a generic numeric-range parser.
+
 ## Held source rows
 
 | Source review ID | Service | State / route | Reason |
@@ -335,6 +350,6 @@ Validated all283 fixture IDs are accounted for exactly once as a source entry or
 
 ## Final classification audit
 
-Verified all283 source rows are accounted for:279 belt-bearing rows and four held broad-NJ CHECK rows; four explicit NY109 destination+1 service contexts bring the review ledger to283 entries. All source answers/provenance remain unchanged from revision r2. Every entry has exactly one approved difficulty and one unique review reference. All17 initial answer/label/context mappings remain unchanged; only those17 have approved bilingual wording. The other266 still need wording and explanation review, with six Ground compound-shorthand entries explicitly held for semantic clarification before executable use.
+Verified all283 source rows are accounted for:279 belt-bearing rows and four held broad-NJ CHECK rows; four explicit NY109 destination+1 service contexts bring the review ledger to283 entries. All source answers/provenance remain unchanged from revision r2. Every entry has exactly one approved difficulty and one unique review reference. All17 initial answer/label/context mappings remain unchanged; only those17 have approved bilingual wording. The other266 still need wording and explanation review. The six Ground hyphenated entries are now confirmed exact literal codes; their runtime validation is still future implementation work.
 
 Verified the explicit owner changes: Ground MA025–026 Hard;2DA MA025–026,AL350–369,MS386–399,OH430–459 Hard; all listed RED NJ preloads Easy and ORANGE0799 Medium in each service. Held CHECK rows have no invented answer or difficulty. This audit verifies inventory consistency; it does not approve canonical merges/splits, unbuilt selection logic or a deployed Ranked mode.

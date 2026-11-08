@@ -1476,13 +1476,19 @@
       "destinationModifier": null,
       "difficulty": "Hard",
       "difficultyStatus": "owner-approved",
-      "difficultyReason": "Owner explicitly approved this recorded difficulty; question wording, explanations and any ambiguous source notation remain pending.",
+      "difficultyReason": "Owner-approved Hard label; exact literal-code meaning is now confirmed. Question wording/explanations remain pending.",
       "wordingStatus": "not-yet-reviewed",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [
-        "Compound final-digit shorthand: preserve source; do not infer an expanded numeric range."
+        "Owner confirmed this is one exact code, not a range. Preserve the complete literal including its space and hyphen; do not infer numeric endpoints or remove punctuation."
       ],
-      "approvedReview": "G73"
+      "approvedReview": "G73",
+      "routingInterpretation": {
+        "kind": "exact_code_literal",
+        "value": "575 3-6",
+        "ownerConfirmed": true,
+        "hyphenIsRangeDelimiter": false
+      }
     },
     {
       "id": "ground-exceptions-nv-8339-7",
@@ -1495,13 +1501,19 @@
       "destinationModifier": null,
       "difficulty": "Hard",
       "difficultyStatus": "owner-approved",
-      "difficultyReason": "Owner explicitly approved this recorded difficulty; question wording, explanations and any ambiguous source notation remain pending.",
+      "difficultyReason": "Owner-approved Hard label; exact literal-code meaning is now confirmed. Question wording/explanations remain pending.",
       "wordingStatus": "not-yet-reviewed",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [
-        "Compound final-digit shorthand: preserve source; do not infer an expanded numeric range."
+        "Owner confirmed this is one exact code, not a range. Preserve the complete literal including its space and hyphen; do not infer numeric endpoints or remove punctuation."
       ],
-      "approvedReview": "G74"
+      "approvedReview": "G74",
+      "routingInterpretation": {
+        "kind": "exact_code_literal",
+        "value": "833 9-7",
+        "ownerConfirmed": true,
+        "hyphenIsRangeDelimiter": false
+      }
     },
     {
       "id": "ground-exceptions-az-8472-7",
@@ -1514,13 +1526,19 @@
       "destinationModifier": null,
       "difficulty": "Hard",
       "difficultyStatus": "owner-approved",
-      "difficultyReason": "Owner explicitly approved this recorded difficulty; question wording, explanations and any ambiguous source notation remain pending.",
+      "difficultyReason": "Owner-approved Hard label; exact literal-code meaning is now confirmed. Question wording/explanations remain pending.",
       "wordingStatus": "not-yet-reviewed",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [
-        "Compound final-digit shorthand: preserve source; do not infer an expanded numeric range."
+        "Owner confirmed this is one exact code, not a range. Preserve the complete literal including its space and hyphen; do not infer numeric endpoints or remove punctuation."
       ],
-      "approvedReview": "G75"
+      "approvedReview": "G75",
+      "routingInterpretation": {
+        "kind": "exact_code_literal",
+        "value": "847 2-7",
+        "ownerConfirmed": true,
+        "hyphenIsRangeDelimiter": false
+      }
     },
     {
       "id": "ground-exceptions-nv-8644-7",
@@ -1533,13 +1551,19 @@
       "destinationModifier": null,
       "difficulty": "Hard",
       "difficultyStatus": "owner-approved",
-      "difficultyReason": "Owner explicitly approved this recorded difficulty; question wording, explanations and any ambiguous source notation remain pending.",
+      "difficultyReason": "Owner-approved Hard label; exact literal-code meaning is now confirmed. Question wording/explanations remain pending.",
       "wordingStatus": "not-yet-reviewed",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [
-        "Compound final-digit shorthand: preserve source; do not infer an expanded numeric range."
+        "Owner confirmed this is one exact code, not a range. Preserve the complete literal including its space and hyphen; do not infer numeric endpoints or remove punctuation."
       ],
-      "approvedReview": "G76"
+      "approvedReview": "G76",
+      "routingInterpretation": {
+        "kind": "exact_code_literal",
+        "value": "864 4-7",
+        "ownerConfirmed": true,
+        "hyphenIsRangeDelimiter": false
+      }
     },
     {
       "id": "ground-exceptions-nv-8900-0",
@@ -1552,13 +1576,19 @@
       "destinationModifier": null,
       "difficulty": "Hard",
       "difficultyStatus": "owner-approved",
-      "difficultyReason": "Owner explicitly approved this recorded difficulty; question wording, explanations and any ambiguous source notation remain pending.",
+      "difficultyReason": "Owner-approved Hard label; exact literal-code meaning is now confirmed. Question wording/explanations remain pending.",
       "wordingStatus": "not-yet-reviewed",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [
-        "Compound final-digit shorthand: preserve source; do not infer an expanded numeric range."
+        "Owner confirmed this is one exact code, not a range. Preserve the complete literal including its space and hyphen; do not infer numeric endpoints or remove punctuation."
       ],
-      "approvedReview": "G77"
+      "approvedReview": "G77",
+      "routingInterpretation": {
+        "kind": "exact_code_literal",
+        "value": "890 0-0",
+        "ownerConfirmed": true,
+        "hyphenIsRangeDelimiter": false
+      }
     },
     {
       "id": "ground-exceptions-az-9222-0",
@@ -1571,13 +1601,19 @@
       "destinationModifier": null,
       "difficulty": "Hard",
       "difficultyStatus": "owner-approved",
-      "difficultyReason": "Owner explicitly approved this recorded difficulty; question wording, explanations and any ambiguous source notation remain pending.",
+      "difficultyReason": "Owner-approved Hard label; exact literal-code meaning is now confirmed. Question wording/explanations remain pending.",
       "wordingStatus": "not-yet-reviewed",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [
-        "Compound final-digit shorthand: preserve source; do not infer an expanded numeric range."
+        "Owner confirmed this is one exact code, not a range. Preserve the complete literal including its space and hyphen; do not infer numeric endpoints or remove punctuation."
       ],
-      "approvedReview": "G78"
+      "approvedReview": "G78",
+      "routingInterpretation": {
+        "kind": "exact_code_literal",
+        "value": "922 2-0",
+        "ownerConfirmed": true,
+        "hyphenIsRangeDelimiter": false
+      }
     },
     {
       "id": "ground-exceptions-tn-376-378",
@@ -5242,5 +5278,6 @@
     "Easy": 103,
     "Hard": 53,
     "Medium": 127
-  }
+  },
+  "confirmedExactLiteralCodeCount": 6
 }

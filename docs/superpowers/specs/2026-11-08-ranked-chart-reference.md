@@ -26,6 +26,10 @@ Apply this photo with only the owner's stated corrections; do not automatically 
 
 9. **2 Day Air IN 460–479 → ORANGE.** Subsequent explicit owner correction supersedes the photo's PURPLE entry. Update Study, generated/manual cards and neighboring Indiana/Ohio/Michigan explanations. Ground/3 Day Select remain ORANGE. Ordinary-route correction does not override destination +1 or routing suffix rules. Source revision becomes `twilight-2026-11-08-r2`; existing saved results retain their original answers and version.
 
+### Owner clarification — exact literal routing codes
+
+Ground `NE 575 3-6`, `NV 833 9-7`, `AZ 847 2-7`, `NV 864 4-7`, `NV 890 0-0` and `AZ 922 2-0` each denote one exact code. The owner corrected the initial “range” reply and confirmed the same literal interpretation for all similarly formatted entries. Preserve their displayed spaces and hyphens; do not derive numeric endpoints or strip the hyphen to invent a different code. This resolves interpretation without changing the literal source rows, existing r2 answers or owner-approved Hard labels. Future bank validation must distinguish this type from numeric prefix ranges. See [[2026-11-08-ranked-full-chart-review]] and [[2026-11-08-curated-ranked-bank-design]].
+
 ### +1 scope and implemented branch behavior
 
 The owner approved the plan in [[2026-11-08-chart-corrections-and-destination-plus-one]] and coverage in **Practice and the future Ranked bank**. Four explicit NY109 candidates now store optional `destinationModifier: '+1'` separately from unchanged base `svc` and routing `code`; each answer is PURPLE. The destination label shows e.g. **Ground +1 · NY**, while routing code stays **109**. The metadata survives translated questions/feedback, response records, saved results and workbook Service text. Old saved results without metadata retain their historical answers/counts and render normally.
