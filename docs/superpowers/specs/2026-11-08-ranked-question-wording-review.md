@@ -32,12 +32,41 @@ Only displayed modifiers apply: ordinary questions have no destination +1 or rou
 | H6 | Hard | Ground | MA | 025–026 | BLUE | Ground MA025–026 goes BLUE. Next Day Air uses PURPLE for this range; do not apply that service answer to Ground. |
 | H7 | Hard | 2 Day Air | IN | 460–479 | ORANGE | The supervisor-confirmed correction sends2 Day Air IN460–479 to ORANGE, superseding the photo PURPLE entry. |
 
+## Spanish wording draft
+
+**Owner-approved style:** prompt “¿A qué color va?”, Ground translated as “Terrestre”, belt names unchanged (GOLD, BLUE, etc.), and concise service-specific feedback. Individual translations below remain proposed until their group is reviewed; style approval alone does not approve every explanation. Service translations follow existing Practice labels.
+
+Use the same review labels, service/state/routing data, answer and difficulty as the English scenarios. Translation does not create another canonical question or additional assignment slot. This is draft content, not a product implementation.
+
+| Review label | Servicio / destino | Estado | Código de ruta | Respuesta | Explicación propuesta |
+| --- | --- | --- | --- | --- | --- |
+| E1 | Terrestre | MA | 010–024 | GOLD | En Terrestre, MA 010–024 va a GOLD. |
+| E2 | Terrestre | GA | 300–319 | BLUE | En Terrestre, GA 300–319 va a BLUE. |
+| E3 | Terrestre | FL | 320–349 | PINK | En Terrestre, FL 320–349 va a PINK. En Aéreo 2 días, este rango va a PURPLE. |
+| E4 | Terrestre | VT | 050–059 | GOLD | En Terrestre, VT 050–059 va a GOLD. |
+| E5 | Terrestre | CT | 060–069 | GOLD | En Terrestre, CT 060–069 va a GOLD. |
+| M1 | Select 3 días | TX | 770–784 | BLUE | En Select 3 días, TX 770–784 va a BLUE. El código cercano TX 769 0 y el rango 785–799 van a PURPLE. |
+| M2 | Aéreo 2 días | NY | 140–147 | ORANGE | En Aéreo 2 días, NY 140–147 va a ORANGE. El cambio a GOLD se aplica solo a Terrestre. |
+| M3 | Select 3 días | TX | 750–768 | BLUE | En Select 3 días, TX 750–768 va a BLUE. El siguiente código indicado, TX 769 0, va a PURPLE. |
+| M4 | Aéreo 2 días | FL | 320–349 | PURPLE | En Aéreo 2 días, FL 320–349 va a PURPLE. En Terrestre y Select 3 días, este rango va a PINK. |
+| M5 | Select 3 días | AL | 350–369 | BLUE | En Select 3 días, AL 350–369 va a BLUE. En Aéreo 2 días, el mismo rango va a PURPLE. |
+| H1 | Aéreo 2 días | IL | 600–608 | YELLOW | En Aéreo 2 días, IL 600–608 va a YELLOW. El siguiente rango, 609–629, va a ORANGE. |
+| H2 | Aéreo 2 días | IL | 609–629 | ORANGE | En Aéreo 2 días, IL 609–629 va a ORANGE. El rango anterior, 600–608, va a YELLOW. |
+| H3 | Terrestre | TN | 376–378 | BLUE | En Terrestre, TN 376–378 es la excepción BLUE dentro del rango 370–385, que normalmente va a BROWN. |
+| H4 | Terrestre | NY | 148 1 | GOLD | En Terrestre, NY 148 1 es la excepción GOLD a la regla habitual ORANGE de 148–149. El último dígito importa. |
+| H5 | Terrestre +1 | NY | 109 | PURPLE | El indicador de destino +1 va a PURPLE en los cuatro servicios. Sin +1, NY 109 en Terrestre va a ORANGE. El código de ruta sigue siendo 109. |
+| H6 | Terrestre | MA | 025–026 | BLUE | En Terrestre, MA 025–026 va a BLUE. En Aéreo 1 día, este rango va a PURPLE. |
+| H7 | Aéreo 2 días | IN | 460–479 | ORANGE | La corrección confirmada por el supervisor indica que IN 460–479 en Aéreo 2 días va a ORANGE y reemplaza la indicación PURPLE de la foto. |
+
 ## Remaining review
 
 - [x] Owner approved Easy question wording/explanation style E1–E5 in chat, including the Ground FL versus 2 Day Air service comparison.
 - [x] Owner approved Medium wording/explanations M1–M5 in chat, including the service comparisons and Texas boundary explanations.
 - [x] Owner approved Hard wording/explanations H1–H7 in chat, including exact-code exceptions, destination +1 and the Indiana owner override.
-- [ ] Check Spanish wording separately before bilingual Ranked use; existing Practice translation tests do not approve new Ranked copy.
+- [x] Owner approved the Spanish translation style separately; individual translations still require review.
+- [ ] Owner approves Spanish Easy translations E1–E5.
+- [ ] Owner approves Spanish Medium translations M1–M5.
+- [ ] Owner approves Spanish Hard translations H1–H7. Existing Practice translation tests do not approve this new Ranked copy.
 - [ ] Complete canonical identity/overlap/exception handling and immutable bank/assignment versions before implementation.
 - [ ] **Deferred at the owner’s request:** obtain separate authoritative work-methods questions for tie rounds. Resume this content review later; this route sheet does not supply or replace that bank. Existing tie-break rules and the approved owner-selection fallback remain unchanged pending any explicit new decision.
 
