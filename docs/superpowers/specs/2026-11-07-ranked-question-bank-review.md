@@ -9,6 +9,7 @@ PR #31 is merged and deployed. The r1 evidence below is historical; the subseque
 Settled rules for future Ranked assignment (not implemented by Practice code):
 
 - Copies of the same scenario across Practice decks count once. Different base services and ordinary versus destination +1 remain distinct contexts.
+- Owner explicitly approved treating `GND` and `GRD` as the same Ground service for canonical duplicate detection. Equivalent service abbreviations must not create additional assignment slots.
 - Overlapping ZIP ranges for the same service/destination context cannot appear together in a Ranked quiz.
 - Broad-range question wording must explicitly exclude answer-changing exceptions.
 - Each scenario receives one owner-reviewed fixed difficulty, independent of Practice deck membership.
