@@ -21,7 +21,7 @@
 | 2 Day Air | 65 | 0 |
 | Next Day Air | 24 | 20 |
 
-Proposed-label totals for remaining entries: Easy 0, Medium 1, Hard 19. These are draft classifications requiring owner review, not settled counts.
+Proposed-label totals for remaining entries: Easy 14, Medium 2, Hard 4. These are draft classifications requiring owner review, not settled counts.
 
 ## Previously approved — do not rank again
 
@@ -317,21 +317,21 @@ Proposed-label totals for remaining entries: Easy 0, Medium 1, Hard 19. These ar
 | --- | --- | --- | --- | --- |
 | `nextdayair-main-all-world` | * WORLD | PURPLE | Medium | Wildcard fallback: explicitly exclude specific overrides; not a duplicate of a named-state row by text alone. |
 | `nextdayair-main-all-all1daeam` | * ALL 1DA EAM | PURPLE | Hard | Wildcard fallback: explicitly exclude specific overrides; not a duplicate of a named-state row by text alone. |
-| `nextdayair-exceptions-nj-0703` | NJ 070 3 | RED | Hard | Specific exception, exact-code qualifier, suffix, or destination modifier. |
-| `nextdayair-exceptions-nj-0709` | NJ 070 9 | RED | Hard | Specific exception, exact-code qualifier, suffix, or destination modifier. |
-| `nextdayair-exceptions-nj-0759` | NJ 075 9 | RED | Hard | Specific exception, exact-code qualifier, suffix, or destination modifier. |
-| `nextdayair-exceptions-nj-0769` | NJ 076 9 | RED | Hard | Specific exception, exact-code qualifier, suffix, or destination modifier. |
-| `nextdayair-exceptions-nj-0770` | NJ 077 0 | RED | Hard | Specific exception, exact-code qualifier, suffix, or destination modifier. |
-| `nextdayair-exceptions-nj-0784` | NJ 078 4 | RED | Hard | Specific exception, exact-code qualifier, suffix, or destination modifier. |
-| `nextdayair-exceptions-nj-0789` | NJ 078 9 | RED | Hard | Specific exception, exact-code qualifier, suffix, or destination modifier. |
-| `nextdayair-exceptions-nj-0799` | NJ 079 9 | ORANGE | Hard | Specific exception, exact-code qualifier, suffix, or destination modifier. |
-| `nextdayair-exceptions-nj-0819` | NJ 081 9 | RED | Hard | Specific exception, exact-code qualifier, suffix, or destination modifier. |
-| `nextdayair-exceptions-nj-0829` | NJ 082 9 | RED | Hard | Specific exception, exact-code qualifier, suffix, or destination modifier. |
-| `nextdayair-exceptions-nj-0839` | NJ 083 9 | RED | Hard | Specific exception, exact-code qualifier, suffix, or destination modifier. |
-| `nextdayair-exceptions-nj-0860` | NJ 086 0 | RED | Hard | Specific exception, exact-code qualifier, suffix, or destination modifier. |
-| `nextdayair-exceptions-nj-0871` | NJ 087 1 | RED | Hard | Specific exception, exact-code qualifier, suffix, or destination modifier. |
-| `nextdayair-exceptions-nj-0889` | NJ 088 9 | RED | Hard | Specific exception, exact-code qualifier, suffix, or destination modifier. |
-| `nextdayair-exceptions-nj-0899` | NJ 089 9 | RED | Hard | Specific exception, exact-code qualifier, suffix, or destination modifier. |
+| `nextdayair-exceptions-nj-0703` | NJ 070 3 | RED | Easy | Assistant proposal consistent with owner-reviewed NJ levels for other services: RED preloads Easy, ORANGE079 9 Medium. Approval for NDA remains pending. |
+| `nextdayair-exceptions-nj-0709` | NJ 070 9 | RED | Easy | Assistant proposal consistent with owner-reviewed NJ levels for other services: RED preloads Easy, ORANGE079 9 Medium. Approval for NDA remains pending. |
+| `nextdayair-exceptions-nj-0759` | NJ 075 9 | RED | Easy | Assistant proposal consistent with owner-reviewed NJ levels for other services: RED preloads Easy, ORANGE079 9 Medium. Approval for NDA remains pending. |
+| `nextdayair-exceptions-nj-0769` | NJ 076 9 | RED | Easy | Assistant proposal consistent with owner-reviewed NJ levels for other services: RED preloads Easy, ORANGE079 9 Medium. Approval for NDA remains pending. |
+| `nextdayair-exceptions-nj-0770` | NJ 077 0 | RED | Easy | Assistant proposal consistent with owner-reviewed NJ levels for other services: RED preloads Easy, ORANGE079 9 Medium. Approval for NDA remains pending. |
+| `nextdayair-exceptions-nj-0784` | NJ 078 4 | RED | Easy | Assistant proposal consistent with owner-reviewed NJ levels for other services: RED preloads Easy, ORANGE079 9 Medium. Approval for NDA remains pending. |
+| `nextdayair-exceptions-nj-0789` | NJ 078 9 | RED | Easy | Assistant proposal consistent with owner-reviewed NJ levels for other services: RED preloads Easy, ORANGE079 9 Medium. Approval for NDA remains pending. |
+| `nextdayair-exceptions-nj-0799` | NJ 079 9 | ORANGE | Medium | Assistant proposal consistent with owner-reviewed NJ levels for other services: RED preloads Easy, ORANGE079 9 Medium. Approval for NDA remains pending. |
+| `nextdayair-exceptions-nj-0819` | NJ 081 9 | RED | Easy | Assistant proposal consistent with owner-reviewed NJ levels for other services: RED preloads Easy, ORANGE079 9 Medium. Approval for NDA remains pending. |
+| `nextdayair-exceptions-nj-0829` | NJ 082 9 | RED | Easy | Assistant proposal consistent with owner-reviewed NJ levels for other services: RED preloads Easy, ORANGE079 9 Medium. Approval for NDA remains pending. |
+| `nextdayair-exceptions-nj-0839` | NJ 083 9 | RED | Easy | Assistant proposal consistent with owner-reviewed NJ levels for other services: RED preloads Easy, ORANGE079 9 Medium. Approval for NDA remains pending. |
+| `nextdayair-exceptions-nj-0860` | NJ 086 0 | RED | Easy | Assistant proposal consistent with owner-reviewed NJ levels for other services: RED preloads Easy, ORANGE079 9 Medium. Approval for NDA remains pending. |
+| `nextdayair-exceptions-nj-0871` | NJ 087 1 | RED | Easy | Assistant proposal consistent with owner-reviewed NJ levels for other services: RED preloads Easy, ORANGE079 9 Medium. Approval for NDA remains pending. |
+| `nextdayair-exceptions-nj-0889` | NJ 088 9 | RED | Easy | Assistant proposal consistent with owner-reviewed NJ levels for other services: RED preloads Easy, ORANGE079 9 Medium. Approval for NDA remains pending. |
+| `nextdayair-exceptions-nj-0899` | NJ 089 9 | RED | Easy | Assistant proposal consistent with owner-reviewed NJ levels for other services: RED preloads Easy, ORANGE079 9 Medium. Approval for NDA remains pending. |
 | `nextdayair-exceptions-anystate-ends2s` | Any state ends 2S | BLUE | Hard | Specific exception, exact-code qualifier, suffix, or destination modifier. |
 | `nextdayair-exceptions-anystate-ends1s` | Any state ends 1S | PURPLE | Hard | Specific exception, exact-code qualifier, suffix, or destination modifier. |
 | `destination-plus-one-nda` | NY 109 · destination +1 | PURPLE | Hard | Specific exception, exact-code qualifier, suffix, or destination modifier. |
