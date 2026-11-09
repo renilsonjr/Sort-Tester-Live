@@ -90,3 +90,13 @@ class LoadingTests(unittest.TestCase):
         path,pin=write_fixture(self.directory,raw_bank(raw_question('A')))
         with self.assertRaises(BankValidationError) as e:load_bank(path,expected_revision='other',expected_sha256=pin)
         self.assertEqual(e.exception.code,'unknown_revision')
+    def test_escaped_lone_unicode_surrogates_are_rejected(self):
+        for surrogate in ('\ud800', '\udfff'):
+            data=raw_bank(raw_question('A'))
+            data['source_revision']=surrogate
+            path=Path(self.directory)/'bank.json'
+            path.write_text(json.dumps(data,ensure_ascii=True),encoding='utf-8')
+            with self.assertRaises(BankValidationError) as error:
+                load_bank(path,expected_revision='fixture-v1',expected_sha256='unused')
+            self.assertEqual(error.exception.code,'invalid_json')
+            self.assertEqual(error.exception.path,'$.source_revision')

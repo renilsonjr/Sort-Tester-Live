@@ -27,12 +27,26 @@ def _float(value):
     if not math.isfinite(parsed): raise ValueError('nonfinite number '+value)
     return parsed
 
+def _validate_unicode(value, path='$'):
+    """Reject escaped lone surrogates before canonical UTF-8 hashing."""
+    if isinstance(value,str):
+        try: value.encode('utf-8')
+        except UnicodeEncodeError as exc:
+            raise BankValidationError('invalid_json',path,'unpaired Unicode surrogate') from exc
+    elif isinstance(value,list):
+        for index,item in enumerate(value): _validate_unicode(item,f'{path}[{index}]')
+    elif isinstance(value,dict):
+        for key,item in value.items():
+            _validate_unicode(key,path+'[object key]')
+            _validate_unicode(item,path+'.'+key)
+
 def load_bank(path: Path, *, expected_revision: str, expected_sha256: str) -> Bank:
     try: body=Path(path).read_text(encoding='utf-8')
     except OSError as exc: raise BankValidationError('invalid_schema',str(path),str(exc)) from exc
     except UnicodeError as exc: raise BankValidationError('invalid_json',str(path),'expected UTF-8') from exc
     try: raw=json.loads(body,object_pairs_hook=_pairs,parse_constant=_constant,parse_float=_float)
     except (ValueError,RecursionError) as exc: raise BankValidationError('invalid_json',str(path),str(exc)) from exc
+    _validate_unicode(raw)
     _fields(raw,'schema_version bank_revision source_revision questions','$')
     if type(raw['schema_version']) is not int or raw['schema_version']!=1: invalid('$.schema_version','expected integer 1')
     nonblank(raw['bank_revision'],'$.bank_revision'); nonblank(raw['source_revision'],'$.source_revision')
