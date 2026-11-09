@@ -1,6 +1,59 @@
 # Ranked question bank — candidate inventory and owner review
 
-**Status, November 8, 2026:** Chart corrections and destination +1 are implemented and locally verified on `codex/ranked-mode` through application commit `929f189`. They are **not live or published**. Counts are candidate inventory, not owner-approved Ranked content. Implementation owner: [#5](https://github.com/renilsonjr/Sort-Tester-Live/issues/5). Policy: [[2026-11-07-ranked-decision-record]]; proposed versioning: [[2026-11-07-ranked-security-operations-design]]. Active source: [[2026-11-08-ranked-chart-reference]]; implementation plan: [[2026-11-08-chart-corrections-and-destination-plus-one]].
+**Historical r1 status before PR #31 merge:** Chart corrections and destination +1 are implemented and locally verified on `codex/ranked-mode` through application commit `929f189`. They are **not live or published**. Counts are candidate inventory, not owner-approved Ranked content. Implementation owner: [#5](https://github.com/renilsonjr/Sort-Tester-Live/issues/5). Policy: [[2026-11-07-ranked-decision-record]]; proposed versioning: [[2026-11-07-ranked-security-operations-design]]. Active source: [[2026-11-08-ranked-chart-reference]]; implementation plan: [[2026-11-08-chart-corrections-and-destination-plus-one]].
+
+## Current backend implementation milestone
+
+The owner-approved separate-bank plan is now implemented on the shared branch:283 unique canonical questions, strict immutable loading/coverage validation, pinned version catalog and compatible5/5/5 selection. [[2026-11-08-curated-ranked-bank-verification]] records automated evidence and remaining manual/integration gates. The content-review sections below describe earlier milestones; they do not supersede this update. Issue5 stays open for owner Windows verification, later durable assignment integration and deferred work-methods tie content.
+
+## Full-chart difficulty milestone complete
+
+All283 review entries now have owner-approved labels:103 Easy /127 Medium /53 Hard. [[2026-11-08-ranked-full-chart-review]] contains the complete ledger and final consistency audit. Original17 bilingual approvals are preserved. All283 review entries now have approved English and Spanish explanations (original17 plus266 expanded entries). The20 specific-code examples are approved; exact-code exception priority across different state labels and specific-code presentation are settled. No content-wording reviews remain pending. Final canonical/schema/coverage and immutable assignment implementation/validation remain open, tracked in [[2026-11-08-ranked-expanded-wording-review]]. Canonical identity/coverage and versioning/assignment validation remain open. Four broad NJ CHECK rows stay held without guessed answers; the six hyphenated Ground codes are now owner-confirmed exact literals, not ranges; their approved answers and Hard labels are unchanged. Only the work-methods tie-question content is deferred. This completes difficulty classification, not Issue5 or a usable Ranked bank.
+
+## Owner scope expansion — full-chart bank
+
+The owner explicitly requested classifying all usable chart directions to randomize the15-question quiz, preserving the17 existing difficulty approvals without asking to rank them again. The17 are a reviewed subset, not the bank-size limit. [[2026-11-08-ranked-full-chart-review]] accounts for every source row and the four+1 contexts, tracks the new difficulty proposals and subsequent approvals while keeping four broad-NJ CHECK rows on hold. New labels and wording are not automatically approved. Source entries may need canonical merges/splits or exception clarifications before becoming executable questions. The proposed bank design was revised to this expanded scope; it still needs owner review.
+
+## Subsequent owner decisions — November 8, after PR #31 merge
+
+PR #31 is merged and deployed. The r1 evidence below is historical; the subsequent 2DA Indiana ORANGE correction is pending review/publication as source revision `twilight-2026-11-08-r2`. Source details: [[2026-11-08-ranked-chart-reference]].
+
+Settled rules for future Ranked assignment (not implemented by Practice code):
+
+- Copies of the same scenario across Practice decks count once. Different base services and ordinary versus destination +1 remain distinct contexts.
+- Owner explicitly approved treating `GND` and `GRD` as the same Ground service for canonical duplicate detection. Equivalent service abbreviations must not create additional assignment slots.
+- Overlapping ZIP ranges for the same service/destination context cannot appear together in a Ranked quiz.
+- Broad-range question wording must explicitly exclude answer-changing exceptions.
+- Each scenario receives one owner-reviewed fixed difficulty, independent of Practice deck membership.
+- Starting guideline: standard routes Easy; narrower ranges/service distinctions Medium; exact exceptions/suffixes/destination modifiers Hard. Owner review can override this guideline.
+
+The following labels were individually reviewed in chat. English wording/explanations were subsequently approved separately in [[2026-11-08-ranked-question-wording-review]]. Spanish translations were subsequently approved in three separate group reviews as well. These reviews do not approve a canonical schema, immutable assignments or a usable Ranked bank.
+
+| Service | Scenario | Owner difficulty / status |
+| --- | --- | --- |
+| Ground | MA010–024 → GOLD | Easy |
+| Ground | GA300–319 → BLUE | Easy |
+| Ground | FL320–349 → PINK | Easy |
+| Ground | VT050–059 → GOLD | Easy |
+| Ground | CT060–069 → GOLD | Easy |
+| 2 Day Air | IL600–608 → YELLOW | Hard; owner explicitly reclassified this range from Medium |
+| 2 Day Air | IL609–629 → ORANGE | Hard; owner explicitly reclassified this range from Medium |
+| 3 Day Select | TX770–784 → BLUE | Medium |
+| 2 Day Air | NY140–147 → ORANGE | Medium |
+| 3 Day Select | TX750–768 → BLUE | Medium |
+| 2 Day Air | FL320–349 → PURPLE | Medium |
+| 3 Day Select | AL350–369 → BLUE | Medium |
+| Ground | TN376–378 → BLUE | Hard |
+| Ground | NY148 1 → GOLD | Hard |
+| Ground | NY109, destination +1 → PURPLE | Hard |
+| Ground | MA025–026 → BLUE | Hard; owner clarified Ground explicitly |
+| 2 Day Air | IN460–479 → ORANGE | Hard requested; owner corrected the answer explicitly |
+
+English question wording and explanations for all17 rows were separately approved in [[2026-11-08-ranked-question-wording-review]]; Spanish translations were subsequently approved in separate group reviews; the remaining technical bank gates stay open.
+
+The **initial17 reviewed subset** contains five Easy, five Medium and seven Hard labels; the full-chart totals are recorded above. This meets the initial numerical minimum of five labels per difficulty, but the remaining content/explanation/canonical/version gates stay open; these labels alone do not approve a usable Ranked bank.
+
+The proposed Hard NJ0799 and NDA NY109+1 questions were replaced at the owner's request and are not approved as Hard by this discussion. Work-methods tie content remains a separate open gate. No product difficulty labels or assignment engine are added here.
 
 ## Current branch inventory — November 8, 2026
 

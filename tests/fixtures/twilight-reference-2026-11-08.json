@@ -1,6 +1,6 @@
 {
-  "referenceVersion": "twilight-2026-11-08-r1",
-  "source": "Private Saddle Brook Twilight Primary Sort Chart photo plus eight owner clauses in [[2026-11-08-ranked-chart-reference]]",
+  "referenceVersion": "twilight-2026-11-08-r2",
+  "source": "Private Saddle Brook Twilight Primary Sort Chart photo plus nine owner clauses in [[2026-11-08-ranked-chart-reference]]",
   "sourceSha256": "d54883a35b4556abae22d948a24f8b146509fd649e42a9a7b3e7abcdf5b70a7d",
   "note": "Independent literal transcription. Photo NJ 070\u2013089 remains CHECK; only listed preloads are classified. Ground 128\u2013139 already GOLD in photo; clause 1 changes 140\u2013147. +1 is recorded separately for the next increment.",
   "destinationModifierRule": {
@@ -1903,8 +1903,8 @@
       "kind": "main",
       "state": "IN",
       "code": "460\u2013479",
-      "expectedBelt": "PURPLE",
-      "provenance": "photo"
+      "expectedBelt": "ORANGE",
+      "provenance": "owner-override-9"
     },
     {
       "id": "2dayair-main-mi-480-497",

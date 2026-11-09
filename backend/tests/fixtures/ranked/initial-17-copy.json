@@ -1,0 +1,172 @@
+{
+  "E1": {
+    "en": {
+      "prompt": "Which belt does this go to?",
+      "explanation": "Ground MA010–024 follows the GOLD chart row."
+    },
+    "es": {
+      "prompt": "¿A qué color va?",
+      "explanation": "En Terrestre, MA 010–024 va a GOLD."
+    }
+  },
+  "E2": {
+    "en": {
+      "prompt": "Which belt does this go to?",
+      "explanation": "Ground GA300–319 follows the BLUE chart row."
+    },
+    "es": {
+      "prompt": "¿A qué color va?",
+      "explanation": "En Terrestre, GA 300–319 va a BLUE."
+    }
+  },
+  "E3": {
+    "en": {
+      "prompt": "Which belt does this go to?",
+      "explanation": "Ground FL320–349 follows the PINK chart row. The service matters: 2 Day Air uses PURPLE for this range."
+    },
+    "es": {
+      "prompt": "¿A qué color va?",
+      "explanation": "En Terrestre, FL 320–349 va a PINK. En Aéreo 2 días, este rango va a PURPLE."
+    }
+  },
+  "E4": {
+    "en": {
+      "prompt": "Which belt does this go to?",
+      "explanation": "Ground VT050–059 follows the GOLD chart row."
+    },
+    "es": {
+      "prompt": "¿A qué color va?",
+      "explanation": "En Terrestre, VT 050–059 va a GOLD."
+    }
+  },
+  "E5": {
+    "en": {
+      "prompt": "Which belt does this go to?",
+      "explanation": "Ground CT060–069 follows the GOLD chart row."
+    },
+    "es": {
+      "prompt": "¿A qué color va?",
+      "explanation": "En Terrestre, CT 060–069 va a GOLD."
+    }
+  },
+  "M1": {
+    "en": {
+      "prompt": "Which belt does this go to?",
+      "explanation": "3 Day Select TX770–784 goes BLUE. The separately listed TX769 0 and the next range785–799 go PURPLE."
+    },
+    "es": {
+      "prompt": "¿A qué color va?",
+      "explanation": "En Select 3 días, TX 770–784 va a BLUE. El código cercano TX 769 0 y el rango 785–799 van a PURPLE."
+    }
+  },
+  "M2": {
+    "en": {
+      "prompt": "Which belt does this go to?",
+      "explanation": "2 Day Air NY140–147 goes ORANGE. The GOLD change applies to Ground, not this service."
+    },
+    "es": {
+      "prompt": "¿A qué color va?",
+      "explanation": "En Aéreo 2 días, NY 140–147 va a ORANGE. El cambio a GOLD se aplica solo a Terrestre."
+    }
+  },
+  "M3": {
+    "en": {
+      "prompt": "Which belt does this go to?",
+      "explanation": "3 Day Select TX750–768 goes BLUE. The following listed TX769 0 goes PURPLE."
+    },
+    "es": {
+      "prompt": "¿A qué color va?",
+      "explanation": "En Select 3 días, TX 750–768 va a BLUE. El siguiente código indicado, TX 769 0, va a PURPLE."
+    }
+  },
+  "M4": {
+    "en": {
+      "prompt": "Which belt does this go to?",
+      "explanation": "2 Day Air FL320–349 goes PURPLE. Ground and3 Day Select use PINK for this range."
+    },
+    "es": {
+      "prompt": "¿A qué color va?",
+      "explanation": "En Aéreo 2 días, FL 320–349 va a PURPLE. En Terrestre y Select 3 días, este rango va a PINK."
+    }
+  },
+  "M5": {
+    "en": {
+      "prompt": "Which belt does this go to?",
+      "explanation": "3 Day Select AL350–369 goes BLUE. Do not apply the2 Day Air PURPLE answer to this service."
+    },
+    "es": {
+      "prompt": "¿A qué color va?",
+      "explanation": "En Select 3 días, AL 350–369 va a BLUE. En Aéreo 2 días, el mismo rango va a PURPLE."
+    }
+  },
+  "H1": {
+    "en": {
+      "prompt": "Which belt does this go to?",
+      "explanation": "2 Day Air IL600–608 goes YELLOW. The next range609–629 goes ORANGE."
+    },
+    "es": {
+      "prompt": "¿A qué color va?",
+      "explanation": "En Aéreo 2 días, IL 600–608 va a YELLOW. El siguiente rango, 609–629, va a ORANGE."
+    }
+  },
+  "H2": {
+    "en": {
+      "prompt": "Which belt does this go to?",
+      "explanation": "2 Day Air IL609–629 goes ORANGE. The preceding range600–608 goes YELLOW."
+    },
+    "es": {
+      "prompt": "¿A qué color va?",
+      "explanation": "En Aéreo 2 días, IL 609–629 va a ORANGE. El rango anterior, 600–608, va a YELLOW."
+    }
+  },
+  "H3": {
+    "en": {
+      "prompt": "Which belt does this go to?",
+      "explanation": "TN376–378 is the Ground BLUE exception inside370–385. The surrounding Ground range is BROWN."
+    },
+    "es": {
+      "prompt": "¿A qué color va?",
+      "explanation": "En Terrestre, TN 376–378 es la excepción BLUE dentro del rango 370–385, que normalmente va a BROWN."
+    }
+  },
+  "H4": {
+    "en": {
+      "prompt": "Which belt does this go to?",
+      "explanation": "Ground NY148 1 is the exact-code GOLD exception to the ordinary148–149 ORANGE range. The last digit matters."
+    },
+    "es": {
+      "prompt": "¿A qué color va?",
+      "explanation": "En Terrestre, NY 148 1 es la excepción GOLD a la regla habitual ORANGE de 148–149. El último dígito importa."
+    }
+  },
+  "H5": {
+    "en": {
+      "prompt": "Which belt does this go to?",
+      "explanation": "The destination indicator +1 goes PURPLE on all four services. Without +1, ordinary Ground NY109 goes ORANGE. The routing code remains109."
+    },
+    "es": {
+      "prompt": "¿A qué color va?",
+      "explanation": "El indicador de destino +1 va a PURPLE en los cuatro servicios. Sin +1, NY 109 en Terrestre va a ORANGE. El código de ruta sigue siendo 109."
+    }
+  },
+  "H6": {
+    "en": {
+      "prompt": "Which belt does this go to?",
+      "explanation": "Ground MA025–026 goes BLUE. Next Day Air uses PURPLE for this range; do not apply that service answer to Ground."
+    },
+    "es": {
+      "prompt": "¿A qué color va?",
+      "explanation": "En Terrestre, MA 025–026 va a BLUE. En Aéreo 1 día, este rango va a PURPLE."
+    }
+  },
+  "H7": {
+    "en": {
+      "prompt": "Which belt does this go to?",
+      "explanation": "The supervisor-confirmed correction sends2 Day Air IN460–479 to ORANGE, superseding the photo PURPLE entry."
+    },
+    "es": {
+      "prompt": "¿A qué color va?",
+      "explanation": "La corrección confirmada por el supervisor indica que IN 460–479 en Aéreo 2 días va a ORANGE y reemplaza la indicación PURPLE de la foto."
+    }
+  }
+}
