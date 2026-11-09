@@ -164,10 +164,18 @@ class RecordingAzureCli(AzureCli):
                 {"name": "eastus2"},
                 {"name": "eastus"},
             ],
-            ("webapp", "list-runtimes", "--os-type", "linux"): ["PYTHON:3.14"],
+            ("webapp", "list-runtimes", "--os-type", "linux"): [
+                {
+                    "os": "Linux",
+                    "runtime": "Python",
+                    "version": "3.14",
+                    "config": "PYTHON|3.14",
+                    "support": "Active",
+                }
+            ],
             ("appservice", "list-locations", "--sku", "F1", "--linux-workers-enabled"): [
-                {"name": "eastus2"},
-                {"name": "eastus"},
+                {"name": "East US 2"},
+                {"name": "East US"},
             ],
             ("postgres", "flexible-server", "list-skus", "--location", "eastus2"): [
                 {
@@ -241,6 +249,14 @@ class CollectPreflightTests(unittest.TestCase):
         self.assertNotIn("student@example.test", rendered)
         self.assertEqual(evidence["subscription"]["name"], "Azure for Students")
         self.assertEqual(evidence["plannedResourceCollisions"], [])
+        self.assertEqual(
+            evidence["regions"]["eastus2"],
+            {
+                "linuxPython314": True,
+                "appServiceF1": True,
+                "postgres18": True,
+            },
+        )
         self.assertEqual(
             evidence["manualReview"]["grossMonthlyRetailEstimateUsd"],
             "16.49",

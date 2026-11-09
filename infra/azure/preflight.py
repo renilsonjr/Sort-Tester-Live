@@ -91,9 +91,15 @@ def _location_names(value: object) -> set[str]:
     names: set[str] = set()
     for item in value:
         if isinstance(item, str):
-            names.add(item.casefold())
+            names.add("".join(character for character in item.casefold() if character.isalnum()))
         elif isinstance(item, Mapping) and isinstance(item.get("name"), str):
-            names.add(item["name"].casefold())
+            names.add(
+                "".join(
+                    character
+                    for character in item["name"].casefold()
+                    if character.isalnum()
+                )
+            )
     return names
 
 
@@ -165,7 +171,7 @@ def collect_preflight(
     resources = cli.json("resource", "list")
 
     regions: dict[str, dict[str, bool]] = {}
-    python_314_available = _contains_text(runtimes, "PYTHON:3.14")
+    python_314_available = _contains_text(runtimes, "PYTHON|3.14")
     for region in REQUIRED_REGIONS:
         postgres_skus = cli.json(
             "postgres",
