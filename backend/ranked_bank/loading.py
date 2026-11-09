@@ -97,4 +97,7 @@ def load_bank(path: Path, *, expected_revision: str, expected_sha256: str) -> Ba
         meanings.add(key)
         if q['canonical_id']!=stable_question_id(ctx,rule,exclusions): invalid(p+'.canonical_id','does not match rule meaning')
         questions.append(Question(q['canonical_id'],q['question_revision'],source,ctx,rule,exclusions,q['difficulty'],q['correct_belt'],text,pres))
-    return Bank(1,raw['bank_revision'],raw['source_revision'],digest,tuple(questions))
+    from .coverage import validate_bank_coverage
+    bank = Bank(1,raw['bank_revision'],raw['source_revision'],digest,tuple(questions))
+    validate_bank_coverage(bank)
+    return bank
