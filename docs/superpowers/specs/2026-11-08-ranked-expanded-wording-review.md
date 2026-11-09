@@ -1,6 +1,6 @@
 # Expanded Ranked question wording review
 
-**Status:** 263 entries have approved English/Spanish explanations; all 283 difficulty labels remain settled. The owner selected specific unambiguous codes for the remaining range questions. Twenty example codes and bilingual explanations are proposed below for review. Full source ranges/exclusions and original 17 approvals are preserved. No product code or executable bank is created here.
+**Status:** content review is complete for all 283 review entries in English and Spanish, including the original 17 and the final 20 specific-code examples. All approved answers/difficulty labels and source ranges/exclusions are preserved. Canonical/schema/assignment implementation and validation remain separate open work; this is not an executable Ranked bank.
 
 **Related:** [[2026-11-08-ranked-full-chart-review]], [[2026-11-08-ranked-full-chart-review.json]], [[2026-11-08-ranked-question-wording-review]], [[2026-11-08-ranked-chart-reference]], [[2026-11-08-curated-ranked-bank-design]]. Tracker: [#5](https://github.com/renilsonjr/Sort-Tester-Live/issues/5), [PR #32](https://github.com/renilsonjr/Sort-Tester-Live/pull/32).
 
@@ -24,7 +24,7 @@ Source review mapping (not permanent canonical IDs):
 
 - [x] Owner approved these four English explanations in chat.
 - [x] Owner approved these four Spanish explanations separately in chat. Both languages are now approved for G01–G04.
-- [ ] Complete wording/explanation review for the remaining expanded entries and verify exceptions/coverage.
+- [x] Complete expanded wording review:all283 entries and20 examples have bilingual content approval. Production coverage/canonical validation remains separate.
 
 ## Ground — G05–G08 (approved)
 
@@ -361,9 +361,9 @@ The owner approved 27 specific-code explanations using the previously approved �
 - [x] Owner approved all 32 explanations in English.
 - [x] Owner approved all 32 explanations in Spanish.
 
-## Focused wording queue — 20 entries
+## Historical coverage queue — resolved by the approved examples
 
-These 20 broad-range entries remain pending coverage/wording review. No explanation drafts are approved or inferred for them yet. Possible prefix overlap is only a reason to review; it does not establish that a different-state exception actually applies. Confirm coverage before adding exclusions. No new wording approval is inferred here.
+These20 source rules previously required focused coverage/presentation review. Their listed exceptions are retained, and the owner has now approved the specific examples and bilingual feedback in the range-example section below. No content wording remains pending. The earlier triage used prefix overlap as a reason for review, not as an inferred precedence rule. The owner subsequently confirmed listed-exception priority and approved the explicit examples/copy below. Production canonical/coverage validation remains a separate requirement.
 
 | Review reference | Service | Source state / code | Answer | Review need |
 | --- | --- | --- | --- | --- |
@@ -410,15 +410,15 @@ Two approaches are proposed for owner choice:
 1. **Concrete unambiguous code example — assistant recommendation.** Keep the full reviewed range/exception rule in the bank, but show one code whose coverage has been validated (e.g.3 Day Select900 → PURPLE for source S47). Keep the original approved difficulty and source/canonical association; do not count generated variants as extra independent assignment slots. Exceptions retain their separate reviewed questions. The choice of concrete examples and final copy need review before runtime use.
 2. **Full range with explicit exclusions.** Show the complete range and every applicable excluded code in the question, preserving the earlier broad-question exclusion policy. This teaches the whole range directly but can produce long prompts under the fixed timer.
 
-The owner selected approach1: specific unambiguous code examples. Approach2 (full ranges with every exclusion listed) is not selected for these questions. Strategy approval does not automatically approve every example or its bilingual copy, and no runtime generation is implemented. The20 proposed examples below remain pending review.
+The owner selected approach1: specific unambiguous code examples. Approach2 (full ranges with every exclusion listed) is not selected for these questions. The owner subsequently approved all20 examples and their bilingual copy. No runtime generation is implemented; production generator/canonical validation still require the reviewed implementation plan.
 
-## Specific range-example batch — proposed (20 entries)
+## Specific range-example batch — approved (20 entries)
 
-Each question shows the specific code below in its routing field, with the ordinary base service and source state/region context. No unshown+1,EAM or suffix is added. The full source range and its applicable listed exceptions remain associated with the same reviewed rule/difficulty; an example does not create another independent assignment slot. The source code field in the JSON remains the original range, while rangeExampleReview.displayedRoutingCode is the proposed presentation value.
+Each question shows the specific code below in its routing field, with the ordinary base service and source state/region context. No unshown+1,EAM or suffix is added. The full source range and its applicable listed exceptions remain associated with the same reviewed rule/difficulty; an example does not create another independent assignment slot. The source code field in the JSON remains the original range, while rangeExampleReview.displayedRoutingCode is the owner-approved presentation example.
 
 For safety, each displayed three-digit example avoids any prefix containing a listed different-belt exception. This conservative example selection does not exclude the entire prefix from the original rule: exact exceptions retain their full literals. The attached exclusion list is an audit of source coverage, not text to put into the ten-second question. No production routing/overlap validator is implemented by this document.
 
-| Review reference | Service | Source state/region | Source range | Code shown | Answer | Retained source exclusions | Proposed English feedback | Proposed Spanish feedback |
+| Review reference | Service | Source state/region | Source range | Code shown | Answer | Retained source exclusions | Approved English feedback | Approved Spanish feedback |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | G12 | Ground | NY | 148–149 | 149 | ORANGE | NY 148 1 → GOLD | Ground NY 149 goes to ORANGE. | En Terrestre, NY 149 va a ORANGE. |
 | G23 | Ground | TN | 370–385 | 370 | BROWN | TN 376–378 → BLUE | Ground TN 370 goes to BROWN. | En Terrestre, TN 370 va a BROWN. |
@@ -441,9 +441,9 @@ For safety, each displayed three-digit example avoids any prefix containing a li
 | D40 | 2 Day Air | * | 750–999 | 750 | PURPLE | No listed numeric different-belt exception in this source range. | 2 Day Air routing code 750 goes to PURPLE. | En Aéreo 2 días, el código de ruta 750 va a PURPLE. |
 | N24 | Next Day Air | * | 220–999 | 220 | PURPLE | No listed numeric different-belt exception in this source range. | Next Day Air routing code 220 goes to PURPLE. | En Aéreo 1 día, el código de ruta 220 va a PURPLE. |
 
-- [ ] Owner approves all20 specific example codes and their English feedback.
-- [ ] Owner approves all20 specific example codes and their Spanish feedback.
+- [x] Owner approved all20 specific example codes and their English feedback.
+- [x] Owner approved all20 specific example codes and their Spanish feedback.
 
 ## Current wording counts
 
-Including the original 17: 263 English and 263 Spanish explanations are approved, with 20 pending in each language. The remaining20 now have proposed concrete example codes and bilingual feedback. Cross-state listed-exception priority and specific-code presentation strategy are settled; final example/copy approval and canonical/runtime validation remain open. All 283 answers/difficulty labels are unchanged. Only work-methods tie-question content is deferred; other tie-break policies remain unchanged.
+All283 review entries have approved English and Spanish feedback. Pending content-wording reviews:zero. The original17 approvals are preserved, and the20 final specific-code examples are approved. Difficulty totals remain103 Easy /127 Medium /53 Hard. These are source review entries, not a proved final count of unique executable scenarios. Final canonical IDs/coverage validation, immutable versions/assignments and runtime generation still require design/implementation review. Only work-methods tie-question content is deferred; other tie-break policies remain unchanged.

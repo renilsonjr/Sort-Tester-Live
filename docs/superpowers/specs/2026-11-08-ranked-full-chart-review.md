@@ -1,6 +1,6 @@
 # Full-chart Ranked difficulty review
 
-**Status:** all 283 review entries retain approved difficulty labels:103 Easy,127 Medium,53 Hard.263 entries have approved bilingual explanations. The owner selected specific-code presentation;20 example codes and their bilingual feedback await review. Source ranges/exclusions remain intact. See [[2026-11-08-ranked-expanded-wording-review]]. This is review documentation, not an executable bank or final unique-question count.
+**Status:** all283 review entries now have owner-approved difficulty labels and bilingual feedback:103 Easy,127 Medium,53 Hard. The20 specific range examples are approved, with source rules/exclusions preserved. Original17 approvals are unchanged; no wording reviews remain pending. See [[2026-11-08-ranked-expanded-wording-review]]. This is review documentation, not an executable bank or proved final unique-question count.
 
 **Related:** [[2026-11-08-ranked-full-chart-review.json]], [[2026-11-08-ranked-question-wording-review]], [[2026-11-08-ranked-chart-reference]], [[2026-11-08-curated-ranked-bank-design]]. Tracker: [#5](https://github.com/renilsonjr/Sort-Tester-Live/issues/5).
 
@@ -9,8 +9,8 @@
 - Active source: `twilight-2026-11-08-r2`, including owner corrections.
 - 283 source rows; hold four broad NJ CHECK rows without inventing belt answers. Retain listed NJ preload exceptions.
 - 279 belt-bearing source rows plus four NY109 destination+1 service contexts =283 review entries.
-- The original 17 owner-approved labels and bilingual explanations are preserved. Another 266 labels are approved, for 283 approved labels and 0 remaining difficulty proposals. For those additional entries,20 English and20 Spanish explanations remain pending. Source rows are not a proven final unique-scenario count.
-- Question wording, exception exclusions and wildcard coverage still need review for new entries. The six hyphenated Ground codes are now confirmed exact literals, not ranges. A suggestion of Easy never removes an applicable exception.
+- The original 17 owner-approved labels and bilingual explanations are preserved. Another 266 labels are approved, for 283 approved labels and 0 remaining difficulty proposals. All266 additional entries now have English and Spanish explanation approval. Source rows are not a proven final unique-scenario count.
+- All entry wording is approved. Production validation of effective range/exclusion/wildcard coverage remains open. The six hyphenated Ground codes are confirmed exact literals, not ranges. An Easy label never removes an applicable exception.
 - The game still selects15 questions, five per difficulty; expanding the bank increases the possible selections. No17-question runtime limit or fixed-ten-question repetition design remains.
 - Only the work-methods tie-question content is deferred; other tie-break policies remain unchanged.
 
@@ -365,3 +365,11 @@ Validated all283 fixture IDs are accounted for exactly once as a source entry or
 Verified all283 source rows are accounted for:279 belt-bearing rows and four held broad-NJ CHECK rows; four explicit NY109 destination+1 service contexts bring the review ledger to283 entries. All source answers/provenance remain unchanged from revision r2. Every entry has exactly one approved difficulty and one unique review reference. All17 initial answer/label/context mappings remain unchanged; only those17 have approved bilingual wording. The other266 still need wording and explanation review. The six Ground hyphenated entries are now confirmed exact literal codes; their runtime validation is still future implementation work.
 
 Verified the explicit owner changes: Ground MA025–026 Hard;2DA MA025–026,AL350–369,MS386–399,OH430–459 Hard; all listed RED NJ preloads Easy and ORANGE0799 Medium in each service. Held CHECK rows have no invented answer or difficulty. This audit verifies inventory consistency; it does not approve canonical merges/splits, unbuilt selection logic or a deployed Ranked mode.
+
+## Content completion audit and verification
+
+The final owner approval covers all283 review entries in both languages, including the20 specific-code examples. Compact audit verified complete283-row fixture accounting (279 belt-bearing rows, four held CHECK rows, plus four+1 examples), all17 original answer/label/language mappings, all266 expanded bilingual approvals, six approved wording batches with no duplicate membership, and unique review references. The20 shown codes remain within their source ranges and avoid prefixes containing listed different-belt exceptions; source ranges/exclusions remain unchanged. This checks the reviewed examples, not a production routing engine or final canonical uniqueness.
+
+The existing suites passed locally:386 Node checks and10 backend unit tests. A fresh independent read-only content review verified preservation/source consistency and identified two documentation issues: stale pending-wording status notes and an older broad-range prompt sentence. Both were corrected while retaining genuinely open canonical/coverage/runtime gates. No browser/live/physical-phone result or implemented Ranked bank is claimed by these checks.
+
+Review limits were retained as open work: executable-bank correctness, final canonical uniqueness, selector feasibility, persistence and deployed/browser behavior were outside this content-documentation review. They remain technical design/implementation and release checks; the local foundation suites do not replace them.
