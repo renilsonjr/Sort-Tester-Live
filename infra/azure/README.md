@@ -10,16 +10,22 @@ In the Azure portal, keep the subscription spending limit enabled and record:
 
 1. The active subscription name and ID under **Subscriptions**.
 2. The current Azure for Students balance and expiry date.
-3. Whether the Education page shows the 12-month App Service allowance.
-4. Whether it shows PostgreSQL Flexible Server B1ms, 750 hours, 32 GB storage,
-   and 32 GB backup storage as free for this subscription.
+3. Whether the Education page shows the always-free App Service F1 allowance:
+   up to 10 web or API apps, 1 GB storage, and 60 CPU minutes per app per day.
+   F1 is for development and testing, has no SLA, and is not evidence that the
+   API can support the employee pilot.
+4. Whether it shows the 12-month PostgreSQL Flexible Server allowance for this
+   subscription: Burstable B1ms, 750 hours, 32 GB storage, and 32 GB backup
+   storage.
 5. The Pricing Calculator estimate for App Service, PostgreSQL, storage,
    backups, monitoring, public IPv4, and outbound transfer in East US 2.
 6. The Azure for Students terms. This preflight authorizes fictional staging
    only, not an employee competition.
 
-Do not select **Remove spending limit**, upgrade to pay-as-you-go, create a
-resource, or approve a paid estimate during this check.
+The free-services list confirms allowance limits but is not a monthly price
+estimate. Do not enter `0.00` below until the Pricing Calculator review covers
+every planned component. Do not select **Remove spending limit**, upgrade to
+pay-as-you-go, create a resource, or approve a paid estimate during this check.
 
 ## Run in Azure Cloud Shell
 

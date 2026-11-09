@@ -140,10 +140,28 @@ class RecordingAzureCli(AzureCli):
                 {"name": "eastus"},
             ],
             ("postgres", "flexible-server", "list-skus", "--location", "eastus2"): [
-                {"name": "Standard_B1ms", "supportedServerVersions": ["18"]}
+                {
+                    "name": "FlexibleServerCapabilities",
+                    "supportedServerEditions": [
+                        {
+                            "name": "Burstable",
+                            "supportedServerSkus": [{"name": "Standard_B1ms"}],
+                        }
+                    ],
+                    "supportedServerVersions": [{"name": "18"}],
+                }
             ],
             ("postgres", "flexible-server", "list-skus", "--location", "eastus"): [
-                {"name": "Standard_B1ms", "supportedServerVersions": ["18"]}
+                {
+                    "name": "FlexibleServerCapabilities",
+                    "supportedServerEditions": [
+                        {
+                            "name": "Burstable",
+                            "supportedServerSkus": [{"name": "Standard_B1ms"}],
+                        }
+                    ],
+                    "supportedServerVersions": [{"name": "18"}],
+                }
             ],
             ("resource", "list"): [
                 {
@@ -192,6 +210,48 @@ class CollectPreflightTests(unittest.TestCase):
         self.assertNotIn("student@example.test", rendered)
         self.assertEqual(evidence["subscription"]["name"], "Azure for Students")
         self.assertEqual(evidence["plannedResourceCollisions"], [])
+
+    def test_collector_does_not_mistake_unrelated_numbers_for_postgres_18(self) -> None:
+        class MissingPostgres18Cli(RecordingAzureCli):
+            def json(self, *arguments: str) -> object:
+                if arguments == (
+                    "postgres",
+                    "flexible-server",
+                    "list-skus",
+                    "--location",
+                    "eastus2",
+                ):
+                    self.commands.append(arguments)
+                    return [
+                        {
+                            "name": "FlexibleServerCapabilities",
+                            "supportedServerEditions": [
+                                {
+                                    "name": "Burstable",
+                                    "supportedServerSkus": [{"name": "Standard_B1ms"}],
+                                }
+                            ],
+                            "supportedServerVersions": [{"name": "17"}],
+                            "supportedStorageGb": ["18", "32"],
+                        }
+                    ]
+                return super().json(*arguments)
+
+        evidence = collect_preflight(
+            MissingPostgres18Cli(),
+            expected_subscription_name="Azure for Students",
+            expected_subscription_id="11111111-1111-1111-1111-111111111111",
+            manual_review={
+                "studentTermsReviewed": True,
+                "appServiceFreeConfirmed": True,
+                "postgresFreeConfirmed": True,
+                "monthlyEstimateUsd": "0.00",
+                "paidUsageApproved": False,
+                "spendingLimitConfirmed": True,
+            },
+        )
+
+        self.assertFalse(evidence["regions"]["eastus2"]["postgres18"])
 
 
 class PrivateReportTests(unittest.TestCase):

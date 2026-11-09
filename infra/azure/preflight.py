@@ -97,6 +97,24 @@ def _location_names(value: object) -> set[str]:
     return names
 
 
+def _named_capabilities(value: object, capability_name: str) -> set[str]:
+    names: set[str] = set()
+    if isinstance(value, Mapping):
+        for key, item in value.items():
+            if str(key).casefold() == capability_name.casefold() and isinstance(item, list):
+                for capability in item:
+                    if isinstance(capability, str):
+                        names.add(capability.casefold())
+                    elif isinstance(capability, Mapping) and isinstance(capability.get("name"), str):
+                        names.add(capability["name"].casefold())
+            else:
+                names.update(_named_capabilities(item, capability_name))
+    elif isinstance(value, Sequence) and not isinstance(value, (str, bytes, bytearray)):
+        for item in value:
+            names.update(_named_capabilities(item, capability_name))
+    return names
+
+
 def _planned_collisions(resources: object) -> list[dict[str, object]]:
     if not isinstance(resources, list):
         return [{"name": "INVALID_RESOURCE_LIST", "type": "unknown"}]
@@ -156,11 +174,13 @@ def collect_preflight(
             "--location",
             region,
         )
+        postgres_versions = _named_capabilities(postgres_skus, "supportedServerVersions")
+        postgres_sku_names = _named_capabilities(postgres_skus, "supportedServerSkus")
         regions[region] = {
             "linuxPython314": python_314_available and region in locations,
             "appServiceF1": region in app_service_locations,
-            "postgres18": _contains_text(postgres_skus, "18")
-            and _contains_text(postgres_skus, "B1ms"),
+            "postgres18": "18" in postgres_versions
+            and "standard_b1ms" in postgres_sku_names,
         }
 
     subscription_id = str(account.get("id", ""))
