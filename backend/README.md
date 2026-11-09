@@ -147,3 +147,31 @@ the employee interface. No public backend is configured.
 If a port is already occupied, stop the earlier test server you started before
 retrying. Do not kill unfamiliar processes or change firewall/router settings
 for this loopback exercise.
+
+## Verify the reviewed Ranked bank
+
+From the repository root, this command loads the pinned reviewed bank and
+prepares one compatible assignment. It prints the revision, digest, counts and
+ordered review references, without an answer key. It needs no server or database:
+
+```powershell
+& backend\.venv\Scripts\python.exe -m backend.ranked_bank.check --revision ranked-routes-v1 --seed 42
+```
+
+Expect 15 questions: five Easy, five Medium and five Hard. Repeat seed 42 on
+Python 3.14 to compare the same ordered references across Windows and macOS.
+Omit `--seed` to use operating-system randomness. Invalid or unavailable banks
+produce an error on stderr and a nonzero exit, with no partial assignment.
+
+Run all backend tests, then the existing JavaScript regression tests:
+
+```powershell
+& backend\.venv\Scripts\python.exe -m unittest discover -s backend\tests -v
+node --test tests/*.test.mjs
+```
+
+On macOS, use `backend/.venv/bin/python` in place of the Windows Python command.
+The selector returns immutable internal snapshots preserving reviewed examples
+and bilingual feedback; serialization includes answers and is for internal use.
+Later attempt code must call selection before starting an attempt. These checks
+do not verify a browser, deployment, persistence, API or game scoring.

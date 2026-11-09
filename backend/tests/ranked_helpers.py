@@ -19,3 +19,33 @@ def write_fixture(directory,payload):
 
 def by_ref(bank,ref):
     return next(q for q in bank.questions if q.source.review_ref==ref)
+
+
+def _selection_fixture(directory, *, trap=False, unavailable=False):
+    import tempfile
+    from backend.ranked_bank.loading import load_bank
+    target = Path(tempfile.mkdtemp(dir=directory))
+    rows = []
+    for difficulty, label, base in (('Easy', 'E', 1), ('Medium', 'M', 110 if trap else 301), ('Hard', 'H', 210 if trap else 401)):
+        for number in range(1, 6 if unavailable else 7):
+            lo = f'{100 + number - 1:03}' if unavailable and label == 'E' else f'{base + number - 1:03}'
+            hi = '199' if unavailable and label == 'E' else lo
+            if trap and label == 'E' and number == 6:
+                lo, hi = '100', '199'
+            ref = 'TRAP' if trap and label == 'E' and number == 6 else f'{label}{number}'
+            rows.append(raw_question(ref, parts=(lo, hi), difficulty=difficulty, correct_belt='GOLD', routing_code=lo))
+    payload = raw_bank(*rows)
+    path, digest = write_fixture(target, payload)
+    return load_bank(path, expected_revision=payload['bank_revision'], expected_sha256=digest)
+
+
+def make_trap_bank(directory):
+    return _selection_fixture(directory, trap=True)
+
+
+def make_unavailable_bank(directory):
+    return _selection_fixture(directory, unavailable=True)
+
+
+def make_unconstrained_bank(directory):
+    return _selection_fixture(directory)

@@ -10,3 +10,7 @@ __all__ = ['Context','RouteRule','Exclusion','SourceRef','CopyText','LocalizedCo
     'Presentation','Question','Bank','AssignmentSnapshot','BankValidationError',
     'BankUnavailableError','normalize_service','canonical_key','stable_question_id',
     'question_content_digest','canonical_json_digest','load_bank','Catalog','load_catalog','load_reviewed_bank']
+
+from .selection import select_assignment, serialize_assignment
+
+__all__ += ['select_assignment', 'serialize_assignment']
