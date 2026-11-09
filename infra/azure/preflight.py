@@ -191,7 +191,7 @@ def collect_preflight(
         else "missing"
     )
     return {
-        "schemaVersion": 1,
+        "schemaVersion": 2,
         "collectedAtUtc": datetime.now(UTC).replace(microsecond=0).isoformat(),
         "subscription": {
             "name": subscription_name,
@@ -207,7 +207,12 @@ def collect_preflight(
             "studentTermsReviewed": bool(manual_review.get("studentTermsReviewed")),
             "appServiceFreeConfirmed": bool(manual_review.get("appServiceFreeConfirmed")),
             "postgresFreeConfirmed": bool(manual_review.get("postgresFreeConfirmed")),
-            "monthlyEstimateUsd": manual_review.get("monthlyEstimateUsd"),
+            "grossMonthlyRetailEstimateUsd": manual_review.get(
+                "grossMonthlyRetailEstimateUsd"
+            ),
+            "expectedMonthlyChargeUsd": manual_review.get(
+                "expectedMonthlyChargeUsd"
+            ),
             "paidUsageApproved": bool(manual_review.get("paidUsageApproved")),
         },
         "regions": regions,
@@ -245,18 +250,35 @@ def evaluate_preflight(evidence: Mapping[str, object]) -> PreflightDecision:
     if (not isinstance(manual, Mapping) or not manual.get("postgresFreeConfirmed")) and not paid_approved:
         blockers.append("POSTGRES_FREE_UNCONFIRMED")
 
-    estimate_value = manual.get("monthlyEstimateUsd") if isinstance(manual, Mapping) else None
-    estimate: Decimal | None = None
-    if estimate_value is None:
-        blockers.append("PRICE_ESTIMATE_MISSING")
-    else:
+    estimate_fields = (
+        (
+            "grossMonthlyRetailEstimateUsd",
+            "RETAIL_ESTIMATE_MISSING",
+            "RETAIL_ESTIMATE_INVALID",
+        ),
+        (
+            "expectedMonthlyChargeUsd",
+            "EXPECTED_CHARGE_MISSING",
+            "EXPECTED_CHARGE_INVALID",
+        ),
+    )
+    estimates: dict[str, Decimal] = {}
+    for field, missing_blocker, invalid_blocker in estimate_fields:
+        estimate_value = manual.get(field) if isinstance(manual, Mapping) else None
+        if estimate_value is None:
+            blockers.append(missing_blocker)
+            continue
         try:
             estimate = Decimal(str(estimate_value))
             if not estimate.is_finite() or estimate < 0:
                 raise InvalidOperation
         except (InvalidOperation, ValueError):
-            blockers.append("PRICE_ESTIMATE_INVALID")
-    if estimate is not None and estimate > 0 and not paid_approved:
+            blockers.append(invalid_blocker)
+            continue
+        estimates[field] = estimate
+
+    expected_charge = estimates.get("expectedMonthlyChargeUsd")
+    if expected_charge is not None and expected_charge > 0 and not paid_approved:
         blockers.append("PAID_USAGE_NOT_APPROVED")
 
     if not isinstance(collisions, list) or collisions:
@@ -332,7 +354,8 @@ def _parser() -> argparse.ArgumentParser:
     parser.add_argument("--confirm-student-terms-reviewed", action="store_true")
     parser.add_argument("--confirm-app-service-free", action="store_true")
     parser.add_argument("--confirm-postgres-free", action="store_true")
-    parser.add_argument("--monthly-estimate-usd", required=True)
+    parser.add_argument("--gross-monthly-retail-usd", required=True)
+    parser.add_argument("--expected-monthly-charge-usd", required=True)
     parser.add_argument("--approve-paid-usage", action="store_true")
     parser.add_argument("--output", type=Path)
     return parser
@@ -349,7 +372,8 @@ def main(arguments: Sequence[str] | None = None) -> int:
             "studentTermsReviewed": options.confirm_student_terms_reviewed,
             "appServiceFreeConfirmed": options.confirm_app_service_free,
             "postgresFreeConfirmed": options.confirm_postgres_free,
-            "monthlyEstimateUsd": options.monthly_estimate_usd,
+            "grossMonthlyRetailEstimateUsd": options.gross_monthly_retail_usd,
+            "expectedMonthlyChargeUsd": options.expected_monthly_charge_usd,
             "paidUsageApproved": options.approve_paid_usage,
         },
     )

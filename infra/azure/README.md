@@ -18,14 +18,19 @@ In the Azure portal, keep the subscription spending limit enabled and record:
    subscription: Burstable B1ms, 750 hours, 32 GB storage, and 32 GB backup
    storage.
 5. The Pricing Calculator estimate for App Service, PostgreSQL, storage,
-   backups, monitoring, public IPv4, and outbound transfer in East US 2.
+   backups, monitoring, and outbound transfer in East US 2. Record both the
+   gross monthly retail estimate before benefits and the expected monthly
+   charge after the verified subscription allowances.
 6. The Azure for Students terms. This preflight authorizes fictional staging
    only, not an employee competition.
 
 The free-services list confirms allowance limits but is not a monthly price
-estimate. Do not enter `0.00` below until the Pricing Calculator review covers
-every planned component. Do not select **Remove spending limit**, upgrade to
-pay-as-you-go, create a resource, or approve a paid estimate during this check.
+estimate. The reviewed staging calculator export records a gross retail
+exposure of `16.49` USD per month. The expected charge is `0.00` only while the
+verified App Service, PostgreSQL, Azure Monitor, and bandwidth allowances are
+active and actual usage stays within their limits. Do not select **Remove
+spending limit**, upgrade to pay-as-you-go, create a resource, or approve a paid
+estimate during this check.
 
 ## Run in Azure Cloud Shell
 
@@ -52,7 +57,8 @@ python3 infra/azure/preflight.py \
   --confirm-student-terms-reviewed \
   --confirm-app-service-free \
   --confirm-postgres-free \
-  --monthly-estimate-usd '0.00'
+  --gross-monthly-retail-usd '16.49' \
+  --expected-monthly-charge-usd '0.00'
 ```
 
 Do not add `--approve-paid-usage` unless a later written estimate has been
@@ -90,5 +96,6 @@ including:
 - free App Service or PostgreSQL allowance not confirmed;
 - no complete East US 2/East US service combination;
 - a planned-name collision;
-- no price estimate;
-- any estimated charge that was not separately approved.
+- no or invalid gross retail estimate;
+- no or invalid expected post-allowance charge;
+- any expected charge that was not separately approved.

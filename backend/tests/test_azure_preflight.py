@@ -15,7 +15,7 @@ from infra.azure.preflight import (
 
 def valid_evidence() -> dict[str, object]:
     return {
-        "schemaVersion": 1,
+        "schemaVersion": 2,
         "subscription": {
             "expected": True,
             "enabled": True,
@@ -26,7 +26,8 @@ def valid_evidence() -> dict[str, object]:
             "studentTermsReviewed": True,
             "appServiceFreeConfirmed": True,
             "postgresFreeConfirmed": True,
-            "monthlyEstimateUsd": "0.00",
+            "grossMonthlyRetailEstimateUsd": "16.49",
+            "expectedMonthlyChargeUsd": "0.00",
             "paidUsageApproved": False,
         },
         "regions": {
@@ -46,12 +47,20 @@ def valid_evidence() -> dict[str, object]:
 
 
 class EvaluatePreflightTests(unittest.TestCase):
-    def test_accepts_free_complete_eastus2_evidence(self) -> None:
+    def test_accepts_free_complete_eastus2_evidence_with_retail_exposure(self) -> None:
         decision = evaluate_preflight(valid_evidence())
 
         self.assertTrue(decision.allowed)
         self.assertEqual(decision.blockers, ())
         self.assertEqual(decision.evidence["selectedRegion"], "eastus2")
+        self.assertEqual(
+            decision.evidence["manualReview"]["grossMonthlyRetailEstimateUsd"],
+            "16.49",
+        )
+        self.assertEqual(
+            decision.evidence["manualReview"]["expectedMonthlyChargeUsd"],
+            "0.00",
+        )
 
     def test_falls_back_to_eastus_only_when_eastus2_is_incomplete(self) -> None:
         evidence = valid_evidence()
@@ -70,7 +79,12 @@ class EvaluatePreflightTests(unittest.TestCase):
             "STUDENT_TERMS_UNREVIEWED": lambda value: value["manualReview"].update(studentTermsReviewed=False),
             "APP_SERVICE_FREE_UNCONFIRMED": lambda value: value["manualReview"].update(appServiceFreeConfirmed=False),
             "POSTGRES_FREE_UNCONFIRMED": lambda value: value["manualReview"].update(postgresFreeConfirmed=False),
-            "PRICE_ESTIMATE_MISSING": lambda value: value["manualReview"].update(monthlyEstimateUsd=None),
+            "RETAIL_ESTIMATE_MISSING": lambda value: value["manualReview"].update(
+                grossMonthlyRetailEstimateUsd=None
+            ),
+            "EXPECTED_CHARGE_MISSING": lambda value: value["manualReview"].update(
+                expectedMonthlyChargeUsd=None
+            ),
             "RESOURCE_NAME_COLLISION": lambda value: value["plannedResourceCollisions"].append(
                 {"name": "rg-sort-tester-staging", "type": "Microsoft.Resources/resourceGroups"}
             ),
@@ -84,25 +98,41 @@ class EvaluatePreflightTests(unittest.TestCase):
                 self.assertFalse(decision.allowed)
                 self.assertIn(expected_blocker, decision.blockers)
 
-    def test_rejects_paid_estimate_without_specific_approval(self) -> None:
+    def test_rejects_expected_charge_without_specific_approval(self) -> None:
         evidence = valid_evidence()
-        evidence["manualReview"]["monthlyEstimateUsd"] = "0.01"
+        evidence["manualReview"]["expectedMonthlyChargeUsd"] = "0.01"
 
         decision = evaluate_preflight(evidence)
 
         self.assertFalse(decision.allowed)
         self.assertIn("PAID_USAGE_NOT_APPROVED", decision.blockers)
 
-    def test_accepts_paid_estimate_only_after_specific_approval(self) -> None:
+    def test_accepts_expected_charge_only_after_specific_approval(self) -> None:
         evidence = valid_evidence()
         evidence["manualReview"].update(
-            monthlyEstimateUsd="4.25",
+            expectedMonthlyChargeUsd="4.25",
             paidUsageApproved=True,
         )
 
         decision = evaluate_preflight(evidence)
 
         self.assertTrue(decision.allowed)
+
+    def test_rejects_invalid_retail_and_expected_amounts_independently(self) -> None:
+        cases = {
+            "RETAIL_ESTIMATE_INVALID": ("grossMonthlyRetailEstimateUsd", "not-money"),
+            "EXPECTED_CHARGE_INVALID": ("expectedMonthlyChargeUsd", "-0.01"),
+        }
+
+        for expected_blocker, (field, invalid_value) in cases.items():
+            with self.subTest(expected_blocker=expected_blocker):
+                evidence = valid_evidence()
+                evidence["manualReview"][field] = invalid_value
+
+                decision = evaluate_preflight(evidence)
+
+                self.assertFalse(decision.allowed)
+                self.assertIn(expected_blocker, decision.blockers)
 
     def test_rejects_when_neither_region_has_every_required_capability(self) -> None:
         evidence = valid_evidence()
@@ -188,7 +218,8 @@ class CollectPreflightTests(unittest.TestCase):
                 "studentTermsReviewed": True,
                 "appServiceFreeConfirmed": True,
                 "postgresFreeConfirmed": True,
-                "monthlyEstimateUsd": "0.00",
+                "grossMonthlyRetailEstimateUsd": "16.49",
+                "expectedMonthlyChargeUsd": "0.00",
                 "paidUsageApproved": False,
                 "spendingLimitConfirmed": True,
             },
@@ -210,6 +241,14 @@ class CollectPreflightTests(unittest.TestCase):
         self.assertNotIn("student@example.test", rendered)
         self.assertEqual(evidence["subscription"]["name"], "Azure for Students")
         self.assertEqual(evidence["plannedResourceCollisions"], [])
+        self.assertEqual(
+            evidence["manualReview"]["grossMonthlyRetailEstimateUsd"],
+            "16.49",
+        )
+        self.assertEqual(
+            evidence["manualReview"]["expectedMonthlyChargeUsd"],
+            "0.00",
+        )
 
     def test_collector_does_not_mistake_unrelated_numbers_for_postgres_18(self) -> None:
         class MissingPostgres18Cli(RecordingAzureCli):
@@ -245,7 +284,8 @@ class CollectPreflightTests(unittest.TestCase):
                 "studentTermsReviewed": True,
                 "appServiceFreeConfirmed": True,
                 "postgresFreeConfirmed": True,
-                "monthlyEstimateUsd": "0.00",
+                "grossMonthlyRetailEstimateUsd": "16.49",
+                "expectedMonthlyChargeUsd": "0.00",
                 "paidUsageApproved": False,
                 "spendingLimitConfirmed": True,
             },
