@@ -4,6 +4,7 @@ targetScope = 'resourceGroup'
 @allowed([
   'eastus2'
   'eastus'
+  'northcentralus'
 ])
 param location string = 'eastus2'
 

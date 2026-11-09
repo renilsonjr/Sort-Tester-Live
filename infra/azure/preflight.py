@@ -18,7 +18,7 @@ import subprocess
 from typing import Mapping, Protocol, Sequence
 
 
-REQUIRED_REGIONS = ("eastus2", "eastus")
+REQUIRED_REGIONS = ("eastus2", "eastus", "northcentralus")
 PLANNED_RESOURCE_PREFIXES = (
     "rg-sort-tester-staging",
     "sort-tester-staging",
@@ -49,6 +49,7 @@ class SubprocessAzureCli:
         ("appservice", "list-locations"),
         ("postgres", "flexible-server", "list-skus"),
         ("resource", "list"),
+        ("policy", "assignment", "list"),
     )
 
     def json(self, *arguments: str) -> object:
@@ -121,6 +122,41 @@ def _named_capabilities(value: object, capability_name: str) -> set[str]:
     return names
 
 
+def _collect_region_policy(cli: AzureCli) -> dict[str, object]:
+    """Collect visible allowed-location constraints, not a full policy engine.
+
+    Initiatives, inherited policy rules, exemptions and other deny conditions
+    still require the Azure what-if gate before deployment.
+    """
+    result: dict[str, object] = {
+        "verified": False,
+        "allowedLocations": [],
+        "coverage": "Visible listOfAllowedLocations constraints only; successful owner-reviewed what-if remains required",
+    }
+    try:
+        assignments = cli.json("policy", "assignment", "list")
+    except RuntimeError:
+        return result
+    if not isinstance(assignments, list):
+        return result
+    constraints: list[set[str]] = []
+    for assignment in assignments:
+        if not isinstance(assignment, Mapping):
+            return result
+        parameters = assignment.get("parameters")
+        if not isinstance(parameters, Mapping) or "listOfAllowedLocations" not in parameters:
+            continue
+        parameter = parameters["listOfAllowedLocations"]
+        values = parameter.get("value") if isinstance(parameter, Mapping) else None
+        if not isinstance(values, list) or not values or not all(isinstance(value, str) and value.strip() for value in values):
+            return result
+        constraints.append(_location_names(values))
+    if constraints:
+        allowed = set.intersection(*constraints)
+        result.update(verified=bool(allowed), allowedLocations=sorted(allowed))
+    return result
+
+
 def _planned_collisions(resources: object) -> list[dict[str, object]]:
     if not isinstance(resources, list):
         return [{"name": "INVALID_RESOURCE_LIST", "type": "unknown"}]
@@ -169,6 +205,7 @@ def collect_preflight(
         cli.json("appservice", "list-locations", "--sku", "F1", "--linux-workers-enabled")
     )
     resources = cli.json("resource", "list")
+    region_policy = _collect_region_policy(cli)
 
     regions: dict[str, dict[str, bool]] = {}
     python_314_available = _contains_text(runtimes, "PYTHON|3.14")
@@ -198,6 +235,7 @@ def collect_preflight(
     )
     return {
         "schemaVersion": 2,
+        "regionPolicy": region_policy,
         "collectedAtUtc": datetime.now(UTC).replace(microsecond=0).isoformat(),
         "subscription": {
             "name": subscription_name,
@@ -291,8 +329,15 @@ def evaluate_preflight(evidence: Mapping[str, object]) -> PreflightDecision:
         blockers.append("RESOURCE_NAME_COLLISION")
 
     selected_region: str | None = None
-    if isinstance(regions, Mapping):
+    policy = evidence.get("regionPolicy")
+    allowed_locations = _location_names(policy.get("allowedLocations")) if isinstance(policy, Mapping) else set()
+    policy_verified = isinstance(policy, Mapping) and policy.get("verified") is True and bool(allowed_locations)
+    if not policy_verified:
+        blockers.append("REGION_POLICY_UNVERIFIED")
+    if policy_verified and isinstance(regions, Mapping):
         for region in REQUIRED_REGIONS:
+            if region not in allowed_locations:
+                continue
             capabilities = regions.get(region)
             if isinstance(capabilities, Mapping) and all(
                 capabilities.get(requirement)

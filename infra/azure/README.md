@@ -1,5 +1,27 @@
 # Azure staging preflight
 
+## Subscription region-policy correction
+
+Global service availability does not establish permission to deploy in a
+subscription. The collector now reads visible policy assignments and intersects
+their `listOfAllowedLocations` constraints. Missing, unreadable, malformed or
+empty constraints block approval. Only a policy-allowed region with all required
+service capabilities can be selected. Existing preference is East US 2, then
+East US; North Central US is the reviewed next candidate when those are denied.
+
+The current subscription constraint lists `canadacentral`, `northcentralus`,
+`westus2`, `francecentral`, and `norwayeast`. The tracked parameter example now
+names `northcentralus`. Refresh the regional price estimate and preflight before
+using it. This does not move an existing resource group or change its location.
+
+Policy collection covers visible `listOfAllowedLocations` parameters only. It
+does not interpret every initiative, inherited rule, exemption, or other deny
+condition. A successful owner-reviewed Azure `what-if` remains mandatory.
+For the next bootstrap preview use `--location northcentralus` and
+`--parameters location=northcentralus`; older East US 2 examples below describe
+the original candidate and must not be used for this subscription's current
+policy. The same location must be reviewed for the application and database.
+
 This first step is read-only. It does not create, register, update, or delete
 an Azure resource. It gathers enough evidence for the owner to decide whether
 the Azure for Students subscription can safely continue to staging.

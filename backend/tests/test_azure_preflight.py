@@ -16,6 +16,7 @@ from infra.azure.preflight import (
 def valid_evidence() -> dict[str, object]:
     return {
         "schemaVersion": 2,
+        "regionPolicy": {"verified": True, "allowedLocations": ["eastus2", "eastus"]},
         "subscription": {
             "expected": True,
             "enabled": True,
@@ -47,6 +48,22 @@ def valid_evidence() -> dict[str, object]:
 
 
 class EvaluatePreflightTests(unittest.TestCase):
+    def test_global_capabilities_cannot_override_subscription_region_policy(self) -> None:
+        evidence = valid_evidence()
+        evidence["regionPolicy"]["allowedLocations"] = ["northcentralus"]
+        evidence["regions"]["northcentralus"] = {"linuxPython314": True, "appServiceF1": True, "postgres18": True}
+        decision = evaluate_preflight(evidence)
+        self.assertTrue(decision.allowed)
+        self.assertEqual(decision.evidence["selectedRegion"], "northcentralus")
+
+    def test_missing_or_unverified_policy_fails_closed(self) -> None:
+        for policy in (None, {}, {"verified": False, "allowedLocations": ["eastus2"]}, {"verified": True, "allowedLocations": []}):
+            evidence = valid_evidence()
+            evidence["regionPolicy"] = policy
+            decision = evaluate_preflight(evidence)
+            self.assertFalse(decision.allowed)
+            self.assertIsNone(decision.evidence["selectedRegion"])
+
     def test_accepts_free_complete_eastus2_evidence_with_retail_exposure(self) -> None:
         decision = evaluate_preflight(valid_evidence())
 
@@ -153,6 +170,8 @@ class RecordingAzureCli(AzureCli):
     def json(self, *arguments: str) -> object:
         self.commands.append(arguments)
         responses: dict[tuple[str, ...], object] = {
+            ("policy", "assignment", "list"): [{"displayName": "Allowed locations", "parameters": {"listOfAllowedLocations": {"value": ["eastus2", "eastus", "northcentralus"]}}}],
+            ("postgres", "flexible-server", "list-skus", "--location", "northcentralus"): [{"supportedServerVersions": [{"name": "18"}], "supportedServerSkus": [{"name": "Standard_B1ms"}]}],
             ("account", "show"): {
                 "id": "11111111-1111-1111-1111-111111111111",
                 "tenantId": "22222222-2222-2222-2222-222222222222",
@@ -215,6 +234,28 @@ class RecordingAzureCli(AzureCli):
 
 
 class CollectPreflightTests(unittest.TestCase):
+    def test_collector_records_policy_and_intersects_multiple_constraints(self) -> None:
+        class RestrictedCli(RecordingAzureCli):
+            def json(self, *arguments: str) -> object:
+                if arguments == ("policy", "assignment", "list"):
+                    return [
+                        {"parameters": {"listOfAllowedLocations": {"value": ["eastus2", "northcentralus"]}}},
+                        {"parameters": {"listOfAllowedLocations": {"value": ["northcentralus"]}}},
+                    ]
+                return super().json(*arguments)
+        evidence = collect_preflight(RestrictedCli(), expected_subscription_name="Azure for Students", expected_subscription_id="11111111-1111-1111-1111-111111111111", manual_review={})
+        self.assertEqual(evidence["regionPolicy"]["allowedLocations"], ["northcentralus"])
+        self.assertTrue(evidence["regionPolicy"]["verified"])
+
+    def test_unreadable_or_missing_policy_does_not_become_unrestricted(self) -> None:
+        class NoPolicyCli(RecordingAzureCli):
+            def json(self, *arguments: str) -> object:
+                if arguments == ("policy", "assignment", "list"):
+                    raise RuntimeError("not readable")
+                return super().json(*arguments)
+        evidence = collect_preflight(NoPolicyCli(), expected_subscription_name="Azure for Students", expected_subscription_id="11111111-1111-1111-1111-111111111111", manual_review={})
+        self.assertFalse(evidence["regionPolicy"]["verified"])
+
     def test_collector_uses_only_fixed_read_commands_and_redacts_identifiers(self) -> None:
         cli = RecordingAzureCli()
 
@@ -234,6 +275,7 @@ class CollectPreflightTests(unittest.TestCase):
         )
 
         allowed_prefixes = {
+            ("policy", "assignment", "list"),
             ("account", "show"),
             ("account", "list-locations"),
             ("webapp", "list-runtimes"),
