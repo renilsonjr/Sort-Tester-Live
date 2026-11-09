@@ -99,3 +99,74 @@ including:
 - no or invalid gross retail estimate;
 - no or invalid expected post-allowance charge;
 - any expected charge that was not separately approved.
+
+## Staging resource boundary
+
+The infrastructure files define a fictional-data staging boundary only. They
+do not authorize employee data, a public launch, paid usage, or removal of the
+subscription spending limit.
+
+`bootstrap-resource-group.bicep` creates only `rg-sort-tester-staging`.
+`main.bicep` defines the Free F1 Linux App Service, PostgreSQL 18 Flexible
+Server, Entra administrator, TLS settings, capped 30-day monitoring, and the
+USD 5 monthly budget notifications. Every taggable resource carries the four
+mandatory project tags. Child resources that Azure does not allow to carry
+tags are protected by the exact deployment manifest instead.
+
+### Mandatory first-bootstrap absence check
+
+Bicep cannot safely distinguish an unrelated, already-existing empty resource
+group from the intended new group. Before the first bootstrap, the owner must
+run this read-only check:
+
+```bash
+az group exists --name rg-sort-tester-staging
+```
+
+The command must print `false`. If it prints `true`, stop. Do not run
+`what-if`, deploy, adopt, retag, replace, or delete that group until its exact
+ownership has been investigated and reviewed.
+
+### Build and subscription-scope what-if
+
+These commands compile and preview only; they do not create resources:
+
+```bash
+az bicep build --file infra/azure/bootstrap-resource-group.bicep
+az bicep build --file infra/azure/main.bicep
+az deployment sub what-if \
+  --name sort-tester-staging-bootstrap-review \
+  --location eastus2 \
+  --template-file infra/azure/bootstrap-resource-group.bicep \
+  --parameters location=eastus2
+```
+
+The owner must review the preview before any creation command is written or
+run. The preview must create only `rg-sort-tester-staging` in East US 2 with
+the four expected tags.
+
+### Local parameters and resource-group what-if
+
+Do not edit the tracked placeholder file with real owner identifiers. Copy it
+to the ignored local filename and replace every placeholder locally:
+
+```bash
+cp infra/azure/main.staging.bicepparam infra/azure/main.staging.local.bicepparam
+```
+
+Only after the owner has separately approved and created the resource group,
+preview the main deployment without creating resources:
+
+```bash
+az deployment group what-if \
+  --name sort-tester-staging-main-review \
+  --resource-group rg-sort-tester-staging \
+  --template-file infra/azure/main.bicep \
+  --parameters infra/azure/main.staging.local.bicepparam
+```
+
+Stop if the preview deletes or replaces anything, uses another region or SKU,
+contains an unexpected resource, omits a required tag, enables PostgreSQL
+password authentication, creates a broad firewall rule, or estimates a charge
+outside the reviewed free allowances. Save redacted preview evidence under
+`$HOME/.local/state/sort-tester-live/`, never inside the checkout.
