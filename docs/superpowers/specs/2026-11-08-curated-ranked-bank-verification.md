@@ -28,6 +28,14 @@ Seed42 ordered references: `S73,D16,S11,E1,G01,G62,G34,G71,H3,N43,D02,S19,D50,N0
 
 The tests exercise malformed schema/Unicode, alias duplicates, pin/revision failures, immutable records, exact exceptions/marker conflicts, source/copy preservation, reproducible export, filename/cwd portability, incompatible pools and the greedy-choice trap. Real-bank selection is checked over50 deterministic seeds. No browser or live-game behavior follows from these backend checks.
 
+## Windows CI newline correction
+
+Hosted Windows run `42549747930` at `64cf503` ran78 backend tests:77 passed and `test_published_artifact_equals_fresh_export` failed because Git checked out the published JSON with CRLF while the fresh exporter wrote LF. This was a test comparison portability defect; the canonical pin was unaffected.
+
+The local follow-up changes only the published/export comparison to normalize CRLF to LF, preserving all other bytes. A simulated CRLF checkout regression failed before the fix and passed afterward; the same regression confirms additional non-newline bytes still fail. Repeated fresh exports remain compared byte-for-byte. Production artifacts, pins, content, versions, schema and workflow were unchanged.
+
+At the local follow-up tree based on `64cf503`, `backend/.venv/bin/python -m unittest discover -s backend/tests -v` passed79 tests; `git diff --check` passed. These results describe the local fix tree, not a hosted result for its new commit. Controller verification of the new exact head on hosted Windows remains pending.
+
 ## Review corrections
 
 Separate task reviews caught and verified fixes for lone-surrogate error handling, excluded-only presentations, unsupported combined markers, and locale-dependent Unicode test I/O. Artifact bytes were unchanged by those fixes. Integration also added the source alias “2 Day Air” alongside “2nd day air”. Task commits: `16f2c86`,`8351538`,`65bba3a`,`c539522`,`b083b4d`,`1e8002f`,`2c5f0fb`,`d01cd3c`.

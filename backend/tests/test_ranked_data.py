@@ -88,10 +88,31 @@ class ReviewedDataTests(unittest.TestCase):
     def test_export_is_reproducible_across_output_directories(self):
         self.export(); other=Path(self.tmp.name)/'other'; export_reviewed_bank(other)
         for name in ('routes-v1.json','manifest.json'):self.assertEqual((self.output_dir/name).read_bytes(),(other/name).read_bytes())
+    def assert_published_artifacts_equal_export(self, published_dir):
+        for name in ('routes-v1.json','manifest.json'):
+            # Git may convert tracked JSON to CRLF in a Windows checkout.
+            # Preserve every other byte, including formatting and Unicode.
+            fresh=(self.output_dir/name).read_bytes().replace(b'\r\n',b'\n')
+            published=(published_dir/name).read_bytes().replace(b'\r\n',b'\n')
+            self.assertEqual(fresh,published)
     def test_published_artifact_equals_fresh_export(self):
         self.export()
+        self.assert_published_artifacts_equal_export(ROOT/'backend/data/ranked')
+    def test_published_artifact_comparison_accepts_crlf_checkout(self):
+        self.export()
+        checkout=Path(self.tmp.name)/'crlf-checkout'; checkout.mkdir()
         for name in ('routes-v1.json','manifest.json'):
-            self.assertEqual((self.output_dir/name).read_bytes(),(ROOT/'backend/data/ranked'/name).read_bytes())
+            data=(ROOT/'backend/data/ranked'/name).read_bytes().replace(b'\r\n',b'\n')
+            self.assertIn(b'\n',data)
+            (checkout/name).write_bytes(data.replace(b'\n',b'\r\n'))
+        self.assert_published_artifacts_equal_export(checkout)
+        for name in ('routes-v1.json','manifest.json'):
+            with self.subTest(changed_artifact=name):
+                path=checkout/name; original=path.read_bytes()
+                path.write_bytes(original+b' ')
+                with self.assertRaises(AssertionError):
+                    self.assert_published_artifacts_equal_export(checkout)
+                path.write_bytes(original)
     def test_all20_approved_examples_are_preserved(self):
         _,bank=self.export(); by={q.source.review_ref:q for q in bank.questions}; count=0
         for e in self.source['entries']:
