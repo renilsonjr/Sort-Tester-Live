@@ -95,3 +95,20 @@ class CoverageTests(unittest.TestCase):
         bank=self.load(raw_question('P',parts=('148','149'),exclusion_refs=('X',),routing_code='149'),raw_question('X',kind='qualified_code',parts=('148','1'),routing_code='148 1'))
         self.assertEqual(('149',),available_range_prefixes(bank.questions[0]))
         self.assertFalse(rules_overlap(*bank.questions))
+
+    def test_excluded_only_nonrange_presentations_are_rejected(self):
+        cases = (
+            dict(kind='exact_literal',parts=('575 3-6',),routing_code='575 3-6'),
+            dict(kind='qualified_code',parts=('148','1'),routing_code='148 1'),
+            dict(mode='suffix:1S',kind='suffix',parts=('1S',),routing_code='100 1S'),
+            dict(mode='+1',kind='any_route',parts=(),correct_belt='PURPLE'),
+            dict(service='NDA',mode='EAM',kind='any_route',parts=()),
+        )
+        for kwargs in cases:
+            with self.subTest(kwargs=kwargs):
+                with self.assertRaises(BankValidationError) as caught:
+                    child_kwargs = dict(kwargs)
+                    if kwargs.get('mode') != '+1':
+                        child_kwargs['correct_belt'] = 'BLUE'
+                    self.load(raw_question('P',exclusion_refs=('X',),**kwargs),raw_question('X',**child_kwargs))
+                self.assertEqual('invalid_presentation',caught.exception.code)

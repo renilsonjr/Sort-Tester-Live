@@ -70,6 +70,8 @@ def validate_presentation(question):
     code = presentation.routing_code
     def reject(message):
         _fail('invalid_presentation', question, message)
+    if any(_contains(exclusion.rule, rule) for exclusion in question.exclusions):
+        reject('exclusions remove the entire rule and its presentation')
     if rule.kind == 'named_destination':
         if mode != 'ordinary' or code is not None or presentation.named_destination != rule.parts[0]:
             reject('named destination requires its own token and no routing code')
