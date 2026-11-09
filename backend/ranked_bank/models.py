@@ -19,7 +19,7 @@ def nonblank(value, path):
 
 def normalize_service(value: str) -> str:
     nonblank(value,'service')
-    aliases={'gnd':'GND','grd':'GND','ground':'GND','nda':'NDA','next day air':'NDA','2da':'2DA','2nd day air':'2DA','3ds':'3DS','3 day select':'3DS'}
+    aliases={'gnd':'GND','grd':'GND','ground':'GND','nda':'NDA','next day air':'NDA','2da':'2DA','2nd day air':'2DA','2 day air':'2DA','3ds':'3DS','3 day select':'3DS'}
     result=aliases.get(' '.join(value.lower().split()))
     if result is None: invalid('service','unknown service')
     return result

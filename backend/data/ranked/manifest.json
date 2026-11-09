@@ -1,0 +1,10 @@
+{
+  "schema_version": 1,
+  "banks": [
+    {
+      "revision": "ranked-routes-v1",
+      "file": "routes-v1.json",
+      "sha256": "12ebcf08bd5236f13e14b491cd2d103c151204a794bd527565e961dab332a2c3"
+    }
+  ]
+}

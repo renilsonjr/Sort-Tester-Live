@@ -12,6 +12,11 @@ class LoadingTests(unittest.TestCase):
     def load(self,data):
         path,pin=write_fixture(self.directory,data)
         return load_bank(path,expected_revision='fixture-v1',expected_sha256=pin)
+    def test_source_two_day_air_alias_is_accepted(self):
+        from backend.ranked_bank.models import normalize_service
+        self.assertEqual(normalize_service('2 Day Air'), '2DA')
+        self.assertEqual(normalize_service('2nd day air'), '2DA')
+
     def test_identity_is_stable_across_service_aliases(self):
         for alias in ('GND','GRD','Ground'):
             self.assertEqual(stable_question_id(Context(alias,'ordinary'),RouteRule('prefix_range',('100','108'))),'rq-gnd-prefix_range-7be00a20fe02bb8c8c34bf2c34e1b8a967c314c55d59832135e11624e4201cbe')
