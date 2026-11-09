@@ -37,6 +37,14 @@ def _initial_copy(sheet):
 
 def _meaning(e):
     code=e['code']; mode='ordinary'
+    # Inspect all source markers before lowering to an exclusive typed context.
+    # Otherwise selecting +1 first would erase an EAM/suffix conflict.
+    interpretation=e.get('destinationInterpretation',{})
+    markers=set(re.findall(r'(?<![A-Za-z0-9])(EAM|1S|2S|\+1)(?![A-Za-z0-9])',code))
+    for marker in (e.get('destinationModifier'),interpretation.get('modifier'),interpretation.get('serviceQualifier')):
+        if marker in ('+1','EAM','1S','2S'):markers.add(marker)
+    if len(markers)>1:
+        raise ValueError('unapproved combined markers: '+e['approvedReview']+' '+', '.join(sorted(markers)))
     if e.get('routingInterpretation',{}).get('kind')=='exact_code_literal':
         meta=e['routingInterpretation']
         if not meta.get('ownerConfirmed') or meta['value']!=code:raise ValueError('unapproved literal')

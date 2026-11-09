@@ -11,7 +11,7 @@ from backend.ranked_bank.loading import load_bank
 ROOT = Path(__file__).resolve().parents[2]
 SOURCE = Path('docs/superpowers/specs/2026-11-08-ranked-full-chart-review.json')
 def read_manifest_pin(path):
-    manifest=json.loads(path.read_text())
+    manifest=json.loads(path.read_text(encoding='utf-8'))
     assert len(manifest['banks']) == 1
     assert manifest['banks'][0]['revision']=='ranked-routes-v1'
     return manifest['banks'][0]['sha256']
@@ -20,7 +20,7 @@ class ReviewedDataTests(unittest.TestCase):
     def setUp(self):
         self.tmp=tempfile.TemporaryDirectory(); self.addCleanup(self.tmp.cleanup)
         self.output_dir=Path(self.tmp.name)/'bank'
-        self.source=json.loads((ROOT/SOURCE).read_text())
+        self.source=json.loads((ROOT/SOURCE).read_text(encoding='utf-8'))
     def export(self):
         report=export_reviewed_bank(self.output_dir)
         return report,load_bank(report.bank_path,expected_revision='ranked-routes-v1',expected_sha256=read_manifest_pin(report.manifest_path))
@@ -31,9 +31,9 @@ class ReviewedDataTests(unittest.TestCase):
         by={q.source.review_ref:q for q in bank.questions}
         self.assertEqual(by['G74'].rule.parts,('833 9-7',)); self.assertEqual(by['S47'].presentation.routing_code,'900')
     def test_original17_copy_and_ids_map_once(self):
-        report,bank=self.export(); fixture=json.loads((ROOT/'backend/tests/fixtures/ranked/initial-17-copy.json').read_text())
+        report,bank=self.export(); fixture=json.loads((ROOT/'backend/tests/fixtures/ranked/initial-17-copy.json').read_text(encoding='utf-8'))
         self.assertEqual(len(fixture),17); mapping=dict(report.review_ref_to_id)
-        sheet=(ROOT/'docs/superpowers/specs/2026-11-08-ranked-question-wording-review.md').read_text()
+        sheet=(ROOT/'docs/superpowers/specs/2026-11-08-ranked-question-wording-review.md').read_text(encoding='utf-8')
         for line in sheet.splitlines():
             cells=[cell.strip() for cell in line.split('|')[1:-1]]
             if cells and re.fullmatch('[EMH][1-7]',cells[0]):
@@ -58,17 +58,31 @@ class ReviewedDataTests(unittest.TestCase):
     def test_export_refuses_unapproved_content(self):
         root=Path(self.tmp.name)/'source'; (root/SOURCE.parent).mkdir(parents=True)
         self.source['entries'][0]['difficultyStatus']='pending'
-        (root/SOURCE).write_text(json.dumps(self.source))
+        (root/SOURCE).write_text(json.dumps(self.source),encoding='utf-8')
         with self.assertRaises(ValueError):export_reviewed_bank(self.output_dir,repo_root=root)
         self.assertFalse(self.output_dir.exists())
     def test_export_refuses_unapproved_translation(self):
         root=Path(self.tmp.name)/'source'; (root/SOURCE.parent).mkdir(parents=True)
         next(e for e in self.source['entries'] if 'wording' in e)['wording']['es']['approvalStatus']='pending'
-        (root/SOURCE).write_text(json.dumps(self.source))
+        (root/SOURCE).write_text(json.dumps(self.source),encoding='utf-8')
         with self.assertRaises(ValueError):export_reviewed_bank(self.output_dir,repo_root=root)
         self.assertFalse(self.output_dir.exists())
+    def test_export_refuses_combined_markers_without_output(self):
+        for code in ('ends 1S', 'ends 2S', 'ALL 1DA EAM'):
+            with self.subTest(code=code):
+                root=Path(self.tmp.name)/code.replace(' ', '-')
+                (root/SOURCE.parent).mkdir(parents=True)
+                source=json.loads((ROOT/SOURCE).read_text(encoding='utf-8'))
+                entry=next(e for e in source['entries'] if e['code']==code and e['service']=='Next Day Air')
+                entry['destinationModifier']='+1'
+                (root/SOURCE).write_text(json.dumps(source),encoding='utf-8')
+                sheet=Path('docs/superpowers/specs/2026-11-08-ranked-question-wording-review.md')
+                (root/sheet).write_text((ROOT/sheet).read_text(encoding='utf-8'),encoding='utf-8')
+                with self.assertRaisesRegex(ValueError, 'combined markers'):
+                    export_reviewed_bank(self.output_dir,repo_root=root)
+                self.assertFalse(self.output_dir.exists())
     def test_export_refuses_existing_output_without_writes(self):
-        self.output_dir.mkdir(); (self.output_dir/'sentinel').write_text('keep')
+        self.output_dir.mkdir(); (self.output_dir/'sentinel').write_text('keep',encoding='utf-8')
         with self.assertRaises(FileExistsError):export_reviewed_bank(self.output_dir)
         self.assertEqual(list(self.output_dir.iterdir()),[self.output_dir/'sentinel'])
     def test_export_is_reproducible_across_output_directories(self):
