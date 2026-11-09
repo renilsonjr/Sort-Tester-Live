@@ -10,7 +10,7 @@
 
 **Spec:** [[2026-11-08-curated-ranked-bank-design]]. Read it with [[2026-11-08-ranked-full-chart-review]], [[2026-11-08-ranked-expanded-wording-review]], [[2026-11-08-ranked-question-wording-review]] and [[2026-11-08-ranked-chart-reference]]. Tracker: [#5](https://github.com/renilsonjr/Sort-Tester-Live/issues/5).
 
-**Status:** proposed for owner review. The owner approved the updated design; this plan is not yet approved or executed.
+**Status:** owner-approved and implemented on `codex/ranked-mode`; all five task reviews approved. Local automated verification passed. Final-head hosted results are tracked in PR32; owner manual Windows verification remains pending. See [[2026-11-08-curated-ranked-bank-verification]].
 
 ## Global Constraints
 
@@ -76,7 +76,7 @@ Artifact root keys are exactly `schema_version:1,bank_revision,source_revision,q
 
 **Interfaces:** produces all shared records, `normalize_service`, `canonical_key`, `stable_question_id`, `question_content_digest`, `canonical_json_digest`, and `load_bank(path: Path, *, expected_revision: str, expected_sha256: str) -> Bank`. Task2 adds semantic coverage validation to that loader. No bank is imported or loaded at FastAPI startup.
 
-- [ ] **Step 1: Write failing schema/identity tests.** Helpers use TemporaryDirectory and literal fixture data. Define `raw_question(review_ref, *, service='GND',mode='ordinary',kind='prefix_range',parts=('100','108'),difficulty='Easy',correct_belt='YELLOW',question_revision=1,exclusion_refs=(),routing_code='100',named_destination=None,region_label='NY') -> dict`, `raw_bank(*questions,revision='fixture-v1') -> dict`, `write_fixture(directory,payload) -> (Path,str)` and `by_ref(bank,ref) -> Question`. raw_bank resolves leaf exclusion references before using the separately tested identity function to fill fixture IDs, independently of row order; expected answers/copy remain independent literals.
+- [x] **Step 1: Write failing schema/identity tests.** Helpers use TemporaryDirectory and literal fixture data. Define `raw_question(review_ref, *, service='GND',mode='ordinary',kind='prefix_range',parts=('100','108'),difficulty='Easy',correct_belt='YELLOW',question_revision=1,exclusion_refs=(),routing_code='100',named_destination=None,region_label='NY') -> dict`, `raw_bank(*questions,revision='fixture-v1') -> dict`, `write_fixture(directory,payload) -> (Path,str)` and `by_ref(bank,ref) -> Question`. raw_bank resolves leaf exclusion references before using the separately tested identity function to fill fixture IDs, independently of row order; expected answers/copy remain independent literals.
 
 ```python
 def test_identity_is_stable_across_service_aliases(self):
@@ -96,10 +96,10 @@ def test_missing_spanish_feedback_is_rejected(self):
 
 Add named tests/assertions: `test_nested_records_are_immutable` (setattr question/text raises FrozenInstanceError; mutating input lists cannot change stored tuples); `test_lf_crlf_have_same_digest` (same parsed artifact loads against one pin); `test_leading_zero_range_is_preserved` (parts010/024 and shown010 stay strings); `test_duplicate_alias_meaning_is_rejected` (two aliases/translated-copy/example variants of one rule fail); `test_strict_json_rejects_duplicate_members_and_nonfinite` (invalid_json); `test_schema_rejects_unknown_fields_bool_revisions_and_CHECK` (invalid_schema); `test_bad_pin_is_rejected` (digest_mismatch). Region labels and copy must not change the ID; changing their stored content changes the content digest.
 
-- [ ] **Step 2: Verify red.** Mac: `backend/.venv/bin/python -m unittest backend.tests.test_ranked_loading -v`. Expected: new module/API unavailable or the required behavior fails, not a fixture typo.
-- [ ] **Step 3: Implement the specified immutable records, ID contract and loader.** JSON decode is strict UTF-8/duplicate-member/nonfinite handling. Validate exactly the schema above; missing files use invalid_schema and invalid content uses the corresponding BankValidationError code with a useful field path. Verify expected revision/digest; resolve references without nested exclusions; compare supplied IDs with computed meaning and reject duplicate keys. Copy text is validated as nonblank but not rewritten. Keep runtime imports independent of review Markdown/Practice.
-- [ ] **Step 4: Verify green.** Run the focused command, then `backend/.venv/bin/python -m unittest discover -s backend/tests -v`. Existing health/CORS tests must remain green.
-- [ ] **Step 5: Commit only the new package/helper/loading test files.** Suggested message: `feat: add immutable ranked bank schema and pinned loading`.
+- [x] **Step 2: Verify red.** Mac: `backend/.venv/bin/python -m unittest backend.tests.test_ranked_loading -v`. Expected: new module/API unavailable or the required behavior fails, not a fixture typo.
+- [x] **Step 3: Implement the specified immutable records, ID contract and loader.** JSON decode is strict UTF-8/duplicate-member/nonfinite handling. Validate exactly the schema above; missing files use invalid_schema and invalid content uses the corresponding BankValidationError code with a useful field path. Verify expected revision/digest; resolve references without nested exclusions; compare supplied IDs with computed meaning and reject duplicate keys. Copy text is validated as nonblank but not rewritten. Keep runtime imports independent of review Markdown/Practice.
+- [x] **Step 4: Verify green.** Run the focused command, then `backend/.venv/bin/python -m unittest discover -s backend/tests -v`. Existing health/CORS tests must remain green.
+- [x] **Step 5: Commit only the new package/helper/loading test files.** Suggested message: `feat: add immutable ranked bank schema and pinned loading`.
 
 ## Task 2: Effective routing coverage and safe presentations
 
@@ -107,7 +107,7 @@ Add named tests/assertions: `test_nested_records_are_immutable` (setattr questio
 
 **Interfaces:** consumes Task1 records/loader; produces `rules_overlap(left: Question,right: Question) -> bool`, `available_range_prefixes(question: Question) -> tuple[str,...]`, `validate_presentation(question: Question) -> None` and `validate_bank_coverage(bank: Bank) -> None`.
 
-- [ ] **Step 1: Write failing coverage tests.** A fixture can hold same-answer overlapping rules; assignment will avoid co-selecting them. Different-answer overlaps without an explicit exclusion are invalid. Compare bare parent/child loaded separately when testing raw overlap.
+- [x] **Step 1: Write failing coverage tests.** A fixture can hold same-answer overlapping rules; assignment will avoid co-selecting them. Different-answer overlaps without an explicit exclusion are invalid. Compare bare parent/child loaded separately when testing raw overlap.
 
 ```python
 def test_exact_exception_can_cross_printed_region_labels(self):
@@ -123,12 +123,12 @@ def test_exact_exception_can_cross_printed_region_labels(self):
 
 Define the `self.load(*questions) -> Bank` test wrapper using write_fixture/load_bank. Add tests: `test_qualified_code_exclusion_preserves_zero_and_digit` (NY148–149 excludes148 1; qualified code has parts148/1, never a numeric range); `test_TN_range_exception_subtracts_full_prefixes` (370–385 minus376–378); `test_literal_is_never_parsed_as_endpoints` (575 3-6 remains exactly that string); `test_same_answer_partial_ranges_overlap` (2DA609–619 versus609–629 returns True); `test_contexts_are_distinct` (ordinary versus+1/EAM/suffix and different services do not conflict); `test_plus_one_is_not_NY_restricted` (ordinary presentation CA900 under+1 validates/PURPLE; literal sample NY109 is not a condition); `test_reject_mixed_markers` (+1 with shown109 2S, EAM with suffix, and EAM on Ground fail); `test_unsafe_prefix_example_is_rejected` (shown148 for a rule excluding148 1 is ambiguous and fails;149 passes); `test_exclusion_must_be_contained_and_leaf` (unknown/self/nested/cross-service targets fail).
 
-- [ ] **Step 2: Verify red.** Run `backend/.venv/bin/python -m unittest backend.tests.test_ranked_coverage -v`; confirm the missing coverage behavior fails.
-- [ ] **Step 3: Implement coverage and integrate it with loading.** Only equal normalized service/mode can overlap. Named destinations form a separate domain from numeric rules. Numeric prefix ranges include qualified/literal codes sharing their first three digits; explicit exclusions subtract their actual full rule, not a whole prefix just because a literal starts there. For two ranges, compare their prefix intersection after subtracting prefix-range exclusions; finite exact-code exclusions cannot erase an entire prefix. A range versus an exact leaf overlaps only if the leaf is covered and not excluded. Leaf equality uses typed full values. Source region labels do not block explicit exact-code exclusions.
+- [x] **Step 2: Verify red.** Run `backend/.venv/bin/python -m unittest backend.tests.test_ranked_coverage -v`; confirm the missing coverage behavior fails.
+- [x] **Step 3: Implement coverage and integrate it with loading.** Only equal normalized service/mode can overlap. Named destinations form a separate domain from numeric rules. Numeric prefix ranges include qualified/literal codes sharing their first three digits; explicit exclusions subtract their actual full rule, not a whole prefix just because a literal starts there. For two ranges, compare their prefix intersection after subtracting prefix-range exclusions; finite exact-code exclusions cannot erase an entire prefix. A range versus an exact leaf overlaps only if the leaf is covered and not excluded. Leaf equality uses typed full values. Source region labels do not block explicit exact-code exclusions.
 
   V1 range presentations are three-digit examples. Conservatively remove any prefix containing a narrower different-belt exclusion from available_range_prefixes; this protects a whole-prefix example without redefining source coverage. Empty eligible examples fail invalid_presentation; do not invent longer codes. Validate context/route/presentation agreement: suffix-only questions have matching endings; +1/EAM use an ordinary code with no combined marker; named destinations have routing_code=None and their own named token. Reject unsupported ambiguity. This is not a general postal-address validator.
-- [ ] **Step 4: Verify green.** Run focused coverage/loading tests, then full backend discovery. Include inclusive endpoint, disjoint-range and same-literal/different-region cases.
-- [ ] **Step 5: Commit coverage, loader hook and coverage fixtures/tests.** Suggested message: `feat: validate ranked routing coverage and presentation safety`.
+- [x] **Step 4: Verify green.** Run focused coverage/loading tests, then full backend discovery. Include inclusive endpoint, disjoint-range and same-literal/different-region cases.
+- [x] **Step 5: Commit coverage, loader hook and coverage fixtures/tests.** Suggested message: `feat: validate ranked routing coverage and presentation safety`.
 
 ## Task 3: Export and audit the complete reviewed V1 artifact
 
@@ -136,7 +136,7 @@ Define the `self.load(*questions) -> Bank` test wrapper using write_fixture/load
 
 **Interfaces:** consumes Tasks1/2; produces `export_reviewed_bank(output_dir: Path, *, repo_root: Path=REPO_ROOT) -> ExportReport`, with ExportReport fields bank_path, manifest_path, question_count and immutable review_ref_to_id pairs. CLI: `python -m tools.export_ranked_v1 --output-dir backend/data/ranked`. This authoring tool reads the approved review JSON and initial17 wording sheet; runtime never reads them.
 
-- [ ] **Step 1: Write failing data/export tests.** Copy original17 EN/ES cells into the independent literal fixture and check it against the approved sheet; do not derive expected copy using the exporter. Expanded266 expectations come directly from their approved review records.
+- [x] **Step 1: Write failing data/export tests.** Copy original17 EN/ES cells into the independent literal fixture and check it against the approved sheet; do not derive expected copy using the exporter. Expanded266 expectations come directly from their approved review records.
 
 ```python
 def test_full_artifact_preserves_approved_content(self):
@@ -152,14 +152,14 @@ def test_full_artifact_preserves_approved_content(self):
 
 Define `read_manifest_pin(path) -> str` in test helpers to read the single expected revision entry. Add tests: `test_original17_copy_and_ids_map_once`; `test_all266_expanded_copies_match_verbatim`; `test_no_CHECK_or_photo_is_exported`; `test_export_refuses_unapproved_content`; `test_export_refuses_existing_output_without_writes`; `test_export_is_reproducible_across_output_directories`; `test_all20_approved_examples_are_preserved`; `test_all_source_rows_are_accounted_for`. Compare every question's service/source fields/answer/label/copy against independent approved references, not only totals.
 
-- [ ] **Step 2: Verify red.** Run `backend/.venv/bin/python -m unittest backend.tests.test_ranked_data -v`; missing exporter/artifact must fail before creating it.
-- [ ] **Step 3: Implement the authoring export and create the initial files.** Require complete owner approval in both languages. Interpret metadata before raw code syntax: six exact literals first; +1/EAM become any_route with separate mode; endings become suffix rules; five named destinations remain named; four-digit qualified codes remain structured prefix/digit; numeric source rows become prefix_range, including single prefixes. Expected profiles:174 prefix_range,85 qualified_code,6 exact_literal,8 suffix,5 named_destination,5 any_route. If a true duplicate/unsupported meaning appears, abort for targeted owner review rather than silently merge/drop/re-rank.
+- [x] **Step 2: Verify red.** Run `backend/.venv/bin/python -m unittest backend.tests.test_ranked_data -v`; missing exporter/artifact must fail before creating it.
+- [x] **Step 3: Implement the authoring export and create the initial files.** Require complete owner approval in both languages. Interpret metadata before raw code syntax: six exact literals first; +1/EAM become any_route with separate mode; endings become suffix rules; five named destinations remain named; four-digit qualified codes remain structured prefix/digit; numeric source rows become prefix_range, including single prefixes. Expected profiles:174 prefix_range,85 qualified_code,6 exact_literal,8 suffix,5 named_destination,5 any_route. If a true duplicate/unsupported meaning appears, abort for targeted owner review rather than silently merge/drop/re-rank.
 
   Resolve listed numeric exclusions from the reviewed source under the approved precedence policy, retaining full exact literals and explicit range exceptions. Do not invent priority between conflicting primary rows. Preserve all20 approved display codes. For other range rules choose the lowest available three-digit prefix deterministically; keep their already-approved range-level feedback unchanged. There is no random within-rule code generation in V1, so code-specific feedback cannot drift. Qualified/literal displays retain source punctuation; +1 keeps its approved NY109 examples without making NY a rule condition. Implementation defaults for plan review: suffix displays use NY109 1S/109 2S; EAM displays NDA EAM with ordinary code109/NY, separate from source label ALL 1DA EAM. Named destinations have no invented numeric routing code. These presentation defaults follow the approved universal rules; report all resulting codes in the Task3 audit for inspection.
 
   Emit bank_revision=`ranked-routes-v1`, schema_version=1 and question_revision=1. Manifest is `{schema_version:1,banks:[{revision,file,sha256}]}`; pin the canonical JSON digest. Sort output deterministically. Validate in memory before writing; output_dir must not already exist and file creation is exclusive. No --force/overwrite path. Future corrections use new files/revisions, not a rerun over published V1.
-- [ ] **Step 4: Verify green and inspect data.** Run focused tests plus full backend discovery. Record 283 source-to-ID mappings, exact label/type totals, original17 preservation, all266 copy comparisons and all chosen presentations. Review the typed artifact instead of trusting count alone. Keep the review docs as source evidence, not runtime input.
-- [ ] **Step 5: Commit exporter, versioned data, independent copy fixture and data tests.** Suggested message: `feat: add reviewed ranked routes v1 artifact`.
+- [x] **Step 4: Verify green and inspect data.** Run focused tests plus full backend discovery. Record 283 source-to-ID mappings, exact label/type totals, original17 preservation, all266 copy comparisons and all chosen presentations. Review the typed artifact instead of trusting count alone. Keep the review docs as source evidence, not runtime input.
+- [x] **Step 5: Commit exporter, versioned data, independent copy fixture and data tests.** Suggested message: `feat: add reviewed ranked routes v1 artifact`.
 
 ## Task 4: Version catalog and immutable revision boundaries
 
@@ -167,7 +167,7 @@ Define `read_manifest_pin(path) -> str` in test helpers to read the single expec
 
 **Interfaces:** consumes the pinned loader and content digest; produces immutable `Catalog(banks: tuple[Bank,...])` with `get(revision: str) -> Bank`, `load_catalog(manifest_path: Path) -> Catalog`, and `load_reviewed_bank(revision: str='ranked-routes-v1') -> Bank`. Default manifest path is resolved from the module to `backend/data/ranked/manifest.json`, never from the current working directory.
 
-- [ ] **Step 1: Write failing catalog tests.** Define helper `write_catalog_fixture(directory, payloads: Sequence[dict]) -> Path` to write test version files and pins. Same canonical ID/revision may occur in multiple banks only with identical stored question content.
+- [x] **Step 1: Write failing catalog tests.** Define helper `write_catalog_fixture(directory, payloads: Sequence[dict]) -> Path` to write test version files and pins. Same canonical ID/revision may occur in multiple banks only with identical stored question content.
 
 ```python
 def test_changed_content_cannot_reuse_question_revision(self):
@@ -182,10 +182,10 @@ def test_changed_content_cannot_reuse_question_revision(self):
 
 Add tests: `test_new_question_revision_can_coexist_with_old`; `test_duplicate_bank_revision_is_rejected`; `test_manifest_pin_and_filename_are_checked` (basename-only JSON files; no absolute/traversal fallback); `test_unknown_revision_never_falls_back`; `test_loading_from_cwd_with_spaces`; `test_catalog_has_no_mutable_nested_data`. Load real V1 and tiny independent fixture versions.
 
-- [ ] **Step 2: Verify red.** Run `backend/.venv/bin/python -m unittest backend.tests.test_ranked_catalog -v`.
-- [ ] **Step 3: Implement catalog validation.** Validate every pin/revision and compare stored content digests for every reused `(canonical_id,question_revision)` across manifest banks. Fail revision reuse with changed content; do not use a process-local seen-ID cache as a substitute for persisted artifact history. Preserve old files/records; no database is introduced.
-- [ ] **Step 4: Verify green.** Run catalog tests plus full backend discovery. Confirm loading another version never mutates the previously loaded bank. Future durable assignment/version constraints remain Issue6.
-- [ ] **Step 5: Commit catalog, exports and catalog tests.** Suggested message: `feat: add pinned ranked bank revision catalog`.
+- [x] **Step 2: Verify red.** Run `backend/.venv/bin/python -m unittest backend.tests.test_ranked_catalog -v`.
+- [x] **Step 3: Implement catalog validation.** Validate every pin/revision and compare stored content digests for every reused `(canonical_id,question_revision)` across manifest banks. Fail revision reuse with changed content; do not use a process-local seen-ID cache as a substitute for persisted artifact history. Preserve old files/records; no database is introduced.
+- [x] **Step 4: Verify green.** Run catalog tests plus full backend discovery. Confirm loading another version never mutates the previously loaded bank. Future durable assignment/version constraints remain Issue6.
+- [x] **Step 5: Commit catalog, exports and catalog tests.** Suggested message: `feat: add pinned ranked bank revision catalog`.
 
 ## Task 5: Complete randomized 5/5/5 selection, snapshots and developer check
 
@@ -193,7 +193,7 @@ Add tests: `test_new_question_revision_can_coexist_with_old`; `test_duplicate_ba
 
 **Interfaces:** consumes validated Bank/Question records and rules_overlap; produces `select_assignment(bank: Bank, *, rng: random.Random|None=None) -> AssignmentSnapshot`, `serialize_assignment(snapshot: AssignmentSnapshot) -> dict[str,object]` and `check.main(argv: Sequence[str]|None=None) -> int`. Snapshot fields are defined in the shared contract. Serialization is an internal full snapshot (includes answers/copy), not a public question DTO.
 
-- [ ] **Step 1: Write failing selection tests.** Helpers use the real loader. `make_trap_bank(directory) -> Bank` contains six Easy candidates (five disjoint prefixes001–005 plus a broad100–199 trap), six Medium prefixes110–115, six Hard prefixes210–215, all ordinary Ground and the same valid GOLD answer. Use review refs E1–E5 for the small Easy rules, TRAP for the broad Easy rule, M1–M6 and H1–H6 for the other pools. Each helper call uses a fresh temporary subdirectory. The trap makes five Medium questions impossible; a complete set exists without it. `make_unavailable_bank(directory) -> Bank` has five overlapping Easy ranges100–199/101–199/102–199/103–199/104–199, five disjoint Medium301–305 and Hard401–405, all GOLD:raw counts suffice but compatible selection does not.
+- [x] **Step 1: Write failing selection tests.** Helpers use the real loader. `make_trap_bank(directory) -> Bank` contains six Easy candidates (five disjoint prefixes001–005 plus a broad100–199 trap), six Medium prefixes110–115, six Hard prefixes210–215, all ordinary Ground and the same valid GOLD answer. Use review refs E1–E5 for the small Easy rules, TRAP for the broad Easy rule, M1–M6 and H1–H6 for the other pools. Each helper call uses a fresh temporary subdirectory. The trap makes five Medium questions impossible; a complete set exists without it. `make_unavailable_bank(directory) -> Bank` has five overlapping Easy ranges100–199/101–199/102–199/103–199/104–199, five disjoint Medium301–305 and Hard401–405, all GOLD:raw counts suffice but compatible selection does not.
 
 ```python
 def test_complete_search_does_not_get_stuck_on_a_greedy_choice(self):
@@ -210,8 +210,8 @@ def test_no_partial_assignment_when_counts_are_incompatible(self):
 
 Add tests: `test_fewer_than_five_in_a_category_is_unavailable`; `test_seeded_selection_is_reproducible`; `test_inputs_are_not_shuffled_or_mutated`; `test_unique_ids_and_disjoint_effective_coverage`; `test_real_V1_over_50_seeds` (15,5/5/5,no duplicates, varying membership and valid fixed presentations); `test_every_candidate_is_reachable_in_unconstrained_6_each_fixture` (100 deterministic seeds); `test_old_snapshot_survives_new_bank_version`; `test_serialized_snapshot_is_a_defensive_copy`; `test_approved_code_specific_feedback_stays_paired` (all20 code values/copy unchanged); `test_check_cli_returns_counts_and_no_partial_output_on_error`.
 
-- [ ] **Step 2: Verify red.** Run `backend/.venv/bin/python -m unittest backend.tests.test_ranked_selection -v`.
-- [ ] **Step 3: Implement complete compatibility search and snapshots.** Copy/shuffle candidate pools; use SystemRandom by default and injected Random for tests. Backtrack with remaining-quota/eligible-count pruning, memoized failed states and a most-constrained-difficulty choice (tie order Easy,Medium,Hard). Do not return unavailable solely because a greedy/random first choice failed; do not report a search-time budget as proof of impossibility. Select exactly5 each and shuffle final order. Preserve the bank and fixed presentation/copy, then return an immutable snapshot with bank revision/digest/source revision and complete selected questions. Serialize via a deep primitive copy. This helper does not create attempts/scores or implement database freezing; later callers must invoke it before starting an attempt.
+- [x] **Step 2: Verify red.** Run `backend/.venv/bin/python -m unittest backend.tests.test_ranked_selection -v`.
+- [x] **Step 3: Implement complete compatibility search and snapshots.** Copy/shuffle candidate pools; use SystemRandom by default and injected Random for tests. Backtrack with remaining-quota/eligible-count pruning, memoized failed states and a most-constrained-difficulty choice (tie order Easy,Medium,Hard). Do not return unavailable solely because a greedy/random first choice failed; do not report a search-time budget as proof of impossibility. Select exactly5 each and shuffle final order. Preserve the bank and fixed presentation/copy, then return an immutable snapshot with bank revision/digest/source revision and complete selected questions. Serialize via a deep primitive copy. This helper does not create attempts/scores or implement database freezing; later callers must invoke it before starting an attempt.
 
   The CLI reads the reviewed manifest/bank and selects once: `python -m backend.ranked_bank.check --revision ranked-routes-v1 --seed 42`. Print JSON with bank_revision,bank_sha256,question_count=15,counts and selected review refs; no answer key. On invalid/unavailable bank exit nonzero with stderr and no partial assignment output. No server, port, employee data or database is needed.
 - [ ] **Step 4: Verify green on Mac, hosted Windows and with the owner.** Run backend discovery, `node --test tests/*.test.mjs`, `backend/.venv/bin/python -m pip check`, the CLI and `git diff --check`. Current baseline is386 Node checks and10 backend checks; report the actual new totals rather than reusing those numbers. CI must pass at the final PR head. On the Windows computer, from the repository root, have the owner run these read-only checks and compare results:
@@ -223,9 +223,11 @@ node --test tests/*.test.mjs
 ```
 
 Expected CLI:15 questions and Easy5/Medium5/Hard5; repeated seed42 produces the same ordered review refs on both machines. Explain each command first; keep its output/limits in the PR. No browser/deployment claim follows from these backend checks.
-- [ ] **Step 5: Commit selection/CLI/tests/README and update the issue evidence.** Suggested message: `feat: prepare compatible ranked assignments from reviewed bank`. Keep #5 open for genuinely remaining gates/deferred tie content. Do not merge, publish, change branch protection or remove dependencies on the owner's behalf.
+- [x] **Step 5: Commit selection/CLI/tests/README and update the issue evidence.** Suggested message: `feat: prepare compatible ranked assignments from reviewed bank`. Keep #5 open for genuinely remaining gates/deferred tie content. Do not merge, publish, change branch protection or remove dependencies on the owner's behalf.
 
 ## Self-review and execution handoff
+
+Execution note: all implementation steps and task reviews are complete. Task5 Step4 stays unchecked because the owner’s manual Windows commands have not yet been run; automated and hosted evidence is recorded separately. The handoff rules below describe the approved workflow, not a request to approve this plan again.
 
 - Spec coverage:Tasks1/3 preserve identity/source/copy and all283 approved entries; Task2 implements type/exception/marker semantics; Tasks1/4 enforce immutable versions; Task5 proves compatible quotas/snapshots. Deferred work-methods content and future persistence/API/UI stay separate.
 - Interface check:all tasks use the same Context,RouteRule,Question,Bank,AssignmentSnapshot fields and named helper functions above. Public exports are added as their owning tasks land. No task assumes a future API/DB helper exists.
