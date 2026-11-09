@@ -109,7 +109,7 @@ resource postgresServer 'Microsoft.DBforPostgreSQL/flexibleServers@2026-10-01' =
       publicNetworkAccess: 'Enabled'
     }
     storage: {
-      autoGrow: 'Enabled'
+      autoGrow: 'Disabled'
       storageSizeGB: 32
       type: 'Premium_LRS'
     }
@@ -160,7 +160,7 @@ resource logAnalyticsWorkspace 'Microsoft.OperationalInsights/workspaces@2025-07
       name: 'PerGB2018'
     }
     workspaceCapping: {
-      dailyQuotaGb: 0.1
+      dailyQuotaGb: json('0.1')
     }
   }
 }
@@ -226,10 +226,10 @@ resource stagingBudget 'Microsoft.Consumption/budgets@2024-08-01' = {
   }
 }
 
-output webAppName string = webApp.name
+output deployedWebAppName string = webApp.name
 output webAppId string = webApp.id
 output webAppManagedIdentityPrincipalId string = webApp.identity.principalId
-output postgresServerName string = postgresServer.name
+output deployedPostgresServerName string = postgresServer.name
 output postgresServerId string = postgresServer.id
 output logAnalyticsWorkspaceId string = logAnalyticsWorkspace.id
 output applicationInsightsId string = applicationInsights.id

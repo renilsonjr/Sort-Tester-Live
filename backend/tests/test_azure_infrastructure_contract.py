@@ -56,9 +56,37 @@ class BootstrapBoundaryTests(unittest.TestCase):
         self.assertEqual(absent.blockers, ())
         self.assertFalse(existing.allowed)
         self.assertIn("RESOURCE_GROUP_ALREADY_EXISTS", existing.blockers)
+        self.assertFalse(validate_bootstrap_resource_group(exists=None).allowed)
 
 
 class ExistingResourceValidationTests(unittest.TestCase):
+    def test_missing_or_invalid_boundary_never_matches_itself(self) -> None:
+        for value in ({"resources": []}, {"subscriptionId": "bad", "resourceGroup": "rg-sort-tester-staging", "resources": []}):
+            self.assertFalse(validate_existing_resources(value, value, REQUIRED_TAGS).allowed)
+
+    def test_caller_cannot_remove_required_tags(self) -> None:
+        report = observed_report()
+        report["resources"][0]["tags"] = {}
+        self.assertFalse(validate_existing_resources(report, expected_manifest(), {}).allowed)
+
+    def test_untaggable_configuration_requires_exact_valid_tagged_parent(self) -> None:
+        manifest = expected_manifest()
+        parent = manifest["resources"][0]
+        parent.update(type="Microsoft.DBforPostgreSQL/flexibleServers", name="pg-demo")
+        parent["id"] = parent["id"].split("/providers/")[0] + "/providers/Microsoft.DBforPostgreSQL/flexibleServers/pg-demo"
+        child = {"id": parent["id"] + "/configurations/require_secure_transport", "name": "require_secure_transport", "type": "Microsoft.DBforPostgreSQL/flexibleServers/configurations"}
+        manifest["resources"].append(child)
+        report = {**manifest, "resources": [{**parent, "tags": dict(REQUIRED_TAGS)}, dict(child)]}
+        self.assertTrue(validate_existing_resources(report, manifest, REQUIRED_TAGS).allowed)
+        report["resources"][0]["tags"] = {}
+        self.assertFalse(validate_existing_resources(report, manifest, REQUIRED_TAGS).allowed)
+
+    def test_resource_identity_must_belong_to_declared_boundary(self) -> None:
+        manifest = expected_manifest()
+        manifest["resources"][0]["id"] = manifest["resources"][0]["id"].replace("rg-sort-tester-staging", "rg-unrelated")
+        report = {**manifest, "resources": [{**manifest["resources"][0], "tags": dict(REQUIRED_TAGS)}]}
+        self.assertFalse(validate_existing_resources(report, manifest, REQUIRED_TAGS).allowed)
+
     def test_accepts_only_the_exact_manifest_with_required_tags(self) -> None:
         decision = validate_existing_resources(
             observed_report(),
@@ -173,7 +201,7 @@ class BicepContractTests(unittest.TestCase):
         source = compact_bicep("main.bicep")
 
         self.assertIn("retentionInDays: 30", source)
-        self.assertRegex(source, r"dailyQuotaGb:\s*0\.\d+")
+        self.assertIn("dailyQuotaGb: json('0.1')", source)
         self.assertNotIn("firewallRules@", source)
         self.assertNotIn("0.0.0.0", source)
         self.assertNotIn("255.255.255.255", source)
