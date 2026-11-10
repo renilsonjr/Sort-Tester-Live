@@ -2,6 +2,12 @@ name: Container Apps spike
 
 on:
   workflow_dispatch:
+    inputs:
+      confirm_publish:
+        description: 'Publish the built image to ghcr.io as a public package'
+        required: false
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -52,3 +58,30 @@ jobs:
           code=$(curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:18000/does-not-exist)
           if [ "$code" != '404' ]; then echo "Expected HTTP 404 for unknown route, got $code"; exit 1; fi
           echo 'Spike image passed smoke tests'
+
+  spike-publish:
+    name: Publish spike image to GHCR (manual approval input)
+    needs: spike-build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    if: github.event_name == 'workflow_dispatch' && inputs.confirm_publish == true
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Build the publish image from the repository root
+        run: docker build --file infra/azure/spike.Dockerfile --tag ghcr.io/renilsonjr/sort-tester-live-api-spike:${{ github.sha }} .
+
+      - name: Log in to GHCR with the workflow token
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io --username "${{ github.actor }}" --password-stdin
+
+      - name: Push the publish image and record its digest
+        run: |
+          docker push ghcr.io/renilsonjr/sort-tester-live-api-spike:${{ github.sha }}
+          digest=$(docker inspect --format='{{index .RepoDigests 0}}' ghcr.io/renilsonjr/sort-tester-live-api-spike:${{ github.sha }})
+          echo "Image published: $digest" | tee -a "$GITHUB_STEP_SUMMARY"
