@@ -86,7 +86,24 @@ image without registry credentials. Use exactly the 64 hex digest characters
 above (without the `sha256:` prefix) as the bicep `imageSha256` parameter.
 Nothing has been deployed; no resources exist in Azure for this spike.
 
-Image publish, base-digest pinning, bicep compile and what-if (2026-11-10,
-2 creates, 4 existing resources ignored) are done. Image scan, compute-grant
-and cost-estimate refresh, real deployment, cold start, live logs and cleanup
-are pending owner approval.
+Image publish, base-digest pinning, bicep compile and what-if (2026-11-10)
+are done. What-if showed exactly 2 creates and 4 existing resources ignored;
+zero Delete/Replace.
+
+Live deployment and verification (2026-11-10, owner-approved, 30-minute window
+from 07:56 UTC):
+
+- `az deployment group create` succeeded in ~46s with `--confirm-with-what-if`.
+- Created: `ca-sort-spike-spike01` (Container App) and `cae-sort-spike-spike01`
+  (Consumption managed environment). The four pre-existing resources were
+  untouched.
+- FQDN: `ca-sort-spike-spike01.proudwave-d6b6a65c.northcentralus.azurecontainerapps.io`
+- `GET /health` returned HTTP 200 with `{"status":"ok"}` (first request ~0.39s;
+  warm requests ~0.09-0.24s). Unknown route returned HTTP 404.
+- Image: `ghcr.io/renilsonjr/sort-tester-live-api-spike@sha256:0de6ceb356b0f82bb3dc6d3ddca263485675bd84cc3548251ef3ac01cf9baded`
+- Deployment resource ID: `.../providers/Microsoft.Resources/deployments/container-apps-spike`
+
+Cleanup at or before 08:26 UTC (not yet executed at time of writing): delete
+`ca-sort-spike-spike01`, then `cae-sort-spike-spike01`; verify both IDs are
+absent; never delete or modify the four pre-existing resources. Image scan and
+compute-grant/cost-estimate review remain pending.
