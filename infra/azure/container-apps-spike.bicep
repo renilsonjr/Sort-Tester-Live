@@ -27,9 +27,8 @@ resource spikeEnvironment 'Microsoft.App/managedEnvironments@2025-01-01' = {
   location: location
   tags: spikeTags
   properties: {
-    appLogsConfiguration: {
-      destination: 'none'
-    }
+    // No appLogsConfiguration: API 2025-01-01 rejects destination 'none';
+    // omitting the block leaves log ingestion unconfigured (zero ingestion).
     zoneRedundant: false
     workloadProfiles: [
       {
