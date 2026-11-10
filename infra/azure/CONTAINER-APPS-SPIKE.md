@@ -18,7 +18,7 @@ Stop if a paid workload profile or unexpected resource appears in what-if.
 The Dockerfile uses `python:3.14.10-slim` and the existing exact requirements.
 Before building, confirm that base tag exists and record its immutable digest;
 pin `FROM` to that verified digest for the published artifact. Build availability
-and dependency installation are pending. This machine currently has no Docker.
+were verified via GitHub Actions on 2026-11-10; see below.
 
 Building/publishing is a separate action. The proposed public package is
 `ghcr.io/renilsonjr/sort-tester-live-api-spike`; confirm package publication and
@@ -62,18 +62,31 @@ Local Python/JavaScript regressions can verify the unchanged API behavior.
 that builds the image on a GitHub-hosted Linux runner (no local Docker
 required), verifies the runtime UID is 10001, checks that the Ranked bank,
 data, tests, dev config and `.git` are absent, and smoke-tests `/health`
-(200, exact body) and an unknown route (404). It never publishes the image.
+(200, exact body) and an unknown route (404). A separate manually gated
+`spike-publish` job publishes the image only when explicitly dispatched with
+`confirm_publish: true`.
 
 Base image `python:3.14.10-slim` exists; verified manifest digest:
 `sha256:9aaa474097d094040649f2162a627c0049b408f52138d980916788d80f04802f`.
 Pin `FROM` to this digest before any published artifact is built.
 
-Workflow run 42772062073 on `main` (2026-11-10) confirmed: the image builds
-from repository root with the spike Dockerfile; the runtime UID is 10001; the
-Ranked bank, data, tests, dev config and `.git` are absent; `/health` returned
-200 with exactly `{"status":"ok"}`; an unknown route returned 404. Nothing was
-published and nothing was deployed.
+Workflow runs 42772062073 and 42774893957 on `main` (2026-11-10) confirmed: the
+image builds from repository root with the spike Dockerfile (base pinned to the
+verified digest); the runtime UID is 10001; the Ranked bank, data, tests, dev
+config and `.git` are absent; `/health` returned 200 with exactly
+`{"status":"ok"}`; an unknown route returned 404.
 
-Image scan/publish, pinning `FROM` to the base digest, Azure compiler/what-if,
-compute grants, deployment, cold start, live logs and cleanup are pending
-external checks and separate owner approval.
+Workflow run 42777173808 (2026-11-10, manual dispatch with `confirm_publish:
+true`) published the image:
+
+`ghcr.io/renilsonjr/sort-tester-live-api-spike@sha256:0de6ceb356b0f82bb3dc6d3ddca263485675bd84cc3548251ef3ac01cf9baded`
+
+Anonymous manifest pull verified HTTP 200 on 2026-11-10; Azure can pull the
+image without registry credentials. Use exactly the 64 hex digest characters
+above (without the `sha256:` prefix) as the bicep `imageSha256` parameter.
+Nothing has been deployed; no resources exist in Azure for this spike.
+
+Image publish, base-digest pinning, bicep compile and what-if (2026-11-10,
+2 creates, 4 existing resources ignored) are done. Image scan, compute-grant
+and cost-estimate refresh, real deployment, cold start, live logs and cleanup
+are pending owner approval.
