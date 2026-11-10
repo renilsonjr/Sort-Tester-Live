@@ -68,6 +68,12 @@ Base image `python:3.14.10-slim` exists; verified manifest digest:
 `sha256:9aaa474097d094040649f2162a627c0049b408f52138d980916788d80f04802f`.
 Pin `FROM` to this digest before any published artifact is built.
 
-Docker build via the workflow, image scan/publish, Azure compiler/what-if,
+Workflow run 42772062073 on `main` (2026-11-10) confirmed: the image builds
+from repository root with the spike Dockerfile; the runtime UID is 10001; the
+Ranked bank, data, tests, dev config and `.git` are absent; `/health` returned
+200 with exactly `{"status":"ok"}`; an unknown route returned 404. Nothing was
+published and nothing was deployed.
+
+Image scan/publish, pinning `FROM` to the base digest, Azure compiler/what-if,
 compute grants, deployment, cold start, live logs and cleanup are pending
 external checks and separate owner approval.
