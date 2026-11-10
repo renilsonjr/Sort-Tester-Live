@@ -103,7 +103,17 @@ from 07:56 UTC):
 - Image: `ghcr.io/renilsonjr/sort-tester-live-api-spike@sha256:0de6ceb356b0f82bb3dc6d3ddca263485675bd84cc3548251ef3ac01cf9baded`
 - Deployment resource ID: `.../providers/Microsoft.Resources/deployments/container-apps-spike`
 
-Cleanup at or before 08:26 UTC (not yet executed at time of writing): delete
-`ca-sort-spike-spike01`, then `cae-sort-spike-spike01`; verify both IDs are
-absent; never delete or modify the four pre-existing resources. Image scan and
-compute-grant/cost-estimate review remain pending.
+Cleanup executed 2026-11-10 (before the 30-minute window ended):
+
+- `az containerapp delete ca-sort-spike-spike01` — executed.
+- `az containerapp env delete cae-sort-spike-spike01` — succeeded
+  ("Containerapp environment successfully deleted").
+- `az resource show` for both IDs returned ARMResourceNotFound / "was not found":
+  both resources confirmed absent.
+- The four pre-existing resources (PostgreSQL Flexible Server, App Insights,
+  Log Analytics workspace, Smart Detection action group) were not touched.
+
+Spike outcome: SUCCESS. Image published, deployed, verified over HTTPS
+(/health 200 with exact body, unknown route 404), and fully removed at near-zero cost (Consumption, scale-to-zero, no log ingestion). Image scan and
+compute-grant/cost-estimate review remain pending; the spike does not
+authorize employee data or the prize competition.
