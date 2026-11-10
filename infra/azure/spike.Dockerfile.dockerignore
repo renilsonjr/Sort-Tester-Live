@@ -1,0 +1,5 @@
+# Build from repository root. Only these two files enter the build context.
+**
+!backend/
+!backend/main.py
+!backend/requirements.txt
