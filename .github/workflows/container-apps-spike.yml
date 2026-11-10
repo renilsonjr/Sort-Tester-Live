@@ -1,0 +1,54 @@
+name: Container Apps spike
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  spike-build:
+    name: Build and smoke-test spike image (no publish)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Build the spike image from the repository root
+        run: docker build --file infra/azure/spike.Dockerfile --tag sort-tester-live-api-spike:spike .
+
+      - name: Verify the image process UID is 10001
+        run: |
+          uid=$(docker run --rm --entrypoint id sort-tester-live-api-spike:spike -u)
+          if [ "$uid" != "10001" ]; then
+            echo "Expected runtime UID 10001, got $uid"
+            exit 1
+          fi
+
+      - name: Verify sensitive paths are absent from the image
+        run: |
+          docker run --rm --entrypoint sh sort-tester-live-api-spike:spike -c \
+            'for path in /app/backend/ranked_bank /app/backend/data /app/backend/tests /app/dev /app/.git; do
+               if [ -e "$path" ]; then echo "Unexpected path in image: $path"; exit 1; fi
+             done'
+
+      - name: Smoke-test /health and unknown route
+        run: |
+          container=$(docker run -d --rm --publish 127.0.0.1:18000:8000 sort-tester-live-api-spike:spike)
+          trap 'docker stop "$container" >/dev/null 2>&1 || true' EXIT
+          for attempt in $(seq 1 30); do
+            if curl -fsS http://127.0.0.1:18000/health >/tmp/health.json 2>/dev/null; then break; fi
+            if ! docker ps --quiet --filter "id=$container" | grep -q .; then
+              echo 'Container exited before responding'; docker logs "$container"; exit 1
+            fi
+            sleep 1
+          done
+          if [ ! -f /tmp/health.json ]; then echo 'Container did not respond in time'; docker logs "$container"; exit 1; fi
+          body=$(cat /tmp/health.json)
+          if [ "$body" != '{"status":"ok"}' ]; then echo "Unexpected /health body: $body"; exit 1; fi
+          code=$(curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:18000/does-not-exist)
+          if [ "$code" != '404' ]; then echo "Expected HTTP 404 for unknown route, got $code"; exit 1; fi
+          echo 'Spike image passed smoke tests'
