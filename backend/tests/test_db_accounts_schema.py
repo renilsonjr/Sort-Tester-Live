@@ -2,6 +2,7 @@
 import re
 import unittest
 
+import psycopg
 
 from backend.db import migrate, settings
 
@@ -30,8 +31,10 @@ class AccountsSchemaTests(unittest.TestCase):
 
     def test_case_insensitive_username_collision_rejected(self):
         migrate.execute(self.conn, "INSERT INTO accounts (username, username_lower, tag) VALUES ('Alice_1', 'alice_1', 'AAAAAA')")
-        with self.assertRaises(migrate.IntegrityError):
-            migrate.execute(self.conn, "INSERT INTO accounts (username, username_lower, tag) VALUES ('ALICE_1', 'ALICE_1', 'BBBBBB')")
+        # second row is valid in format; only the lowercase-unique collision
+        # on username_lower can reject it (not the format CHECK)
+        with self.assertRaises(psycopg.errors.UniqueViolation):
+            migrate.execute(self.conn, "INSERT INTO accounts (username, username_lower, tag) VALUES ('alice_1', 'alice_1', 'BBBBBB')")
 
     def test_username_format_check(self):
         with self.assertRaises(migrate.IntegrityError):

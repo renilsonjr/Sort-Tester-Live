@@ -93,11 +93,27 @@ class LinksMarkerSchemaTests(unittest.TestCase):
         account_id = self._make_account()
         self._insert_link(account_id, "REF-SURVIVOR")
         self._insert_marker("REF-SURVIVOR", "2026", ineligible=True)
+        # account-owned email row must cascade away with the account
+        migrate.execute(
+            self.conn,
+            "INSERT INTO emails (account_id, address, address_normalized, state,"
+            " reminder_opt_in, reminder_opt_in_at, consent_season, verified_at)"
+            " VALUES (%s, 'linked@example.com', 'linked@example.com', 'verified',"
+            " true, now(), '2026', now())",
+            (account_id,),
+        )
         migrate.execute(self.conn, "DELETE FROM accounts WHERE id = %s", (account_id,))
         self.assertIsNone(
             migrate.fetch_one(
                 self.conn,
                 "SELECT 1 FROM participant_links WHERE account_id = %s",
+                (account_id,),
+            )
+        )
+        self.assertIsNone(
+            migrate.fetch_one(
+                self.conn,
+                "SELECT 1 FROM emails WHERE account_id = %s",
                 (account_id,),
             )
         )
