@@ -1,5 +1,4 @@
 """Pin the reviewed PostgreSQL tooling versions."""
-import re
 from pathlib import Path
 import unittest
 
