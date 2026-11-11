@@ -200,5 +200,17 @@ Windows uses the same environment variable and the same commands, with the
 PowerShell form (`$env:SORT_TESTER_TEST_DATABASE_URL = '...'` and
 `& backend\.venv\Scripts\python.exe ...`) shown earlier in this file.
 
+The scratch database is built from the alembic chain `0001` (tooling probe) →
+`0002` (accounts) → `0003` (emails) → `0004` (participant links and season
+markers). The identity schema enforces: case-insensitive usernames via a
+unique `username_lower` constraint plus a permanent, unique, format-checked
+tag; email addresses normalized by lowercase only (dots and plus-tags are
+never folded) with one active address per account and retired addresses
+reusable on any account; reminder consent permitted only on a verified
+address with a recorded opt-in timestamp; each participant link cascading
+away with its account; and season markers deliberately carrying no account
+foreign key, so they survive account deletion. No connection strings or real
+data examples appear in the migrations or their tests.
+
 No DSN or database credentials belong in the repository; keep every real
 connection string in your local environment only.

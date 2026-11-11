@@ -27,19 +27,20 @@ class ToolingProbeMigrationTests(unittest.TestCase):
 
     def test_clean_migrate_creates_probe_table(self):
         migrate.upgrade_to_head(self.conninfo)
-        self.assertEqual(migrate.current_revision(self.conninfo), "0001")
+        self.assertIsNotNone(migrate.current_revision(self.conninfo))
         self.assertTrue(migrate.table_exists(self.conninfo, "tooling_probe"))
 
     def test_rerun_is_idempotent(self):
         migrate.upgrade_to_head(self.conninfo)
-        self.assertEqual(migrate.current_revision(self.conninfo), "0001")
+        first = migrate.current_revision(self.conninfo)
+        self.assertIsNotNone(first)
         migrate.upgrade_to_head(self.conninfo)
-        self.assertEqual(migrate.current_revision(self.conninfo), "0001")
+        self.assertEqual(migrate.current_revision(self.conninfo), first)
         self.assertTrue(migrate.table_exists(self.conninfo, "tooling_probe"))
 
     def test_downgrade_removes_probe_table(self):
         migrate.upgrade_to_head(self.conninfo)
-        self.assertEqual(migrate.current_revision(self.conninfo), "0001")
+        self.assertIsNotNone(migrate.current_revision(self.conninfo))
         self.assertTrue(migrate.table_exists(self.conninfo, "tooling_probe"))
         migrate.downgrade_all(self.conninfo)
         self.assertIsNone(migrate.current_revision(self.conninfo))
@@ -67,5 +68,30 @@ class MalformedEnvironmentTests(unittest.TestCase):
         output = result.stdout + result.stderr
         self.assertEqual(result.returncode, 0, output)
         self.assertIn("skipped=1", output)
+        self.assertIn(settings.ENV_VAR, output)
+        self.assertNotIn("Traceback", output)
+
+    def test_schema_modules_skip_malformed_nonempty_url(self):
+        env = os.environ.copy()
+        env[settings.ENV_VAR] = "not-a-url"
+        result = subprocess.run(
+            [
+                sys.executable,
+                "-m",
+                "unittest",
+                "backend.tests.test_db_accounts_schema.AccountsSchemaTests",
+                "backend.tests.test_db_emails_schema.EmailsSchemaTests",
+                "backend.tests.test_db_links_marker_schema.LinksMarkerSchemaTests",
+                "-v",
+            ],
+            cwd=Path(__file__).resolve().parents[2],
+            env=env,
+            text=True,
+            capture_output=True,
+            check=False,
+        )
+        output = result.stdout + result.stderr
+        self.assertEqual(result.returncode, 0, output)
+        self.assertIn("skipped=3", output)
         self.assertIn(settings.ENV_VAR, output)
         self.assertNotIn("Traceback", output)

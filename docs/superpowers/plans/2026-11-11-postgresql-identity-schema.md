@@ -253,12 +253,12 @@ git commit -m "feat(db): participant links and minimal season-ineligibility mark
 
 - [ ] **Step 1: Run the full backend suite with the live server**
 
-Run: `SORT_TESTER_TEST_DATABASE_URL=… backend/.venv/bin/python -m unittest discover -s backend/tests`
-Expected: PASS — assert the exact observed count (105 previous + 13 new = 118 expected; record the observed number) before claiming it.
+Run: `SORT_TESTER_TEST_DATABASE_URL=… backend/.venv/bin/python -m unittest backend.tests.test_azure_container_app_staging backend.tests.test_db_accounts_schema backend.tests.test_db_emails_schema backend.tests.test_db_harness_guard backend.tests.test_db_links_marker_schema backend.tests.test_db_migration backend.tests.test_db_settings backend.tests.test_db_tooling_pins backend.tests.test_main backend.tests.test_ranked_catalog backend.tests.test_ranked_coverage backend.tests.test_ranked_data backend.tests.test_ranked_loading backend.tests.test_ranked_selection` (explicit module list — `unittest discover` cannot work in this environment)
+Expected: PASS — assert the exact observed count (105 previous + 13 new + 1 malformed-pin test = 119 expected; record the observed number) before claiming it.
 
 - [ ] **Step 2: Run the suite without the env var**
 
-Expected: all database tests skip cleanly (12 skip lines), controlled, no tracebacks. Also run the malformed-URL regression from the tooling plan and record the controlled-skip output.
+Expected: all database tests skip cleanly (16 skipped database tests: 4+4+5+3), controlled, no tracebacks. Also run the malformed-URL regression from the tooling plan and record the controlled-skip output (103 ran, 4 skipped).
 
 - [ ] **Step 3: Run the JavaScript suite**
 

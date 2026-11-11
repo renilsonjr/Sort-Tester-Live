@@ -5,6 +5,7 @@ callers supply the URL from ``backend.db.settings``. Alembic's command
 API runs against a live psycopg3 connection handed to ``env.py`` through
 ``config.attributes["connection"]``.
 """
+import itertools
 from pathlib import Path
 
 import psycopg
@@ -12,12 +13,59 @@ from alembic import command
 from alembic.config import Config
 from sqlalchemy import create_engine
 from psycopg import sql
+from psycopg.pq import TransactionStatus
+from psycopg.rows import dict_row
 from psycopg.conninfo import conninfo_to_dict
 
 from backend.db import settings
 
 _BACKEND_DIR = Path(__file__).resolve().parents[1]
 _INI_PATH = _BACKEND_DIR / "migrations.ini"
+
+IntegrityError = psycopg.errors.IntegrityError
+
+_savepoint_counter = itertools.count()
+
+
+def connect(conninfo: str) -> psycopg.Connection:
+    """Open a psycopg3 connection to *conninfo* with dict rows.
+
+    The connection is returned uncommitted; callers own transaction
+    control (tests rely on rollback isolation via ``conn.rollback()``).
+    """
+    return psycopg.connect(conninfo, row_factory=dict_row)
+
+
+def execute(conn, sql_text: str, params=None):
+    """Run *sql_text* on *conn* WITHOUT committing.
+
+    Isolation comes from the caller's transaction handling — the schema
+    tests roll back in cleanup so no rows leak between tests. When the
+    connection is not already inside a transaction one is opened (and
+    left open for the caller's rollback/commit); the statement itself
+    runs under a savepoint, so an expected failure (e.g. a CHECK or
+    UNIQUE violation the test asserts on) does not abort the rest of
+    the transaction. Migration and DDL paths manage their own
+    transactions.
+    """
+    if conn.info.transaction_status == TransactionStatus.IDLE:
+        conn.execute("BEGIN")
+    name = f"migrate_sp_{next(_savepoint_counter)}"
+    conn.execute(sql.SQL("SAVEPOINT {}").format(sql.Identifier(name)))
+    try:
+        result = conn.execute(sql_text, params or ())
+    except BaseException:
+        conn.execute(sql.SQL("ROLLBACK TO SAVEPOINT {}").format(sql.Identifier(name)))
+        conn.execute(sql.SQL("RELEASE SAVEPOINT {}").format(sql.Identifier(name)))
+        raise
+    conn.execute(sql.SQL("RELEASE SAVEPOINT {}").format(sql.Identifier(name)))
+    return result
+
+
+def fetch_one(conn, sql_text: str, params=None) -> dict | None:
+    """Return the first row of the query as a dict, or None."""
+    row = execute(conn, sql_text, params).fetchone()
+    return dict(row) if row is not None else None
 
 
 def _alembic_config(conninfo: str) -> Config:
