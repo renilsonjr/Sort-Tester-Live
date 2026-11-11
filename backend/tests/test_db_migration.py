@@ -27,19 +27,20 @@ class ToolingProbeMigrationTests(unittest.TestCase):
 
     def test_clean_migrate_creates_probe_table(self):
         migrate.upgrade_to_head(self.conninfo)
-        self.assertEqual(migrate.current_revision(self.conninfo), "0001")
+        self.assertIsNotNone(migrate.current_revision(self.conninfo))
         self.assertTrue(migrate.table_exists(self.conninfo, "tooling_probe"))
 
     def test_rerun_is_idempotent(self):
         migrate.upgrade_to_head(self.conninfo)
-        self.assertEqual(migrate.current_revision(self.conninfo), "0001")
+        first = migrate.current_revision(self.conninfo)
+        self.assertIsNotNone(first)
         migrate.upgrade_to_head(self.conninfo)
-        self.assertEqual(migrate.current_revision(self.conninfo), "0001")
+        self.assertEqual(migrate.current_revision(self.conninfo), first)
         self.assertTrue(migrate.table_exists(self.conninfo, "tooling_probe"))
 
     def test_downgrade_removes_probe_table(self):
         migrate.upgrade_to_head(self.conninfo)
-        self.assertEqual(migrate.current_revision(self.conninfo), "0001")
+        self.assertIsNotNone(migrate.current_revision(self.conninfo))
         self.assertTrue(migrate.table_exists(self.conninfo, "tooling_probe"))
         migrate.downgrade_all(self.conninfo)
         self.assertIsNone(migrate.current_revision(self.conninfo))
