@@ -175,3 +175,83 @@ The selector returns immutable internal snapshots preserving reviewed examples
 and bilingual feedback; serialization includes answers and is for internal use.
 Later attempt code must call selection before starting an attempt. These checks
 do not verify a browser, deployment, persistence, API or game scoring.
+
+## Database tooling
+
+The backend database tests run against a temporary scratch PostgreSQL database.
+Point `SORT_TESTER_TEST_DATABASE_URL` at a database named
+`sort_tester_unittest_scratch`; when the variable is unset, the database tests
+skip with a clear message. The harness refuses any database not named
+`.../sort_tester_unittest_scratch`.
+
+Versions tested with this milestone: PostgreSQL 18.6, psycopg 3.3.8,
+alembic 1.20.1, Python 3.14.
+
+On Linux or macOS, from the repository root:
+
+```sh
+export SORT_TESTER_TEST_DATABASE_URL="postgresql://USER@127.0.0.1:5432/sort_tester_unittest_scratch"
+backend/.venv/bin/python -m unittest discover -s backend/tests
+```
+
+The database tests (in `backend/tests/test_db_migration.py`) build the alembic
+configuration themselves from that URL; no separate alembic command is needed.
+Windows uses the same environment variable and the same commands, with the
+PowerShell form (`$env:SORT_TESTER_TEST_DATABASE_URL = '...'` and
+`& backend\.venv\Scripts\python.exe ...`) shown earlier in this file.
+
+The scratch database is built from the alembic chain `0001` (tooling probe) →
+`0002` (accounts) → `0003` (emails) → `0004` (participant links and season
+markers) → `0005` (question versions and frozen assignments) → `0006`
+(attempts, active-attempt lock, and answer acceptance) → `0007` (seasons,
+phase guards, and unique settlement keys) → `0008` (balance ledger) →
+`0009` (durable outbox). The identity schema enforces:
+case-insensitive usernames via a unique `username_lower` constraint plus a
+permanent, unique, format-checked tag; email addresses normalized by
+lowercase only (dots and plus-tags are never folded) with one active address
+per account and retired addresses reusable on any account; reminder consent
+permitted only on a verified address with a recorded opt-in timestamp; each
+participant link cascading away with its account; and season markers
+deliberately carrying no account foreign key, so they survive account
+deletion. No connection strings or real data examples appear in the
+migrations or their tests.
+
+The game-progress schema enforces: question versions are insert-only rows
+pinned by a unique bank-key-plus-content-digest pair, so reviewed content can
+never change under its digest; each assignment freezes a per-slot question
+sequence where every slot carries one question and no question repeats; an
+account may hold at most one unfinished attempt (active, grace, or
+terminal-pending) via a partial unique index, and finalized attempts stop
+counting so a new one can start; answers are immutable per attempt-slot rows
+whose acceptance state is written once — an answer and its acceptance
+timestamp exist together or not at all, and the deadline always lands after
+the first send; a tie-break attempt may carry at most one numbered
+tie-break round (1–5), assigned by the engine; other modes must carry none;
+season history is
+append-only (cutover opens the next season row rather than mutating closed
+ones, with the structural guards being the season foreign keys on
+assignments, attempts, and settlements plus a queryable close timestamp);
+and each attempt settles at most once, because the settlement table's primary
+key on the attempt is itself the unique settlement key. The deferred season
+foreign keys are added by `0007`, so earlier migration files are never
+edited after they merge.
+
+The balance ledger added by `0008` enforces exactly one balance row per
+account (the account foreign key is the primary key, cascading away with the
+account) and an append-only balance history whose unique key on the
+settlement means each settlement applies at most once, recording the raw
+score, adjustment, points before/after, and badge before/after as-is — badge
+values are constrained to the fixed tier set, and cached `current_points` is
+kept in step with the history by the engine transaction, not by the schema.
+
+The durable outbox added by `0009` is a generic queue table that carries no
+foreign keys to any feature table: the row's real subject travels inside the
+`payload` JSONB so later-feature migrations can never form a cycle with this
+one, `message_key` is the idempotency handle the worker dedupes on,
+`recipient_destination_version` and `consent_version` pin the destination and
+consent state the message was rendered for, and `attempt_count` plus
+`worker_lease_until` are the bounded-retry and lease knobs owned by the
+dispatcher, which never rewrites the payload.
+
+No DSN or database credentials belong in the repository; keep every real
+connection string in your local environment only.
