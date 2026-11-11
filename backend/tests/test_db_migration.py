@@ -70,3 +70,28 @@ class MalformedEnvironmentTests(unittest.TestCase):
         self.assertIn("skipped=1", output)
         self.assertIn(settings.ENV_VAR, output)
         self.assertNotIn("Traceback", output)
+
+    def test_schema_modules_skip_malformed_nonempty_url(self):
+        env = os.environ.copy()
+        env[settings.ENV_VAR] = "not-a-url"
+        result = subprocess.run(
+            [
+                sys.executable,
+                "-m",
+                "unittest",
+                "backend.tests.test_db_accounts_schema.AccountsSchemaTests",
+                "backend.tests.test_db_emails_schema.EmailsSchemaTests",
+                "backend.tests.test_db_links_marker_schema.LinksMarkerSchemaTests",
+                "-v",
+            ],
+            cwd=Path(__file__).resolve().parents[2],
+            env=env,
+            text=True,
+            capture_output=True,
+            check=False,
+        )
+        output = result.stdout + result.stderr
+        self.assertEqual(result.returncode, 0, output)
+        self.assertIn("skipped=3", output)
+        self.assertIn(settings.ENV_VAR, output)
+        self.assertNotIn("Traceback", output)
