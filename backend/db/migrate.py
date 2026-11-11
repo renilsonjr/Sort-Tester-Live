@@ -12,6 +12,9 @@ from alembic import command
 from alembic.config import Config
 from sqlalchemy import create_engine
 from psycopg import sql
+from urllib.parse import urlsplit
+
+from backend.db import settings
 
 _BACKEND_DIR = Path(__file__).resolve().parents[1]
 _INI_PATH = _BACKEND_DIR / "migrations.ini"
@@ -73,13 +76,36 @@ def table_exists(conninfo: str, name: str) -> bool:
         return row is not None
 
 
+def _url_database(conninfo: str) -> str:
+    """Return the database component of a postgresql:// *conninfo* URL."""
+    return urlsplit(conninfo).path.rstrip("/").rpartition("/")[2]
+
+
 def recreate_scratch_database(admin_conninfo: str, name: str) -> None:
     """Drop (forcing open connections) and recreate the database *name*.
 
     *admin_conninfo* must point at the same server but a maintenance
     database such as ``postgres``. CREATE DATABASE cannot run inside a
     transaction, so the admin connection is opened in autocommit mode.
+
+    Raises :class:`~backend.db.settings.DatabaseConfigError` when *name*
+    is not the unittest scratch database or when *admin_conninfo* does
+    not point at the maintenance database. Both guards are checked
+    before any network I/O.
     """
+    if name != settings.SCRATCH_DB_NAME:
+        raise settings.DatabaseConfigError(
+            f"recreate_scratch_database only manages {settings.SCRATCH_DB_NAME}; "
+            f"refusing to drop/recreate {name!r}."
+        )
+    conninfo_database = _url_database(admin_conninfo)
+    if conninfo_database != settings.MAINTENANCE_DATABASE:
+        raise settings.DatabaseConfigError(
+            "admin conninfo must point at the maintenance database "
+            f"{settings.MAINTENANCE_DATABASE!r} (as settings.admin_url() "
+            f"produces) so the scratch database is never the connection "
+            f"target; got {conninfo_database!r}."
+        )
     with psycopg.connect(admin_conninfo, autocommit=True) as conn:
         conn.execute(
             sql.SQL("DROP DATABASE IF EXISTS {} WITH (FORCE)").format(
