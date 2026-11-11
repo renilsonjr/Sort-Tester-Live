@@ -54,3 +54,6 @@ Thumbs.db
 infra/azure/*.local.bicepparam
 infra/azure/*.generated.json
 infra/azure/deployment-manifest*.json
+
+# worktrees
+.worktrees/
