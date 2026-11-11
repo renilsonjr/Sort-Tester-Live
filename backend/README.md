@@ -202,15 +202,37 @@ PowerShell form (`$env:SORT_TESTER_TEST_DATABASE_URL = '...'` and
 
 The scratch database is built from the alembic chain `0001` (tooling probe) →
 `0002` (accounts) → `0003` (emails) → `0004` (participant links and season
-markers). The identity schema enforces: case-insensitive usernames via a
-unique `username_lower` constraint plus a permanent, unique, format-checked
-tag; email addresses normalized by lowercase only (dots and plus-tags are
-never folded) with one active address per account and retired addresses
-reusable on any account; reminder consent permitted only on a verified
-address with a recorded opt-in timestamp; each participant link cascading
-away with its account; and season markers deliberately carrying no account
-foreign key, so they survive account deletion. No connection strings or real
-data examples appear in the migrations or their tests.
+markers) → `0005` (question versions and frozen assignments) → `0006`
+(attempts, active-attempt lock, and answer acceptance) → `0007` (seasons,
+phase guards, and unique settlement keys). The identity schema enforces:
+case-insensitive usernames via a unique `username_lower` constraint plus a
+permanent, unique, format-checked tag; email addresses normalized by
+lowercase only (dots and plus-tags are never folded) with one active address
+per account and retired addresses reusable on any account; reminder consent
+permitted only on a verified address with a recorded opt-in timestamp; each
+participant link cascading away with its account; and season markers
+deliberately carrying no account foreign key, so they survive account
+deletion. No connection strings or real data examples appear in the
+migrations or their tests.
+
+The game-progress schema enforces: question versions are insert-only rows
+pinned by a unique bank-key-plus-content-digest pair, so reviewed content can
+never change under its digest; each assignment freezes a per-slot question
+sequence where every slot carries one question and no question repeats; an
+account may hold at most one unfinished attempt (active, grace, or
+terminal-pending) via a partial unique index, and finalized attempts stop
+counting so a new one can start; answers are immutable per attempt-slot rows
+whose acceptance state is written once — an answer and its acceptance
+timestamp exist together or not at all, and the deadline always lands after
+the first send; a tie-break attempt must carry exactly one numbered
+tie-break round, and other modes must carry none; season history is
+append-only (cutover opens the next season row rather than mutating closed
+ones, with the structural guards being the season foreign keys on
+assignments, attempts, and settlements plus a queryable close timestamp);
+and each attempt settles at most once, because the settlement table's primary
+key on the attempt is itself the unique settlement key. The deferred season
+foreign keys are added by `0007`, so earlier migration files are never
+edited after they merge.
 
 No DSN or database credentials belong in the repository; keep every real
 connection string in your local environment only.
