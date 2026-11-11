@@ -32,6 +32,9 @@ class AttemptsAnswersSchemaTests(unittest.TestCase):
         self.addCleanup(self.conn.close)
         self.addCleanup(self.conn.rollback)
         self.account_id = self._make_account()
+        # since migration 0007, assignments/attempts.season_id reference
+        # seasons(id), so every assignment/attempt cites a real season row
+        self.season_id = self._make_season()
 
     def _next_digest(self):
         return next(self._digest_counter)
@@ -40,6 +43,14 @@ class AttemptsAnswersSchemaTests(unittest.TestCase):
         row = migrate.fetch_one(
             self.conn,
             "INSERT INTO accounts (username, username_lower, tag) VALUES ('attempt_user', 'attempt_user', 'C00001') RETURNING id",
+        )
+        return row["id"]
+
+    def _make_season(self, label="pre_season", phase="pre_season", closed_at=None):
+        row = migrate.fetch_one(
+            self.conn,
+            "INSERT INTO seasons (phase, label, closed_at) VALUES (%s, %s, %s) RETURNING id",
+            (phase, label, closed_at),
         )
         return row["id"]
 
@@ -53,17 +64,17 @@ class AttemptsAnswersSchemaTests(unittest.TestCase):
         )
         return row["id"]
 
-    def _make_assignment(self, account_id=None, mode="normal"):
+    def _make_assignment(self, account_id=None, mode="normal", season_id=None):
         row = migrate.fetch_one(
             self.conn,
             "INSERT INTO assignments (account_id, mode, season_id) VALUES (%s, %s, %s) RETURNING id",
-            (account_id or self.account_id, mode, self.account_id),
+            (account_id or self.account_id, mode, season_id or self.season_id),
         )
         return row["id"]
 
     def _make_attempt(self, account_id=None, assignment_id=None, mode="normal",
                       state="active", tiebreak_round=None, grace_deadline_at=None,
-                      final_outcome=None, settled_at=None):
+                      final_outcome=None, settled_at=None, season_id=None):
         row = migrate.fetch_one(
             self.conn,
             "INSERT INTO attempts (account_id, assignment_id, mode, state, tiebreak_round,"
@@ -71,11 +82,11 @@ class AttemptsAnswersSchemaTests(unittest.TestCase):
             " VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s) RETURNING id",
             (
                 account_id or self.account_id,
-                assignment_id or self._make_assignment(mode=mode),
+                assignment_id or self._make_assignment(mode=mode, season_id=season_id),
                 mode,
                 state,
                 tiebreak_round,
-                account_id or self.account_id,
+                season_id or self.season_id,
                 grace_deadline_at,
                 final_outcome,
                 settled_at,

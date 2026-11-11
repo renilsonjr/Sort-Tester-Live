@@ -32,6 +32,8 @@ class QuestionsAssignmentsSchemaTests(unittest.TestCase):
         self.addCleanup(self.conn.close)
         self.addCleanup(self.conn.rollback)
         self.account_id = self._make_account()
+        # since migration 0007, assignments.season_id references seasons(id)
+        self.season_id = self._make_season()
 
     def _next_digest(self):
         return next(self._digest_counter)
@@ -40,6 +42,14 @@ class QuestionsAssignmentsSchemaTests(unittest.TestCase):
         row = migrate.fetch_one(
             self.conn,
             "INSERT INTO accounts (username, username_lower, tag) VALUES ('assign_user', 'assign_user', 'C00001') RETURNING id",
+        )
+        return row["id"]
+
+    def _make_season(self, label="pre_season", phase="pre_season", closed_at=None):
+        row = migrate.fetch_one(
+            self.conn,
+            "INSERT INTO seasons (phase, label, closed_at) VALUES (%s, %s, %s) RETURNING id",
+            (phase, label, closed_at),
         )
         return row["id"]
 
@@ -57,7 +67,7 @@ class QuestionsAssignmentsSchemaTests(unittest.TestCase):
         row = migrate.fetch_one(
             self.conn,
             "INSERT INTO assignments (account_id, mode, season_id) VALUES (%s, %s, %s) RETURNING id",
-            (account_id or self.account_id, mode, season_id or self.account_id),
+            (account_id or self.account_id, mode, season_id or self.season_id),
         )
         return row["id"]
 
