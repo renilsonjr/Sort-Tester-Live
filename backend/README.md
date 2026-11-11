@@ -204,7 +204,8 @@ The scratch database is built from the alembic chain `0001` (tooling probe) →
 `0002` (accounts) → `0003` (emails) → `0004` (participant links and season
 markers) → `0005` (question versions and frozen assignments) → `0006`
 (attempts, active-attempt lock, and answer acceptance) → `0007` (seasons,
-phase guards, and unique settlement keys). The identity schema enforces:
+phase guards, and unique settlement keys) → `0008` (balance ledger) →
+`0009` (durable outbox). The identity schema enforces:
 case-insensitive usernames via a unique `username_lower` constraint plus a
 permanent, unique, format-checked tag; email addresses normalized by
 lowercase only (dots and plus-tags are never folded) with one active address
@@ -234,6 +235,23 @@ and each attempt settles at most once, because the settlement table's primary
 key on the attempt is itself the unique settlement key. The deferred season
 foreign keys are added by `0007`, so earlier migration files are never
 edited after they merge.
+
+The balance ledger added by `0008` enforces exactly one balance row per
+account (the account foreign key is the primary key, cascading away with the
+account) and an append-only balance history whose unique key on the
+settlement means each settlement applies at most once, recording the raw
+score, adjustment, points before/after, and badge before/after as-is — badge
+values are constrained to the fixed tier set, and cached `current_points` is
+kept in step with the history by the engine transaction, not by the schema.
+
+The durable outbox added by `0009` is a generic queue table that carries no
+foreign keys to any feature table: the row's real subject travels inside the
+`payload` JSONB so later-feature migrations can never form a cycle with this
+one, `message_key` is the idempotency handle the worker dedupes on,
+`recipient_destination_version` and `consent_version` pin the destination and
+consent state the message was rendered for, and `attempt_count` plus
+`worker_lease_until` are the bounded-retry and lease knobs owned by the
+dispatcher, which never rewrites the payload.
 
 No DSN or database credentials belong in the repository; keep every real
 connection string in your local environment only.
