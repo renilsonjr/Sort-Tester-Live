@@ -175,3 +175,30 @@ The selector returns immutable internal snapshots preserving reviewed examples
 and bilingual feedback; serialization includes answers and is for internal use.
 Later attempt code must call selection before starting an attempt. These checks
 do not verify a browser, deployment, persistence, API or game scoring.
+
+## Database tooling
+
+The backend database tests run against a temporary scratch PostgreSQL database.
+Point `SORT_TESTER_TEST_DATABASE_URL` at a database named
+`sort_tester_unittest_scratch`; when the variable is unset, the database tests
+skip with a clear message. The harness refuses any database not named
+`.../sort_tester_unittest_scratch`.
+
+Versions tested with this milestone: PostgreSQL 18.6, psycopg 3.3.8,
+alembic 1.20.1, Python 3.14.
+
+On Linux or macOS, from the repository root:
+
+```sh
+export SORT_TESTER_TEST_DATABASE_URL="postgresql://USER@127.0.0.1:5432/sort_tester_unittest_scratch"
+backend/.venv/bin/python -m unittest discover -s backend/tests
+```
+
+The database tests (in `backend/tests/test_db_migration.py`) build the alembic
+configuration themselves from that URL; no separate alembic command is needed.
+Windows uses the same environment variable and the same commands, with the
+PowerShell form (`$env:SORT_TESTER_TEST_DATABASE_URL = '...'` and
+`& backend\.venv\Scripts\python.exe ...`) shown earlier in this file.
+
+No DSN or database credentials belong in the repository; keep every real
+connection string in your local environment only.
