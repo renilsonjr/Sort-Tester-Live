@@ -1,8 +1,10 @@
 """Environment-only connection settings for test database tooling."""
 import os
+from urllib.parse import urlsplit, urlunsplit
 
 ENV_VAR = "SORT_TESTER_TEST_DATABASE_URL"
 SCRATCH_DB_NAME = "sort_tester_unittest_scratch"
+MAINTENANCE_DATABASE = "postgres"
 _POSTGRESQL_SCHEME = "postgresql://"
 
 
@@ -36,3 +38,36 @@ def test_database_url() -> str:
             f"only ever touches {SCRATCH_DB_NAME}."
         )
     return url
+
+
+def environment_has_test_url() -> bool:
+    """Return True when the test database URL is present in the environment.
+
+    Presence only: the URL is not validated here, so callers that need a
+    usable DSN should call :func:`test_database_url` and handle
+    :class:`DatabaseConfigError`.
+    """
+    return bool(os.environ.get(ENV_VAR, "").strip())
+
+
+def admin_url() -> str:
+    """Return the same server URL with its database replaced by the maintenance one.
+
+    The admin/maintenance URL keeps whatever host, port and credentials
+    the test URL carries, but points its database component at
+    ``MAINTENANCE_DATABASE`` so tasks like DROP/CREATE DATABASE run
+    outside the database being managed.
+    """
+    url = test_database_url()
+    parts = urlsplit(url)
+    base = parts.path.rstrip("/")
+    parent_path = base.rpartition("/")[0]
+    return urlunsplit(
+        (
+            parts.scheme,
+            parts.netloc,
+            f"{parent_path}/{MAINTENANCE_DATABASE}",
+            parts.query,
+            parts.fragment,
+        )
+    )
