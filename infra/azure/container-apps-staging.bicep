@@ -12,9 +12,9 @@ param expiresOn string
 
 @description('Only the image digest verified by the November 10 fictional-data spike is accepted.')
 @allowed([
-  '0de6ceb356b0f82bb3dc6d3ddca263485675bd84cc3548251ef3ac01cf9baded'
+  '2efc496c42d6302260ce297b228581511bc73ec0a181671644170cf3255638cf'
 ])
-param imageSha256 string = '0de6ceb356b0f82bb3dc6d3ddca263485675bd84cc3548251ef3ac01cf9baded'
+param imageSha256 string = '2efc496c42d6302260ce297b228581511bc73ec0a181671644170cf3255638cf'
 
 var stagingTags = {
   'project': 'sort-tester-live'

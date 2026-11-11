@@ -7,7 +7,7 @@ import unittest
 
 ROOT = Path(__file__).resolve().parents[2]
 TEMPLATE = ROOT / "infra" / "azure" / "container-apps-staging.bicep"
-PINNED_DIGEST = "0de6ceb356b0f82bb3dc6d3ddca263485675bd84cc3548251ef3ac01cf9baded"
+PINNED_DIGEST = "2efc496c42d6302260ce297b228581511bc73ec0a181671644170cf3255638cf"
 
 
 class ContainerAppsStagingContractTests(unittest.TestCase):

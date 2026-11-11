@@ -20,7 +20,14 @@ Container Apps spike in `CONTAINER-APPS-SPIKE.md` is the tested starting point.
    until the difference is understood. This template must not modify them.
 3. Confirm the public GHCR image is anonymously pullable by its immutable
    digest and scan that digest. The reviewed digest is
-   `sha256:0de6ceb356b0f82bb3dc6d3ddca263485675bd84cc3548251ef3ac01cf9baded`.
+   `sha256:2efc496c42d6302260ce297b228581511bc73ec0a181671644170cf3255638cf`.
+   Scanned on 2026-11-11 with Trivy 0.76.2: zero High or Critical findings in
+   the Alpine 3.24 OS layer. Seven Python findings are all vendored copies
+   inside `pip` and `setuptools` distributions (the flagged versions exist
+   nowhere else in the image); the top-level installs are patched
+   (`setuptools` 78.1.1, `msgpack` 1.2.3, `urllib3` 2.8.0) and the FastAPI
+   runtime imports none of the vendored code. Re-scan before deploying if
+   more than a week has passed.
    Stop on a failed pull, architecture mismatch, scan finding requiring a fix,
    or missing cost evidence. Do not substitute a mutable tag.
 4. Use only a clean, reviewed commit of `codex/ranked-mode`. Keep account IDs,
