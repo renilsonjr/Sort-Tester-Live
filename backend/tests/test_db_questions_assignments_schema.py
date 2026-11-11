@@ -1,6 +1,7 @@
 """Question versions and frozen assignments schema contract (issue #6 check 3)."""
 import unittest
 
+import psycopg.errors
 
 from backend.db import migrate, settings
 
@@ -118,6 +119,36 @@ class QuestionsAssignmentsSchemaTests(unittest.TestCase):
         # the boundary values themselves are inside the CHECK
         self._add_question(assignment_id, 1, version_id)
         self._add_question(assignment_id, 15, self._make_question_version())
+
+    def test_question_version_digest_is_immutable(self):
+        version_id = self._make_question_version()
+        with self.assertRaises(psycopg.errors.RaiseException):
+            migrate.execute(
+                self.conn,
+                "UPDATE question_versions SET content_sha256 = %s WHERE id = %s",
+                (self._next_digest(), version_id),
+            )
+
+    def test_assignment_mode_is_immutable(self):
+        assignment_id = self._make_assignment()
+        with self.assertRaises(psycopg.errors.RaiseException):
+            migrate.execute(
+                self.conn,
+                "UPDATE assignments SET mode = 'promotion' WHERE id = %s",
+                (assignment_id,),
+            )
+
+    def test_assignment_question_seq_is_immutable(self):
+        assignment_id = self._make_assignment()
+        version_id = self._make_question_version()
+        self._add_question(assignment_id, 1, version_id)
+        with self.assertRaises(psycopg.errors.RaiseException):
+            migrate.execute(
+                self.conn,
+                "UPDATE assignment_questions SET seq = 2"
+                " WHERE assignment_id = %s AND question_version_id = %s",
+                (assignment_id, version_id),
+            )
 
     def test_assignment_cascades_with_account(self):
         # a dedicated account so the shared setUp account is untouched

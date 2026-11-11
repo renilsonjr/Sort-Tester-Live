@@ -189,6 +189,12 @@ class SeasonsSettlementsSchemaTests(unittest.TestCase):
         self.assertIsNotNone(assignment_id)
         self.assertIsNotNone(self._make_attempt())
 
+    def test_settlement_must_use_attempts_season(self):
+        official_season_id = self._make_season(label="official", phase="official")
+        attempt_id = self._make_attempt(season_id=self.season_id)
+        with self.assertRaises(psycopg.errors.ForeignKeyViolation):
+            self._make_settlement(attempt_id, season_id=official_season_id)
+
     def test_settlement_cascade_and_season_immutable_history(self):
         # cutover: the closed Pre-Season row stands and the official season
         # opens as a new row — history is never mutated

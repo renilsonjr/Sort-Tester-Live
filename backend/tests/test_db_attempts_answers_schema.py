@@ -1,6 +1,7 @@
 """Attempts, active lock, and answer acceptance schema contract (issue #6 check 3)."""
 import unittest
 
+import psycopg.errors
 
 from backend.db import migrate, settings
 
@@ -163,12 +164,13 @@ class AttemptsAnswersSchemaTests(unittest.TestCase):
         # ... an answer recorded without its acceptance timestamp is rejected ...
         with self.assertRaises(migrate.IntegrityError):
             self._add_answer(attempt_id, 2, answer="correct", outcome="correct")
-        # ... first_sent_at is mandatory ...
-        with self.assertRaises(migrate.IntegrityError):
+        # ... first_sent_at is mandatory, with every other required column supplied ...
+        with self.assertRaises(psycopg.errors.NotNullViolation):
             migrate.execute(
                 self.conn,
                 "INSERT INTO attempt_answers (attempt_id, seq, question_version_id,"
-                " first_sent_at, deadline_at) VALUES (%s, %s, %s, NULL, %s)",
+                " first_sent_at, deadline_at, outcome)"
+                " VALUES (%s, %s, %s, NULL, %s, 'unsent')",
                 (attempt_id, 3, self._make_question_version(), "2026-01-01T00:00:10Z"),
             )
         # ... and the deadline must lie strictly after first_sent_at
@@ -190,11 +192,26 @@ class AttemptsAnswersSchemaTests(unittest.TestCase):
         with self.assertRaises(migrate.IntegrityError):
             self._add_answer(attempt_id, 16)
         self._add_answer(attempt_id, 15)
-        # ... tiebreak_round is only valid on tiebreak attempts, inside 1..5
-        with self.assertRaises(migrate.IntegrityError):
-            self._make_attempt(mode="normal", tiebreak_round=2)
-        with self.assertRaises(migrate.IntegrityError):
-            self._make_attempt(mode="tiebreak", tiebreak_round=6)
+        # ... tiebreak_round is only valid on tiebreak attempts, inside 1..5;
+        # dedicated accounts keep the active-attempt lock from masking either CHECK
+        normal_round_account = migrate.fetch_one(
+            self.conn,
+            "INSERT INTO accounts (username, username_lower, tag)"
+            " VALUES ('normal_round_user', 'normal_round_user', 'C00004') RETURNING id",
+        )
+        with self.assertRaises(psycopg.errors.CheckViolation):
+            self._make_attempt(
+                account_id=normal_round_account["id"], mode="normal", tiebreak_round=2
+            )
+        tiebreak_round_account = migrate.fetch_one(
+            self.conn,
+            "INSERT INTO accounts (username, username_lower, tag)"
+            " VALUES ('tiebreak_round_user', 'tiebreak_round_user', 'C00005') RETURNING id",
+        )
+        with self.assertRaises(psycopg.errors.CheckViolation):
+            self._make_attempt(
+                account_id=tiebreak_round_account["id"], mode="tiebreak", tiebreak_round=6
+            )
         # NULL round is allowed even on a tiebreak attempt (the round number
         # is engine-assigned at round creation; NULL means not yet slotted);
         # a dedicated account so the active lock on the first attempt does
@@ -204,6 +221,43 @@ class AttemptsAnswersSchemaTests(unittest.TestCase):
             "INSERT INTO accounts (username, username_lower, tag) VALUES ('tiebreak_user', 'tiebreak_user', 'C00003') RETURNING id",
         )
         self._make_attempt(account_id=row["id"], mode="tiebreak", tiebreak_round=None)
+
+    def test_attempt_answer_accepts_exactly_once(self):
+        attempt_id = self._make_attempt()
+        self._add_answer(attempt_id, 1, answer=None, outcome="unsent", accepted_at=None)
+        migrate.execute(
+            self.conn,
+            "UPDATE attempt_answers SET answer = 'correct', accepted_at = now()"
+            " WHERE attempt_id = %s AND seq = 1",
+            (attempt_id,),
+        )
+        row = migrate.fetch_one(
+            self.conn,
+            "SELECT answer, outcome, accepted_at FROM attempt_answers"
+            " WHERE attempt_id = %s AND seq = 1",
+            (attempt_id,),
+        )
+        self.assertEqual(row["answer"], "correct")
+        self.assertEqual(row["outcome"], "unsent")
+        self.assertIsNotNone(row["accepted_at"])
+        with self.assertRaises(psycopg.errors.RaiseException):
+            migrate.execute(
+                self.conn,
+                "UPDATE attempt_answers SET answer = 'wrong', accepted_at = now()"
+                " WHERE attempt_id = %s AND seq = 1",
+                (attempt_id,),
+            )
+
+    def test_attempt_answer_send_timestamp_is_immutable(self):
+        attempt_id = self._make_attempt()
+        self._add_answer(attempt_id, 1)
+        with self.assertRaises(psycopg.errors.RaiseException):
+            migrate.execute(
+                self.conn,
+                "UPDATE attempt_answers SET first_sent_at = '2026-01-01T00:00:01Z'"
+                " WHERE attempt_id = %s AND seq = 1",
+                (attempt_id,),
+            )
 
     def test_attempt_and_answers_cascade_with_account(self):
         # a dedicated account so the shared setUp account is untouched

@@ -79,9 +79,40 @@ def upgrade() -> None:
         )
         """
     )
+    op.execute(
+        """
+        CREATE FUNCTION reject_attempt_answers_update()
+        RETURNS trigger LANGUAGE plpgsql AS $$
+        BEGIN
+            IF NEW.attempt_id IS DISTINCT FROM OLD.attempt_id
+               OR NEW.seq IS DISTINCT FROM OLD.seq
+               OR NEW.question_version_id IS DISTINCT FROM OLD.question_version_id
+               OR NEW.first_sent_at IS DISTINCT FROM OLD.first_sent_at
+               OR NEW.deadline_at IS DISTINCT FROM OLD.deadline_at
+               OR NEW.outcome IS DISTINCT FROM OLD.outcome
+               OR NOT (
+                   NEW.answer IS DISTINCT FROM OLD.answer
+                   AND NEW.accepted_at IS DISTINCT FROM OLD.accepted_at
+                   AND OLD.answer IS NULL
+                   AND OLD.accepted_at IS NULL
+                   AND NEW.answer IS NOT NULL
+                   AND NEW.accepted_at IS NOT NULL
+               )
+            THEN
+                RAISE EXCEPTION 'attempt_answers is immutable except for the one-way acceptance of an answer';
+            END IF;
+            RETURN NEW;
+        END;
+        $$;
+        CREATE TRIGGER attempt_answers_immutable
+            BEFORE UPDATE ON attempt_answers
+            FOR EACH ROW EXECUTE FUNCTION reject_attempt_answers_update()
+        """
+    )
 
 
 def downgrade() -> None:
     op.drop_table("attempt_answers")
+    op.execute("DROP FUNCTION IF EXISTS reject_attempt_answers_update()")
     op.drop_index("attempts_one_unfinished_per_account", table_name="attempts")
     op.drop_table("attempts")

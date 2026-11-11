@@ -224,8 +224,9 @@ terminal-pending) via a partial unique index, and finalized attempts stop
 counting so a new one can start; answers are immutable per attempt-slot rows
 whose acceptance state is written once — an answer and its acceptance
 timestamp exist together or not at all, and the deadline always lands after
-the first send; a tie-break attempt must carry exactly one numbered
-tie-break round, and other modes must carry none; season history is
+the first send; a tie-break attempt may carry at most one numbered
+tie-break round (1–5), assigned by the engine; other modes must carry none;
+season history is
 append-only (cutover opens the next season row rather than mutating closed
 ones, with the structural guards being the season foreign keys on
 assignments, attempts, and settlements plus a queryable close timestamp);

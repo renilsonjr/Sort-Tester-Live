@@ -36,14 +36,21 @@ def upgrade() -> None:
         )
         """
     )
+    # a settlement must name the same season as its attempt; id remains the
+    # attempt PK, while this additional unique key supports the composite FK
+    op.execute(
+        """
+        ALTER TABLE attempts ADD CONSTRAINT attempts_id_season_id_unique
+            UNIQUE (id, season_id)
+        """
+    )
     # settlements: the PK on attempt_id IS the unique settlement key —
     # points are applied at most once, and a repeated terminal request
     # finds the existing row instead of writing again
     op.execute(
         """
         CREATE TABLE settlements (
-            attempt_id uuid PRIMARY KEY
-                REFERENCES attempts(id) ON DELETE CASCADE,
+            attempt_id uuid PRIMARY KEY,
             season_id uuid NOT NULL REFERENCES seasons(id),
             raw_score smallint NOT NULL
                 CHECK (raw_score BETWEEN -150 AND 300),
@@ -52,7 +59,10 @@ def upgrade() -> None:
                 CHECK (final_outcome IN (
                     'completed', 'quit', 'disconnect', 'season_close',
                     'launch_reset', 'outage_void')),
-            settled_at timestamptz NOT NULL DEFAULT now()
+            settled_at timestamptz NOT NULL DEFAULT now(),
+            CONSTRAINT settlements_attempt_id_season_id_fk
+                FOREIGN KEY (attempt_id, season_id)
+                REFERENCES attempts(id, season_id) ON DELETE CASCADE
         )
         """
     )
@@ -81,4 +91,7 @@ def downgrade() -> None:
         "ALTER TABLE assignments DROP CONSTRAINT IF EXISTS assignments_season_id_fk"
     )
     op.execute("DROP TABLE settlements")
+    op.execute(
+        "ALTER TABLE attempts DROP CONSTRAINT IF EXISTS attempts_id_season_id_unique"
+    )
     op.execute("DROP TABLE seasons")

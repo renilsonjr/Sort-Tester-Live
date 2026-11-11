@@ -60,9 +60,45 @@ def upgrade() -> None:
         )
         """
     )
+    op.execute(
+        """
+        CREATE FUNCTION reject_question_versions_update()
+        RETURNS trigger LANGUAGE plpgsql AS $$
+        BEGIN
+            RAISE EXCEPTION 'question_versions is immutable';
+        END;
+        $$;
+        CREATE TRIGGER question_versions_immutable
+            BEFORE UPDATE ON question_versions
+            FOR EACH ROW EXECUTE FUNCTION reject_question_versions_update();
+
+        CREATE FUNCTION reject_assignments_update()
+        RETURNS trigger LANGUAGE plpgsql AS $$
+        BEGIN
+            RAISE EXCEPTION 'assignments are immutable';
+        END;
+        $$;
+        CREATE TRIGGER assignments_immutable
+            BEFORE UPDATE ON assignments
+            FOR EACH ROW EXECUTE FUNCTION reject_assignments_update();
+
+        CREATE FUNCTION reject_assignment_questions_update()
+        RETURNS trigger LANGUAGE plpgsql AS $$
+        BEGIN
+            RAISE EXCEPTION 'assignment_questions are immutable';
+        END;
+        $$;
+        CREATE TRIGGER assignment_questions_immutable
+            BEFORE UPDATE ON assignment_questions
+            FOR EACH ROW EXECUTE FUNCTION reject_assignment_questions_update()
+        """
+    )
 
 
 def downgrade() -> None:
     op.drop_table("assignment_questions")
     op.drop_table("assignments")
     op.drop_table("question_versions")
+    op.execute("DROP FUNCTION IF EXISTS reject_assignment_questions_update()")
+    op.execute("DROP FUNCTION IF EXISTS reject_assignments_update()")
+    op.execute("DROP FUNCTION IF EXISTS reject_question_versions_update()")
