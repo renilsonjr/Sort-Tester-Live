@@ -12,7 +12,7 @@ from alembic import command
 from alembic.config import Config
 from sqlalchemy import create_engine
 from psycopg import sql
-from urllib.parse import urlsplit
+from psycopg.conninfo import conninfo_to_dict
 
 from backend.db import settings
 
@@ -77,8 +77,14 @@ def table_exists(conninfo: str, name: str) -> bool:
 
 
 def _url_database(conninfo: str) -> str:
-    """Return the database component of a postgresql:// *conninfo* URL."""
-    return urlsplit(conninfo).path.rstrip("/").rpartition("/")[2]
+    """Return the effective database selected by PostgreSQL *conninfo*."""
+    try:
+        parameters = conninfo_to_dict(conninfo)
+    except (psycopg.Error, ValueError):
+        raise settings.DatabaseConfigError(
+            "admin conninfo must be valid PostgreSQL conninfo."
+        ) from None
+    return parameters.get("dbname") or ""
 
 
 def recreate_scratch_database(admin_conninfo: str, name: str) -> None:
@@ -101,10 +107,9 @@ def recreate_scratch_database(admin_conninfo: str, name: str) -> None:
     conninfo_database = _url_database(admin_conninfo)
     if conninfo_database != settings.MAINTENANCE_DATABASE:
         raise settings.DatabaseConfigError(
-            "admin conninfo must point at the maintenance database "
+            "admin conninfo must resolve to the maintenance database "
             f"{settings.MAINTENANCE_DATABASE!r} (as settings.admin_url() "
-            f"produces) so the scratch database is never the connection "
-            f"target; got {conninfo_database!r}."
+            "produces) so the scratch database is never the connection target."
         )
     with psycopg.connect(admin_conninfo, autocommit=True) as conn:
         conn.execute(
