@@ -5,7 +5,7 @@ from urllib.parse import urlsplit
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from backend.routers import auth
+from backend.routers import auth, ranked
 
 
 def create_app() -> FastAPI:
@@ -29,6 +29,7 @@ def create_app() -> FastAPI:
         )
 
     application.include_router(auth.router)
+    application.include_router(ranked.router)
 
     @application.get("/health")
     def health() -> dict[str, str]:
