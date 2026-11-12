@@ -63,9 +63,59 @@ class RankedRouterTests(unittest.TestCase):
             else:
                 self.assertTrue(advance.json()["finished"])
 
-        # no live question remains
+        # the attempt has ended: it is gone for further calls
         done = self.client.get(f"/api/ranked/attempts/{attempt_id}/current")
-        self.assertEqual(done.status_code, 204)
+        self.assertEqual(done.status_code, 410)
+
+    def test_answer_reports_the_outcome(self):
+        self._sign_in(self.client, "outcome_player")
+        attempt_id = self.client.post("/api/ranked/attempts").json()["attempt_id"]
+        answer = self.client.post(
+            f"/api/ranked/attempts/{attempt_id}/answer",
+            json={"seq": 1, "choice": "YELLOW"},
+        )
+        self.assertIn(answer.json()["outcome"], ("correct", "wrong"))
+
+    def test_heartbeat_keeps_a_live_attempt(self):
+        self._sign_in(self.client, "beating_player")
+        attempt_id = self.client.post("/api/ranked/attempts").json()["attempt_id"]
+        beat = self.client.post(f"/api/ranked/attempts/{attempt_id}/heartbeat")
+        self.assertEqual(beat.status_code, 204, beat.text)
+
+    def test_heartbeat_requires_the_owner(self):
+        self._sign_in(self.client, "beat_owner")
+        attempt_id = self.client.post("/api/ranked/attempts").json()["attempt_id"]
+        anon = TestClient(create_app())
+        self.assertEqual(
+            anon.post(f"/api/ranked/attempts/{attempt_id}/heartbeat").status_code, 401
+        )
+        other = TestClient(create_app())
+        self._sign_in(other, "beat_other")
+        self.assertEqual(
+            other.post(f"/api/ranked/attempts/{attempt_id}/heartbeat").status_code, 404
+        )
+
+    def test_ended_attempt_is_gone_on_every_endpoint(self):
+        self._sign_in(self.client, "silent_player")
+        attempt_id = self.client.post("/api/ranked/attempts").json()["attempt_id"]
+        # pretend the page was last heard from a minute ago: grace has expired
+        conn = migrate.connect(self.conninfo)
+        migrate.execute(
+            conn,
+            "UPDATE attempts SET last_heartbeat_at = now() - interval '60 seconds'"
+            " WHERE id = %s",
+            (attempt_id,),
+        )
+        conn.commit()
+        conn.close()
+        base = f"/api/ranked/attempts/{attempt_id}"
+        responses = [
+            self.client.post(f"{base}/heartbeat"),
+            self.client.post(f"{base}/answer", json={"seq": 1, "choice": "YELLOW"}),
+            self.client.post(f"{base}/advance"),
+            self.client.get(f"{base}/current"),
+        ]
+        self.assertEqual([r.status_code for r in responses], [410, 410, 410, 410])
 
     def test_requires_authentication(self):
         anon = TestClient(create_app())

@@ -68,6 +68,15 @@ def _require_owned_attempt(conn, attempt_id: str, account_id) -> None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Not found")
 
 
+@contextmanager
+def _gone_when_ended():
+    # an attempt that has ended (completed or disconnected) answers 410 Gone
+    try:
+        yield
+    except engine.AttemptEndedError:
+        raise HTTPException(status_code=status.HTTP_410_GONE, detail="Attempt ended") from None
+
+
 class AnswerRequest(BaseModel):
     seq: int
     choice: str
@@ -91,7 +100,10 @@ def start(account: dict = Depends(_current_account), conn=Depends(get_db)):
 @router.get("/attempts/{attempt_id}/current")
 def current(attempt_id: str, account: dict = Depends(_current_account), conn=Depends(get_db)):
     _require_owned_attempt(conn, attempt_id, account["id"])
-    view = engine.current_question(conn, attempt_id, bank=_reviewed_bank())
+    with _gone_when_ended():
+        view = engine.current_question(
+            conn, attempt_id, clock=_CLOCK, bank=_reviewed_bank()
+        )
     if view is None:
         return Response(status_code=status.HTTP_204_NO_CONTENT)
     return {
@@ -111,20 +123,30 @@ def answer(
 ):
     _require_owned_attempt(conn, attempt_id, account["id"])
     try:
-        result = engine.submit_answer(
-            conn, attempt_id, payload.seq, payload.choice,
-            clock=_CLOCK, bank=_reviewed_bank(),
-        )
+        with _gone_when_ended():
+            result = engine.submit_answer(
+                conn, attempt_id, payload.seq, payload.choice,
+                clock=_CLOCK, bank=_reviewed_bank(),
+            )
     except engine.AnswerRejectedError as exc:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(exc)) from None
-    return {"seq": result.seq, "correct": result.correct}
+    return {"seq": result.seq, "correct": result.correct, "outcome": result.outcome}
 
 
 @router.post("/attempts/{attempt_id}/advance")
 def advance(attempt_id: str, account: dict = Depends(_current_account), conn=Depends(get_db)):
     _require_owned_attempt(conn, attempt_id, account["id"])
     try:
-        result = engine.advance(conn, attempt_id, clock=_CLOCK)
+        with _gone_when_ended():
+            result = engine.advance(conn, attempt_id, clock=_CLOCK)
     except engine.NotAnsweredError as exc:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(exc)) from None
     return {"finished": result.finished, "next_seq": result.next_seq}
+
+
+@router.post("/attempts/{attempt_id}/heartbeat", status_code=status.HTTP_204_NO_CONTENT)
+def heartbeat(attempt_id: str, account: dict = Depends(_current_account), conn=Depends(get_db)):
+    _require_owned_attempt(conn, attempt_id, account["id"])
+    with _gone_when_ended():
+        engine.heartbeat(conn, attempt_id, clock=_CLOCK)
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
