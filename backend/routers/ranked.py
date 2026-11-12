@@ -13,11 +13,13 @@ from pydantic import BaseModel
 
 from backend.auth.service import get_account_by_session
 from backend.db import migrate, settings
-from backend.ranked import engine
+from backend.ranked import capability, engine
 from backend.ranked.clock import system_clock
 from backend.ranked_bank.catalog import load_reviewed_bank
 
 router = APIRouter(prefix="/api/ranked", tags=["ranked"])
+
+CAPABILITY_HEADER = "X-Attempt-Capability"
 
 _CLOCK = system_clock()
 _bank = None
@@ -56,7 +58,10 @@ def _current_account(request: Request):
     return account
 
 
-def _require_owned_attempt(conn, attempt_id: str, account_id) -> None:
+def _require_owned_attempt(conn, attempt_id: str, account_id, request: Request) -> None:
+    """Admit only the account that owns the attempt, from the page that
+    started it. Refusal happens before any engine call, so a refused request
+    never counts as a heartbeat or a return within grace."""
     try:
         UUID(attempt_id)
     except ValueError:
@@ -66,6 +71,12 @@ def _require_owned_attempt(conn, attempt_id: str, account_id) -> None:
     )
     if row is None or row["account_id"] != account_id:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Not found")
+    # the capability travels only in this header: never a cookie, URL or body
+    token = request.headers.get(CAPABILITY_HEADER)
+    if not capability.matches(conn, attempt_id, token):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN, detail="Not the original page"
+        )
 
 
 @contextmanager
@@ -84,9 +95,13 @@ class AnswerRequest(BaseModel):
 
 @router.post("/attempts", status_code=status.HTTP_201_CREATED)
 def start(account: dict = Depends(_current_account), conn=Depends(get_db)):
+    # issued once, here; the page holds it in memory and the server keeps
+    # only its hash
+    token = capability.new_token()
     try:
         attempt_id = engine.start_attempt(
-            conn, account["id"], clock=_CLOCK, bank=_reviewed_bank()
+            conn, account["id"], clock=_CLOCK, bank=_reviewed_bank(),
+            page_capability=token,
         )
     except engine.NoOpenSeasonError:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="No open season") from None
@@ -94,12 +109,12 @@ def start(account: dict = Depends(_current_account), conn=Depends(get_db)):
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT, detail="Active attempt exists"
         ) from None
-    return {"attempt_id": str(attempt_id)}
+    return {"attempt_id": str(attempt_id), "capability": token}
 
 
 @router.get("/attempts/{attempt_id}/current")
-def current(attempt_id: str, account: dict = Depends(_current_account), conn=Depends(get_db)):
-    _require_owned_attempt(conn, attempt_id, account["id"])
+def current(request: Request, attempt_id: str, account: dict = Depends(_current_account), conn=Depends(get_db)):
+    _require_owned_attempt(conn, attempt_id, account["id"], request)
     with _gone_when_ended():
         view = engine.current_question(
             conn, attempt_id, clock=_CLOCK, bank=_reviewed_bank()
@@ -116,12 +131,13 @@ def current(attempt_id: str, account: dict = Depends(_current_account), conn=Dep
 
 @router.post("/attempts/{attempt_id}/answer")
 def answer(
+    request: Request,
     attempt_id: str,
     payload: AnswerRequest,
     account: dict = Depends(_current_account),
     conn=Depends(get_db),
 ):
-    _require_owned_attempt(conn, attempt_id, account["id"])
+    _require_owned_attempt(conn, attempt_id, account["id"], request)
     try:
         with _gone_when_ended():
             result = engine.submit_answer(
@@ -134,8 +150,8 @@ def answer(
 
 
 @router.post("/attempts/{attempt_id}/advance")
-def advance(attempt_id: str, account: dict = Depends(_current_account), conn=Depends(get_db)):
-    _require_owned_attempt(conn, attempt_id, account["id"])
+def advance(request: Request, attempt_id: str, account: dict = Depends(_current_account), conn=Depends(get_db)):
+    _require_owned_attempt(conn, attempt_id, account["id"], request)
     try:
         with _gone_when_ended():
             result = engine.advance(conn, attempt_id, clock=_CLOCK)
@@ -145,16 +161,16 @@ def advance(attempt_id: str, account: dict = Depends(_current_account), conn=Dep
 
 
 @router.post("/attempts/{attempt_id}/heartbeat", status_code=status.HTTP_204_NO_CONTENT)
-def heartbeat(attempt_id: str, account: dict = Depends(_current_account), conn=Depends(get_db)):
-    _require_owned_attempt(conn, attempt_id, account["id"])
+def heartbeat(request: Request, attempt_id: str, account: dict = Depends(_current_account), conn=Depends(get_db)):
+    _require_owned_attempt(conn, attempt_id, account["id"], request)
     with _gone_when_ended():
         engine.heartbeat(conn, attempt_id, clock=_CLOCK)
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
 @router.post("/attempts/{attempt_id}/quit")
-def quit_attempt(attempt_id: str, account: dict = Depends(_current_account), conn=Depends(get_db)):
-    _require_owned_attempt(conn, attempt_id, account["id"])
+def quit_attempt(request: Request, attempt_id: str, account: dict = Depends(_current_account), conn=Depends(get_db)):
+    _require_owned_attempt(conn, attempt_id, account["id"], request)
     # never 410: a retried Quit must get the same answer as the first one
     outcome = engine.quit_attempt(conn, attempt_id, clock=_CLOCK)
     return {"final_outcome": outcome}

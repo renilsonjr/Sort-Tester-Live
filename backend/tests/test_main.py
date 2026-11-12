@@ -65,6 +65,19 @@ class DevelopmentCorsTests(unittest.TestCase):
                     self.assertEqual(response.headers["access-control-allow-methods"], "GET, POST")
                     self.assertEqual(response.headers["access-control-allow-credentials"], "true")
 
+    def test_preflight_allows_the_attempt_capability_header(self) -> None:
+        # the ranked page sends its capability in this header on every request
+        with self.client(self.origin) as client:
+            response = client.options("/health", headers={
+                "Origin": self.origin, "Access-Control-Request-Method": "POST",
+                "Access-Control-Request-Headers": "X-Attempt-Capability",
+            })
+        self.assertEqual(response.status_code, 200)
+        self.assertIn(
+            "x-attempt-capability",
+            response.headers["access-control-allow-headers"].lower(),
+        )
+
     def test_preflight_denies_other_origin(self) -> None:
         with self.client(self.origin) as client:
             response = client.options("/health", headers={

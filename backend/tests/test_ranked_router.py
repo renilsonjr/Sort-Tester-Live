@@ -6,12 +6,50 @@ from fastapi.testclient import TestClient
 from backend.db import migrate, settings
 from backend.main import create_app
 
+CAPABILITY_HEADER = "X-Attempt-Capability"
+
 
 @unittest.skipUnless(
     settings.environment_has_test_url(),
     "SORT_TESTER_TEST_DATABASE_URL not set; database tests skipped",
 )
 class RankedRouterTests(unittest.TestCase):
+    def _start_as_page(self, client):
+        """Start an attempt the way the original page does: keep the returned
+        capability and send it on every later request from this client."""
+        start = client.post("/api/ranked/attempts")
+        self.assertEqual(start.status_code, 201, start.text)
+        client.headers[CAPABILITY_HEADER] = start.json()["capability"]
+        return start.json()["attempt_id"]
+
+    def _second_tab(self):
+        """Another page of the same signed-in account: same session cookie,
+        but none of the original page's memory."""
+        tab = TestClient(create_app())
+        for cookie in self.client.cookies.jar:
+            tab.cookies.set(cookie.name, cookie.value)
+        return tab
+
+    def _calls(self, client, attempt_id):
+        base = f"/api/ranked/attempts/{attempt_id}"
+        return [
+            client.get(f"{base}/current"),
+            client.post(f"{base}/answer", json={"seq": 1, "choice": "YELLOW"}),
+            client.post(f"{base}/advance"),
+            client.post(f"{base}/heartbeat"),
+            client.post(f"{base}/quit"),
+        ]
+
+    def _attempt_field(self, attempt_id, field):
+        conn = migrate.connect(self.conninfo)
+        try:
+            row = migrate.fetch_one(
+                conn, f"SELECT {field} AS v FROM attempts WHERE id = %s", (attempt_id,)
+            )
+        finally:
+            conn.close()
+        return row["v"]
+
     @classmethod
     def setUpClass(cls):
         try:
@@ -43,6 +81,8 @@ class RankedRouterTests(unittest.TestCase):
         start = self.client.post("/api/ranked/attempts")
         self.assertEqual(start.status_code, 201, start.text)
         attempt_id = start.json()["attempt_id"]
+        # the page keeps the capability in memory and sends it on every request
+        self.client.headers[CAPABILITY_HEADER] = start.json()["capability"]
 
         for seq in range(1, 16):
             current = self.client.get(f"/api/ranked/attempts/{attempt_id}/current")
@@ -69,7 +109,7 @@ class RankedRouterTests(unittest.TestCase):
 
     def test_answer_reports_the_outcome(self):
         self._sign_in(self.client, "outcome_player")
-        attempt_id = self.client.post("/api/ranked/attempts").json()["attempt_id"]
+        attempt_id = self._start_as_page(self.client)
         answer = self.client.post(
             f"/api/ranked/attempts/{attempt_id}/answer",
             json={"seq": 1, "choice": "YELLOW"},
@@ -78,13 +118,13 @@ class RankedRouterTests(unittest.TestCase):
 
     def test_heartbeat_keeps_a_live_attempt(self):
         self._sign_in(self.client, "beating_player")
-        attempt_id = self.client.post("/api/ranked/attempts").json()["attempt_id"]
+        attempt_id = self._start_as_page(self.client)
         beat = self.client.post(f"/api/ranked/attempts/{attempt_id}/heartbeat")
         self.assertEqual(beat.status_code, 204, beat.text)
 
     def test_heartbeat_requires_the_owner(self):
         self._sign_in(self.client, "beat_owner")
-        attempt_id = self.client.post("/api/ranked/attempts").json()["attempt_id"]
+        attempt_id = self._start_as_page(self.client)
         anon = TestClient(create_app())
         self.assertEqual(
             anon.post(f"/api/ranked/attempts/{attempt_id}/heartbeat").status_code, 401
@@ -97,7 +137,7 @@ class RankedRouterTests(unittest.TestCase):
 
     def test_ended_attempt_is_gone_on_every_endpoint(self):
         self._sign_in(self.client, "silent_player")
-        attempt_id = self.client.post("/api/ranked/attempts").json()["attempt_id"]
+        attempt_id = self._start_as_page(self.client)
         # pretend the page was last heard from a minute ago: grace has expired
         conn = migrate.connect(self.conninfo)
         migrate.execute(
@@ -119,7 +159,7 @@ class RankedRouterTests(unittest.TestCase):
 
     def test_quit_ends_the_attempt_and_can_be_repeated(self):
         self._sign_in(self.client, "quitting_player")
-        attempt_id = self.client.post("/api/ranked/attempts").json()["attempt_id"]
+        attempt_id = self._start_as_page(self.client)
         base = f"/api/ranked/attempts/{attempt_id}"
         first = self.client.post(f"{base}/quit")
         self.assertEqual(first.status_code, 200, first.text)
@@ -132,7 +172,7 @@ class RankedRouterTests(unittest.TestCase):
 
     def test_quit_requires_the_owner(self):
         self._sign_in(self.client, "quit_owner")
-        attempt_id = self.client.post("/api/ranked/attempts").json()["attempt_id"]
+        attempt_id = self._start_as_page(self.client)
         anon = TestClient(create_app())
         self.assertEqual(
             anon.post(f"/api/ranked/attempts/{attempt_id}/quit").status_code, 401
@@ -143,13 +183,52 @@ class RankedRouterTests(unittest.TestCase):
             other.post(f"/api/ranked/attempts/{attempt_id}/quit").status_code, 404
         )
 
+    # --- page capability (slice 4) ---
+
+    def test_start_returns_a_capability(self):
+        self._sign_in(self.client, "ticket_player")
+        start = self.client.post("/api/ranked/attempts")
+        self.assertGreaterEqual(len(start.json()["capability"]), 40)
+
+    def test_second_tab_is_refused_on_every_endpoint(self):
+        self._sign_in(self.client, "two_tab_player")
+        attempt_id = self._start_as_page(self.client)
+        tab = self._second_tab()
+        statuses = [r.status_code for r in self._calls(tab, attempt_id)]
+        self.assertEqual(statuses, [403, 403, 403, 403, 403])
+        # the refused Quit did not end the original page's attempt
+        self.assertEqual(self._attempt_field(attempt_id, "state"), "active")
+
+    def test_wrong_capability_is_refused_on_every_endpoint(self):
+        self._sign_in(self.client, "guessing_player")
+        attempt_id = self._start_as_page(self.client)
+        tab = self._second_tab()
+        tab.headers[CAPABILITY_HEADER] = "not-the-real-capability"
+        statuses = [r.status_code for r in self._calls(tab, attempt_id)]
+        self.assertEqual(statuses, [403, 403, 403, 403, 403])
+
+    def test_refused_heartbeat_does_not_keep_the_attempt_alive(self):
+        self._sign_in(self.client, "refresh_player")
+        attempt_id = self._start_as_page(self.client)
+        before = self._attempt_field(attempt_id, "last_heartbeat_at")
+        tab = self._second_tab()
+        self.assertEqual(
+            tab.post(f"/api/ranked/attempts/{attempt_id}/heartbeat").status_code, 403
+        )
+        self.assertEqual(self._attempt_field(attempt_id, "last_heartbeat_at"), before)
+
+    def test_second_tab_cannot_start_a_replacement(self):
+        self._sign_in(self.client, "replace_player")
+        self._start_as_page(self.client)
+        self.assertEqual(self._second_tab().post("/api/ranked/attempts").status_code, 409)
+
     def test_requires_authentication(self):
         anon = TestClient(create_app())
         self.assertEqual(anon.post("/api/ranked/attempts").status_code, 401)
 
     def test_cannot_touch_another_accounts_attempt(self):
         self._sign_in(self.client, "owner_player")
-        attempt_id = self.client.post("/api/ranked/attempts").json()["attempt_id"]
+        attempt_id = self._start_as_page(self.client)
         other = TestClient(create_app())
         self._sign_in(other, "other_player")
         res = other.get(f"/api/ranked/attempts/{attempt_id}/current")
