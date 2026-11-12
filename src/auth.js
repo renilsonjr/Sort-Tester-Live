@@ -41,7 +41,7 @@ export async function fetchMe() {
   return api('GET', '/auth/me');
 }
 
-
+export function createAuthPanel(container, onContinueAsGuest) {
   container.innerHTML = `
     <div class="auth-screen">
       <h1>Sort Lab</h1>
