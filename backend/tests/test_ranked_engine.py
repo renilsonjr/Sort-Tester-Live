@@ -468,6 +468,101 @@ class RankedEngineTests(unittest.TestCase):
             engine.quit_attempt(self.conn, attempt_id, clock=self.clock), "completed"
         )
 
+    # --- promotion entry gate (slice 6) ---
+
+    def _account_with_points(self, points, tag="P00001"):
+        # only one season may be open, so open it once per test
+        if not getattr(self, "_season_opened", False):
+            self._open_season()
+            self._season_opened = True
+        account_id = self._make_account(tag)
+        migrate.execute(
+            self.conn,
+            "INSERT INTO balances (account_id, current_points) VALUES (%s, %s)",
+            (account_id, points),
+        )
+        self.conn.commit()
+        return account_id
+
+    def _begin(self, account_id, mode):
+        return engine.start_attempt(
+            self.conn, account_id, clock=self.clock, bank=self.bank, mode=mode
+        )
+
+    def _attempt_count(self, account_id):
+        row = migrate.fetch_one(
+            self.conn,
+            "SELECT (SELECT COUNT(*) FROM attempts WHERE account_id = %s)"
+            " + (SELECT COUNT(*) FROM assignments WHERE account_id = %s) AS n",
+            (account_id, account_id),
+        )
+        return row["n"]
+
+    def test_account_without_a_balance_starts_normal_only(self):
+        self._open_season()
+        account_id = self._make_account()
+        status = engine.entry_status(self.conn, account_id)
+        self.assertEqual((status.points, status.badge, status.mode),
+                         (0, "Iron", "normal"))
+        with self.assertRaises(engine.PromotionNotAvailableError):
+            self._begin(account_id, "promotion")
+        self.assertEqual(self._attempt_count(account_id), 0)
+        self._begin(account_id, "normal")
+
+    def test_at_every_cap_only_promotion_can_start(self):
+        for index, cap in enumerate((1000, 2000, 3000, 4000)):
+            with self.subTest(cap=cap):
+                account_id = self._account_with_points(cap, tag=f"P1000{index}")
+                self.assertEqual(
+                    engine.entry_status(self.conn, account_id).mode, "promotion"
+                )
+                with self.assertRaises(engine.PromotionRequiredError):
+                    self._begin(account_id, "normal")
+                self.assertEqual(self._attempt_count(account_id), 0)
+                attempt_id = self._begin(account_id, "promotion")
+                row = migrate.fetch_one(
+                    self.conn,
+                    "SELECT a.mode AS attempt_mode, s.mode AS assignment_mode"
+                    " FROM attempts a JOIN assignments s ON s.id = a.assignment_id"
+                    " WHERE a.id = %s",
+                    (attempt_id,),
+                )
+                self.assertEqual(
+                    (row["attempt_mode"], row["assignment_mode"]),
+                    ("promotion", "promotion"),
+                )
+
+    def test_one_point_off_a_cap_is_normal_only(self):
+        for index, points in enumerate((999, 1001, 3999, 4001)):
+            with self.subTest(points=points):
+                account_id = self._account_with_points(points, tag=f"P2000{index}")
+                with self.assertRaises(engine.PromotionNotAvailableError):
+                    self._begin(account_id, "promotion")
+                self._begin(account_id, "normal")
+
+    def test_start_defaults_to_normal(self):
+        _, attempt_id = self._start()
+        row = migrate.fetch_one(
+            self.conn, "SELECT mode FROM attempts WHERE id = %s", (attempt_id,)
+        )
+        self.assertEqual(row["mode"], "normal")
+
+    def test_promotion_attempt_plays_through_like_a_normal_one(self):
+        account_id = self._account_with_points(1000)
+        attempt_id = self._begin(account_id, "promotion")
+        for seq in range(1, 16):
+            self._play_one(attempt_id, seq)
+        row = self._attempt_row(attempt_id)
+        self.assertEqual((row["state"], row["final_outcome"]),
+                         ("terminal_pending", "completed"))
+
+    def test_unknown_mode_is_refused(self):
+        self._open_season()
+        account_id = self._make_account()
+        with self.assertRaises(engine.EngineError):
+            self._begin(account_id, "tiebreak")
+        self.assertEqual(self._attempt_count(account_id), 0)
+
     def test_wrong_answer_is_graded_wrong(self):
         self._open_season()
         attempt_id = engine.start_attempt(

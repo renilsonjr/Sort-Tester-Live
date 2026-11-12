@@ -6,6 +6,7 @@ account, and translates engine errors to status codes. It holds no game logic
 of its own. Not wired into the published static site; the backend is unhosted.
 """
 from contextlib import contextmanager
+from typing import Literal
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
@@ -93,23 +94,53 @@ class AnswerRequest(BaseModel):
     choice: str
 
 
+class StartRequest(BaseModel):
+    # the kind of attempt the player explicitly chose; never inferred here
+    mode: Literal["normal", "promotion"] = "normal"
+
+
+@router.get("/entry")
+def entry(account: dict = Depends(_current_account), conn=Depends(get_db)):
+    """Which kind of attempt the account may start now. Read-only: opening
+    this information starts no attempt and no timer."""
+    entry_status = engine.entry_status(conn, account["id"])
+    return {
+        "points": entry_status.points,
+        "badge": entry_status.badge,
+        "mode": entry_status.mode,
+    }
+
+
 @router.post("/attempts", status_code=status.HTTP_201_CREATED)
-def start(account: dict = Depends(_current_account), conn=Depends(get_db)):
+def start(
+    payload: StartRequest | None = None,
+    account: dict = Depends(_current_account),
+    conn=Depends(get_db),
+):
+    mode = payload.mode if payload is not None else "normal"
     # issued once, here; the page holds it in memory and the server keeps
     # only its hash
     token = capability.new_token()
     try:
         attempt_id = engine.start_attempt(
             conn, account["id"], clock=_CLOCK, bank=_reviewed_bank(),
-            page_capability=token,
+            page_capability=token, mode=mode,
         )
+    except engine.PromotionRequiredError:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT, detail="Promotion required"
+        ) from None
+    except engine.PromotionNotAvailableError:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT, detail="Promotion not available"
+        ) from None
     except engine.NoOpenSeasonError:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="No open season") from None
     except engine.ActiveAttemptExistsError:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT, detail="Active attempt exists"
         ) from None
-    return {"attempt_id": str(attempt_id), "capability": token}
+    return {"attempt_id": str(attempt_id), "capability": token, "mode": mode}
 
 
 @router.get("/attempts/{attempt_id}/current")
