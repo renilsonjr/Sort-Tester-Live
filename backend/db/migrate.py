@@ -68,6 +68,12 @@ def fetch_one(conn, sql_text: str, params=None) -> dict | None:
     return dict(row) if row is not None else None
 
 
+def fetch_all(conn, sql_text: str, params=None) -> list[dict]:
+    """Return all rows of the query as a list of dicts."""
+    rows = execute(conn, sql_text, params).fetchall()
+    return [dict(row) for row in rows]
+
+
 def _alembic_config(conninfo: str) -> Config:
     """Build an Alembic config wired to a psycopg3 connection for *conninfo*."""
     config = Config(str(_INI_PATH))
