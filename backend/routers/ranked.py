@@ -91,7 +91,12 @@ def start(account: dict = Depends(_current_account), conn=Depends(get_db)):
 @router.get("/attempts/{attempt_id}/current")
 def current(attempt_id: str, account: dict = Depends(_current_account), conn=Depends(get_db)):
     _require_owned_attempt(conn, attempt_id, account["id"])
-    view = engine.current_question(conn, attempt_id, bank=_reviewed_bank())
+    try:
+        view = engine.current_question(
+            conn, attempt_id, clock=_CLOCK, bank=_reviewed_bank()
+        )
+    except engine.AttemptEndedError:
+        raise HTTPException(status_code=status.HTTP_410_GONE, detail="Attempt ended") from None
     if view is None:
         return Response(status_code=status.HTTP_204_NO_CONTENT)
     return {

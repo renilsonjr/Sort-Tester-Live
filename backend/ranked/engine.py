@@ -1,11 +1,17 @@
-"""Server-authoritative ranked attempt engine — core happy path (issue #8).
+"""Server-authoritative ranked attempt engine (issue #8).
 
-This slice runs a normal-mode attempt from start to finish on the server: it
-assigns 15 questions, serves them one at a time on server-owned ten-second
-deadlines, accepts a single locked answer each, runs forward-only, and ends the
-attempt in ``terminal_pending``. It records per-answer results only; computing
-the score, caps, and balance is #9, which reads the finalized answers and
+Runs a normal-mode attempt from start to finish on the server: it assigns 15
+questions, serves them one at a time on server-owned ten-second deadlines,
+accepts a single locked answer each, runs forward-only, and ends the attempt
+in ``terminal_pending``. It records per-answer results only; computing the
+score, caps, and balance is #9, which reads the finalized answers and
 transitions ``terminal_pending -> finalized``.
+
+The engine also owns the connection clock. The page sends a heartbeat every
+second; three seconds of silence is a connection loss, and the player then has
+fifteen seconds of grace to come back. There is no background timer: each call
+first checks how long the attempt has been silent, and an attempt silent past
+its grace deadline ends as a ``disconnect``.
 
 Every function takes an explicit DB connection and (where time matters) a clock,
 so callers own transactions and tests control time. The engine never reads the
@@ -21,6 +27,8 @@ from backend.ranked_bank.selection import select_assignment
 
 QUESTION_COUNT = 15
 QUESTION_SECONDS = 10
+HEARTBEAT_LOSS_SECONDS = 3
+GRACE_SECONDS = 15
 
 
 class EngineError(Exception):
@@ -41,6 +49,10 @@ class AnswerRejectedError(EngineError):
 
 class NotAnsweredError(EngineError):
     """Advance was requested before the current question was answered."""
+
+
+class AttemptEndedError(EngineError):
+    """The attempt has ended; no further calls are accepted for it."""
 
 
 @dataclass(frozen=True)
@@ -71,6 +83,8 @@ def start_attempt(conn, account_id, *, clock, bank) -> str:
     :class:`ActiveAttemptExistsError` when the account already has an
     unfinished attempt. On the latter the whole transaction is rolled back.
     """
+    # close out an attempt this account walked away from before admitting
+    expire_stale_attempts(conn, clock=clock, account_id=account_id)
     season_id = _open_season(conn)
     snapshot = select_assignment(bank)
     assignment = migrate.fetch_one(
@@ -83,9 +97,10 @@ def start_attempt(conn, account_id, *, clock, bank) -> str:
     try:
         attempt = migrate.fetch_one(
             conn,
-            "INSERT INTO attempts (account_id, assignment_id, mode, state, season_id)"
-            " VALUES (%s, %s, 'normal', 'active', %s) RETURNING id",
-            (account_id, assignment_id, season_id),
+            "INSERT INTO attempts (account_id, assignment_id, mode, state, season_id,"
+            " last_heartbeat_at)"
+            " VALUES (%s, %s, 'normal', 'active', %s, %s) RETURNING id",
+            (account_id, assignment_id, season_id, clock.now()),
         )
     except migrate.IntegrityError:
         conn.rollback()
@@ -106,8 +121,13 @@ def start_attempt(conn, account_id, *, clock, bank) -> str:
     return attempt_id
 
 
-def current_question(conn, attempt_id, *, bank) -> QuestionView | None:
-    """Return the single live question (the one awaiting an answer), or None."""
+def current_question(conn, attempt_id, *, clock, bank) -> QuestionView | None:
+    """Return the single live question (the one awaiting an answer), or None.
+
+    Reading does not count as activity: it checks the connection clock but
+    does not reset it.
+    """
+    _sync_connection(conn, attempt_id, clock.now(), touch=False)
     row = migrate.fetch_one(
         conn,
         "SELECT seq, question_version_id AS vid, deadline_at FROM attempt_answers"
@@ -127,6 +147,8 @@ def current_question(conn, attempt_id, *, bank) -> QuestionView | None:
 
 def submit_answer(conn, attempt_id, seq, choice, *, clock, bank) -> AnswerResult:
     """Grade and lock one answer. Idempotent: a second submit changes nothing."""
+    now = clock.now()
+    _sync_connection(conn, attempt_id, now, touch=True)
     row = migrate.fetch_one(
         conn,
         "SELECT question_version_id AS vid, deadline_at, answer FROM attempt_answers"
@@ -138,7 +160,6 @@ def submit_answer(conn, attempt_id, seq, choice, *, clock, bank) -> AnswerResult
     if row["answer"] is not None:
         # already resolved: report the stored result, write nothing
         return _answer_result(seq, row["answer"])
-    now = clock.now()
     if now > row["deadline_at"]:
         # too late: the question timed out and the submitted choice is discarded
         graded = "timeout"
@@ -157,6 +178,8 @@ def advance(conn, attempt_id, *, clock) -> AdvanceResult:
     unanswered question whose deadline has passed is recorded as a timeout
     here; one still inside its deadline cannot be skipped.
     """
+    now = clock.now()
+    _sync_connection(conn, attempt_id, now, touch=True)
     row = migrate.fetch_one(
         conn,
         "SELECT seq, answer, deadline_at FROM attempt_answers WHERE attempt_id = %s"
@@ -166,7 +189,6 @@ def advance(conn, attempt_id, *, clock) -> AdvanceResult:
     if row is None:
         raise NotAnsweredError("no question has been sent")
     if row["answer"] is None:
-        now = clock.now()
         if now <= row["deadline_at"]:
             raise NotAnsweredError(f"question {row['seq']} is not answered")
         _record_answer(conn, attempt_id, row["seq"], "timeout", now)
@@ -184,6 +206,100 @@ def advance(conn, attempt_id, *, clock) -> AdvanceResult:
     _send_question(conn, attempt_id, next_seq, clock)
     conn.commit()
     return AdvanceResult(finished=False, next_seq=next_seq)
+
+
+def heartbeat(conn, attempt_id, *, clock) -> None:
+    """Record that the page is still connected."""
+    _sync_connection(conn, attempt_id, clock.now(), touch=True)
+
+
+def expire_stale_attempts(conn, *, clock, account_id=None) -> None:
+    """Apply the connection clock to attempts nobody is calling.
+
+    A silent attempt inside its grace window is marked ``grace`` with its
+    deadline; one past the deadline ends as a disconnect. Limited to one
+    account when ``account_id`` is given, otherwise every unfinished attempt.
+    """
+    now = clock.now()
+    sql = (
+        "SELECT id, state, COALESCE(last_heartbeat_at, started_at) AS heard_at"
+        " FROM attempts WHERE state IN ('active', 'grace')"
+    )
+    params = ()
+    if account_id is not None:
+        sql += " AND account_id = %s"
+        params = (account_id,)
+    for row in migrate.fetch_all(conn, sql + " FOR UPDATE", params):
+        deadline = _grace_deadline(row["heard_at"])
+        if now >= deadline:
+            _finalize_disconnect(conn, row["id"], deadline, now)
+        elif row["state"] == "active" and now >= _loss_at(row["heard_at"]):
+            migrate.execute(
+                conn,
+                "UPDATE attempts SET state = 'grace', grace_deadline_at = %s"
+                " WHERE id = %s",
+                (deadline, row["id"]),
+            )
+    conn.commit()
+
+
+def _loss_at(heard_at) -> datetime:
+    return heard_at + timedelta(seconds=HEARTBEAT_LOSS_SECONDS)
+
+
+def _grace_deadline(heard_at) -> datetime:
+    return _loss_at(heard_at) + timedelta(seconds=GRACE_SECONDS)
+
+
+def _sync_connection(conn, attempt_id, now, *, touch) -> None:
+    """Check the connection clock before doing anything for an attempt.
+
+    Raises :class:`AttemptEndedError` when the attempt is over, including when
+    this very call finds it silent past its grace deadline. With ``touch`` the
+    call counts as activity: the attempt is (back to) ``active`` and its
+    silence is measured from ``now``. Question deadlines are never moved.
+    """
+    row = migrate.fetch_one(
+        conn,
+        "SELECT state, COALESCE(last_heartbeat_at, started_at) AS heard_at"
+        " FROM attempts WHERE id = %s FOR UPDATE",
+        (attempt_id,),
+    )
+    if row is None:
+        raise EngineError("unknown attempt")
+    if row["state"] not in ("active", "grace"):
+        raise AttemptEndedError("attempt has ended")
+    deadline = _grace_deadline(row["heard_at"])
+    if now >= deadline:
+        # finalization wins over a request arriving at or after the deadline
+        _finalize_disconnect(conn, attempt_id, deadline, now)
+        conn.commit()
+        raise AttemptEndedError("attempt ended: connection grace expired")
+    if touch:
+        migrate.execute(
+            conn,
+            "UPDATE attempts SET last_heartbeat_at = %s, state = 'active',"
+            " grace_deadline_at = NULL WHERE id = %s",
+            (now, attempt_id),
+        )
+        conn.commit()
+
+
+def _finalize_disconnect(conn, attempt_id, deadline, now) -> None:
+    # the sent-but-unanswered question times out; unsent questions get no row
+    migrate.execute(
+        conn,
+        "UPDATE attempt_answers SET answer = 'timeout', accepted_at = %s"
+        " WHERE attempt_id = %s AND answer IS NULL",
+        (now, attempt_id),
+    )
+    migrate.execute(
+        conn,
+        "UPDATE attempts SET state = 'terminal_pending',"
+        " final_outcome = 'disconnect', grace_deadline_at = %s"
+        " WHERE id = %s AND state IN ('active', 'grace')",
+        (deadline, attempt_id),
+    )
 
 
 def _answer_result(seq, answer) -> AnswerResult:

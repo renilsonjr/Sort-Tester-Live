@@ -64,7 +64,10 @@ request for that attempt arrives after the deadline.
   to attempts nobody is calling: a silent attempt inside grace is marked
   `grace` with its `grace_deadline_at`; one past the deadline is finalized as a
   disconnect. `start_attempt` runs it for the account first, so an abandoned
-  attempt never blocks a new one. A scheduler can call it for all accounts later.
+  attempt is closed instead of staying `active` forever. The closed attempt
+  still holds the one-unfinished-attempt lock until #9 settles it
+  (`terminal_pending -> finalized`); only then can a new attempt start. A
+  scheduler can call it for all accounts later.
 
 ## Part C — HTTP
 
@@ -88,6 +91,6 @@ transport.
   reset.
 - Call exactly at the grace deadline → `disconnect`, current question `timeout`,
   unsent questions have no row, later calls raise `AttemptEndedError`.
-- `expire_stale_attempts` marks `grace`, then finalizes; a new attempt can start
-  after an abandoned one expires.
+- `expire_stale_attempts` marks `grace`, then finalizes; starting again closes
+  an abandoned attempt, and a new one can start once the old one is settled.
 - Migration 0014 upgrades and downgrades cleanly; full suites stay green.

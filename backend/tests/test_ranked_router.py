@@ -63,9 +63,9 @@ class RankedRouterTests(unittest.TestCase):
             else:
                 self.assertTrue(advance.json()["finished"])
 
-        # no live question remains
+        # the attempt has ended: it is gone for further calls
         done = self.client.get(f"/api/ranked/attempts/{attempt_id}/current")
-        self.assertEqual(done.status_code, 204)
+        self.assertEqual(done.status_code, 410)
 
     def test_requires_authentication(self):
         anon = TestClient(create_app())
