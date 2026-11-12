@@ -57,8 +57,10 @@ with `final_outcome='season_close'` and returns how many it ended.
 - A sent question past its deadline is recorded `timeout`; one still inside
   its deadline stays unanswered and is not deducted; never-sent questions get
   no row. No Quit marker, no flag.
-- If the final question has already timed out, the attempt is `completed`
-  instead, as in every other path.
+- Endings that had already happened by the clock are applied first: an
+  attempt silent past its grace deadline is a `disconnect`, and one whose
+  final question has timed out is `completed`. Neither counts as ended by the
+  season close.
 - Attempts of other seasons and attempts that already ended are untouched.
 
 Admission at close needs no new code: `start_attempt` admits only into a
