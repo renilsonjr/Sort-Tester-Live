@@ -20,6 +20,8 @@ class AuthSettings(BaseSettings):
     login_id_total_groups: int = 4
     login_id_group_size: int = 4
     login_id_alphabet: str = "0123456789ABCDEFGHJKMNPQRSTVWXYZ"
+    cookie_secure: bool = False
+    session_ttl_seconds: int = 8 * 60 * 60
 
     @property
     def session_secret_bytes(self) -> bytes:

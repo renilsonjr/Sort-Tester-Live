@@ -20,7 +20,7 @@ router = APIRouter(prefix="/api/auth", tags=["auth"])
 
 @contextmanager
 def _db_connection():
-    conn = migrate.connect(settings.test_database_url())
+    conn = migrate.connect(settings.app_database_url())
     try:
         yield conn
     finally:
@@ -97,7 +97,7 @@ def login(request: Request, response: Response, payload: LoginRequest):
         result = login_with_id(
             conn,
             payload.login_id,
-            ttl_seconds=8 * 60 * 60,  # 8 hours absolute
+            ttl_seconds=auth_settings.session_ttl_seconds,
             ip_address=None,
             user_agent=None,
         )
@@ -112,10 +112,10 @@ def login(request: Request, response: Response, payload: LoginRequest):
         key="sort_tester_session",
         value=token,
         httponly=True,
-        secure=False,  # overridden by production proxy/HTTPS
+        secure=auth_settings.cookie_secure,
         samesite="lax",
         path="/",
-        max_age=8 * 60 * 60,
+        max_age=auth_settings.session_ttl_seconds,
     )
     return {"account_id": str(account["id"]), "username": account["username"], "tag": account["tag"]}
 

@@ -9,12 +9,24 @@ from backend.auth.credentials import (
     normalize_login_id,
     verify_login_id,
 )
+from backend.auth.settings import AuthSettings
 from backend.auth.sessions import (
     authenticate_session,
     create_session,
     revoke_all_account_sessions,
 )
 from backend.db import migrate
+
+
+_settings = AuthSettings()
+_dummy_verifier_cache = None
+
+
+def _get_dummy_verifier() -> str:
+    global _dummy_verifier_cache
+    if _dummy_verifier_cache is None:
+        _dummy_verifier_cache = hash_login_id("DAAA-AAAA-AAAA-AAAA", _settings)
+    return _dummy_verifier_cache
 
 
 def _generate_unique_tag(conn) -> str:
@@ -48,12 +60,9 @@ def register_account(conn, username: str) -> tuple[UUID, str]:
     )
     account_id = row["id"]
 
-    from backend.auth.settings import AuthSettings
-
-    settings = AuthSettings()
-    login_id = generate_login_id(settings)
+    login_id = generate_login_id(_settings)
     lookup_key = derive_lookup_key(login_id)
-    verifier = hash_login_id(login_id, settings)
+    verifier = hash_login_id(login_id, _settings)
     migrate.execute(
         conn,
         """
@@ -72,10 +81,16 @@ def login_with_id(
     ip_address: str | None,
     user_agent: str | None,
 ) -> tuple[str, UUID] | None:
-    """Authenticate with a login ID and create a session."""
+    """Authenticate with a login ID and create a session.
+
+    The failure path performs a dummy Argon2 verification so that timing does
+    not reveal whether a lookup key exists in the database.
+    """
     try:
         normalized = normalize_login_id(login_id)
     except ValueError:
+        # Normalize failure still performs a dummy verify to keep timing similar.
+        verify_login_id("DAAA-AAAA-AAAA-AAAA", _get_dummy_verifier(), _settings)
         return None
     lookup_key = derive_lookup_key(normalized)
     candidates = migrate.fetch_all(
@@ -88,9 +103,10 @@ def login_with_id(
         (lookup_key,),
     )
     if not candidates:
+        verify_login_id(normalized, _get_dummy_verifier(), _settings)
         return None
     for candidate in candidates:
-        if verify_login_id(normalized, candidate["verifier"]):
+        if verify_login_id(normalized, candidate["verifier"], _settings):
             return create_session(
                 conn, candidate["account_id"], ttl_seconds, ip_address, user_agent
             )
@@ -138,12 +154,9 @@ def admin_regenerate_login_id(
     # revoke all active sessions
     revoke_all_account_sessions(conn, target_account_id)
 
-    from backend.auth.settings import AuthSettings
-
-    settings = AuthSettings()
-    new_login_id = generate_login_id(settings)
+    new_login_id = generate_login_id(_settings)
     lookup_key = derive_lookup_key(new_login_id)
-    verifier = hash_login_id(new_login_id, settings)
+    verifier = hash_login_id(new_login_id, _settings)
     migrate.execute(
         conn,
         """
