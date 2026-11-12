@@ -69,12 +69,12 @@ class AnswerResult:
     seq: int
     correct: bool
     outcome: str  # 'correct', 'wrong' or 'timeout'
+    finished: bool  # True when this answer was the final one and ended the attempt
 
 
 @dataclass(frozen=True)
 class AdvanceResult:
-    finished: bool
-    next_seq: int | None
+    next_seq: int
 
 
 def start_attempt(conn, account_id, *, clock, bank, page_capability=None) -> str:
@@ -156,7 +156,11 @@ def current_question(conn, attempt_id, *, clock, bank) -> QuestionView | None:
 
 
 def submit_answer(conn, attempt_id, seq, choice, *, clock, bank) -> AnswerResult:
-    """Grade and lock one answer. Idempotent: a second submit changes nothing."""
+    """Grade and lock one answer. Idempotent: a second submit changes nothing.
+
+    The answer to the final question also completes the attempt, in the same
+    transaction: there is no Next after it.
+    """
     now = clock.now()
     _sync_connection(conn, attempt_id, now, touch=True)
     row = migrate.fetch_one(
@@ -177,14 +181,18 @@ def submit_answer(conn, attempt_id, seq, choice, *, clock, bank) -> AnswerResult
         question = _question_for_version(conn, bank, row["vid"])
         graded = "correct" if choice == question.correct_belt else "wrong"
     _record_answer(conn, attempt_id, seq, graded, now)
+    finished = seq == QUESTION_COUNT
+    if finished:
+        _complete(conn, attempt_id)
     conn.commit()
-    return _answer_result(seq, graded)
+    return _answer_result(seq, graded, finished=finished)
 
 
 def advance(conn, attempt_id, *, clock) -> AdvanceResult:
-    """Send the next question, or finish the attempt after the 15th.
+    """Send the next question.
 
-    Requires the current (latest sent) question to be resolved first. An
+    Never finishes an attempt: the final answer or timeout does that, so a
+    call after question 15 finds the attempt ended. Requires the current (latest sent) question to be resolved first. An
     unanswered question whose deadline has passed is recorded as a timeout
     here; one still inside its deadline cannot be skipped.
     """
@@ -202,20 +210,10 @@ def advance(conn, attempt_id, *, clock) -> AdvanceResult:
         if now <= row["deadline_at"]:
             raise NotAnsweredError(f"question {row['seq']} is not answered")
         _record_answer(conn, attempt_id, row["seq"], "timeout", now)
-    current_seq = row["seq"]
-    if current_seq >= QUESTION_COUNT:
-        migrate.execute(
-            conn,
-            "UPDATE attempts SET state = 'terminal_pending', final_outcome = 'completed'"
-            " WHERE id = %s AND state = 'active'",
-            (attempt_id,),
-        )
-        conn.commit()
-        return AdvanceResult(finished=True, next_seq=None)
-    next_seq = current_seq + 1
+    next_seq = row["seq"] + 1
     _send_question(conn, attempt_id, next_seq, clock)
     conn.commit()
-    return AdvanceResult(finished=False, next_seq=next_seq)
+    return AdvanceResult(next_seq=next_seq)
 
 
 def heartbeat(conn, attempt_id, *, clock) -> None:
@@ -302,6 +300,8 @@ def expire_stale_attempts(conn, *, clock, account_id=None) -> None:
         sql += " AND account_id = %s"
         params = (account_id,)
     for row in migrate.fetch_all(conn, sql + " FOR UPDATE", params):
+        if _complete_if_final_question_timed_out(conn, row["id"], now):
+            continue
         deadline = _grace_deadline(row["heard_at"])
         if now >= deadline:
             _finalize_disconnect(conn, row["id"], deadline, now)
@@ -341,6 +341,10 @@ def _sync_connection(conn, attempt_id, now, *, touch) -> None:
         raise EngineError("unknown attempt")
     if row["state"] not in ("active", "grace"):
         raise AttemptEndedError("attempt has ended")
+    # checked before grace: the final question's deadline always comes first
+    if _complete_if_final_question_timed_out(conn, attempt_id, now):
+        conn.commit()
+        raise AttemptEndedError("attempt ended: final question timed out")
     deadline = _grace_deadline(row["heard_at"])
     if now >= deadline:
         # finalization wins over a request arriving at or after the deadline
@@ -374,8 +378,38 @@ def _finalize_disconnect(conn, attempt_id, deadline, now) -> None:
     )
 
 
-def _answer_result(seq, answer) -> AnswerResult:
-    return AnswerResult(seq=seq, correct=answer == "correct", outcome=answer)
+def _answer_result(seq, answer, *, finished=False) -> AnswerResult:
+    return AnswerResult(
+        seq=seq, correct=answer == "correct", outcome=answer, finished=finished
+    )
+
+
+def _complete(conn, attempt_id) -> None:
+    migrate.execute(
+        conn,
+        "UPDATE attempts SET state = 'terminal_pending', final_outcome = 'completed'"
+        " WHERE id = %s AND state IN ('active', 'grace')",
+        (attempt_id,),
+    )
+
+
+def _complete_if_final_question_timed_out(conn, attempt_id, now) -> bool:
+    """Complete the attempt when its final question ran out unanswered.
+
+    The final timeout ends the attempt without Next. With no background timer
+    this is applied by the first call that arrives after the deadline.
+    """
+    row = migrate.fetch_one(
+        conn,
+        "SELECT answer, deadline_at FROM attempt_answers"
+        " WHERE attempt_id = %s AND seq = %s",
+        (attempt_id, QUESTION_COUNT),
+    )
+    if row is None or row["answer"] is not None or now <= row["deadline_at"]:
+        return False
+    _record_answer(conn, attempt_id, QUESTION_COUNT, "timeout", now)
+    _complete(conn, attempt_id)
+    return True
 
 
 def _record_answer(conn, attempt_id, seq, answer, now) -> None:
