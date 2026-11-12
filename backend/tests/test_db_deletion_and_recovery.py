@@ -20,6 +20,7 @@ PROJECT_TABLES = (
     "question_versions", "assignments", "assignment_questions",
     "attempts", "attempt_answers", "seasons", "settlements",
     "balances", "balance_history", "outbox", "login_credentials", "sessions",
+    "attempt_connection_events",
 )
 
 

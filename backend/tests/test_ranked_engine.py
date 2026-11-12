@@ -680,6 +680,104 @@ class RankedEngineTests(unittest.TestCase):
         self.assertEqual(engine.void_attempts_for_launch(self.conn, other_season), 0)
         self.assertEqual(self._attempt_row(attempt_id)["state"], "active")
 
+    # --- connection events (slice 8) ---
+
+    def _events(self, attempt_id):
+        """The attempt's events as (kind, seconds after the test's start)."""
+        rows = migrate.fetch_all(
+            self.conn,
+            "SELECT kind, occurred_at FROM attempt_connection_events"
+            " WHERE attempt_id = %s ORDER BY occurred_at, kind",
+            (attempt_id,),
+        )
+        return [
+            (row["kind"], (row["occurred_at"] - self.t0).total_seconds())
+            for row in rows
+        ]
+
+    def _beat(self, attempt_id):
+        engine.heartbeat(self.conn, attempt_id, clock=self.clock)
+
+    def test_steady_heartbeats_write_no_events(self):
+        self.t0 = self.clock.now()
+        _, attempt_id = self._start()
+        for _ in range(8):
+            self.clock.advance(1)
+            self._beat(attempt_id)
+        self.assertEqual(self._events(attempt_id), [])
+
+    def test_return_after_silence_writes_a_loss_and_a_recovery(self):
+        self.t0 = self.clock.now()
+        _, attempt_id = self._start()
+        self.clock.advance(5)
+        self._beat(attempt_id)
+        self.assertEqual(
+            self._events(attempt_id), [("loss", 3.0), ("recovery", 5.0)]
+        )
+
+    def test_one_interruption_is_one_loss_however_often_it_is_noticed(self):
+        self.t0 = self.clock.now()
+        _, attempt_id = self._start()
+        self.clock.advance(4)
+        engine.expire_stale_attempts(self.conn, clock=self.clock)  # notices it
+        self.clock.advance(1)
+        engine.expire_stale_attempts(self.conn, clock=self.clock)  # and again
+        self.clock.advance(1)
+        self._beat(attempt_id)                                      # and on return
+        self.assertEqual(
+            self._events(attempt_id), [("loss", 3.0), ("recovery", 6.0)]
+        )
+
+    def test_two_interruptions_are_two_losses(self):
+        self.t0 = self.clock.now()
+        _, attempt_id = self._start()
+        self.clock.advance(5)
+        self._beat(attempt_id)   # back at 5s
+        self.clock.advance(4)
+        self._beat(attempt_id)   # silent again from 5s, back at 9s
+        self.assertEqual(
+            self._events(attempt_id),
+            [("loss", 3.0), ("recovery", 5.0), ("loss", 8.0), ("recovery", 9.0)],
+        )
+
+    def test_grace_expiry_on_a_late_call_writes_loss_and_expiry(self):
+        self.t0 = self.clock.now()
+        _, attempt_id = self._start()
+        self.clock.advance(20)
+        with self.assertRaises(engine.AttemptEndedError):
+            self._beat(attempt_id)
+        self.assertEqual(
+            self._events(attempt_id), [("loss", 3.0), ("expiry", 18.0)]
+        )
+
+    def test_grace_expiry_by_the_sweep_writes_loss_and_expiry(self):
+        self.t0 = self.clock.now()
+        _, attempt_id = self._start()
+        self.clock.advance(60)
+        engine.expire_stale_attempts(self.conn, clock=self.clock)
+        self.assertEqual(
+            self._events(attempt_id), [("loss", 3.0), ("expiry", 18.0)]
+        )
+
+    def test_reading_during_a_loss_is_not_a_recovery(self):
+        self.t0 = self.clock.now()
+        _, attempt_id = self._start()
+        self.clock.advance(5)
+        engine.current_question(
+            self.conn, attempt_id, clock=self.clock, bank=self.bank
+        )
+        self.assertEqual(self._events(attempt_id), [("loss", 3.0)])
+
+    def test_events_are_deleted_with_the_account(self):
+        self.t0 = self.clock.now()
+        account_id, attempt_id = self._start()
+        self.clock.advance(5)
+        self._beat(attempt_id)
+        self.assertEqual(len(self._events(attempt_id)), 2)
+        migrate.execute(self.conn, "DELETE FROM accounts WHERE id = %s", (account_id,))
+        self.conn.commit()
+        self.assertEqual(self._events(attempt_id), [])
+
     def test_wrong_answer_is_graded_wrong(self):
         self._open_season()
         attempt_id = engine.start_attempt(
@@ -745,6 +843,28 @@ class RankedEngineTests(unittest.TestCase):
             self.conn, attempt_id, 1, CORRECT, clock=self.clock, bank=self.bank
         )
         self.assertEqual(again.outcome, "timeout")
+
+    def test_answer_exactly_at_the_deadline_is_graded(self):
+        self._open_season()
+        attempt_id = engine.start_attempt(
+            self.conn, self._make_account(), clock=self.clock, bank=self.bank
+        )
+        self.clock.advance(10)  # the deadline itself is still in time
+        result = engine.submit_answer(
+            self.conn, attempt_id, 1, CORRECT, clock=self.clock, bank=self.bank
+        )
+        self.assertEqual(result.outcome, "correct")
+
+    def test_answer_just_after_the_deadline_is_a_timeout(self):
+        self._open_season()
+        attempt_id = engine.start_attempt(
+            self.conn, self._make_account(), clock=self.clock, bank=self.bank
+        )
+        self.clock.advance(10.001)
+        result = engine.submit_answer(
+            self.conn, attempt_id, 1, CORRECT, clock=self.clock, bank=self.bank
+        )
+        self.assertEqual(result.outcome, "timeout")
 
     def test_advance_moves_past_a_timed_out_question(self):
         self._open_season()
