@@ -1,10 +1,12 @@
 """Ranked attempt engine core happy path (issue #8, piece 3)."""
+import dataclasses
 import tempfile
 from datetime import datetime, timedelta, timezone
 import unittest
+from unittest import mock
 
 from backend.db import migrate, settings
-from backend.ranked import engine
+from backend.ranked import engine, modes
 from backend.tests.ranked_helpers import make_unconstrained_bank
 from backend.tests.test_ranked_clock import FakeClock
 
@@ -777,6 +779,70 @@ class RankedEngineTests(unittest.TestCase):
         migrate.execute(self.conn, "DELETE FROM accounts WHERE id = %s", (account_id,))
         self.conn.commit()
         self.assertEqual(self._events(attempt_id), [])
+
+    # --- per-mode settings (slice 9) ---
+
+    def _short_normal_mode(self, *, trim_selection=True):
+        """Temporarily make a normal attempt three questions of four seconds."""
+        short = modes.ModeSettings(question_count=3, question_seconds=4)
+        patches = [mock.patch.dict(modes.SETTINGS, {"normal": short})]
+        if trim_selection:
+            real_select = engine.select_assignment
+
+            def three_questions(bank, **kwargs):
+                snapshot = real_select(bank, **kwargs)
+                return dataclasses.replace(
+                    snapshot, questions=snapshot.questions[:3]
+                )
+
+            patches.append(
+                mock.patch.object(engine, "select_assignment", three_questions)
+            )
+        for patch in patches:
+            patch.start()
+            self.addCleanup(patch.stop)
+
+    def test_question_deadline_comes_from_the_mode_settings(self):
+        self._short_normal_mode()
+        started = self.clock.now()
+        _, attempt_id = self._start()
+        view = engine.current_question(
+            self.conn, attempt_id, clock=self.clock, bank=self.bank
+        )
+        self.assertEqual((view.deadline_at - started).total_seconds(), 4)
+
+    def test_final_question_number_comes_from_the_mode_settings(self):
+        self._short_normal_mode()
+        _, attempt_id = self._start()
+        for seq in (1, 2):
+            step = self._play_one(attempt_id, seq)
+            self.assertEqual(step.next_seq, seq + 1)
+        last = self._play_one(attempt_id, 3)
+        self.assertTrue(last.finished)
+        row = self._attempt_row(attempt_id)
+        self.assertEqual((row["state"], row["final_outcome"]),
+                         ("terminal_pending", "completed"))
+
+    def test_final_question_timeout_uses_the_mode_settings(self):
+        self._short_normal_mode()
+        _, attempt_id = self._start()
+        for seq in (1, 2):
+            self._play_one(attempt_id, seq)
+        self.clock.advance(5)  # past the four-second deadline of question 3
+        with self.assertRaises(engine.AttemptEndedError):
+            engine.heartbeat(self.conn, attempt_id, clock=self.clock)
+        self.assertEqual(self._attempt_row(attempt_id)["final_outcome"], "completed")
+        self.assertEqual(self._answer_of(attempt_id, 3), "timeout")
+
+    def test_selection_size_must_match_the_mode_settings(self):
+        self._short_normal_mode(trim_selection=False)  # 15 selected, 3 expected
+        self._open_season()
+        account_id = self._make_account()
+        with self.assertRaises(engine.EngineError):
+            engine.start_attempt(
+                self.conn, account_id, clock=self.clock, bank=self.bank
+            )
+        self.assertEqual(self._attempt_count(account_id), 0)
 
     def test_wrong_answer_is_graded_wrong(self):
         self._open_season()

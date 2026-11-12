@@ -1,7 +1,8 @@
 """Server-authoritative ranked attempt engine (issue #8).
 
-Runs a normal-mode attempt from start to finish on the server: it assigns 15
-questions, serves them one at a time on server-owned ten-second deadlines,
+Runs an attempt from start to finish on the server: it assigns the questions,
+serves them one at a time on server-owned deadlines (how many questions and
+how many seconds come from the attempt's mode, see ``modes``),
 accepts a single locked answer each, runs forward-only, and ends the attempt
 in ``terminal_pending``. It records per-answer results only; computing the
 score, caps, and balance is #9, which reads the finalized answers and
@@ -21,14 +22,12 @@ from dataclasses import dataclass
 from datetime import datetime, timedelta
 
 from backend.db import migrate
-from backend.ranked import ranks
+from backend.ranked import modes, ranks
 from backend.ranked.capability import hash_token
 from backend.ranked.versions import materialize_question_version
 from backend.ranked_bank.identity import question_content_digest
 from backend.ranked_bank.selection import select_assignment
 
-QUESTION_COUNT = 15
-QUESTION_SECONDS = 10
 HEARTBEAT_LOSS_SECONDS = 3
 GRACE_SECONDS = 15
 
@@ -110,7 +109,7 @@ def entry_status(conn, account_id) -> EntryStatus:
 def start_attempt(
     conn, account_id, *, clock, bank, page_capability=None, mode=ranks.NORMAL
 ) -> str:
-    """Assign 15 questions, open an ``active`` attempt, and send question 1.
+    """Assign the questions, open an ``active`` attempt, and send question 1.
 
     ``mode`` is the kind of attempt the player explicitly asked for. At a
     badge cap only ``promotion`` may start, anywhere else only ``normal``; the
@@ -142,6 +141,13 @@ def start_attempt(
         raise PromotionNotAvailableError("promotion is only available at a badge cap")
     season_id = _open_season(conn)
     snapshot = select_assignment(bank)
+    expected = modes.settings_for(mode).question_count
+    if len(snapshot.questions) != expected:
+        # refuse before writing: a quiz of the wrong length must never start
+        raise EngineError(
+            f"assignment has {len(snapshot.questions)} questions,"
+            f" {mode} attempts need {expected}"
+        )
     assignment = migrate.fetch_one(
         conn,
         "INSERT INTO assignments (account_id, mode, season_id)"
@@ -233,7 +239,7 @@ def submit_answer(conn, attempt_id, seq, choice, *, clock, bank) -> AnswerResult
         question = _question_for_version(conn, bank, row["vid"])
         graded = "correct" if choice == question.correct_belt else "wrong"
     _record_answer(conn, attempt_id, seq, graded, now)
-    finished = seq == QUESTION_COUNT
+    finished = seq == _settings(conn, attempt_id).question_count
     if finished:
         _complete(conn, attempt_id)
     conn.commit()
@@ -244,7 +250,7 @@ def advance(conn, attempt_id, *, clock) -> AdvanceResult:
     """Send the next question.
 
     Never finishes an attempt: the final answer or timeout does that, so a
-    call after question 15 finds the attempt ended. Requires the current (latest sent) question to be resolved first. An
+    call after the final question finds the attempt ended. Requires the current (latest sent) question to be resolved first. An
     unanswered question whose deadline has passed is recorded as a timeout
     here; one still inside its deadline cannot be skipped.
     """
@@ -533,15 +539,16 @@ def _complete_if_final_question_timed_out(conn, attempt_id, now) -> bool:
     The final timeout ends the attempt without Next. With no background timer
     this is applied by the first call that arrives after the deadline.
     """
+    final_seq = _settings(conn, attempt_id).question_count
     row = migrate.fetch_one(
         conn,
         "SELECT answer, deadline_at FROM attempt_answers"
         " WHERE attempt_id = %s AND seq = %s",
-        (attempt_id, QUESTION_COUNT),
+        (attempt_id, final_seq),
     )
     if row is None or row["answer"] is not None or now <= row["deadline_at"]:
         return False
-    _record_answer(conn, attempt_id, QUESTION_COUNT, "timeout", now)
+    _record_answer(conn, attempt_id, final_seq, "timeout", now)
     _complete(conn, attempt_id)
     return True
 
@@ -554,6 +561,14 @@ def _record_answer(conn, attempt_id, seq, answer, now) -> None:
         " WHERE attempt_id = %s AND seq = %s AND answer IS NULL",
         (answer, now, attempt_id, seq),
     )
+
+
+def _settings(conn, attempt_id) -> modes.ModeSettings:
+    """The quiz shape (question count and seconds) of this attempt's mode."""
+    row = migrate.fetch_one(
+        conn, "SELECT mode FROM attempts WHERE id = %s", (attempt_id,)
+    )
+    return modes.settings_for(row["mode"])
 
 
 def _open_season(conn) -> str:
@@ -575,7 +590,8 @@ def _send_question(conn, attempt_id, seq, clock) -> None:
         (attempt_id, seq),
     )
     now = clock.now()
-    deadline = now + timedelta(seconds=QUESTION_SECONDS)
+    seconds = _settings(conn, attempt_id).question_seconds
+    deadline = now + timedelta(seconds=seconds)
     migrate.execute(
         conn,
         "INSERT INTO attempt_answers (attempt_id, seq, question_version_id,"
