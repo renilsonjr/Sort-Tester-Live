@@ -146,7 +146,12 @@ def answer(
             )
     except engine.AnswerRejectedError as exc:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(exc)) from None
-    return {"seq": result.seq, "correct": result.correct, "outcome": result.outcome}
+    return {
+        "seq": result.seq,
+        "correct": result.correct,
+        "outcome": result.outcome,
+        "finished": result.finished,
+    }
 
 
 @router.post("/attempts/{attempt_id}/advance")
@@ -157,7 +162,7 @@ def advance(request: Request, attempt_id: str, account: dict = Depends(_current_
             result = engine.advance(conn, attempt_id, clock=_CLOCK)
     except engine.NotAnsweredError as exc:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(exc)) from None
-    return {"finished": result.finished, "next_seq": result.next_seq}
+    return {"next_seq": result.next_seq}
 
 
 @router.post("/attempts/{attempt_id}/heartbeat", status_code=status.HTTP_204_NO_CONTENT)

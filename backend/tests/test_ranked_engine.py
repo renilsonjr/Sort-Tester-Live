@@ -65,6 +65,9 @@ class RankedEngineTests(unittest.TestCase):
         result = engine.submit_answer(
             self.conn, attempt_id, seq, choice, clock=self.clock, bank=self.bank
         )
+        if result.finished:
+            # the final answer completes the attempt; there is no Next
+            return result
         return engine.advance(self.conn, attempt_id, clock=self.clock)
 
     def test_full_happy_path_reaches_terminal_pending(self):
@@ -74,12 +77,11 @@ class RankedEngineTests(unittest.TestCase):
             self.conn, account_id, clock=self.clock, bank=self.bank
         )
         for seq in range(1, 16):
-            adv = self._play_one(attempt_id, seq)
+            step = self._play_one(attempt_id, seq)
             if seq < 15:
-                self.assertFalse(adv.finished)
-                self.assertEqual(adv.next_seq, seq + 1)
+                self.assertEqual(step.next_seq, seq + 1)
             else:
-                self.assertTrue(adv.finished)
+                self.assertTrue(step.finished)
         row = migrate.fetch_one(
             self.conn,
             "SELECT state, final_outcome, settled_at FROM attempts WHERE id = %s",
@@ -380,6 +382,92 @@ class RankedEngineTests(unittest.TestCase):
         self.assertEqual(self._void(2, 30), 0)
         self.assertEqual(self._ending(attempt_id), ("finalized", "disconnect"))
 
+    # --- final question completes without Next (slice 5) ---
+
+    def _reach_final_question(self):
+        _, attempt_id = self._start()
+        for seq in range(1, 15):
+            self._play_one(attempt_id, seq)
+        return attempt_id
+
+    def test_only_the_final_answer_reports_finished(self):
+        _, attempt_id = self._start()
+        first = engine.submit_answer(
+            self.conn, attempt_id, 1, CORRECT, clock=self.clock, bank=self.bank
+        )
+        self.assertFalse(first.finished)
+        self.assertEqual(self._attempt_row(attempt_id)["state"], "active")
+
+    def test_final_answer_completes_the_attempt(self):
+        attempt_id = self._reach_final_question()
+        result = engine.submit_answer(
+            self.conn, attempt_id, 15, WRONG, clock=self.clock, bank=self.bank
+        )
+        self.assertTrue(result.finished)
+        self.assertEqual(result.outcome, "wrong")
+        row = self._attempt_row(attempt_id)
+        self.assertEqual((row["state"], row["final_outcome"]),
+                         ("terminal_pending", "completed"))
+
+    def test_advance_after_the_final_answer_is_refused(self):
+        attempt_id = self._reach_final_question()
+        engine.submit_answer(
+            self.conn, attempt_id, 15, CORRECT, clock=self.clock, bank=self.bank
+        )
+        with self.assertRaises(engine.AttemptEndedError):
+            engine.advance(self.conn, attempt_id, clock=self.clock)
+
+    def test_final_question_timeout_is_completed_by_the_next_heartbeat(self):
+        attempt_id = self._reach_final_question()
+        self.clock.advance(10)
+        engine.heartbeat(self.conn, attempt_id, clock=self.clock)  # exactly at the deadline: still live
+        self.clock.advance(1)
+        with self.assertRaises(engine.AttemptEndedError):
+            engine.heartbeat(self.conn, attempt_id, clock=self.clock)
+        row = self._attempt_row(attempt_id)
+        self.assertEqual((row["state"], row["final_outcome"]),
+                         ("terminal_pending", "completed"))
+        self.assertEqual(self._answer_of(attempt_id, 15), "timeout")
+
+    def test_late_final_answer_finds_the_attempt_completed(self):
+        attempt_id = self._reach_final_question()
+        self.clock.advance(11)
+        with self.assertRaises(engine.AttemptEndedError):
+            engine.submit_answer(
+                self.conn, attempt_id, 15, CORRECT, clock=self.clock, bank=self.bank
+            )
+        self.assertEqual(self._answer_of(attempt_id, 15), "timeout")
+        self.assertEqual(self._attempt_row(attempt_id)["final_outcome"], "completed")
+
+    def test_silence_on_the_final_question_completes_rather_than_disconnects(self):
+        attempt_id = self._reach_final_question()
+        self.clock.advance(60)  # long past both the question and grace deadlines
+        engine.expire_stale_attempts(self.conn, clock=self.clock)
+        row = self._attempt_row(attempt_id)
+        self.assertEqual((row["state"], row["final_outcome"]),
+                         ("terminal_pending", "completed"))
+        self.assertEqual(self._answer_of(attempt_id, 15), "timeout")
+
+    def test_returning_after_silence_on_the_final_question_finds_it_completed(self):
+        attempt_id = self._reach_final_question()
+        self.clock.advance(60)
+        with self.assertRaises(engine.AttemptEndedError):
+            engine.heartbeat(self.conn, attempt_id, clock=self.clock)
+        self.assertEqual(self._attempt_row(attempt_id)["final_outcome"], "completed")
+
+    def test_quit_on_a_live_final_question_is_a_quit(self):
+        attempt_id = self._reach_final_question()
+        self.assertEqual(
+            engine.quit_attempt(self.conn, attempt_id, clock=self.clock), "quit"
+        )
+
+    def test_quit_after_the_final_question_deadline_is_completed(self):
+        attempt_id = self._reach_final_question()
+        self.clock.advance(11)
+        self.assertEqual(
+            engine.quit_attempt(self.conn, attempt_id, clock=self.clock), "completed"
+        )
+
     def test_wrong_answer_is_graded_wrong(self):
         self._open_season()
         attempt_id = engine.start_attempt(
@@ -453,7 +541,6 @@ class RankedEngineTests(unittest.TestCase):
         )
         self.clock.advance(11)
         adv = engine.advance(self.conn, attempt_id, clock=self.clock)
-        self.assertFalse(adv.finished)
         self.assertEqual(adv.next_seq, 2)
         self.assertEqual(self._answer_of(attempt_id, 1), "timeout")
 
@@ -462,11 +549,13 @@ class RankedEngineTests(unittest.TestCase):
         attempt_id = engine.start_attempt(
             self.conn, self._make_account(), clock=self.clock, bank=self.bank
         )
-        adv = None
-        for _ in range(15):
+        for _ in range(14):
             self.clock.advance(11)
-            adv = engine.advance(self.conn, attempt_id, clock=self.clock)
-        self.assertTrue(adv.finished)
+            engine.advance(self.conn, attempt_id, clock=self.clock)
+        # question 15 runs out: the next call of any kind completes the attempt
+        self.clock.advance(11)
+        with self.assertRaises(engine.AttemptEndedError):
+            engine.heartbeat(self.conn, attempt_id, clock=self.clock)
         row = migrate.fetch_one(
             self.conn,
             "SELECT state, final_outcome FROM attempts WHERE id = %s",

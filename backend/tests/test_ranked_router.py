@@ -95,13 +95,14 @@ class RankedRouterTests(unittest.TestCase):
             )
             self.assertEqual(answer.status_code, 200, answer.text)
             self.assertIn("correct", answer.json())
+            # only the fifteenth answer finishes the attempt, with no Next
+            self.assertEqual(answer.json()["finished"], seq == 15)
             advance = self.client.post(f"/api/ranked/attempts/{attempt_id}/advance")
-            self.assertEqual(advance.status_code, 200, advance.text)
             if seq < 15:
-                self.assertFalse(advance.json()["finished"])
-                self.assertEqual(advance.json()["next_seq"], seq + 1)
+                self.assertEqual(advance.status_code, 200, advance.text)
+                self.assertEqual(advance.json(), {"next_seq": seq + 1})
             else:
-                self.assertTrue(advance.json()["finished"])
+                self.assertEqual(advance.status_code, 410)
 
         # the attempt has ended: it is gone for further calls
         done = self.client.get(f"/api/ranked/attempts/{attempt_id}/current")
