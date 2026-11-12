@@ -1,8 +1,10 @@
 """Ranked settlement: one ended attempt's result is applied exactly once
 (issue #9, slice 2)."""
 import tempfile
+import threading
 from datetime import datetime, timezone
 import unittest
+from unittest import mock
 
 from backend.db import migrate, settings
 from backend.ranked import engine, scoring, settlement
@@ -291,6 +293,119 @@ class SettleAttemptTests(SettlementTestCase):
             self.conn, "SELECT season_id FROM attempts WHERE id = %s", (attempt_id,)
         )
         return row["season_id"]
+
+
+@unittest.skipUnless(
+    settings.environment_has_test_url(),
+    "SORT_TESTER_TEST_DATABASE_URL not set; database tests skipped",
+)
+class SettlePendingTests(SettlementTestCase):
+    def _ended_attempt(self, points):
+        account_id = self._account(points=points)
+        attempt_id = self._start(account_id)
+        engine.quit_attempt(self.conn, attempt_id, clock=self.clock)
+        return account_id, attempt_id
+
+    def test_sweep_settles_every_pending_attempt_and_nothing_else(self):
+        first_account, first = self._ended_attempt(500)
+        second_account, second = self._ended_attempt(700)
+        done_account, done = self._ended_attempt(900)
+        self._settle(done)                      # already finalized
+        running_account = self._account(points=300)
+        running = self._start(running_account)  # still being played
+
+        self.assertEqual(settlement.settle_pending(self.conn, clock=self.clock), 2)
+        self.assertEqual(self._points(first_account), 490)
+        self.assertEqual(self._points(second_account), 690)
+        self.assertEqual(self._points(done_account), 890)     # not applied twice
+        self.assertEqual(self._points(running_account), 300)  # untouched
+        self.assertEqual(self._count("settlements", running), 0)
+        for attempt_id in (first, second, done):
+            self.assertEqual(self._count("settlements", attempt_id), 1)
+
+    def test_sweep_with_nothing_pending_does_nothing(self):
+        account_id, attempt_id = self._ended_attempt(500)
+        self.assertEqual(settlement.settle_pending(self.conn, clock=self.clock), 1)
+        self.assertEqual(settlement.settle_pending(self.conn, clock=self.clock), 0)
+        self.assertEqual(self._points(account_id), 490)
+
+
+@unittest.skipUnless(
+    settings.environment_has_test_url(),
+    "SORT_TESTER_TEST_DATABASE_URL not set; database tests skipped",
+)
+class SettlementRaceTests(SettlementTestCase):
+    def _race(self, first, second):
+        """Run ``first`` paused in the middle of settling, then ``second``.
+
+        The first call is paused after it has locked the attempt, while it is
+        computing the result. Returns ``(results, second_waited)``.
+        """
+        reached, release = threading.Event(), threading.Event()
+        original = scoring.settle
+
+        def paused(*args, **kwargs):
+            if threading.current_thread().name == "first" and not reached.is_set():
+                reached.set()
+                release.wait(10)
+            return original(*args, **kwargs)
+
+        results = {}
+
+        def run(name, call):
+            conn = migrate.connect(self.conninfo)
+            try:
+                results[name] = ("ok", call(conn))
+            except Exception as exc:  # the outcome is asserted by the test
+                results[name] = ("error", exc)
+            finally:
+                conn.close()
+
+        with mock.patch.object(scoring, "settle", paused):
+            one = threading.Thread(target=run, args=("first", first), name="first")
+            one.start()
+            self.assertTrue(reached.wait(10), "first call never reached its pause")
+            two = threading.Thread(target=run, args=("second", second), name="second")
+            two.start()
+            two.join(0.5)
+            second_waited = two.is_alive()
+            release.set()
+            one.join(10)
+            two.join(10)
+        self.assertFalse(one.is_alive() or two.is_alive(), "a call never finished")
+        return results, second_waited
+
+    def _ended(self, points):
+        account_id = self._account(points=points)
+        attempt_id = self._start(account_id)
+        self._play(attempt_id, [CORRECT] * 15)
+        return account_id, attempt_id
+
+    def test_two_settlements_of_one_attempt_apply_the_points_once(self):
+        account_id, attempt_id = self._ended(500)
+
+        def settle(conn):
+            return settlement.settle_attempt(conn, attempt_id, clock=self.clock)
+
+        results, waited = self._race(settle, settle)
+        self.assertTrue(waited, "the second settlement did not wait for the first")
+        self.assertEqual(results["first"][0], "ok", results["first"])
+        self.assertEqual(results["second"][0], "ok", results["second"])
+        self.assertEqual(results["second"][1], results["first"][1])
+        self.assertEqual(self._points(account_id), 800)  # +300 once, not twice
+        self.assertEqual(self._count("settlements", attempt_id), 1)
+        self.assertEqual(self._count("balance_history", attempt_id), 1)
+
+    def test_sweep_and_a_direct_settlement_apply_the_points_once(self):
+        account_id, attempt_id = self._ended(500)
+        results, waited = self._race(
+            lambda conn: settlement.settle_attempt(conn, attempt_id, clock=self.clock),
+            lambda conn: settlement.settle_pending(conn, clock=self.clock),
+        )
+        self.assertTrue(waited, "the sweep did not wait for the settlement in progress")
+        self.assertEqual(results["second"], ("ok", 0))  # nothing left for the sweep
+        self.assertEqual(self._points(account_id), 800)
+        self.assertEqual(self._count("settlements", attempt_id), 1)
 
 
 if __name__ == "__main__":

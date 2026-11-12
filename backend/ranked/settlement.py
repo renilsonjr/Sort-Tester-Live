@@ -30,6 +30,31 @@ def settle_attempt(conn, attempt_id, *, clock) -> scoring.Settlement:
     :class:`AttemptNotEndedError`. Everything is written in one transaction,
     so a failure leaves no partial settlement behind.
     """
+    result, _ = _settle(conn, attempt_id, clock)
+    return result
+
+
+def settle_pending(conn, *, clock) -> int:
+    """Settle every attempt waiting in ``terminal_pending``; return how many.
+
+    The sweep a scheduler runs. Each attempt is settled in its own
+    transaction, so one failure does not undo the others. An attempt another
+    caller settles first is not counted: its points were applied there.
+    """
+    rows = migrate.fetch_all(
+        conn, "SELECT id FROM attempts WHERE state = 'terminal_pending' ORDER BY started_at"
+    )
+    conn.commit()
+    settled = 0
+    for row in rows:
+        _, applied = _settle(conn, row["id"], clock)
+        if applied:
+            settled += 1
+    return settled
+
+
+def _settle(conn, attempt_id, clock) -> tuple[scoring.Settlement, bool]:
+    """Settle one attempt. Returns the result and whether this call applied it."""
     attempt = migrate.fetch_one(
         conn,
         "SELECT account_id, season_id, mode, state, final_outcome"
@@ -41,7 +66,7 @@ def settle_attempt(conn, attempt_id, *, clock) -> scoring.Settlement:
     if attempt["state"] == "finalized":
         stored = _stored_result(conn, attempt_id)
         conn.commit()  # nothing written: release the attempt lock
-        return stored
+        return stored, False
     if attempt["state"] != "terminal_pending":
         conn.commit()
         raise AttemptNotEndedError("attempt has not ended")
@@ -102,7 +127,7 @@ def settle_attempt(conn, attempt_id, *, clock) -> scoring.Settlement:
         (now, attempt_id),
     )
     conn.commit()
-    return result
+    return result, True
 
 
 def _stored_result(conn, attempt_id) -> scoring.Settlement:
