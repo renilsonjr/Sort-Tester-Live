@@ -55,6 +55,7 @@ class QuestionView:
 class AnswerResult:
     seq: int
     correct: bool
+    outcome: str  # 'correct', 'wrong' or 'timeout'
 
 
 @dataclass(frozen=True)
@@ -136,36 +137,39 @@ def submit_answer(conn, attempt_id, seq, choice, *, clock, bank) -> AnswerResult
         raise AnswerRejectedError(f"question {seq} has not been sent")
     if row["answer"] is not None:
         # already resolved: report the stored result, write nothing
-        return AnswerResult(seq=seq, correct=row["answer"] == "correct")
-    if clock.now() > row["deadline_at"]:
-        raise AnswerRejectedError(f"question {seq} deadline has passed")
-    question = _question_for_version(conn, bank, row["vid"])
-    graded = "correct" if choice == question.correct_belt else "wrong"
-    migrate.execute(
-        conn,
-        "UPDATE attempt_answers SET answer = %s, accepted_at = %s"
-        " WHERE attempt_id = %s AND seq = %s AND answer IS NULL",
-        (graded, clock.now(), attempt_id, seq),
-    )
+        return _answer_result(seq, row["answer"])
+    now = clock.now()
+    if now > row["deadline_at"]:
+        # too late: the question timed out and the submitted choice is discarded
+        graded = "timeout"
+    else:
+        question = _question_for_version(conn, bank, row["vid"])
+        graded = "correct" if choice == question.correct_belt else "wrong"
+    _record_answer(conn, attempt_id, seq, graded, now)
     conn.commit()
-    return AnswerResult(seq=seq, correct=graded == "correct")
+    return _answer_result(seq, graded)
 
 
 def advance(conn, attempt_id, *, clock) -> AdvanceResult:
     """Send the next question, or finish the attempt after the 15th.
 
-    Requires the current (latest sent) question to be answered first.
+    Requires the current (latest sent) question to be resolved first. An
+    unanswered question whose deadline has passed is recorded as a timeout
+    here; one still inside its deadline cannot be skipped.
     """
     row = migrate.fetch_one(
         conn,
-        "SELECT seq, answer FROM attempt_answers WHERE attempt_id = %s"
+        "SELECT seq, answer, deadline_at FROM attempt_answers WHERE attempt_id = %s"
         " ORDER BY seq DESC LIMIT 1",
         (attempt_id,),
     )
     if row is None:
         raise NotAnsweredError("no question has been sent")
     if row["answer"] is None:
-        raise NotAnsweredError(f"question {row['seq']} is not answered")
+        now = clock.now()
+        if now <= row["deadline_at"]:
+            raise NotAnsweredError(f"question {row['seq']} is not answered")
+        _record_answer(conn, attempt_id, row["seq"], "timeout", now)
     current_seq = row["seq"]
     if current_seq >= QUESTION_COUNT:
         migrate.execute(
@@ -180,6 +184,20 @@ def advance(conn, attempt_id, *, clock) -> AdvanceResult:
     _send_question(conn, attempt_id, next_seq, clock)
     conn.commit()
     return AdvanceResult(finished=False, next_seq=next_seq)
+
+
+def _answer_result(seq, answer) -> AnswerResult:
+    return AnswerResult(seq=seq, correct=answer == "correct", outcome=answer)
+
+
+def _record_answer(conn, attempt_id, seq, answer, now) -> None:
+    # one-way acceptance: only an unresolved row can be written, exactly once
+    migrate.execute(
+        conn,
+        "UPDATE attempt_answers SET answer = %s, accepted_at = %s"
+        " WHERE attempt_id = %s AND seq = %s AND answer IS NULL",
+        (answer, now, attempt_id, seq),
+    )
 
 
 def _open_season(conn) -> str:

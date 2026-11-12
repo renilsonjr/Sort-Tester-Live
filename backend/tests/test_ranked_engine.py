@@ -134,16 +134,67 @@ class RankedEngineTests(unittest.TestCase):
                 self.conn, attempt_id, 2, CORRECT, clock=self.clock, bank=self.bank
             )
 
-    def test_answer_after_deadline_is_rejected(self):
+    def _answer_of(self, attempt_id, seq):
+        row = migrate.fetch_one(
+            self.conn,
+            "SELECT answer FROM attempt_answers WHERE attempt_id = %s AND seq = %s",
+            (attempt_id, seq),
+        )
+        return row["answer"] if row else None
+
+    def test_late_answer_is_recorded_as_timeout(self):
         self._open_season()
         attempt_id = engine.start_attempt(
             self.conn, self._make_account(), clock=self.clock, bank=self.bank
         )
         self.clock.advance(11)  # past the 10-second deadline
-        with self.assertRaises(engine.AnswerRejectedError):
-            engine.submit_answer(
-                self.conn, attempt_id, 1, CORRECT, clock=self.clock, bank=self.bank
-            )
+        result = engine.submit_answer(
+            self.conn, attempt_id, 1, CORRECT, clock=self.clock, bank=self.bank
+        )
+        self.assertFalse(result.correct)
+        self.assertEqual(result.outcome, "timeout")
+        self.assertEqual(self._answer_of(attempt_id, 1), "timeout")
+        # a later submit cannot rewrite the timeout
+        again = engine.submit_answer(
+            self.conn, attempt_id, 1, CORRECT, clock=self.clock, bank=self.bank
+        )
+        self.assertEqual(again.outcome, "timeout")
+
+    def test_advance_moves_past_a_timed_out_question(self):
+        self._open_season()
+        attempt_id = engine.start_attempt(
+            self.conn, self._make_account(), clock=self.clock, bank=self.bank
+        )
+        self.clock.advance(11)
+        adv = engine.advance(self.conn, attempt_id, clock=self.clock)
+        self.assertFalse(adv.finished)
+        self.assertEqual(adv.next_seq, 2)
+        self.assertEqual(self._answer_of(attempt_id, 1), "timeout")
+
+    def test_all_timeouts_still_finish_the_attempt(self):
+        self._open_season()
+        attempt_id = engine.start_attempt(
+            self.conn, self._make_account(), clock=self.clock, bank=self.bank
+        )
+        adv = None
+        for _ in range(15):
+            self.clock.advance(11)
+            adv = engine.advance(self.conn, attempt_id, clock=self.clock)
+        self.assertTrue(adv.finished)
+        row = migrate.fetch_one(
+            self.conn,
+            "SELECT state, final_outcome FROM attempts WHERE id = %s",
+            (attempt_id,),
+        )
+        self.assertEqual((row["state"], row["final_outcome"]),
+                         ("terminal_pending", "completed"))
+        count = migrate.fetch_one(
+            self.conn,
+            "SELECT COUNT(*) AS n FROM attempt_answers"
+            " WHERE attempt_id = %s AND answer = 'timeout'",
+            (attempt_id,),
+        )
+        self.assertEqual(count["n"], 15)
 
     def test_advance_requires_the_current_answer(self):
         self._open_season()
