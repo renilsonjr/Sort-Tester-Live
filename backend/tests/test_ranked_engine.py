@@ -746,6 +746,28 @@ class RankedEngineTests(unittest.TestCase):
         )
         self.assertEqual(again.outcome, "timeout")
 
+    def test_answer_exactly_at_the_deadline_is_graded(self):
+        self._open_season()
+        attempt_id = engine.start_attempt(
+            self.conn, self._make_account(), clock=self.clock, bank=self.bank
+        )
+        self.clock.advance(10)  # the deadline itself is still in time
+        result = engine.submit_answer(
+            self.conn, attempt_id, 1, CORRECT, clock=self.clock, bank=self.bank
+        )
+        self.assertEqual(result.outcome, "correct")
+
+    def test_answer_just_after_the_deadline_is_a_timeout(self):
+        self._open_season()
+        attempt_id = engine.start_attempt(
+            self.conn, self._make_account(), clock=self.clock, bank=self.bank
+        )
+        self.clock.advance(10.001)
+        result = engine.submit_answer(
+            self.conn, attempt_id, 1, CORRECT, clock=self.clock, bank=self.bank
+        )
+        self.assertEqual(result.outcome, "timeout")
+
     def test_advance_moves_past_a_timed_out_question(self):
         self._open_season()
         attempt_id = engine.start_attempt(

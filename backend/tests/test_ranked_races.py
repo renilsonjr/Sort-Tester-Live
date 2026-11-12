@@ -218,6 +218,23 @@ class RankedRaceTests(unittest.TestCase):
         )
         self.assertEqual(row["n"], 1)
 
+    def test_return_just_inside_grace_beats_a_concurrent_expiry_sweep(self):
+        attempt_id = self._start()
+        self.clock.advance(17.9)  # silent, but back before the 18s grace deadline
+        # the sweep's clock is already past that old grace deadline
+        late = FakeClock(self.clock.now())
+        late.advance(1)
+        results, waited = self._race(
+            lambda conn: engine.heartbeat(conn, attempt_id, clock=self.clock),
+            lambda conn: engine.expire_stale_attempts(conn, clock=late),
+            pause_in="_complete_if_final_question_timed_out",
+        )
+        self.assertTrue(waited, "the sweep did not wait for the return in progress")
+        self.assertEqual(results["first"][0], "ok", results["first"])
+        self.assertEqual(results["second"][0], "ok", results["second"])
+        # the sweep saw the new heartbeat: the attempt was not disconnected
+        self.assertEqual(self._ending(attempt_id), ("active", None))
+
     # --- no question without a running deadline ---
 
     def test_no_next_question_exists_before_next_is_accepted(self):
