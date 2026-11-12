@@ -12,7 +12,7 @@ Closed foundations #2/#3 include health/CORS, local Windows startup/LAN/browser 
 
 Issue #4 remains open for its executable rule examples and reviewed protocol acceptance. Owner competition decisions are in [[2026-11-07-ranked-decision-record]]; reviewable technical defaults and per-issue verification gates are in [[2026-11-07-ranked-security-operations-design]]. Candidate counts and the unresolved content conflict are in [[2026-11-07-ranked-question-bank-review]]. Do not turn proposed defaults, candidate content, unprovisioned services or future test targets into completion claims.
 
-No new issue is needed for this wrap-up. Existing issues cover authentication/recovery/deletion (#7), question approval (#5), connection/delivery (#8/#25), email (#27), and hosting/backup/load (#13). All remaining implementation stays open; closed foundations remain closed. Mockups still need owner review before screen work. Keep the official start date intentionally undecided.
+No new issue is needed for this wrap-up. Existing issues cover authentication/recovery/deletion (#7), question approval (#5), connection/delivery (#8/#25), email (#27), and hosting/backup/load (#13). **Auth direction updated (2026-11-11):** #7/Q10 use a system-generated **login ID** shown once at creation (single-field login, no passwords), with **admin-granted/regenerated access** for lost login IDs; PostgreSQL and server-side sessions remain. See `docs/superpowers/plans/2026-11-11-login-id-auth-plan.md` (supersedes password-based proposals). All remaining implementation stays open; closed foundations remain closed. Mockups still need owner review before screen work. Keep the official start date intentionally undecided.
 
 ## Issues and native blockers
 

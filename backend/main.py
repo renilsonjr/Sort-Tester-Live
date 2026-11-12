@@ -5,6 +5,8 @@ from urllib.parse import urlsplit
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from backend.routers import auth
+
 
 def create_app() -> FastAPI:
     configured = os.environ.get("SORT_TEST_DEV_ORIGINS", "").strip()
@@ -17,13 +19,16 @@ def create_app() -> FastAPI:
 
     application = FastAPI()
     if origins:
+        # Development only: allow credentials for auth endpoints on explicit loopback origins.
         application.add_middleware(
             CORSMiddleware,
             allow_origins=origins,
-            allow_methods=["GET"],
-            allow_headers=[],
-            allow_credentials=False,
+            allow_methods=["GET", "POST"],
+            allow_headers=["Content-Type"],
+            allow_credentials=True,
         )
+
+    application.include_router(auth.router)
 
     @application.get("/health")
     def health() -> dict[str, str]:

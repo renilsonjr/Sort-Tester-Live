@@ -756,4 +756,5 @@ document.addEventListener('visibilitychange', () => {
   }
 });
 
+window.showStart = showStart;
 showStart();

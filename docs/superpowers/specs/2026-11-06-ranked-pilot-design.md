@@ -11,7 +11,7 @@
 
 ## Product shape
 
-Keep existing guest Practice/study, 15-second Practice timing, feedback, local results and Excel export. Home retains sort-change announcements plus Log in / Continue as guest. Logged-in users get separate Practice and Ranked flows, profile, login-only eligible-player leaderboard and private Support → Tickets.
+Keep existing guest Practice/study, 15-second Practice timing, feedback, local results and Excel export. Home retains sort-change announcements plus Log in / Continue as guest. Planned login uses a system-generated account/login ID (shown once at creation, entered alone to sign in), separate from the display identity beside names; see `docs/superpowers/plans/2026-11-11-login-id-auth-plan.md`. Logged-in users get separate Practice and Ranked flows, profile, login-only eligible-player leaderboard and private Support → Tickets.
 
 Ranked: solo 15 questions, five per difficulty, ten seconds each. Easy +10/-15, Medium +20/-10, Hard +30/-5. One balance, negative totals allowed; caps 1,000/2,000/3,000/4,000 for Iron/Bronze/Silver/Gold. Challenger starts 4,001 and is uncapped. Apply Quit -10 before one final cap; discard overflow. Explicit perfect promotion sets cap+1; correct promotion answers +0, mistakes/timeouts deduct. Demotion requires earning back eligibility and passing promotion again.
 

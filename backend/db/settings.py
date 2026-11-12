@@ -6,6 +6,7 @@ import psycopg
 from psycopg.conninfo import conninfo_to_dict
 
 ENV_VAR = "SORT_TESTER_TEST_DATABASE_URL"
+APP_ENV_VAR = "SORT_TESTER_DATABASE_URL"
 SCRATCH_DB_NAME = "sort_tester_unittest_scratch"
 MAINTENANCE_DATABASE = "postgres"
 
@@ -61,6 +62,23 @@ def environment_has_test_url() -> bool:
     :class:`DatabaseConfigError`.
     """
     return bool(os.environ.get(ENV_VAR, "").strip())
+
+
+def app_database_url() -> str:
+    """Return the validated production/application database URL.
+
+    Falls back to the test database URL in test environments for convenience.
+    """
+    raw = os.environ.get(APP_ENV_VAR, "").strip()
+    if not raw:
+        # In test environments the app may run against the scratch database.
+        return test_database_url()
+    url = raw
+    if url.startswith("postgresql://"):
+        return url
+    raise DatabaseConfigError(
+        f"{APP_ENV_VAR} must be a valid postgresql:// URL when set."
+    )
 
 
 def admin_url() -> str:

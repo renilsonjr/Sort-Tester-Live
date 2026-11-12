@@ -63,11 +63,11 @@ to make requests when opened there.
 
 GitHub Pages currently serves the root of the `main` branch. A push to a feature branch does not publish that branch. Review and verify changes before merging to `main`, because that merge updates the website. A new backend will need its own hosting; GitHub Pages serves static files.
 
-The current practice questions and answers are browser-visible. Do not place passwords, database credentials, employee records, or private reference documents in this public repository or in browser assets. Future ranked answers and point adjustments must be validated by the backend.
+The current practice questions and answers are browser-visible. Do not place credentials, database connection details, employee records, or private reference documents in this public repository or in browser assets. Future ranked answers and point adjustments must be validated by the backend.
 
 ## Planned employee flow
 
-The public home page retains sort-change announcements and offers **Log in** or **Continue as guest**. Guests retain current Practice and study features. Logged-in employees get separate Practice and Ranked flows plus their profile. Practice retains its existing 15-second timer and local results. Ranked uses employee accounts, a server, 15 questions, and 10 seconds per question.
+The public home page retains sort-change announcements and offers **Log in** or **Continue as guest**. Guests retain current Practice and study features. Logged-in employees get separate Practice and Ranked flows plus their profile. Planned login uses a **system-generated account/login ID (shown once at creation, entered alone to sign in)**, separate from the display identity beside names; see [login ID auth plan (v2)](docs/superpowers/plans/2026-11-11-login-id-auth-plan.md). Practice retains its existing 15-second timer and local results. Ranked uses employee accounts, a server, 15 questions, and 10 seconds per question.
 
 Pre-Season runs until the owner manually launches the first official season; its start date is undecided. Official closing is **December 31, 2026 at 11:59 p.m. Eastern (America/New_York)**. Launch resets current points/rank to 0/Iron while preserving accounts/history. Candidate hosting is a Windows 11 computer with 16 GB RAM; the 30-player target needs measured validation before rollout.
 
