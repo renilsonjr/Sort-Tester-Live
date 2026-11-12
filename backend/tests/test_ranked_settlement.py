@@ -279,6 +279,34 @@ class SettleAttemptTests(SettlementTestCase):
         self.assertEqual(self._count("settlements", attempt_id), 0)
         self.assertEqual(self._count("balance_history", attempt_id), 0)
 
+    def test_a_failure_mid_settlement_leaves_nothing_behind(self):
+        account_id = self._account(points=500)
+        attempt_id = self._start(account_id)
+        self._play(attempt_id, [CORRECT] * 15)
+        real_execute = migrate.execute
+
+        def failing_execute(conn, sql_text, params=None):
+            # fail on the very last write, after the balance was updated
+            if sql_text.startswith("UPDATE attempts SET state = 'finalized'"):
+                raise RuntimeError("injected failure")
+            return real_execute(conn, sql_text, params)
+
+        with mock.patch.object(migrate, "execute", failing_execute):
+            with self.assertRaises(RuntimeError):
+                self._settle(attempt_id)
+        self.conn.rollback()  # what closing the request's connection does
+
+        self.assertEqual(self._points(account_id), 500)
+        self.assertEqual(self._count("settlements", attempt_id), 0)
+        self.assertEqual(self._count("balance_history", attempt_id), 0)
+        state = migrate.fetch_one(
+            self.conn, "SELECT state FROM attempts WHERE id = %s", (attempt_id,)
+        )["state"]
+        self.assertEqual(state, "terminal_pending")
+        # nothing was half-applied, so a retry settles normally
+        self.assertEqual(self._settle(attempt_id).adjustment, 300)
+        self.assertEqual(self._points(account_id), 800)
+
     def test_a_new_attempt_can_start_after_settlement(self):
         account_id = self._account()
         attempt_id = self._start(account_id)

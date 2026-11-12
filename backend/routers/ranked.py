@@ -14,7 +14,7 @@ from pydantic import BaseModel
 
 from backend.auth.service import get_account_by_session
 from backend.db import migrate, settings
-from backend.ranked import capability, engine
+from backend.ranked import capability, engine, settlement
 from backend.ranked.clock import system_clock
 from backend.ranked_bank.catalog import load_reviewed_bank
 
@@ -81,12 +81,36 @@ def _require_owned_attempt(conn, attempt_id: str, account_id, request: Request) 
 
 
 @contextmanager
-def _gone_when_ended():
+def _gone_when_ended(conn, attempt_id):
     # an attempt that has ended (completed or disconnected) answers 410 Gone
     try:
         yield
     except engine.AttemptEndedError:
+        # score at once: an attempt found ended is settled before we answer
+        _settle(conn, attempt_id)
         raise HTTPException(status_code=status.HTTP_410_GONE, detail="Attempt ended") from None
+
+
+def _settle(conn, attempt_id) -> dict:
+    """Apply the ended attempt's points (idempotent) and describe the result.
+
+    The engine ends an attempt; settlement, a separate transaction, applies
+    it. If the process stops between the two, the next call here, the next
+    start by the account or the sweep settles it: never lost, never twice.
+    """
+    result = settlement.settle_attempt(conn, attempt_id, clock=_CLOCK)
+    row = migrate.fetch_one(
+        conn, "SELECT final_outcome FROM attempts WHERE id = %s", (attempt_id,)
+    )
+    return {
+        "final_outcome": row["final_outcome"],
+        "raw_score": result.raw_score,
+        "adjustment": result.adjustment,
+        "points_before": result.points_before,
+        "points_after": result.points_after,
+        "badge_before": result.badge_before,
+        "badge_after": result.badge_after,
+    }
 
 
 class AnswerRequest(BaseModel):
@@ -146,7 +170,7 @@ def start(
 @router.get("/attempts/{attempt_id}/current")
 def current(request: Request, attempt_id: str, account: dict = Depends(_current_account), conn=Depends(get_db)):
     _require_owned_attempt(conn, attempt_id, account["id"], request)
-    with _gone_when_ended():
+    with _gone_when_ended(conn, attempt_id):
         view = engine.current_question(
             conn, attempt_id, clock=_CLOCK, bank=_reviewed_bank()
         )
@@ -170,26 +194,30 @@ def answer(
 ):
     _require_owned_attempt(conn, attempt_id, account["id"], request)
     try:
-        with _gone_when_ended():
+        with _gone_when_ended(conn, attempt_id):
             result = engine.submit_answer(
                 conn, attempt_id, payload.seq, payload.choice,
                 clock=_CLOCK, bank=_reviewed_bank(),
             )
     except engine.AnswerRejectedError as exc:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(exc)) from None
-    return {
+    body = {
         "seq": result.seq,
         "correct": result.correct,
         "outcome": result.outcome,
         "finished": result.finished,
     }
+    if result.finished:
+        # the final answer ended the attempt: apply and report its points now
+        body["result"] = _settle(conn, attempt_id)
+    return body
 
 
 @router.post("/attempts/{attempt_id}/advance")
 def advance(request: Request, attempt_id: str, account: dict = Depends(_current_account), conn=Depends(get_db)):
     _require_owned_attempt(conn, attempt_id, account["id"], request)
     try:
-        with _gone_when_ended():
+        with _gone_when_ended(conn, attempt_id):
             result = engine.advance(conn, attempt_id, clock=_CLOCK)
     except engine.NotAnsweredError as exc:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(exc)) from None
@@ -199,7 +227,7 @@ def advance(request: Request, attempt_id: str, account: dict = Depends(_current_
 @router.post("/attempts/{attempt_id}/heartbeat", status_code=status.HTTP_204_NO_CONTENT)
 def heartbeat(request: Request, attempt_id: str, account: dict = Depends(_current_account), conn=Depends(get_db)):
     _require_owned_attempt(conn, attempt_id, account["id"], request)
-    with _gone_when_ended():
+    with _gone_when_ended(conn, attempt_id):
         engine.heartbeat(conn, attempt_id, clock=_CLOCK)
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
@@ -209,4 +237,4 @@ def quit_attempt(request: Request, attempt_id: str, account: dict = Depends(_cur
     _require_owned_attempt(conn, attempt_id, account["id"], request)
     # never 410: a retried Quit must get the same answer as the first one
     outcome = engine.quit_attempt(conn, attempt_id, clock=_CLOCK)
-    return {"final_outcome": outcome}
+    return {"final_outcome": outcome, "result": _settle(conn, attempt_id)}
