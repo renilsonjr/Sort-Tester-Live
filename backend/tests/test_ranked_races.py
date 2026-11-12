@@ -235,6 +235,60 @@ class RankedRaceTests(unittest.TestCase):
         # the sweep saw the new heartbeat: the attempt was not disconnected
         self.assertEqual(self._ending(attempt_id), ("active", None))
 
+    def _season_id(self, attempt_id):
+        row = migrate.fetch_one(
+            self.conn, "SELECT season_id FROM attempts WHERE id = %s", (attempt_id,)
+        )
+        self.conn.commit()
+        return row["season_id"]
+
+    def test_season_close_waits_for_an_answer_in_progress(self):
+        attempt_id = self._start()
+        season_id = self._season_id(attempt_id)
+        results, waited = self._race(
+            lambda conn: self._answer(conn, attempt_id, 1, CORRECT),
+            lambda conn: engine.end_attempts_for_season_close(
+                conn, season_id, clock=self.clock
+            ),
+            pause_in="_question_for_version",
+        )
+        self.assertTrue(waited, "season close did not wait for the answer in progress")
+        # the answer was accepted first, then the cutover ended the attempt once
+        self.assertEqual(self._answer_of(attempt_id, 1), "correct")
+        self.assertEqual(results["second"], ("ok", 1))
+        self.assertEqual(self._ending(attempt_id), ("terminal_pending", "season_close"))
+
+    def test_outage_void_waits_for_an_answer_in_progress(self):
+        attempt_id = self._start()
+        now = self.clock.now()
+        results, waited = self._race(
+            lambda conn: self._answer(conn, attempt_id, 1, CORRECT),
+            lambda conn: engine.void_attempts_for_outage(
+                conn, outage_start=now, outage_end=now
+            ),
+            pause_in="_question_for_version",
+        )
+        self.assertTrue(waited, "outage void did not wait for the answer in progress")
+        self.assertEqual(self._answer_of(attempt_id, 1), "correct")  # kept as history
+        self.assertEqual(results["second"], ("ok", 1))
+        self.assertEqual(self._ending(attempt_id), ("terminal_pending", "outage_void"))
+
+    def test_an_ended_attempt_keeps_its_one_ending(self):
+        attempt_id = self._start()
+        season_id = self._season_id(attempt_id)
+        engine.quit_attempt(self.conn, attempt_id, clock=self.clock)
+        # every later ending finds the attempt already ended and changes nothing
+        self.clock.advance(60)
+        engine.expire_stale_attempts(self.conn, clock=self.clock)
+        self.assertEqual(
+            engine.end_attempts_for_season_close(self.conn, season_id, clock=self.clock), 0
+        )
+        self.assertEqual(engine.void_attempts_for_launch(self.conn, season_id), 0)
+        self.assertEqual(
+            engine.quit_attempt(self.conn, attempt_id, clock=self.clock), "quit"
+        )
+        self.assertEqual(self._ending(attempt_id), ("terminal_pending", "quit"))
+
     # --- no question without a running deadline ---
 
     def test_no_next_question_exists_before_next_is_accepted(self):
