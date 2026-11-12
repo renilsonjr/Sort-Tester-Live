@@ -563,6 +563,123 @@ class RankedEngineTests(unittest.TestCase):
             self._begin(account_id, "tiebreak")
         self.assertEqual(self._attempt_count(account_id), 0)
 
+    # --- season close ending (slice 7, piece B) ---
+
+    def _season_of(self, attempt_id):
+        row = migrate.fetch_one(
+            self.conn, "SELECT season_id FROM attempts WHERE id = %s", (attempt_id,)
+        )
+        return row["season_id"]
+
+    def _close(self, season_id):
+        return engine.end_attempts_for_season_close(
+            self.conn, season_id, clock=self.clock
+        )
+
+    def test_season_close_ends_a_running_attempt(self):
+        _, attempt_id = self._start()
+        self.clock.advance(2)
+        self.assertEqual(self._close(self._season_of(attempt_id)), 1)
+        row = self._attempt_row(attempt_id)
+        self.assertEqual((row["state"], row["final_outcome"]),
+                         ("terminal_pending", "season_close"))
+        self.assertIsNone(self._answer_of(attempt_id, 1))  # live question: not deducted
+        with self.assertRaises(engine.AttemptEndedError):
+            engine.heartbeat(self.conn, attempt_id, clock=self.clock)
+
+    def test_season_close_times_out_a_question_already_past_its_deadline(self):
+        _, attempt_id = self._start()
+        self.clock.advance(11)
+        self._close(self._season_of(attempt_id))
+        self.assertEqual(self._attempt_row(attempt_id)["final_outcome"], "season_close")
+        self.assertEqual(self._answer_of(attempt_id, 1), "timeout")
+
+    def test_season_close_ends_an_attempt_in_grace(self):
+        _, attempt_id = self._start()
+        self.clock.advance(5)
+        engine.expire_stale_attempts(self.conn, clock=self.clock)
+        self.assertEqual(self._attempt_row(attempt_id)["state"], "grace")
+        self.assertEqual(self._close(self._season_of(attempt_id)), 1)
+        self.assertEqual(self._attempt_row(attempt_id)["final_outcome"], "season_close")
+
+    def test_season_close_leaves_an_expired_grace_as_a_disconnect(self):
+        _, attempt_id = self._start()
+        self.clock.advance(60)  # the grace deadline passed long before the close
+        self.assertEqual(self._close(self._season_of(attempt_id)), 0)
+        self.assertEqual(self._attempt_row(attempt_id)["final_outcome"], "disconnect")
+
+    def test_season_close_after_final_question_timeout_is_completed(self):
+        attempt_id = self._reach_final_question()
+        self.clock.advance(11)
+        self.assertEqual(self._close(self._season_of(attempt_id)), 0)
+        self.assertEqual(self._attempt_row(attempt_id)["final_outcome"], "completed")
+
+    def test_season_close_leaves_ended_attempts_and_other_seasons(self):
+        account_id, quit_id = self._start()
+        first_season = self._season_of(quit_id)
+        engine.quit_attempt(self.conn, quit_id, clock=self.clock)
+        # the first season closes and a second one opens with its own attempt
+        migrate.execute(
+            self.conn, "UPDATE seasons SET closed_at = now() WHERE id = %s", (first_season,)
+        )
+        migrate.execute(
+            self.conn,
+            "INSERT INTO seasons (phase, label) VALUES ('official', 'second-season')",
+        )
+        self.conn.commit()
+        other_id = engine.start_attempt(
+            self.conn, self._make_account("R00002"), clock=self.clock, bank=self.bank
+        )
+        self.assertNotEqual(self._season_of(other_id), first_season)
+        self.assertEqual(self._close(first_season), 0)
+        self.assertEqual(self._attempt_row(quit_id)["final_outcome"], "quit")
+        self.assertEqual(self._attempt_row(other_id)["state"], "active")
+
+    # --- season launch ending (slice 7, piece C) ---
+
+    def test_launch_voids_a_running_attempt_and_keeps_its_answers(self):
+        _, attempt_id = self._start()
+        engine.submit_answer(
+            self.conn, attempt_id, 1, CORRECT, clock=self.clock, bank=self.bank
+        )
+        voided = engine.void_attempts_for_launch(self.conn, self._season_of(attempt_id))
+        self.assertEqual(voided, 1)
+        row = self._attempt_row(attempt_id)
+        self.assertEqual((row["state"], row["final_outcome"]),
+                         ("terminal_pending", "launch_reset"))
+        self.assertEqual(self._answer_of(attempt_id, 1), "correct")  # history kept
+        with self.assertRaises(engine.AttemptEndedError):
+            engine.advance(self.conn, attempt_id, clock=self.clock)
+
+    def test_launch_voids_an_attempt_in_grace(self):
+        _, attempt_id = self._start()
+        self.clock.advance(5)
+        engine.expire_stale_attempts(self.conn, clock=self.clock)
+        self.assertEqual(
+            engine.void_attempts_for_launch(self.conn, self._season_of(attempt_id)), 1
+        )
+        self.assertEqual(self._attempt_row(attempt_id)["final_outcome"], "launch_reset")
+
+    def test_launch_leaves_attempts_that_already_ended(self):
+        _, attempt_id = self._start()
+        for seq in range(1, 16):
+            self._play_one(attempt_id, seq)
+        self.assertEqual(
+            engine.void_attempts_for_launch(self.conn, self._season_of(attempt_id)), 0
+        )
+        self.assertEqual(self._attempt_row(attempt_id)["final_outcome"], "completed")
+
+    def test_launch_leaves_other_seasons(self):
+        _, attempt_id = self._start()
+        other_season = migrate.fetch_one(
+            self.conn,
+            "INSERT INTO seasons (phase, label, closed_at)"
+            " VALUES ('pre_season', 'older-season', now()) RETURNING id",
+        )["id"]
+        self.conn.commit()
+        self.assertEqual(engine.void_attempts_for_launch(self.conn, other_season), 0)
+        self.assertEqual(self._attempt_row(attempt_id)["state"], "active")
+
     def test_wrong_answer_is_graded_wrong(self):
         self._open_season()
         attempt_id = engine.start_attempt(

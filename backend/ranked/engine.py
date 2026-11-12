@@ -193,8 +193,10 @@ def current_question(conn, attempt_id, *, clock, bank) -> QuestionView | None:
         (attempt_id,),
     )
     if row is None:
+        conn.commit()  # releases the attempt lock
         return None
     question = _question_for_version(conn, bank, row["vid"])
+    conn.commit()  # releases the attempt lock
     return QuestionView(
         seq=row["seq"],
         deadline_at=row["deadline_at"],
@@ -218,9 +220,11 @@ def submit_answer(conn, attempt_id, seq, choice, *, clock, bank) -> AnswerResult
         (attempt_id, seq),
     )
     if row is None:
+        conn.commit()  # keep the recorded activity, release the attempt lock
         raise AnswerRejectedError(f"question {seq} has not been sent")
     if row["answer"] is not None:
-        # already resolved: report the stored result, write nothing
+        # already resolved: report the stored result, write nothing more
+        conn.commit()
         return _answer_result(seq, row["answer"])
     if now > row["deadline_at"]:
         # too late: the question timed out and the submitted choice is discarded
@@ -253,9 +257,11 @@ def advance(conn, attempt_id, *, clock) -> AdvanceResult:
         (attempt_id,),
     )
     if row is None:
+        conn.commit()  # keep the recorded activity, release the attempt lock
         raise NotAnsweredError("no question has been sent")
     if row["answer"] is None:
         if now <= row["deadline_at"]:
+            conn.commit()
             raise NotAnsweredError(f"question {row['seq']} is not answered")
         _record_answer(conn, attempt_id, row["seq"], "timeout", now)
     next_seq = row["seq"] + 1
@@ -267,6 +273,7 @@ def advance(conn, attempt_id, *, clock) -> AdvanceResult:
 def heartbeat(conn, attempt_id, *, clock) -> None:
     """Record that the page is still connected."""
     _sync_connection(conn, attempt_id, clock.now(), touch=True)
+    conn.commit()
 
 
 def quit_attempt(conn, attempt_id, *, clock) -> str:
@@ -287,20 +294,54 @@ def quit_attempt(conn, attempt_id, *, clock) -> str:
             conn, "SELECT final_outcome FROM attempts WHERE id = %s", (attempt_id,)
         )
         return row["final_outcome"]
-    migrate.execute(
-        conn,
-        "UPDATE attempt_answers SET answer = 'timeout', accepted_at = %s"
-        " WHERE attempt_id = %s AND answer IS NULL AND deadline_at < %s",
-        (now, attempt_id, now),
-    )
-    migrate.execute(
-        conn,
-        "UPDATE attempts SET state = 'terminal_pending', final_outcome = 'quit'"
-        " WHERE id = %s AND state IN ('active', 'grace')",
-        (attempt_id,),
-    )
+    _end_early(conn, attempt_id, "quit", now)
     conn.commit()
     return "quit"
+
+
+def end_attempts_for_season_close(conn, season_id, *, clock) -> int:
+    """End the season's unfinished attempts as ``season_close``; return how many.
+
+    A hook for #23, which calls it once the five-minute finishing window is
+    over; the engine keeps no season timer. Endings that had already happened
+    by the clock are applied first, so an attempt silent past its grace
+    deadline is a ``disconnect`` and one whose final question ran out is
+    ``completed``. For the rest, a sent question past its deadline is a
+    timeout and one still inside it stays unanswered; never-sent questions get
+    no row. No Quit marker is recorded. Other seasons and attempts that have
+    already ended are untouched.
+    """
+    now = clock.now()
+    expire_stale_attempts(conn, clock=clock)
+    rows = migrate.fetch_all(
+        conn,
+        "SELECT id FROM attempts WHERE season_id = %s"
+        " AND state IN ('active', 'grace') FOR UPDATE",
+        (season_id,),
+    )
+    for row in rows:
+        _end_early(conn, row["id"], "season_close", now)
+    conn.commit()
+    return len(rows)
+
+
+def void_attempts_for_launch(conn, season_id) -> int:
+    """Void the season's unfinished attempts as ``launch_reset``; return how many.
+
+    A hook for #23's official-season launch, which ends every unfinished
+    Pre-Season attempt without applying its result. Recorded answers are kept
+    as history; #9 settles a launch-reset attempt with a zero adjustment.
+    Attempts that have already ended, including completed ones awaiting
+    settlement, and attempts of other seasons are untouched.
+    """
+    rows = migrate.fetch_all(
+        conn,
+        "UPDATE attempts SET state = 'terminal_pending', final_outcome = 'launch_reset'"
+        " WHERE season_id = %s AND state IN ('active', 'grace') RETURNING id",
+        (season_id,),
+    )
+    conn.commit()
+    return len(rows)
 
 
 def void_attempts_for_outage(conn, *, outage_start, outage_end) -> int:
@@ -378,6 +419,10 @@ def _sync_connection(conn, attempt_id, now, *, touch) -> None:
     this very call finds it silent past its grace deadline. With ``touch`` the
     call counts as activity: the attempt is (back to) ``active`` and its
     silence is measured from ``now``. Question deadlines are never moved.
+
+    The attempt row stays locked from here until the caller's commit, so calls
+    for one attempt run one at a time: a second call waits, then sees the
+    first call's committed result. The caller must commit on every path.
     """
     row = migrate.fetch_one(
         conn,
@@ -388,6 +433,7 @@ def _sync_connection(conn, attempt_id, now, *, touch) -> None:
     if row is None:
         raise EngineError("unknown attempt")
     if row["state"] not in ("active", "grace"):
+        conn.commit()  # nothing to do for an ended attempt: release the lock
         raise AttemptEndedError("attempt has ended")
     # checked before grace: the final question's deadline always comes first
     if _complete_if_final_question_timed_out(conn, attempt_id, now):
@@ -406,7 +452,6 @@ def _sync_connection(conn, attempt_id, now, *, touch) -> None:
             " grace_deadline_at = NULL WHERE id = %s",
             (now, attempt_id),
         )
-        conn.commit()
 
 
 def _finalize_disconnect(conn, attempt_id, deadline, now) -> None:
@@ -423,6 +468,24 @@ def _finalize_disconnect(conn, attempt_id, deadline, now) -> None:
         " final_outcome = 'disconnect', grace_deadline_at = %s"
         " WHERE id = %s AND state IN ('active', 'grace')",
         (deadline, attempt_id),
+    )
+
+
+def _end_early(conn, attempt_id, final_outcome, now) -> None:
+    """End an unfinished attempt before its last question, keeping the partial
+    result: a sent question past its deadline is a timeout, one still inside
+    it stays unanswered and is not deducted."""
+    migrate.execute(
+        conn,
+        "UPDATE attempt_answers SET answer = 'timeout', accepted_at = %s"
+        " WHERE attempt_id = %s AND answer IS NULL AND deadline_at < %s",
+        (now, attempt_id, now),
+    )
+    migrate.execute(
+        conn,
+        "UPDATE attempts SET state = 'terminal_pending', final_outcome = %s"
+        " WHERE id = %s AND state IN ('active', 'grace')",
+        (final_outcome, attempt_id),
     )
 
 
