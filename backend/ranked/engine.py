@@ -21,6 +21,7 @@ from dataclasses import dataclass
 from datetime import datetime, timedelta
 
 from backend.db import migrate
+from backend.ranked import ranks
 from backend.ranked.capability import hash_token
 from backend.ranked.versions import materialize_question_version
 from backend.ranked_bank.identity import question_content_digest
@@ -44,6 +45,14 @@ class ActiveAttemptExistsError(EngineError):
     """The account already has an unfinished attempt."""
 
 
+class PromotionRequiredError(EngineError):
+    """The account is at its badge cap: only a promotion attempt may start."""
+
+
+class PromotionNotAvailableError(EngineError):
+    """The account is not at a badge cap: a promotion attempt cannot start."""
+
+
 class AnswerRejectedError(EngineError):
     """The submitted answer is not acceptable (wrong question, late, or done)."""
 
@@ -54,6 +63,13 @@ class NotAnsweredError(EngineError):
 
 class AttemptEndedError(EngineError):
     """The attempt has ended; no further calls are accepted for it."""
+
+
+@dataclass(frozen=True)
+class EntryStatus:
+    points: int
+    badge: str
+    mode: str  # the only kind of attempt this account may start now
 
 
 @dataclass(frozen=True)
@@ -77,8 +93,31 @@ class AdvanceResult:
     next_seq: int
 
 
-def start_attempt(conn, account_id, *, clock, bank, page_capability=None) -> str:
+def entry_status(conn, account_id) -> EntryStatus:
+    """Report the account's points, badge and the attempt kind it may start.
+
+    Read-only. An account with no balance row has zero points.
+    """
+    row = migrate.fetch_one(
+        conn, "SELECT current_points FROM balances WHERE account_id = %s", (account_id,)
+    )
+    points = row["current_points"] if row is not None else 0
+    return EntryStatus(
+        points=points, badge=ranks.badge_for(points), mode=ranks.entry_mode(points)
+    )
+
+
+def start_attempt(
+    conn, account_id, *, clock, bank, page_capability=None, mode=ranks.NORMAL
+) -> str:
     """Assign 15 questions, open an ``active`` attempt, and send question 1.
+
+    ``mode`` is the kind of attempt the player explicitly asked for. At a
+    badge cap only ``promotion`` may start, anywhere else only ``normal``; the
+    engine never converts one into the other. A refusal raises
+    :class:`PromotionRequiredError` or :class:`PromotionNotAvailableError`
+    before anything is written. A promotion attempt runs exactly like a
+    normal one here; its scoring is #9.
 
     Raises :class:`NoOpenSeasonError` when no season is open and
     :class:`ActiveAttemptExistsError` when the account already has an
@@ -92,13 +131,22 @@ def start_attempt(conn, account_id, *, clock, bank, page_capability=None) -> str
     )
     # close out an attempt this account walked away from before admitting
     expire_stale_attempts(conn, clock=clock, account_id=account_id)
+    if mode not in (ranks.NORMAL, ranks.PROMOTION):
+        raise EngineError(f"unsupported attempt mode: {mode!r}")
+    # the gate reads current server state; an ended-but-unsettled attempt
+    # still holds the account lock, so this total is never stale
+    allowed = entry_status(conn, account_id).mode
+    if mode != allowed:
+        if allowed == ranks.PROMOTION:
+            raise PromotionRequiredError("at the badge cap only promotion can start")
+        raise PromotionNotAvailableError("promotion is only available at a badge cap")
     season_id = _open_season(conn)
     snapshot = select_assignment(bank)
     assignment = migrate.fetch_one(
         conn,
         "INSERT INTO assignments (account_id, mode, season_id)"
-        " VALUES (%s, 'normal', %s) RETURNING id",
-        (account_id, season_id),
+        " VALUES (%s, %s, %s) RETURNING id",
+        (account_id, mode, season_id),
     )
     assignment_id = assignment["id"]
     now = clock.now()
@@ -109,8 +157,8 @@ def start_attempt(conn, account_id, *, clock, bank, page_capability=None) -> str
             conn,
             "INSERT INTO attempts (account_id, assignment_id, mode, state, season_id,"
             " started_at, last_heartbeat_at, page_capability_sha256)"
-            " VALUES (%s, %s, 'normal', 'active', %s, %s, %s, %s) RETURNING id",
-            (account_id, assignment_id, season_id, now, now, capability_hash),
+            " VALUES (%s, %s, %s, 'active', %s, %s, %s, %s) RETURNING id",
+            (account_id, assignment_id, mode, season_id, now, now, capability_hash),
         )
     except migrate.IntegrityError:
         conn.rollback()
