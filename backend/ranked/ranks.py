@@ -23,6 +23,11 @@ def badge_for(points: int) -> str:
     return TOP_BADGE
 
 
+def cap_for(badge: str) -> int | None:
+    """Return the badge's point cap, or ``None`` for the uncapped top badge."""
+    return dict(CAPS).get(badge)
+
+
 def entry_mode(points: int) -> str:
     """Return the only kind of Ranked attempt this total may start.
 
