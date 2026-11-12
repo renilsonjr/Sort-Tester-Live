@@ -153,4 +153,7 @@ function initAuthPanel() {
   });
 }
 
-initAuthPanel();
+// The auth gate is intentionally not auto-initialized: GitHub Pages serves
+// this frontend without a backend, so showing the login screen would dead-end
+// every visitor. Wire it up (with a reachable API base) when the backend is
+// hosted — call initAuthPanel() from the entry point at that point.
