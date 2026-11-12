@@ -213,6 +213,40 @@ def heartbeat(conn, attempt_id, *, clock) -> None:
     _sync_connection(conn, attempt_id, clock.now(), touch=True)
 
 
+def quit_attempt(conn, attempt_id, *, clock) -> str:
+    """End the attempt on the player's explicit Quit; return its final outcome.
+
+    The ``quit`` outcome is the penalty marker that #9 reads; no points are
+    applied here. A sent question still inside its deadline stays unanswered
+    (not deducted); one already past its deadline is a timeout. On an attempt
+    that has already ended nothing changes and the stored outcome is returned,
+    so a retried Quit gets the same answer and a Quit arriving after the grace
+    deadline or after completion does not replace that ending.
+    """
+    now = clock.now()
+    try:
+        _sync_connection(conn, attempt_id, now, touch=True)
+    except AttemptEndedError:
+        row = migrate.fetch_one(
+            conn, "SELECT final_outcome FROM attempts WHERE id = %s", (attempt_id,)
+        )
+        return row["final_outcome"]
+    migrate.execute(
+        conn,
+        "UPDATE attempt_answers SET answer = 'timeout', accepted_at = %s"
+        " WHERE attempt_id = %s AND answer IS NULL AND deadline_at < %s",
+        (now, attempt_id, now),
+    )
+    migrate.execute(
+        conn,
+        "UPDATE attempts SET state = 'terminal_pending', final_outcome = 'quit'"
+        " WHERE id = %s AND state IN ('active', 'grace')",
+        (attempt_id,),
+    )
+    conn.commit()
+    return "quit"
+
+
 def expire_stale_attempts(conn, *, clock, account_id=None) -> None:
     """Apply the connection clock to attempts nobody is calling.
 

@@ -236,6 +236,62 @@ class RankedEngineTests(unittest.TestCase):
         )
         self.assertNotEqual(new_id, old_id)
 
+    # --- explicit Quit (slice 3, piece A) ---
+
+    def test_quit_on_a_live_question_leaves_it_unanswered(self):
+        _, attempt_id = self._start()
+        self.clock.advance(2)
+        outcome = engine.quit_attempt(self.conn, attempt_id, clock=self.clock)
+        self.assertEqual(outcome, "quit")
+        row = self._attempt_row(attempt_id)
+        self.assertEqual((row["state"], row["final_outcome"]),
+                         ("terminal_pending", "quit"))
+        self.assertIsNone(self._answer_of(attempt_id, 1))  # not deducted
+
+    def test_quit_after_the_question_deadline_records_a_timeout(self):
+        _, attempt_id = self._start()
+        self.clock.advance(11)  # the question already ran out; grace has not
+        outcome = engine.quit_attempt(self.conn, attempt_id, clock=self.clock)
+        self.assertEqual(outcome, "quit")
+        self.assertEqual(self._answer_of(attempt_id, 1), "timeout")
+
+    def test_quit_keeps_earlier_answers_and_sends_nothing_more(self):
+        _, attempt_id = self._start()
+        self._play_one(attempt_id, 1)
+        engine.quit_attempt(self.conn, attempt_id, clock=self.clock)
+        self.assertEqual(self._answer_of(attempt_id, 1), "correct")
+        count = migrate.fetch_one(
+            self.conn,
+            "SELECT COUNT(*) AS n FROM attempt_answers WHERE attempt_id = %s",
+            (attempt_id,),
+        )
+        self.assertEqual(count["n"], 2)
+
+    def test_quit_twice_returns_the_same_outcome(self):
+        _, attempt_id = self._start()
+        engine.quit_attempt(self.conn, attempt_id, clock=self.clock)
+        self.clock.advance(30)
+        again = engine.quit_attempt(self.conn, attempt_id, clock=self.clock)
+        self.assertEqual(again, "quit")
+        self.assertIsNone(self._answer_of(attempt_id, 1))  # nothing rewritten
+        with self.assertRaises(engine.AttemptEndedError):
+            engine.heartbeat(self.conn, attempt_id, clock=self.clock)
+
+    def test_quit_after_grace_expiry_is_a_disconnect(self):
+        _, attempt_id = self._start()
+        self.clock.advance(18)
+        outcome = engine.quit_attempt(self.conn, attempt_id, clock=self.clock)
+        self.assertEqual(outcome, "disconnect")
+        self.assertEqual(self._attempt_row(attempt_id)["final_outcome"], "disconnect")
+
+    def test_quit_on_a_completed_attempt_stays_completed(self):
+        _, attempt_id = self._start()
+        for seq in range(1, 16):
+            self._play_one(attempt_id, seq)
+        outcome = engine.quit_attempt(self.conn, attempt_id, clock=self.clock)
+        self.assertEqual(outcome, "completed")
+        self.assertEqual(self._attempt_row(attempt_id)["final_outcome"], "completed")
+
     def test_wrong_answer_is_graded_wrong(self):
         self._open_season()
         attempt_id = engine.start_attempt(
