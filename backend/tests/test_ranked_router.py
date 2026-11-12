@@ -223,6 +223,65 @@ class RankedRouterTests(unittest.TestCase):
         self._start_as_page(self.client)
         self.assertEqual(self._second_tab().post("/api/ranked/attempts").status_code, 409)
 
+    # --- promotion entry (slice 6) ---
+
+    def _set_points(self, username, points):
+        conn = migrate.connect(self.conninfo)
+        try:
+            migrate.execute(
+                conn,
+                "INSERT INTO balances (account_id, current_points)"
+                " SELECT id, %s FROM accounts WHERE username_lower = %s",
+                (points, username.lower()),
+            )
+            conn.commit()
+        finally:
+            conn.close()
+
+    def test_entry_reports_points_badge_and_mode(self):
+        self._sign_in(self.client, "entry_player")
+        entry = self.client.get("/api/ranked/entry")
+        self.assertEqual(entry.status_code, 200, entry.text)
+        self.assertEqual(entry.json(), {"points": 0, "badge": "Iron", "mode": "normal"})
+        # reading the entry information starts nothing
+        self.assertEqual(self.client.post("/api/ranked/attempts").status_code, 201)
+
+    def test_entry_requires_authentication(self):
+        anon = TestClient(create_app())
+        self.assertEqual(anon.get("/api/ranked/entry").status_code, 401)
+
+    def test_start_without_a_body_is_a_normal_attempt(self):
+        self._sign_in(self.client, "plain_player")
+        start = self.client.post("/api/ranked/attempts")
+        self.assertEqual(start.status_code, 201, start.text)
+        self.assertEqual(start.json()["mode"], "normal")
+
+    def test_promotion_is_refused_below_the_cap(self):
+        self._sign_in(self.client, "eager_player")
+        start = self.client.post("/api/ranked/attempts", json={"mode": "promotion"})
+        self.assertEqual(start.status_code, 409)
+        self.assertEqual(start.json()["detail"], "Promotion not available")
+
+    def test_at_the_cap_only_promotion_starts(self):
+        self._sign_in(self.client, "capped_player")
+        self._set_points("capped_player", 1000)
+        entry = self.client.get("/api/ranked/entry")
+        self.assertEqual(
+            entry.json(), {"points": 1000, "badge": "Iron", "mode": "promotion"}
+        )
+        normal = self.client.post("/api/ranked/attempts")
+        self.assertEqual(normal.status_code, 409)
+        self.assertEqual(normal.json()["detail"], "Promotion required")
+        promotion = self.client.post("/api/ranked/attempts", json={"mode": "promotion"})
+        self.assertEqual(promotion.status_code, 201, promotion.text)
+        self.assertEqual(promotion.json()["mode"], "promotion")
+        self.assertIn("capability", promotion.json())
+
+    def test_unknown_mode_is_a_bad_request(self):
+        self._sign_in(self.client, "odd_player")
+        start = self.client.post("/api/ranked/attempts", json={"mode": "tiebreak"})
+        self.assertEqual(start.status_code, 422)
+
     def test_requires_authentication(self):
         anon = TestClient(create_app())
         self.assertEqual(anon.post("/api/ranked/attempts").status_code, 401)
