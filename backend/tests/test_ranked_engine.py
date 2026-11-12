@@ -635,6 +635,51 @@ class RankedEngineTests(unittest.TestCase):
         self.assertEqual(self._attempt_row(quit_id)["final_outcome"], "quit")
         self.assertEqual(self._attempt_row(other_id)["state"], "active")
 
+    # --- season launch ending (slice 7, piece C) ---
+
+    def test_launch_voids_a_running_attempt_and_keeps_its_answers(self):
+        _, attempt_id = self._start()
+        engine.submit_answer(
+            self.conn, attempt_id, 1, CORRECT, clock=self.clock, bank=self.bank
+        )
+        voided = engine.void_attempts_for_launch(self.conn, self._season_of(attempt_id))
+        self.assertEqual(voided, 1)
+        row = self._attempt_row(attempt_id)
+        self.assertEqual((row["state"], row["final_outcome"]),
+                         ("terminal_pending", "launch_reset"))
+        self.assertEqual(self._answer_of(attempt_id, 1), "correct")  # history kept
+        with self.assertRaises(engine.AttemptEndedError):
+            engine.advance(self.conn, attempt_id, clock=self.clock)
+
+    def test_launch_voids_an_attempt_in_grace(self):
+        _, attempt_id = self._start()
+        self.clock.advance(5)
+        engine.expire_stale_attempts(self.conn, clock=self.clock)
+        self.assertEqual(
+            engine.void_attempts_for_launch(self.conn, self._season_of(attempt_id)), 1
+        )
+        self.assertEqual(self._attempt_row(attempt_id)["final_outcome"], "launch_reset")
+
+    def test_launch_leaves_attempts_that_already_ended(self):
+        _, attempt_id = self._start()
+        for seq in range(1, 16):
+            self._play_one(attempt_id, seq)
+        self.assertEqual(
+            engine.void_attempts_for_launch(self.conn, self._season_of(attempt_id)), 0
+        )
+        self.assertEqual(self._attempt_row(attempt_id)["final_outcome"], "completed")
+
+    def test_launch_leaves_other_seasons(self):
+        _, attempt_id = self._start()
+        other_season = migrate.fetch_one(
+            self.conn,
+            "INSERT INTO seasons (phase, label, closed_at)"
+            " VALUES ('pre_season', 'older-season', now()) RETURNING id",
+        )["id"]
+        self.conn.commit()
+        self.assertEqual(engine.void_attempts_for_launch(self.conn, other_season), 0)
+        self.assertEqual(self._attempt_row(attempt_id)["state"], "active")
+
     def test_wrong_answer_is_graded_wrong(self):
         self._open_season()
         attempt_id = engine.start_attempt(

@@ -325,6 +325,25 @@ def end_attempts_for_season_close(conn, season_id, *, clock) -> int:
     return len(rows)
 
 
+def void_attempts_for_launch(conn, season_id) -> int:
+    """Void the season's unfinished attempts as ``launch_reset``; return how many.
+
+    A hook for #23's official-season launch, which ends every unfinished
+    Pre-Season attempt without applying its result. Recorded answers are kept
+    as history; #9 settles a launch-reset attempt with a zero adjustment.
+    Attempts that have already ended, including completed ones awaiting
+    settlement, and attempts of other seasons are untouched.
+    """
+    rows = migrate.fetch_all(
+        conn,
+        "UPDATE attempts SET state = 'terminal_pending', final_outcome = 'launch_reset'"
+        " WHERE season_id = %s AND state IN ('active', 'grace') RETURNING id",
+        (season_id,),
+    )
+    conn.commit()
+    return len(rows)
+
+
 def void_attempts_for_outage(conn, *, outage_start, outage_end) -> int:
     """Void the attempts a confirmed server-wide outage interrupted.
 
