@@ -21,6 +21,7 @@ from dataclasses import dataclass
 from datetime import datetime, timedelta
 
 from backend.db import migrate
+from backend.ranked.capability import hash_token
 from backend.ranked.versions import materialize_question_version
 from backend.ranked_bank.identity import question_content_digest
 from backend.ranked_bank.selection import select_assignment
@@ -76,13 +77,19 @@ class AdvanceResult:
     next_seq: int | None
 
 
-def start_attempt(conn, account_id, *, clock, bank) -> str:
+def start_attempt(conn, account_id, *, clock, bank, page_capability=None) -> str:
     """Assign 15 questions, open an ``active`` attempt, and send question 1.
 
     Raises :class:`NoOpenSeasonError` when no season is open and
     :class:`ActiveAttemptExistsError` when the account already has an
     unfinished attempt. On the latter the whole transaction is rolled back.
+
+    ``page_capability`` is the raw page-instance token issued to the starting
+    page; only its hash is stored, in the same transaction as the attempt.
     """
+    capability_hash = (
+        hash_token(page_capability) if page_capability is not None else None
+    )
     # close out an attempt this account walked away from before admitting
     expire_stale_attempts(conn, clock=clock, account_id=account_id)
     season_id = _open_season(conn)
@@ -101,9 +108,9 @@ def start_attempt(conn, account_id, *, clock, bank) -> str:
         attempt = migrate.fetch_one(
             conn,
             "INSERT INTO attempts (account_id, assignment_id, mode, state, season_id,"
-            " started_at, last_heartbeat_at)"
-            " VALUES (%s, %s, 'normal', 'active', %s, %s, %s) RETURNING id",
-            (account_id, assignment_id, season_id, now, now),
+            " started_at, last_heartbeat_at, page_capability_sha256)"
+            " VALUES (%s, %s, 'normal', 'active', %s, %s, %s, %s) RETURNING id",
+            (account_id, assignment_id, season_id, now, now, capability_hash),
         )
     except migrate.IntegrityError:
         conn.rollback()
