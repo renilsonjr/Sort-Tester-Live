@@ -4,6 +4,7 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
 from pydantic import BaseModel
 
+from backend.auth.rate_limit import _client_key, get_login_rate_limiter
 from backend.auth.service import (
     admin_regenerate_login_id,
     get_account_by_session,
@@ -85,7 +86,12 @@ def register(payload: RegisterRequest):
 
 
 @router.post("/login", response_model=LoginResponse)
-def login(response: Response, payload: LoginRequest):
+def login(request: Request, response: Response, payload: LoginRequest):
+    limiter = get_login_rate_limiter()
+    rate_key = _client_key(request)
+    if not limiter.is_allowed(rate_key):
+        raise HTTPException(status_code=status.HTTP_429_TOO_MANY_REQUESTS, detail="Too many requests")
+
     with _db_connection() as conn:
         auth_settings = get_auth_settings()
         result = login_with_id(
@@ -96,7 +102,9 @@ def login(response: Response, payload: LoginRequest):
             user_agent=None,
         )
         if result is None:
+            limiter.record_failure(rate_key)
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized")
+        limiter.record_success(rate_key)
         token, _ = result
         account = get_account_by_session(conn, token)
         conn.commit()
