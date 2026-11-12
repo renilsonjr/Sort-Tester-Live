@@ -94,13 +94,16 @@ def start_attempt(conn, account_id, *, clock, bank) -> str:
         (account_id, season_id),
     )
     assignment_id = assignment["id"]
+    now = clock.now()
     try:
+        # started_at comes from the engine clock, not the database default,
+        # so every time the engine compares is from one source
         attempt = migrate.fetch_one(
             conn,
             "INSERT INTO attempts (account_id, assignment_id, mode, state, season_id,"
-            " last_heartbeat_at)"
-            " VALUES (%s, %s, 'normal', 'active', %s, %s) RETURNING id",
-            (account_id, assignment_id, season_id, clock.now()),
+            " started_at, last_heartbeat_at)"
+            " VALUES (%s, %s, 'normal', 'active', %s, %s, %s) RETURNING id",
+            (account_id, assignment_id, season_id, now, now),
         )
     except migrate.IntegrityError:
         conn.rollback()
@@ -245,6 +248,34 @@ def quit_attempt(conn, attempt_id, *, clock) -> str:
     )
     conn.commit()
     return "quit"
+
+
+def void_attempts_for_outage(conn, *, outage_start, outage_end) -> int:
+    """Void the attempts a confirmed server-wide outage interrupted.
+
+    Returns how many were voided. Each becomes ``terminal_pending`` with
+    ``final_outcome='outage_void'``, which #9 settles with a zero adjustment.
+    Affected are attempts still running that started before the outage ended,
+    and unsettled disconnects whose silence (last heartbeat to grace deadline)
+    overlaps the outage. Completed and quit attempts are the player's own
+    ending and stay; settled attempts are never reversed. Recorded answers are
+    kept as history.
+
+    The caller is responsible for the outage being confirmed from trusted
+    evidence (#13); this function only applies the rule to a given window.
+    """
+    rows = migrate.fetch_all(
+        conn,
+        "UPDATE attempts SET state = 'terminal_pending', final_outcome = 'outage_void'"
+        " WHERE (state IN ('active', 'grace') AND started_at <= %s)"
+        " OR (state = 'terminal_pending' AND final_outcome = 'disconnect'"
+        "     AND COALESCE(last_heartbeat_at, started_at) <= %s"
+        "     AND grace_deadline_at >= %s)"
+        " RETURNING id",
+        (outage_end, outage_end, outage_start),
+    )
+    conn.commit()
+    return len(rows)
 
 
 def expire_stale_attempts(conn, *, clock, account_id=None) -> None:

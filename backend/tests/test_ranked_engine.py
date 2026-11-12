@@ -1,6 +1,6 @@
 """Ranked attempt engine core happy path (issue #8, piece 3)."""
 import tempfile
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 import unittest
 
 from backend.db import migrate, settings
@@ -291,6 +291,94 @@ class RankedEngineTests(unittest.TestCase):
         outcome = engine.quit_attempt(self.conn, attempt_id, clock=self.clock)
         self.assertEqual(outcome, "completed")
         self.assertEqual(self._attempt_row(attempt_id)["final_outcome"], "completed")
+
+    # --- confirmed-outage void (slice 3, piece B) ---
+
+    def _void(self, start_offset, end_offset):
+        """Void for an outage given as seconds relative to the clock's start."""
+        return engine.void_attempts_for_outage(
+            self.conn,
+            outage_start=self.t0 + timedelta(seconds=start_offset),
+            outage_end=self.t0 + timedelta(seconds=end_offset),
+        )
+
+    def _ending(self, attempt_id):
+        row = self._attempt_row(attempt_id)
+        return (row["state"], row["final_outcome"])
+
+    def test_start_records_the_engine_clock_as_started_at(self):
+        self.t0 = self.clock.now()
+        _, attempt_id = self._start()
+        row = migrate.fetch_one(
+            self.conn, "SELECT started_at FROM attempts WHERE id = %s", (attempt_id,)
+        )
+        self.assertEqual(row["started_at"], self.t0)
+
+    def test_outage_voids_a_running_attempt_and_keeps_its_answers(self):
+        self.t0 = self.clock.now()
+        _, attempt_id = self._start()
+        engine.submit_answer(
+            self.conn, attempt_id, 1, CORRECT, clock=self.clock, bank=self.bank
+        )
+        self.assertEqual(self._void(5, 20), 1)
+        self.assertEqual(self._ending(attempt_id), ("terminal_pending", "outage_void"))
+        self.assertEqual(self._answer_of(attempt_id, 1), "correct")  # history kept
+        with self.assertRaises(engine.AttemptEndedError):
+            engine.heartbeat(self.conn, attempt_id, clock=self.clock)
+
+    def test_outage_before_the_attempt_started_does_not_void_it(self):
+        self.t0 = self.clock.now()
+        _, attempt_id = self._start()
+        self.assertEqual(self._void(-60, -10), 0)
+        self.assertEqual(self._ending(attempt_id), ("active", None))
+
+    def test_outage_reclassifies_an_overlapping_unsettled_disconnect(self):
+        self.t0 = self.clock.now()
+        _, attempt_id = self._start()
+        self.clock.advance(18)
+        engine.expire_stale_attempts(self.conn, clock=self.clock)
+        self.assertEqual(self._ending(attempt_id), ("terminal_pending", "disconnect"))
+        # the silence ran from 0s to 18s; the outage covered part of it
+        self.assertEqual(self._void(2, 30), 1)
+        self.assertEqual(self._ending(attempt_id), ("terminal_pending", "outage_void"))
+
+    def test_outage_leaves_a_disconnect_it_does_not_overlap(self):
+        self.t0 = self.clock.now()
+        _, attempt_id = self._start()
+        self.clock.advance(18)
+        engine.expire_stale_attempts(self.conn, clock=self.clock)
+        self.assertEqual(self._void(19, 40), 0)   # outage began after the grace deadline
+        self.assertEqual(self._void(-30, -1), 0)  # outage ended before the silence began
+        self.assertEqual(self._ending(attempt_id), ("terminal_pending", "disconnect"))
+
+    def test_outage_leaves_a_quit_attempt(self):
+        self.t0 = self.clock.now()
+        _, attempt_id = self._start()
+        engine.quit_attempt(self.conn, attempt_id, clock=self.clock)
+        self.assertEqual(self._void(-5, 30), 0)
+        self.assertEqual(self._ending(attempt_id), ("terminal_pending", "quit"))
+
+    def test_outage_leaves_a_completed_attempt(self):
+        self.t0 = self.clock.now()
+        _, attempt_id = self._start()
+        for seq in range(1, 16):
+            self._play_one(attempt_id, seq)
+        self.assertEqual(self._void(-5, 30), 0)
+        self.assertEqual(self._ending(attempt_id), ("terminal_pending", "completed"))
+
+    def test_outage_never_reverses_a_settled_attempt(self):
+        self.t0 = self.clock.now()
+        _, attempt_id = self._start()
+        self.clock.advance(18)
+        engine.expire_stale_attempts(self.conn, clock=self.clock)
+        migrate.execute(  # stand in for #9 settling the disconnect
+            self.conn,
+            "UPDATE attempts SET state = 'finalized', settled_at = %s WHERE id = %s",
+            (self.clock.now(), attempt_id),
+        )
+        self.conn.commit()
+        self.assertEqual(self._void(2, 30), 0)
+        self.assertEqual(self._ending(attempt_id), ("finalized", "disconnect"))
 
     def test_wrong_answer_is_graded_wrong(self):
         self._open_season()
