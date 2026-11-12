@@ -389,6 +389,8 @@ def expire_stale_attempts(conn, *, clock, account_id=None) -> None:
         sql += " AND account_id = %s"
         params = (account_id,)
     for row in migrate.fetch_all(conn, sql + " FOR UPDATE", params):
+        if now >= _loss_at(row["heard_at"]):
+            _record_event(conn, row["id"], "loss", _loss_at(row["heard_at"]))
         if _complete_if_final_question_timed_out(conn, row["id"], now):
             continue
         deadline = _grace_deadline(row["heard_at"])
@@ -435,6 +437,9 @@ def _sync_connection(conn, attempt_id, now, *, touch) -> None:
     if row["state"] not in ("active", "grace"):
         conn.commit()  # nothing to do for an ended attempt: release the lock
         raise AttemptEndedError("attempt has ended")
+    lost = now >= _loss_at(row["heard_at"])
+    if lost:
+        _record_event(conn, attempt_id, "loss", _loss_at(row["heard_at"]))
     # checked before grace: the final question's deadline always comes first
     if _complete_if_final_question_timed_out(conn, attempt_id, now):
         conn.commit()
@@ -446,6 +451,9 @@ def _sync_connection(conn, attempt_id, now, *, touch) -> None:
         conn.commit()
         raise AttemptEndedError("attempt ended: connection grace expired")
     if touch:
+        if lost:
+            # a return inside grace; the next silence is a new interruption
+            _record_event(conn, attempt_id, "recovery", now)
         migrate.execute(
             conn,
             "UPDATE attempts SET last_heartbeat_at = %s, state = 'active',"
@@ -454,7 +462,22 @@ def _sync_connection(conn, attempt_id, now, *, touch) -> None:
         )
 
 
+def _record_event(conn, attempt_id, kind, occurred_at) -> None:
+    """Record a connection event for #25 to read. Write-only for the engine.
+
+    A loss's time is derived from the stored heartbeat, so noticing one
+    silence several times writes one row: the unique key discards repeats.
+    """
+    migrate.execute(
+        conn,
+        "INSERT INTO attempt_connection_events (attempt_id, kind, occurred_at)"
+        " VALUES (%s, %s, %s) ON CONFLICT DO NOTHING",
+        (attempt_id, kind, occurred_at),
+    )
+
+
 def _finalize_disconnect(conn, attempt_id, deadline, now) -> None:
+    _record_event(conn, attempt_id, "expiry", deadline)
     # the sent-but-unanswered question times out; unsent questions get no row
     migrate.execute(
         conn,
