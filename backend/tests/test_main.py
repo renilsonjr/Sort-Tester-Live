@@ -38,12 +38,13 @@ class DevelopmentCorsTests(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertNotIn("access-control-allow-origin", response.headers)
 
-    def test_exact_origin_is_authorized_without_credentials(self) -> None:
+    def test_exact_origin_is_authorized_with_credentials_for_auth(self) -> None:
         with self.client(self.origin) as client:
             response = client.get("/health", headers={"Origin": self.origin})
         self.assertEqual(response.json(), {"status": "ok"})
         self.assertEqual(response.headers["access-control-allow-origin"], self.origin)
-        self.assertNotIn("access-control-allow-credentials", response.headers)
+        # Auth endpoints require credentials in development; allowed origins are explicit.
+        self.assertEqual(response.headers["access-control-allow-credentials"], "true")
 
     def test_other_origins_are_not_authorized(self) -> None:
         with self.client(self.origin) as client:
@@ -52,24 +53,24 @@ class DevelopmentCorsTests(unittest.TestCase):
                     response = client.get("/health", headers={"Origin": origin})
                     self.assertNotIn("access-control-allow-origin", response.headers)
 
-    def test_allowed_get_preflight(self) -> None:
+    def test_allowed_get_and_post_preflight(self) -> None:
+        with self.client(self.origin) as client:
+            for method in ("GET", "POST"):
+                with self.subTest(method=method):
+                    response = client.options("/health", headers={
+                        "Origin": self.origin, "Access-Control-Request-Method": method,
+                    })
+                    self.assertEqual(response.status_code, 200)
+                    self.assertEqual(response.headers["access-control-allow-origin"], self.origin)
+                    self.assertEqual(response.headers["access-control-allow-methods"], "GET, POST")
+                    self.assertEqual(response.headers["access-control-allow-credentials"], "true")
+
+    def test_preflight_denies_other_origin(self) -> None:
         with self.client(self.origin) as client:
             response = client.options("/health", headers={
-                "Origin": self.origin, "Access-Control-Request-Method": "GET",
+                "Origin": "https://example.com", "Access-Control-Request-Method": "GET",
             })
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.headers["access-control-allow-origin"], self.origin)
-        self.assertEqual(response.headers["access-control-allow-methods"], "GET")
-        self.assertNotIn("access-control-allow-credentials", response.headers)
-
-    def test_preflight_denies_other_origin_and_method(self) -> None:
-        with self.client(self.origin) as client:
-            for origin, method in (("https://example.com", "GET"), (self.origin, "POST")):
-                with self.subTest(origin=origin, method=method):
-                    response = client.options("/health", headers={
-                        "Origin": origin, "Access-Control-Request-Method": method,
-                    })
-                    self.assertEqual(response.status_code, 400)
+            self.assertEqual(response.status_code, 400)
 
     def test_configuration_trims_comma_separated_origins(self) -> None:
         with self.client(f" {self.origin} , http://localhost:8000 ") as client:
