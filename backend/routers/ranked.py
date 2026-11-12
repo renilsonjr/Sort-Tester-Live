@@ -150,3 +150,11 @@ def heartbeat(attempt_id: str, account: dict = Depends(_current_account), conn=D
     with _gone_when_ended():
         engine.heartbeat(conn, attempt_id, clock=_CLOCK)
     return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+
+@router.post("/attempts/{attempt_id}/quit")
+def quit_attempt(attempt_id: str, account: dict = Depends(_current_account), conn=Depends(get_db)):
+    _require_owned_attempt(conn, attempt_id, account["id"])
+    # never 410: a retried Quit must get the same answer as the first one
+    outcome = engine.quit_attempt(conn, attempt_id, clock=_CLOCK)
+    return {"final_outcome": outcome}

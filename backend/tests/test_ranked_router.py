@@ -117,6 +117,32 @@ class RankedRouterTests(unittest.TestCase):
         ]
         self.assertEqual([r.status_code for r in responses], [410, 410, 410, 410])
 
+    def test_quit_ends_the_attempt_and_can_be_repeated(self):
+        self._sign_in(self.client, "quitting_player")
+        attempt_id = self.client.post("/api/ranked/attempts").json()["attempt_id"]
+        base = f"/api/ranked/attempts/{attempt_id}"
+        first = self.client.post(f"{base}/quit")
+        self.assertEqual(first.status_code, 200, first.text)
+        self.assertEqual(first.json(), {"final_outcome": "quit"})
+        # a retried Quit gets the same answer, not an error
+        second = self.client.post(f"{base}/quit")
+        self.assertEqual(second.status_code, 200, second.text)
+        self.assertEqual(second.json(), {"final_outcome": "quit"})
+        self.assertEqual(self.client.post(f"{base}/heartbeat").status_code, 410)
+
+    def test_quit_requires_the_owner(self):
+        self._sign_in(self.client, "quit_owner")
+        attempt_id = self.client.post("/api/ranked/attempts").json()["attempt_id"]
+        anon = TestClient(create_app())
+        self.assertEqual(
+            anon.post(f"/api/ranked/attempts/{attempt_id}/quit").status_code, 401
+        )
+        other = TestClient(create_app())
+        self._sign_in(other, "quit_other")
+        self.assertEqual(
+            other.post(f"/api/ranked/attempts/{attempt_id}/quit").status_code, 404
+        )
+
     def test_requires_authentication(self):
         anon = TestClient(create_app())
         self.assertEqual(anon.post("/api/ranked/attempts").status_code, 401)
