@@ -193,8 +193,10 @@ def current_question(conn, attempt_id, *, clock, bank) -> QuestionView | None:
         (attempt_id,),
     )
     if row is None:
+        conn.commit()  # releases the attempt lock
         return None
     question = _question_for_version(conn, bank, row["vid"])
+    conn.commit()  # releases the attempt lock
     return QuestionView(
         seq=row["seq"],
         deadline_at=row["deadline_at"],
@@ -218,9 +220,11 @@ def submit_answer(conn, attempt_id, seq, choice, *, clock, bank) -> AnswerResult
         (attempt_id, seq),
     )
     if row is None:
+        conn.commit()  # keep the recorded activity, release the attempt lock
         raise AnswerRejectedError(f"question {seq} has not been sent")
     if row["answer"] is not None:
-        # already resolved: report the stored result, write nothing
+        # already resolved: report the stored result, write nothing more
+        conn.commit()
         return _answer_result(seq, row["answer"])
     if now > row["deadline_at"]:
         # too late: the question timed out and the submitted choice is discarded
@@ -253,9 +257,11 @@ def advance(conn, attempt_id, *, clock) -> AdvanceResult:
         (attempt_id,),
     )
     if row is None:
+        conn.commit()  # keep the recorded activity, release the attempt lock
         raise NotAnsweredError("no question has been sent")
     if row["answer"] is None:
         if now <= row["deadline_at"]:
+            conn.commit()
             raise NotAnsweredError(f"question {row['seq']} is not answered")
         _record_answer(conn, attempt_id, row["seq"], "timeout", now)
     next_seq = row["seq"] + 1
@@ -267,6 +273,7 @@ def advance(conn, attempt_id, *, clock) -> AdvanceResult:
 def heartbeat(conn, attempt_id, *, clock) -> None:
     """Record that the page is still connected."""
     _sync_connection(conn, attempt_id, clock.now(), touch=True)
+    conn.commit()
 
 
 def quit_attempt(conn, attempt_id, *, clock) -> str:
@@ -378,6 +385,10 @@ def _sync_connection(conn, attempt_id, now, *, touch) -> None:
     this very call finds it silent past its grace deadline. With ``touch`` the
     call counts as activity: the attempt is (back to) ``active`` and its
     silence is measured from ``now``. Question deadlines are never moved.
+
+    The attempt row stays locked from here until the caller's commit, so calls
+    for one attempt run one at a time: a second call waits, then sees the
+    first call's committed result. The caller must commit on every path.
     """
     row = migrate.fetch_one(
         conn,
@@ -388,6 +399,7 @@ def _sync_connection(conn, attempt_id, now, *, touch) -> None:
     if row is None:
         raise EngineError("unknown attempt")
     if row["state"] not in ("active", "grace"):
+        conn.commit()  # nothing to do for an ended attempt: release the lock
         raise AttemptEndedError("attempt has ended")
     # checked before grace: the final question's deadline always comes first
     if _complete_if_final_question_timed_out(conn, attempt_id, now):
@@ -406,7 +418,6 @@ def _sync_connection(conn, attempt_id, now, *, touch) -> None:
             " grace_deadline_at = NULL WHERE id = %s",
             (now, attempt_id),
         )
-        conn.commit()
 
 
 def _finalize_disconnect(conn, attempt_id, deadline, now) -> None:
