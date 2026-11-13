@@ -109,6 +109,31 @@ jobs:
           curl -fsS -b "$jar" "$base/api/auth/me" | grep -q '"username":"ci_check"' || { echo "me failed"; exit 1; }
           echo 'App image passed smoke tests'
 
+      - name: The packages the app imports are the patched versions
+        # The scan below reports findings for copies vendored inside pip and
+        # setuptools, which the FastAPI runtime never imports. Prove the
+        # top-level installs are patched, and that every flagged version is
+        # only ever a vendored copy.
+        run: |
+          docker run --rm --entrypoint python "$IMAGE" - <<'PY'
+          import sys
+          from importlib.metadata import version
+          required = {"setuptools": "78.1.1", "msgpack": "1.2.3", "urllib3": "2.8.0"}
+          bad = {name: version(name) for name, want in required.items() if version(name) != want}
+          if bad:
+              print(f"Top-level packages are not the patched versions: {bad}")
+              sys.exit(1)
+          print("Top-level packages patched:", {n: version(n) for n in required})
+          PY
+          docker run --rm --entrypoint sh "$IMAGE" -c '
+            # the flagged versions must not exist outside a _vendor directory
+            hits=$(find /usr/local/lib/python3.14/site-packages \
+                     \( -name "setuptools-70.3.0.dist-info" -o -name "msgpack-1.1.2.dist-info" \
+                        -o -name "urllib3-2.7.0.dist-info" -o -name "wheel-0.45.1.dist-info" \
+                        -o -name "jaraco.context-5.3.0.dist-info" \) -print | grep -v "/_vendor/" || true)
+            [ -z "$hits" ] || { echo "Flagged versions outside _vendor: $hits"; exit 1; }
+            echo "Every flagged version is a vendored copy only"'
+
       - name: Vulnerability scan (report only)
         run: |
           docker run --rm -v /var/run/docker.sock:/var/run/docker.sock aquasec/trivy:0.76.2 \
