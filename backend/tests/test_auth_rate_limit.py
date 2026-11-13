@@ -1,4 +1,6 @@
+import os
 import unittest
+from unittest import mock
 
 from fastapi.testclient import TestClient
 
@@ -29,8 +31,12 @@ class AuthRateLimitTests(unittest.TestCase):
         self.client = TestClient(app)
 
     def test_login_rate_limit_blocks_after_threshold(self):
-        # Use a fresh client with a fixed IP-ish behavior. TestClient does not
-        # set REMOTE_ADDR by default; the rate limiter keys on client host header.
+        # The test client has one connection address shared by every test, so
+        # this test acts as if a trusted proxy reported a distinct address;
+        # its failures then cannot block other tests' logins.
+        trusted = mock.patch.dict(os.environ, {"SORT_TEST_TRUST_PROXY": "1"})
+        trusted.start()
+        self.addCleanup(trusted.stop)
         for i in range(12):
             response = self.client.post(
                 "/api/auth/login",

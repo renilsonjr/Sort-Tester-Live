@@ -5,6 +5,7 @@ from urllib.parse import urlsplit
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from backend.auth.rate_limit import RegistrationLimiter
 from backend.routers import auth, ranked
 
 
@@ -18,6 +19,9 @@ def create_app() -> FastAPI:
         urlsplit(origin).port
 
     application = FastAPI()
+    # one sign-up limiter per application instance (owner caps: 30/hour per
+    # address, 200/day in total)
+    application.state.registration_limiter = RegistrationLimiter()
     if origins:
         # Development only: allow credentials for auth endpoints on explicit loopback origins.
         application.add_middleware(

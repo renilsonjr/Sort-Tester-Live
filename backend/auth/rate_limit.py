@@ -1,3 +1,4 @@
+import os
 import threading
 import time
 from collections import defaultdict
@@ -73,11 +74,72 @@ def get_login_rate_limiter() -> LoginRateLimiter:
     return _default_limiter
 
 
+def _trusts_proxy() -> bool:
+    return os.environ.get("SORT_TEST_TRUST_PROXY", "").strip() == "1"
+
+
 def _client_key(request) -> str:
-    # Prefer X-Forwarded-For for deployments behind a trusted proxy; otherwise
-    # fall back to the direct client host. In production this should be set by
-    # the ingress/proxy, never by the client.
+    """The network address a request comes from, for rate limiting.
+
+    X-Forwarded-For is believed only when SORT_TEST_TRUST_PROXY=1, set where a
+    trusted proxy (such as the hosting ingress) writes that header. Without
+    it, anyone could send a made-up address per request and never be limited,
+    so the connection's own address is used.
+    """
     forwarded = request.headers.get("x-forwarded-for")
-    if forwarded:
+    if forwarded and _trusts_proxy():
         return forwarded.split(",")[0].strip()
     return request.client.host if request.client else "unknown"
+
+
+class RegistrationLimiter:
+    """In-memory caps on successful sign-ups (issue #47).
+
+    Owner decision: at most 30 sign-ups per hour from one network address,
+    so a whole onboarding session on shared workplace Wi-Fi still works, and
+    at most 200 per day in total. Both windows slide. Only successful sign-ups
+    are recorded; refused ones (409, 422, 429) do not count.
+
+    Like the login limiter this suits the single-instance pilot: counts reset
+    when the process restarts and are not shared between processes.
+    """
+
+    def __init__(
+        self,
+        per_client: int = 30,
+        per_client_window: float = 3600.0,
+        total: int = 200,
+        total_window: float = 86400.0,
+        clock=time.monotonic,
+    ):
+        self.per_client = per_client
+        self.per_client_window = per_client_window
+        self.total = total
+        self.total_window = total_window
+        self._clock = clock
+        self._by_client: dict[str, list[float]] = defaultdict(list)
+        self._all: list[float] = []
+        self._lock = threading.Lock()
+
+    def is_allowed(self, key: str) -> bool:
+        """Whether one more sign-up from ``key`` fits both caps. Counts nothing."""
+        now = self._clock()
+        with self._lock:
+            self._forget_old(key, now)
+            return (
+                len(self._by_client[key]) < self.per_client
+                and len(self._all) < self.total
+            )
+
+    def record(self, key: str) -> None:
+        """Count one successful sign-up from ``key``."""
+        now = self._clock()
+        with self._lock:
+            self._by_client[key].append(now)
+            self._all.append(now)
+
+    def _forget_old(self, key, now):
+        self._by_client[key] = [
+            t for t in self._by_client[key] if now - t < self.per_client_window
+        ]
+        self._all = [t for t in self._all if now - t < self.total_window]
