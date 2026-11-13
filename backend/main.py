@@ -1,12 +1,18 @@
 import os
 import re
+from pathlib import Path
 from urllib.parse import urlsplit
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
 
 from backend.auth.rate_limit import RegistrationLimiter
 from backend.routers import auth, ranked
+
+# The repository root holds index.html, src/ and assets/.
+FRONTEND_ROOT = Path(__file__).resolve().parent.parent
 
 
 def create_app() -> FastAPI:
@@ -38,6 +44,18 @@ def create_app() -> FastAPI:
     @application.get("/health")
     def health() -> dict[str, str]:
         return {"status": "ok"}
+
+    # Same-origin frontend: serve ONLY this allowlist (the home page and the
+    # src/ and assets/ folders), never the repository root. Registered after
+    # the API so /api and /health always win.
+    index_page = FRONTEND_ROOT / "index.html"
+
+    @application.get("/", include_in_schema=False)
+    def home() -> FileResponse:
+        return FileResponse(index_page, media_type="text/html")
+
+    for folder in ("src", "assets"):
+        application.mount(f"/{folder}", StaticFiles(directory=FRONTEND_ROOT / folder), name=folder)
 
     return application
 
