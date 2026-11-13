@@ -12,6 +12,11 @@ from backend.db import migrate
 from backend.ranked import instability
 
 _VOID_OUTCOMES = ("outage_void", "launch_reset")
+CLOSING_OUTCOMES = ("network_instability", "insufficient_evidence")
+
+
+class FlagNotFoundError(Exception):
+    """The attempt has no connection flag."""
 
 
 def evaluate_attempt(conn, attempt_id, *, clock) -> bool:
@@ -20,12 +25,7 @@ def evaluate_attempt(conn, attempt_id, *, clock) -> bool:
     Does not commit: settlement calls it inside its own transaction, so a
     scored attempt and its flag are saved together. Safe to repeat.
     """
-    row = migrate.fetch_one(
-        conn, "SELECT final_outcome FROM attempts WHERE id = %s", (attempt_id,)
-    )
-    if row is None or row["final_outcome"] in _VOID_OUTCOMES:
-        return False
-    run = instability.qualifying_run(_counted_events(conn, attempt_id))
+    run = qualifying_run_for(conn, attempt_id)
     if run is None:
         return False
     migrate.execute(
@@ -35,6 +35,69 @@ def evaluate_attempt(conn, attempt_id, *, clock) -> bool:
         (attempt_id, run.first_loss_at, run.last_loss_at, clock.now()),
     )
     return True
+
+
+def qualifying_run_for(conn, attempt_id):
+    """The attempt's qualifying run with confirmed outages left out, or None.
+    A voided attempt never qualifies."""
+    row = migrate.fetch_one(
+        conn, "SELECT final_outcome FROM attempts WHERE id = %s", (attempt_id,)
+    )
+    if row is None or row["final_outcome"] in _VOID_OUTCOMES:
+        return None
+    return instability.qualifying_run(_counted_events(conn, attempt_id))
+
+
+def open_flags(conn) -> list[dict]:
+    """Open flags, oldest first, with only the evidence a reviewer needs: the
+    player's display name and tag, the run, and the attempt's connection
+    events. Nothing else about the player is returned."""
+    rows = migrate.fetch_all(
+        conn,
+        "SELECT f.attempt_id, ac.username, ac.tag, f.first_loss_at, f.last_loss_at,"
+        " f.flagged_at FROM connection_flags f"
+        " JOIN attempts a ON a.id = f.attempt_id"
+        " JOIN accounts ac ON ac.id = a.account_id"
+        " WHERE f.closed_at IS NULL ORDER BY f.flagged_at, f.attempt_id",
+    )
+    for row in rows:
+        row["events"] = migrate.fetch_all(
+            conn,
+            "SELECT kind, occurred_at FROM attempt_connection_events"
+            " WHERE attempt_id = %s ORDER BY occurred_at, kind",
+            (row["attempt_id"],),
+        )
+    conn.commit()
+    return rows
+
+
+def close_flag(conn, attempt_id, outcome, *, clock) -> str:
+    """Close an open flag with a review outcome; return the stored outcome.
+
+    Closing a closed flag changes nothing. Closure never touches points or
+    access.
+    """
+    if outcome not in CLOSING_OUTCOMES:
+        raise ValueError(f"unknown review outcome: {outcome!r}")
+    row = migrate.fetch_one(
+        conn,
+        "SELECT closed_outcome FROM connection_flags WHERE attempt_id = %s FOR UPDATE",
+        (attempt_id,),
+    )
+    if row is None:
+        conn.rollback()
+        raise FlagNotFoundError("the attempt has no connection flag")
+    if row["closed_outcome"] is not None:
+        conn.commit()
+        return row["closed_outcome"]
+    migrate.execute(
+        conn,
+        "UPDATE connection_flags SET closed_at = %s, closed_outcome = %s"
+        " WHERE attempt_id = %s",
+        (clock.now(), outcome, attempt_id),
+    )
+    conn.commit()
+    return outcome
 
 
 def _counted_events(conn, attempt_id):

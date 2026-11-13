@@ -34,17 +34,28 @@ def record_outage(conn, *, starts_at, ends_at, clock) -> int:
 
     overlapping = migrate.fetch_all(
         conn,
-        "SELECT attempt_id FROM connection_flags"
+        "SELECT attempt_id, closed_at FROM connection_flags"
         " WHERE first_loss_at <= %s AND last_loss_at >= %s FOR UPDATE",
         (ends_at, starts_at),
     )
     removed = 0
     for row in overlapping:
-        migrate.execute(
-            conn, "DELETE FROM connection_flags WHERE attempt_id = %s", (row["attempt_id"],)
-        )
         # re-check without the outage's events: a run it does not explain stays
-        if not flags.evaluate_attempt(conn, row["attempt_id"], clock=clock):
+        run = flags.qualifying_run_for(conn, row["attempt_id"])
+        if run is None:
+            migrate.execute(
+                conn, "DELETE FROM connection_flags WHERE attempt_id = %s",
+                (row["attempt_id"],),
+            )
             removed += 1
+        elif row["closed_at"] is None:
+            # still unstable on its own: an open flag shows the run that remains
+            migrate.execute(
+                conn,
+                "UPDATE connection_flags SET first_loss_at = %s, last_loss_at = %s"
+                " WHERE attempt_id = %s",
+                (run.first_loss_at, run.last_loss_at, row["attempt_id"]),
+            )
+        # a closed flag that still qualifies keeps its review unchanged
     conn.commit()
     return removed

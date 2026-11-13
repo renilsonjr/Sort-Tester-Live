@@ -4,7 +4,7 @@ from datetime import datetime, timedelta, timezone
 import unittest
 
 from backend.db import migrate, settings
-from backend.ranked import engine, outages, scoring, settlement
+from backend.ranked import engine, flags, outages, scoring, settlement
 from backend.tests.ranked_helpers import make_unconstrained_bank
 from backend.tests.test_ranked_clock import FakeClock
 
@@ -245,6 +245,94 @@ class OutageRecordingTests(FlagTestCase):
             self._record(at(10), at(5))
         self.conn.rollback()
         self.assertEqual(self._outage_count(), 0)
+
+
+@unittest.skipUnless(
+    settings.environment_has_test_url(),
+    "SORT_TESTER_TEST_DATABASE_URL not set; database tests skipped",
+)
+class FlagReviewTests(FlagTestCase):
+    def _flagged_quiz(self, flaps=4):
+        attempt_id = self._start(self._account())
+        self._flap(attempt_id, flaps)
+        self._quit_and_settle(attempt_id)
+        return attempt_id
+
+    def _closed(self, attempt_id):
+        row = migrate.fetch_one(
+            self.conn,
+            "SELECT closed_at, closed_outcome FROM connection_flags WHERE attempt_id = %s",
+            (attempt_id,),
+        )
+        self.conn.commit()
+        return None if row is None else (row["closed_at"], row["closed_outcome"])
+
+    def test_open_flags_list_only_the_review_evidence(self):
+        attempt_id = self._flagged_quiz()
+        listed = flags.open_flags(self.conn)
+        self.assertEqual(len(listed), 1)
+        entry = listed[0]
+        self.assertEqual(
+            set(entry),
+            {"attempt_id", "username", "tag", "first_loss_at", "last_loss_at",
+             "flagged_at", "events"},
+        )
+        self.assertEqual(entry["attempt_id"], attempt_id)
+        self.assertEqual((entry["first_loss_at"], entry["last_loss_at"]), (at(3), at(15)))
+        kinds = [event["kind"] for event in entry["events"]]
+        self.assertEqual(kinds.count("loss"), 4)
+        self.assertEqual(kinds.count("recovery"), 4)
+
+    def test_closing_with_each_outcome(self):
+        for outcome in ("network_instability", "insufficient_evidence"):
+            with self.subTest(outcome=outcome):
+                attempt_id = self._flagged_quiz()
+                self.assertEqual(
+                    flags.close_flag(self.conn, attempt_id, outcome, clock=self.clock),
+                    outcome,
+                )
+                self.assertEqual(self._closed(attempt_id), (self.clock.now(), outcome))
+        self.assertEqual(flags.open_flags(self.conn), [])  # closed flags leave the list
+
+    def test_closing_twice_keeps_the_first_review(self):
+        attempt_id = self._flagged_quiz()
+        flags.close_flag(self.conn, attempt_id, "network_instability", clock=self.clock)
+        first = self._closed(attempt_id)
+        self.clock.advance(60)
+        again = flags.close_flag(
+            self.conn, attempt_id, "insufficient_evidence", clock=self.clock
+        )
+        self.assertEqual(again, "network_instability")
+        self.assertEqual(self._closed(attempt_id), first)
+
+    def test_closing_refuses_an_unknown_outcome_or_missing_flag(self):
+        attempt_id = self._flagged_quiz()
+        with self.assertRaises(ValueError):
+            flags.close_flag(self.conn, attempt_id, "cheating", clock=self.clock)
+        self.conn.rollback()
+        unflagged = self._start(self._account())
+        with self.assertRaises(flags.FlagNotFoundError):
+            flags.close_flag(self.conn, unflagged, "network_instability", clock=self.clock)
+        self.conn.rollback()
+        self.assertEqual(self._closed(attempt_id), (None, None))
+
+    def test_a_closed_flag_the_outage_does_not_explain_keeps_its_review(self):
+        attempt_id = self._flagged_quiz(flaps=5)  # losses at 3..19
+        flags.close_flag(self.conn, attempt_id, "network_instability", clock=self.clock)
+        reviewed = self._closed(attempt_id)
+        outages.record_outage(self.conn, starts_at=at(2), ends_at=at(4), clock=self.clock)
+        self.assertEqual(self._closed(attempt_id), reviewed)
+        # untouched: still the first qualifying run recorded at scoring time
+        self.assertEqual(self._flag(attempt_id), (at(3), at(15)))
+
+    def test_a_closed_flag_the_outage_explains_is_removed(self):
+        attempt_id = self._flagged_quiz()
+        flags.close_flag(self.conn, attempt_id, "insufficient_evidence", clock=self.clock)
+        removed = outages.record_outage(
+            self.conn, starts_at=at(6), ends_at=at(8), clock=self.clock
+        )
+        self.assertEqual(removed, 1)
+        self.assertIsNone(self._flag(attempt_id))
 
 
 if __name__ == "__main__":
