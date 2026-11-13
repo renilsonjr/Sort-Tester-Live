@@ -29,7 +29,7 @@ whatever writes to the table.
 - `main(argv)` is the command:
 
   ```
-  python -m backend.auth.owner designate --tag A1B2
+  python -m backend.auth.owner designate --tag A1B2C3
   ```
 
   It connects with the application's database settings, prints the account
