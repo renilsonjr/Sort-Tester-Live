@@ -40,18 +40,22 @@ def ensure_pre_season(conn, label: str = "Pre-Season"):
     return row["id"]
 
 
-def admitting_season(conn, now: datetime):
+def admitting_season(conn, now: datetime, *, lock: bool = False):
     """Return the id of the season admitting new Ranked attempts at ``now``.
 
     ``None`` when no season admits. A season admits while it is neither closed
     nor frozen and its scheduled end, if it has one, is still in the future;
     at exactly the scheduled end admission has stopped.
+
+    With ``lock`` the season row is share-locked until the caller's
+    transaction ends. An attempt start uses this so a launch, which locks the
+    season rows exclusively, waits for it and then sees its attempt.
     """
     row = migrate.fetch_one(
         conn,
         "SELECT id FROM seasons WHERE closed_at IS NULL AND frozen_at IS NULL"
         " AND (closes_at IS NULL OR closes_at > %s)"
-        " ORDER BY opened_at DESC LIMIT 1",
+        " ORDER BY opened_at DESC LIMIT 1" + (" FOR SHARE" if lock else ""),
         (now,),
     )
     return None if row is None else row["id"]

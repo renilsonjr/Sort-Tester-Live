@@ -10,6 +10,8 @@ Exactly once rests on three layers: the attempt row lock serialises concurrent
 settlements, the state check makes a repeat a no-op that returns the stored
 result, and ``settlements.attempt_id`` is the primary key.
 """
+import dataclasses
+
 from backend.db import migrate
 from backend.ranked import scoring
 
@@ -61,8 +63,10 @@ def _settle(conn, attempt_id, clock) -> tuple[scoring.Settlement, bool]:
     """Settle one attempt. Returns the result and whether this call applied it."""
     attempt = migrate.fetch_one(
         conn,
-        "SELECT account_id, season_id, mode, state, final_outcome"
-        " FROM attempts WHERE id = %s FOR UPDATE",
+        "SELECT a.account_id, a.season_id, a.mode, a.state, a.final_outcome,"
+        " s.frozen_at AS season_frozen_at"
+        " FROM attempts a JOIN seasons s ON s.id = a.season_id"
+        " WHERE a.id = %s FOR UPDATE OF a",
         (attempt_id,),
     )
     if attempt is None:
@@ -102,6 +106,15 @@ def _settle(conn, attempt_id, clock) -> tuple[scoring.Settlement, bool]:
         attempt["final_outcome"],
         [(row["difficulty"], row["answer"]) for row in answers],
     )
+    if attempt["season_frozen_at"] is not None:
+        # phase ownership: a result arriving after its season's points became
+        # final (for example a Pre-Season attempt after launch) changes nothing
+        result = dataclasses.replace(
+            result,
+            adjustment=0,
+            points_after=result.points_before,
+            badge_after=result.badge_before,
+        )
 
     migrate.execute(
         conn,
