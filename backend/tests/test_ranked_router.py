@@ -164,11 +164,11 @@ class RankedRouterTests(unittest.TestCase):
         base = f"/api/ranked/attempts/{attempt_id}"
         first = self.client.post(f"{base}/quit")
         self.assertEqual(first.status_code, 200, first.text)
-        self.assertEqual(first.json(), {"final_outcome": "quit"})
+        self.assertEqual(first.json()["final_outcome"], "quit")
         # a retried Quit gets the same answer, not an error
         second = self.client.post(f"{base}/quit")
         self.assertEqual(second.status_code, 200, second.text)
-        self.assertEqual(second.json(), {"final_outcome": "quit"})
+        self.assertEqual(second.json(), first.json())
         self.assertEqual(self.client.post(f"{base}/heartbeat").status_code, 410)
 
     def test_quit_requires_the_owner(self):
@@ -281,6 +281,130 @@ class RankedRouterTests(unittest.TestCase):
         self._sign_in(self.client, "odd_player")
         start = self.client.post("/api/ranked/attempts", json={"mode": "tiebreak"})
         self.assertEqual(start.status_code, 422)
+
+    # --- score at once (issue #9, slice 3) ---
+
+    RESULT_KEYS = {
+        "final_outcome", "raw_score", "adjustment", "points_before",
+        "points_after", "badge_before", "badge_after",
+    }
+
+    def _entry_points(self):
+        return self.client.get("/api/ranked/entry").json()["points"]
+
+    def test_final_answer_returns_the_result_and_applies_the_points(self):
+        self._sign_in(self.client, "scored_player")
+        attempt_id = self._start_as_page(self.client)
+        base = f"/api/ranked/attempts/{attempt_id}"
+        answer = None
+        for seq in range(1, 16):
+            answer = self.client.post(
+                f"{base}/answer", json={"seq": seq, "choice": "YELLOW"}
+            )
+            self.assertEqual("result" in answer.json(), seq == 15)
+            if seq < 15:
+                self.client.post(f"{base}/advance")
+        result = answer.json()["result"]
+        self.assertEqual(set(result), self.RESULT_KEYS)
+        self.assertEqual(result["final_outcome"], "completed")
+        self.assertEqual(result["points_before"], 0)
+        self.assertEqual(
+            result["points_after"], result["points_before"] + result["adjustment"]
+        )
+        self.assertEqual(self._entry_points(), result["points_after"])
+        self.assertEqual(self._attempt_field(attempt_id, "state"), "finalized")
+
+    def test_quit_returns_the_result_and_applies_the_penalty(self):
+        self._sign_in(self.client, "penalised_player")
+        attempt_id = self._start_as_page(self.client)
+        quit_response = self.client.post(f"/api/ranked/attempts/{attempt_id}/quit")
+        result = quit_response.json()["result"]
+        self.assertEqual(result["final_outcome"], "quit")
+        self.assertEqual((result["raw_score"], result["adjustment"]), (0, -10))
+        self.assertEqual(self._entry_points(), -10)
+        self.assertEqual(self._attempt_field(attempt_id, "state"), "finalized")
+
+    def test_attempt_found_ended_is_settled_with_the_gone_answer(self):
+        self._sign_in(self.client, "vanished_player")
+        attempt_id = self._start_as_page(self.client)
+        conn = migrate.connect(self.conninfo)
+        migrate.execute(
+            conn,
+            "UPDATE attempts SET last_heartbeat_at = now() - interval '60 seconds'"
+            " WHERE id = %s",
+            (attempt_id,),
+        )
+        conn.commit()
+        conn.close()
+        gone = self.client.post(f"/api/ranked/attempts/{attempt_id}/heartbeat")
+        self.assertEqual(gone.status_code, 410)
+        self.assertEqual(self._attempt_field(attempt_id, "state"), "finalized")
+        self.assertEqual(self._attempt_field(attempt_id, "final_outcome"), "disconnect")
+        # the one question that was on screen timed out and was deducted
+        self.assertLess(self._entry_points(), 0)
+
+    def _abandon(self, attempt_id):
+        """Pretend the page was last heard from a minute ago."""
+        conn = migrate.connect(self.conninfo)
+        migrate.execute(
+            conn,
+            "UPDATE attempts SET last_heartbeat_at = now() - interval '60 seconds'"
+            " WHERE id = %s",
+            (attempt_id,),
+        )
+        conn.commit()
+        conn.close()
+
+    def test_start_after_an_abandoned_attempt_settles_it_and_admits(self):
+        self._sign_in(self.client, "returning_player")
+        old_id = self._start_as_page(self.client)
+        self._abandon(old_id)
+        # a fresh page of the same account: it never held the old capability
+        new = self._second_tab().post("/api/ranked/attempts")
+        self.assertEqual(new.status_code, 201, new.text)
+        self.assertNotEqual(new.json()["attempt_id"], old_id)
+        self.assertEqual(self._attempt_field(old_id, "state"), "finalized")
+        self.assertEqual(self._attempt_field(old_id, "final_outcome"), "disconnect")
+
+    def test_result_of_a_finished_attempt(self):
+        self._sign_in(self.client, "curious_player")
+        attempt_id = self._start_as_page(self.client)
+        base = f"/api/ranked/attempts/{attempt_id}"
+        quit_result = self.client.post(f"{base}/quit").json()["result"]
+        # history: readable from any page of the account, without the capability
+        shown = self._second_tab().get(f"{base}/result")
+        self.assertEqual(shown.status_code, 200, shown.text)
+        self.assertEqual(shown.json(), quit_result)
+
+    def test_result_of_an_abandoned_attempt_settles_it_first(self):
+        self._sign_in(self.client, "late_player")
+        attempt_id = self._start_as_page(self.client)
+        self._abandon(attempt_id)
+        shown = self.client.get(f"/api/ranked/attempts/{attempt_id}/result")
+        self.assertEqual(shown.status_code, 200, shown.text)
+        self.assertEqual(shown.json()["final_outcome"], "disconnect")
+        self.assertEqual(self._attempt_field(attempt_id, "state"), "finalized")
+
+    def test_result_of_a_running_attempt_is_a_conflict(self):
+        self._sign_in(self.client, "impatient_player")
+        attempt_id = self._start_as_page(self.client)
+        shown = self.client.get(f"/api/ranked/attempts/{attempt_id}/result")
+        self.assertEqual(shown.status_code, 409)
+        self.assertEqual(self._attempt_field(attempt_id, "state"), "active")
+
+    def test_result_requires_the_owner(self):
+        self._sign_in(self.client, "result_owner")
+        attempt_id = self._start_as_page(self.client)
+        self.client.post(f"/api/ranked/attempts/{attempt_id}/quit")
+        anon = TestClient(create_app())
+        self.assertEqual(
+            anon.get(f"/api/ranked/attempts/{attempt_id}/result").status_code, 401
+        )
+        other = TestClient(create_app())
+        self._sign_in(other, "result_other")
+        self.assertEqual(
+            other.get(f"/api/ranked/attempts/{attempt_id}/result").status_code, 404
+        )
 
     def test_requires_authentication(self):
         anon = TestClient(create_app())
