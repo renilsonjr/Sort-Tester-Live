@@ -3,6 +3,8 @@ import unittest
 
 from fastapi.testclient import TestClient
 
+from backend.tests.browser import BROWSER
+
 from backend.db import migrate, settings
 from backend.main import create_app
 
@@ -25,7 +27,7 @@ class RankedRouterTests(unittest.TestCase):
     def _second_tab(self):
         """Another page of the same signed-in account: same session cookie,
         but none of the original page's memory."""
-        tab = TestClient(create_app())
+        tab = TestClient(create_app(), headers=BROWSER)
         for cookie in self.client.cookies.jar:
             tab.cookies.set(cookie.name, cookie.value)
         return tab
@@ -67,7 +69,7 @@ class RankedRouterTests(unittest.TestCase):
         )
         conn.commit()
         conn.close()
-        self.client = TestClient(create_app())
+        self.client = TestClient(create_app(), headers=BROWSER)
 
     def _sign_in(self, client, username):
         reg = client.post("/api/auth/register", json={"username": username})
@@ -126,11 +128,11 @@ class RankedRouterTests(unittest.TestCase):
     def test_heartbeat_requires_the_owner(self):
         self._sign_in(self.client, "beat_owner")
         attempt_id = self._start_as_page(self.client)
-        anon = TestClient(create_app())
+        anon = TestClient(create_app(), headers=BROWSER)
         self.assertEqual(
             anon.post(f"/api/ranked/attempts/{attempt_id}/heartbeat").status_code, 401
         )
-        other = TestClient(create_app())
+        other = TestClient(create_app(), headers=BROWSER)
         self._sign_in(other, "beat_other")
         self.assertEqual(
             other.post(f"/api/ranked/attempts/{attempt_id}/heartbeat").status_code, 404
@@ -174,11 +176,11 @@ class RankedRouterTests(unittest.TestCase):
     def test_quit_requires_the_owner(self):
         self._sign_in(self.client, "quit_owner")
         attempt_id = self._start_as_page(self.client)
-        anon = TestClient(create_app())
+        anon = TestClient(create_app(), headers=BROWSER)
         self.assertEqual(
             anon.post(f"/api/ranked/attempts/{attempt_id}/quit").status_code, 401
         )
-        other = TestClient(create_app())
+        other = TestClient(create_app(), headers=BROWSER)
         self._sign_in(other, "quit_other")
         self.assertEqual(
             other.post(f"/api/ranked/attempts/{attempt_id}/quit").status_code, 404
@@ -247,7 +249,7 @@ class RankedRouterTests(unittest.TestCase):
         self.assertEqual(self.client.post("/api/ranked/attempts").status_code, 201)
 
     def test_entry_requires_authentication(self):
-        anon = TestClient(create_app())
+        anon = TestClient(create_app(), headers=BROWSER)
         self.assertEqual(anon.get("/api/ranked/entry").status_code, 401)
 
     def test_start_without_a_body_is_a_normal_attempt(self):
@@ -396,11 +398,11 @@ class RankedRouterTests(unittest.TestCase):
         self._sign_in(self.client, "result_owner")
         attempt_id = self._start_as_page(self.client)
         self.client.post(f"/api/ranked/attempts/{attempt_id}/quit")
-        anon = TestClient(create_app())
+        anon = TestClient(create_app(), headers=BROWSER)
         self.assertEqual(
             anon.get(f"/api/ranked/attempts/{attempt_id}/result").status_code, 401
         )
-        other = TestClient(create_app())
+        other = TestClient(create_app(), headers=BROWSER)
         self._sign_in(other, "result_other")
         self.assertEqual(
             other.get(f"/api/ranked/attempts/{attempt_id}/result").status_code, 404
@@ -436,7 +438,7 @@ class RankedRouterTests(unittest.TestCase):
             conn.close()
 
     def test_launch_requires_a_session(self):
-        anon = TestClient(create_app())
+        anon = TestClient(create_app(), headers=BROWSER)
         self.assertEqual(anon.post(self.LAUNCH_URL, json=self.LAUNCH_BODY).status_code, 401)
         self.assertEqual(self._official_seasons(), 0)
 
@@ -471,7 +473,7 @@ class RankedRouterTests(unittest.TestCase):
     def test_owner_launches_once(self):
         self._sign_in_owner(self.client, "launching_owner")
         self._set_points("launching_owner", 500)
-        player = TestClient(create_app())
+        player = TestClient(create_app(), headers=BROWSER)
         self._sign_in(player, "mid_quiz_player")
         attempt_id = self._start_as_page(player)
 
@@ -543,7 +545,7 @@ class RankedRouterTests(unittest.TestCase):
         beat = self.client.post(f"/api/ranked/attempts/{attempt_id}/heartbeat")
         self.assertEqual(beat.status_code, 204)
         self.assertFalse(self._season_frozen())
-        late = TestClient(create_app())
+        late = TestClient(create_app(), headers=BROWSER)
         self._sign_in(late, "too_late_player")
         self.assertEqual(late.post("/api/ranked/attempts").status_code, 409)
 
@@ -557,13 +559,13 @@ class RankedRouterTests(unittest.TestCase):
         return attempt_id
 
     def test_history_requires_a_session(self):
-        anon = TestClient(create_app())
+        anon = TestClient(create_app(), headers=BROWSER)
         self.assertEqual(anon.get(self.HISTORY_URL).status_code, 401)
 
     def test_history_lists_the_players_own_scored_quizzes(self):
         self._sign_in(self.client, "history_player")
         attempt_id = self._quit_a_quiz(self.client)
-        other = TestClient(create_app())
+        other = TestClient(create_app(), headers=BROWSER)
         self._sign_in(other, "history_other")
         self._quit_a_quiz(other)
 
@@ -585,10 +587,10 @@ class RankedRouterTests(unittest.TestCase):
     def test_history_keeps_pre_season_apart_and_marks_launch_ended_quizzes(self):
         self._sign_in(self.client, "veteran_player")
         self._quit_a_quiz(self.client)                 # a scored Pre-Season quiz
-        mid = TestClient(create_app())
+        mid = TestClient(create_app(), headers=BROWSER)
         self._sign_in(mid, "interrupted_player")
         self._start_as_page(mid)                       # still running at launch
-        owner = TestClient(create_app())
+        owner = TestClient(create_app(), headers=BROWSER)
         self._sign_in_owner(owner, "history_owner")
         self.assertEqual(owner.post(self.LAUNCH_URL, json=self.LAUNCH_BODY).status_code, 201)
         self._quit_a_quiz(self.client)                 # an official quiz
@@ -609,7 +611,7 @@ class RankedRouterTests(unittest.TestCase):
         self._sign_in(self.client, "private_player")
         self._quit_a_quiz(self.client)
         player_id = self.client.get("/api/auth/me").json()["account_id"]
-        owner = TestClient(create_app())
+        owner = TestClient(create_app(), headers=BROWSER)
         self._sign_in_owner(owner, "nosy_owner")
         # naming another account changes nothing: history is the session's own
         seen = owner.get(self.HISTORY_URL, params={"account_id": player_id})
@@ -626,7 +628,7 @@ class RankedRouterTests(unittest.TestCase):
     SEASON_URL = "/api/ranked/season"
 
     def test_season_status_requires_a_session(self):
-        anon = TestClient(create_app())
+        anon = TestClient(create_app(), headers=BROWSER)
         self.assertEqual(anon.get(self.SEASON_URL).status_code, 401)
 
     def test_season_status_of_the_pre_season(self):
@@ -705,7 +707,7 @@ class RankedRouterTests(unittest.TestCase):
         conn.close()
 
     def _flagged_player(self, username):
-        player = TestClient(create_app())
+        player = TestClient(create_app(), headers=BROWSER)
         self._sign_in(player, username)
         attempt_id = self._start_as_page(player)
         player.post(f"/api/ranked/attempts/{attempt_id}/quit")
@@ -713,7 +715,7 @@ class RankedRouterTests(unittest.TestCase):
         return player, attempt_id
 
     def test_flags_require_a_session(self):
-        anon = TestClient(create_app())
+        anon = TestClient(create_app(), headers=BROWSER)
         self.assertEqual(anon.get(self.FLAGS_URL).status_code, 401)
 
     def test_players_cannot_see_flags_not_even_their_own(self):
@@ -807,13 +809,13 @@ class RankedRouterTests(unittest.TestCase):
         self.assertEqual((left["flags"], left["events"]), (0, 0))
 
     def test_requires_authentication(self):
-        anon = TestClient(create_app())
+        anon = TestClient(create_app(), headers=BROWSER)
         self.assertEqual(anon.post("/api/ranked/attempts").status_code, 401)
 
     def test_cannot_touch_another_accounts_attempt(self):
         self._sign_in(self.client, "owner_player")
         attempt_id = self._start_as_page(self.client)
-        other = TestClient(create_app())
+        other = TestClient(create_app(), headers=BROWSER)
         self._sign_in(other, "other_player")
         res = other.get(f"/api/ranked/attempts/{attempt_id}/current")
         self.assertEqual(res.status_code, 404)

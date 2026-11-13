@@ -5,6 +5,8 @@ from unittest import mock
 
 from fastapi.testclient import TestClient
 
+from backend.tests.browser import BROWSER
+
 from backend.auth.rate_limit import RegistrationLimiter, _client_key
 from backend.db import migrate, settings
 from backend.main import create_app
@@ -52,7 +54,7 @@ class UsernameAnswerTests(unittest.TestCase):
     def setUp(self):
         migrate.recreate_scratch_database(self.admin, settings.SCRATCH_DB_NAME)
         migrate.upgrade_to_head(self.conninfo)
-        self.client = TestClient(create_app())
+        self.client = TestClient(create_app(), headers=BROWSER)
 
     def _accounts(self):
         conn = migrate.connect(self.conninfo)
@@ -161,7 +163,7 @@ class RegistrationLimitHttpTests(unittest.TestCase):
         app = create_app()
         # small caps keep the test quick; the owner's 30/200 are checked above
         app.state.registration_limiter = RegistrationLimiter(per_client=3, total=5)
-        self.client = TestClient(app)
+        self.client = TestClient(app, headers=BROWSER)
         self._n = 0
 
     def _register(self, address=None, username=None):

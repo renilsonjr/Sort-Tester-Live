@@ -5,6 +5,8 @@ from unittest import mock
 
 from fastapi.testclient import TestClient
 
+from backend.tests.browser import BROWSER
+
 from backend.db import migrate, settings
 from backend.main import create_app
 
@@ -34,7 +36,7 @@ class DeletionTestCase(unittest.TestCase):
 
     def _player(self, username):
         """Register and sign in; return (client, login_id, account_id)."""
-        client = TestClient(create_app())
+        client = TestClient(create_app(), headers=BROWSER)
         reg = client.post("/api/auth/register", json={"username": username})
         self.assertEqual(reg.status_code, 200, reg.text)
         login_id = reg.json()["login_id"]
@@ -69,7 +71,7 @@ class DeletionTestCase(unittest.TestCase):
 
 class DeletionRequestTests(DeletionTestCase):
     def test_deletion_requires_a_session(self):
-        anon = TestClient(create_app())
+        anon = TestClient(create_app(), headers=BROWSER)
         res = anon.post(DELETE_URL, json={"login_id": "AAAA-AAAA-AAAA-AAAA", "acknowledge": True})
         self.assertEqual(res.status_code, 401)
 
@@ -115,7 +117,7 @@ class DeletionRequestTests(DeletionTestCase):
         self.assertEqual(res.status_code, 202, res.text)
         self.assertEqual(res.json(), {"status": "accepted"})
         self.assertEqual(client.get("/api/auth/me").status_code, 401)
-        fresh = TestClient(create_app())
+        fresh = TestClient(create_app(), headers=BROWSER)
         self.assertEqual(
             fresh.post("/api/auth/login", json={"login_id": login_id}).status_code, 401
         )

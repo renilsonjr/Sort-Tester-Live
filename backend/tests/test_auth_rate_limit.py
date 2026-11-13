@@ -4,6 +4,8 @@ from unittest import mock
 
 from fastapi.testclient import TestClient
 
+from backend.tests.browser import BROWSER
+
 from backend.db import migrate, settings
 from backend.main import create_app
 
@@ -28,7 +30,7 @@ class AuthRateLimitTests(unittest.TestCase):
         self.addCleanup(self.conn.close)
         self.addCleanup(self.conn.rollback)
         app = create_app()
-        self.client = TestClient(app)
+        self.client = TestClient(app, headers=BROWSER)
 
     def test_login_rate_limit_blocks_after_threshold(self):
         # The test client has one connection address shared by every test, so

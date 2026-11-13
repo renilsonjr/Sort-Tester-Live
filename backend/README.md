@@ -278,3 +278,25 @@ target is the unittest scratch database. It reads only
 port and database and the revision before and after, never the password. It
 only upgrades to the latest revision; running it again is harmless. There is
 no downgrade command: take a backup first, and restore from it if needed.
+
+## Cross-site write protection
+
+The session lives in a cookie, so a browser attaches it to any request
+another site makes on the player's behalf. Every write (`POST`, `PUT`,
+`PATCH`, `DELETE`) must therefore state where it came from, in `Origin` or
+`Referer`, and that host must be one of ours; otherwise the request is
+refused with `403` before it reaches a route. Reads are never affected.
+
+Accepted hosts:
+
+- the app's own `Host`, whatever the scheme — behind an ingress that
+  terminates TLS the browser says `https` while the app sees plain `http`
+  for the same host, and that still matches;
+- `SORT_TESTER_APP_ORIGIN`, the public origin (for example
+  `https://sortlab.example.com`), when set;
+- the explicit loopback origins in `SORT_TEST_DEV_ORIGINS`.
+
+Set `SORT_TESTER_APP_ORIGIN` on the hosted app. A script that calls a write
+endpoint must send an `Origin` header, as `curl -H "Origin: https://..."`;
+a browser does this on its own. Tests that drive the API like a browser use
+`backend/tests/browser.py`.

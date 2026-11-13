@@ -2,6 +2,8 @@ import unittest
 
 from fastapi.testclient import TestClient
 
+from backend.tests.browser import BROWSER
+
 from backend.db import migrate, settings
 from backend.main import create_app
 
@@ -26,7 +28,7 @@ class AuthRouterTests(unittest.TestCase):
         self.addCleanup(self.conn.close)
         self.addCleanup(self.conn.rollback)
         app = create_app()
-        self.client = TestClient(app)
+        self.client = TestClient(app, headers=BROWSER)
 
     def test_register_endpoint_returns_login_id_once(self):
         response = self.client.post("/api/auth/register", json={"username": "router_user"})
