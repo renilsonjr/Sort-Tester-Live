@@ -4,7 +4,7 @@ from datetime import datetime, timedelta, timezone
 import unittest
 
 from backend.db import migrate, settings
-from backend.ranked import engine, scoring, settlement
+from backend.ranked import engine, outages, scoring, settlement
 from backend.tests.ranked_helpers import make_unconstrained_bank
 from backend.tests.test_ranked_clock import FakeClock
 
@@ -179,6 +179,72 @@ class FlagCreationTests(FlagTestCase):
         migrate.execute(self.conn, "DELETE FROM accounts WHERE id = %s", (account_id,))
         self.conn.commit()
         self.assertEqual(self._flag_count(), 0)
+
+
+@unittest.skipUnless(
+    settings.environment_has_test_url(),
+    "SORT_TESTER_TEST_DATABASE_URL not set; database tests skipped",
+)
+class OutageRecordingTests(FlagTestCase):
+    def _record(self, start, end):
+        return outages.record_outage(
+            self.conn, starts_at=start, ends_at=end, clock=self.clock
+        )
+
+    def _outage_count(self):
+        row = migrate.fetch_one(self.conn, "SELECT COUNT(*) AS n FROM confirmed_outages")
+        self.conn.commit()
+        return row["n"]
+
+    def _flagged_quiz(self, flaps=4):
+        attempt_id = self._start(self._account())
+        self._flap(attempt_id, flaps)  # losses at 3, 7, 11, 15, ...
+        self._quit_and_settle(attempt_id)
+        self.assertIsNotNone(self._flag(attempt_id))
+        return attempt_id
+
+    def test_an_outage_that_explains_the_run_removes_the_flag(self):
+        attempt_id = self._flagged_quiz()
+        removed = self._record(at(6), at(8))  # the loss at 7 was the server's
+        self.assertEqual(removed, 1)
+        self.assertIsNone(self._flag(attempt_id))
+        self.assertEqual(self._outage_count(), 1)
+
+    def test_a_flag_the_outage_does_not_explain_comes_back(self):
+        attempt_id = self._flagged_quiz(flaps=5)  # losses at 3, 7, 11, 15, 19
+        removed = self._record(at(2), at(4))       # only the loss at 3
+        self.assertEqual(removed, 0)
+        # without that loss, 7, 11, 15, 19 still qualify on their own
+        self.assertEqual(self._flag(attempt_id), (at(7), at(19)))
+
+    def test_an_outage_elsewhere_leaves_flags_alone(self):
+        attempt_id = self._flagged_quiz()
+        self.assertEqual(self._record(at(100), at(110)), 0)
+        self.assertEqual(self._flag(attempt_id), (at(3), at(15)))
+
+    def test_an_outage_voids_and_settles_quizzes_it_interrupted(self):
+        account_id = self._account(points=500)
+        attempt_id = self._start(account_id)
+        self._flap(attempt_id, 4)  # unstable, but the server was down
+        self._record(at(0), self.clock.now())
+        row = migrate.fetch_one(
+            self.conn, "SELECT state, final_outcome FROM attempts WHERE id = %s",
+            (attempt_id,),
+        )
+        points = migrate.fetch_one(
+            self.conn, "SELECT current_points FROM balances WHERE account_id = %s",
+            (account_id,),
+        )["current_points"]
+        self.conn.commit()
+        self.assertEqual((row["state"], row["final_outcome"]), ("finalized", "outage_void"))
+        self.assertEqual(points, 500)
+        self.assertIsNone(self._flag(attempt_id))
+
+    def test_an_outage_that_ends_before_it_starts_is_refused(self):
+        with self.assertRaises(ValueError):
+            self._record(at(10), at(5))
+        self.conn.rollback()
+        self.assertEqual(self._outage_count(), 0)
 
 
 if __name__ == "__main__":
