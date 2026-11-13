@@ -681,6 +681,131 @@ class RankedRouterTests(unittest.TestCase):
         conn.close()
         self.assertEqual(self.client.get(self.SEASON_URL).status_code, 404)
 
+    # --- connection flag review (issue #25, slice 3) ---
+
+    FLAGS_URL = "/api/ranked/flags"
+
+    def _flag_attempt(self, attempt_id):
+        """Give an attempt a flag and four losses, as the engine would."""
+        conn = migrate.connect(self.conninfo)
+        for seconds in (3, 7, 11, 15):
+            migrate.execute(
+                conn,
+                "INSERT INTO attempt_connection_events (attempt_id, kind, occurred_at)"
+                " VALUES (%s, 'loss', now() - make_interval(secs => %s))",
+                (attempt_id, 100 - seconds),
+            )
+        migrate.execute(
+            conn,
+            "INSERT INTO connection_flags (attempt_id, first_loss_at, last_loss_at, flagged_at)"
+            " VALUES (%s, now() - interval '97 seconds', now() - interval '85 seconds', now())",
+            (attempt_id,),
+        )
+        conn.commit()
+        conn.close()
+
+    def _flagged_player(self, username):
+        player = TestClient(create_app())
+        self._sign_in(player, username)
+        attempt_id = self._start_as_page(player)
+        player.post(f"/api/ranked/attempts/{attempt_id}/quit")
+        self._flag_attempt(attempt_id)
+        return player, attempt_id
+
+    def test_flags_require_a_session(self):
+        anon = TestClient(create_app())
+        self.assertEqual(anon.get(self.FLAGS_URL).status_code, 401)
+
+    def test_players_cannot_see_flags_not_even_their_own(self):
+        player, attempt_id = self._flagged_player("flagged_player")
+        self.assertEqual(player.get(self.FLAGS_URL).status_code, 403)
+        self.assertEqual(
+            player.post(f"{self.FLAGS_URL}/{attempt_id}/close",
+                        json={"outcome": "network_instability"}).status_code,
+            403,
+        )
+
+    def test_owner_lists_and_closes_a_flag(self):
+        player, attempt_id = self._flagged_player("reviewed_player")
+        self._sign_in_owner(self.client, "reviewing_owner")
+        listed = self.client.get(self.FLAGS_URL)
+        self.assertEqual(listed.status_code, 200, listed.text)
+        entry = listed.json()[0]
+        self.assertEqual(entry["attempt_id"], attempt_id)
+        self.assertEqual(entry["username"], "reviewed_player")
+        self.assertEqual(len(entry["events"]), 4)
+        self.assertNotIn("email", entry)
+
+        points_before = player.get("/api/ranked/entry").json()["points"]
+        closed = self.client.post(
+            f"{self.FLAGS_URL}/{attempt_id}/close", json={"outcome": "network_instability"}
+        )
+        self.assertEqual(closed.status_code, 200, closed.text)
+        self.assertEqual(closed.json(), {"attempt_id": attempt_id,
+                                         "outcome": "network_instability"})
+        self.assertEqual(self.client.get(self.FLAGS_URL).json(), [])
+        # closing changed nothing for the player
+        self.assertEqual(player.get("/api/ranked/entry").json()["points"], points_before)
+        self.assertEqual(player.post("/api/ranked/attempts").status_code, 201)
+
+    def test_closing_refuses_an_unknown_outcome_or_missing_flag(self):
+        _, attempt_id = self._flagged_player("odd_review_player")
+        self._sign_in_owner(self.client, "strict_reviewer")
+        self.assertEqual(
+            self.client.post(f"{self.FLAGS_URL}/{attempt_id}/close",
+                             json={"outcome": "cheating"}).status_code,
+            422,
+        )
+        self.assertEqual(
+            self.client.post(f"{self.FLAGS_URL}/00000000-0000-0000-0000-000000000000/close",
+                             json={"outcome": "network_instability"}).status_code,
+            404,
+        )
+
+    def test_a_second_tab_cannot_add_or_hide_connection_events(self):
+        self._sign_in(self.client, "flapping_player")
+        attempt_id = self._start_as_page(self.client)
+        tab = self._second_tab()
+        for _ in range(5):
+            self.assertEqual(
+                tab.post(f"/api/ranked/attempts/{attempt_id}/heartbeat").status_code, 403
+            )
+        conn = migrate.connect(self.conninfo)
+        try:
+            events = migrate.fetch_one(
+                conn,
+                "SELECT COUNT(*) AS n FROM attempt_connection_events WHERE attempt_id = %s",
+                (attempt_id,),
+            )["n"]
+        finally:
+            conn.close()
+        self.assertEqual(events, 0)
+
+    def test_old_closed_flags_are_cleaned_up_by_any_ranked_request(self):
+        _, attempt_id = self._flagged_player("old_flag_player")
+        conn = migrate.connect(self.conninfo)
+        migrate.execute(
+            conn,
+            "UPDATE connection_flags SET closed_at = now() - interval '16 days',"
+            " closed_outcome = 'insufficient_evidence' WHERE attempt_id = %s",
+            (attempt_id,),
+        )
+        conn.commit()
+        conn.close()
+        self._sign_in(self.client, "passer_by")
+        self.assertEqual(self.client.get("/api/ranked/entry").status_code, 200)
+        conn = migrate.connect(self.conninfo)
+        try:
+            left = migrate.fetch_one(
+                conn,
+                "SELECT (SELECT COUNT(*) FROM connection_flags) AS flags,"
+                " (SELECT COUNT(*) FROM attempt_connection_events WHERE attempt_id = %s) AS events",
+                (attempt_id,),
+            )
+        finally:
+            conn.close()
+        self.assertEqual((left["flags"], left["events"]), (0, 0))
+
     def test_requires_authentication(self):
         anon = TestClient(create_app())
         self.assertEqual(anon.post("/api/ranked/attempts").status_code, 401)

@@ -17,6 +17,7 @@ from backend.auth.service import get_account_by_session
 from backend.db import migrate, settings
 from backend.ranked import capability, engine, launch, season_close, seasons, settlement
 from backend.ranked import history as ranked_history
+from backend.ranked import flags as ranked_flags
 from backend.ranked.clock import system_clock
 from backend.ranked_bank.catalog import load_reviewed_bank
 
@@ -52,6 +53,9 @@ def get_db():
         # window is over (end unfinished attempts, settle, freeze). When
         # nothing is due this is a single read.
         season_close.finish_due_seasons(conn, clock=_CLOCK)
+        # same idea for retention: closed review flags and their detailed
+        # connection events go fifteen days after closure
+        ranked_flags.purge_closed_flags(conn, clock=_CLOCK)
         yield conn
 
 
@@ -375,3 +379,60 @@ def season(account: dict = Depends(_current_account), conn=Depends(get_db)):
         "points_final": current.status == "frozen",
         "approvals_open": current.approvals_open,
     }
+
+
+class CloseFlagRequest(BaseModel):
+    outcome: Literal["network_instability", "insufficient_evidence"]
+
+
+def _require_owner(account: dict) -> None:
+    if not account["is_owner"]:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden")
+
+
+def _utc(moment) -> str:
+    return moment.astimezone(timezone.utc).isoformat()
+
+
+@router.get("/flags")
+def list_flags(account: dict = Depends(_current_account), conn=Depends(get_db)):
+    """Open connection review flags, for the owner only. A flag is an
+    instability signal, not proof of cheating; no player sees flags,
+    including their own."""
+    _require_owner(account)
+    return [
+        {
+            "attempt_id": str(flag["attempt_id"]),
+            "username": flag["username"],
+            "tag": flag["tag"],
+            "first_loss_at": _utc(flag["first_loss_at"]),
+            "last_loss_at": _utc(flag["last_loss_at"]),
+            "flagged_at": _utc(flag["flagged_at"]),
+            "events": [
+                {"kind": event["kind"], "occurred_at": _utc(event["occurred_at"])}
+                for event in flag["events"]
+            ],
+        }
+        for flag in ranked_flags.open_flags(conn)
+    ]
+
+
+@router.post("/flags/{attempt_id}/close")
+def close_flag(
+    attempt_id: str,
+    payload: CloseFlagRequest,
+    account: dict = Depends(_current_account),
+    conn=Depends(get_db),
+):
+    """Close a reviewed flag. Changes nothing about the player's points or
+    access."""
+    _require_owner(account)
+    try:
+        UUID(attempt_id)
+    except ValueError:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Not found") from None
+    try:
+        outcome = ranked_flags.close_flag(conn, attempt_id, payload.outcome, clock=_CLOCK)
+    except ranked_flags.FlagNotFoundError:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Not found") from None
+    return {"attempt_id": attempt_id, "outcome": outcome}
