@@ -1,0 +1,24 @@
+# Build from the repository root with infra/azure/app.Dockerfile.
+# Allowlist: only the files the running app needs enter the build context.
+**
+
+# Frontend served on the same origin (see backend/main.py)
+!index.html
+!src/
+!src/**
+!assets/
+!assets/**
+
+# Backend: app code, Ranked bank data, migrations
+!backend/
+!backend/**
+
+# Never in the image, even if present locally
+backend/tests
+backend/.venv
+**/__pycache__
+**/*.py[cod]
+**/.env
+**/.env.*
+**/*.key
+**/*.pem
