@@ -11,7 +11,12 @@ from backend.auth.service import (
     login_with_id,
     register_account,
 )
-from backend.auth.deletion import OwnerAccountError, WrongLoginIdError, request_deletion
+from backend.auth.deletion import (
+    OwnerAccountError,
+    WrongLoginIdError,
+    purge_deleted_accounts,
+    request_deletion,
+)
 from backend.auth.sessions import revoke_session
 from backend.auth.settings import AuthSettings, get_auth_settings
 from backend.db import migrate, settings
@@ -66,6 +71,17 @@ class AccountResponse(BaseModel):
     username: str
     tag: str
     is_owner: bool
+
+
+def _purge_pending_deletions():
+    # accepted deletions are purged before any auth request is handled, the
+    # same per-request pattern as the season close; one statement when idle
+    with _db_connection() as conn:
+        purge_deleted_accounts(conn)
+
+
+# runs before every auth route below
+router.dependencies.append(Depends(_purge_pending_deletions))
 
 
 def _current_account(request: Request):

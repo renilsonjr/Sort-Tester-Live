@@ -13,6 +13,7 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
 from pydantic import BaseModel
 
+from backend.auth.deletion import purge_deleted_accounts
 from backend.auth.service import get_account_by_session
 from backend.db import migrate, settings
 from backend.ranked import capability, engine, launch, season_close, seasons, settlement
@@ -56,6 +57,8 @@ def get_db():
         # same idea for retention: closed review flags and their detailed
         # connection events go fifteen days after closure
         ranked_flags.purge_closed_flags(conn, clock=_CLOCK)
+        # and for accepted account deletions (#47)
+        purge_deleted_accounts(conn)
         yield conn
 
 

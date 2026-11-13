@@ -62,6 +62,8 @@ class DeletionTestCase(unittest.TestCase):
     def _start(self, client):
         res = client.post("/api/ranked/attempts")
         self.assertEqual(res.status_code, 201, res.text)
+        # act as the original page: keep the capability for later requests
+        client.headers["X-Attempt-Capability"] = res.json()["capability"]
         return res.json()["attempt_id"]
 
 
@@ -157,6 +159,103 @@ class DeletionRequestTests(DeletionTestCase):
         client, login_id, _ = self._player("unlinked_player")
         self.assertEqual(self._delete(client, login_id).status_code, 202)
         self.assertEqual(self._one("SELECT COUNT(*) AS n FROM season_markers")["n"], 0)
+
+
+class PurgeTests(DeletionTestCase):
+    def _played_and_scored(self, client):
+        attempt_id = self._start(client)
+        quit_res = client.post(f"/api/ranked/attempts/{attempt_id}/quit")
+        self.assertEqual(quit_res.status_code, 200, quit_res.text)
+        return attempt_id
+
+    def _purge(self):
+        from backend.auth import deletion
+
+        conn = migrate.connect(self.conninfo)
+        try:
+            return deletion.purge_deleted_accounts(conn)
+        finally:
+            conn.close()
+
+    def _traces(self, account_id, attempt_id):
+        return self._one(
+            "SELECT"
+            " (SELECT COUNT(*) FROM accounts WHERE id = %(a)s) AS accounts,"
+            " (SELECT COUNT(*) FROM login_credentials WHERE account_id = %(a)s) AS credentials,"
+            " (SELECT COUNT(*) FROM sessions WHERE account_id = %(a)s) AS sessions,"
+            " (SELECT COUNT(*) FROM participant_links WHERE account_id = %(a)s) AS links,"
+            " (SELECT COUNT(*) FROM balances WHERE account_id = %(a)s) AS balances,"
+            " (SELECT COUNT(*) FROM balance_history WHERE account_id = %(a)s) AS history,"
+            " (SELECT COUNT(*) FROM attempts WHERE account_id = %(a)s) AS attempts,"
+            " (SELECT COUNT(*) FROM assignments WHERE account_id = %(a)s) AS assignments,"
+            " (SELECT COUNT(*) FROM attempt_answers WHERE attempt_id = %(t)s) AS answers,"
+            " (SELECT COUNT(*) FROM settlements WHERE attempt_id = %(t)s) AS settlements,"
+            " (SELECT COUNT(*) FROM attempt_connection_events WHERE attempt_id = %(t)s) AS events,"
+            " (SELECT COUNT(*) FROM connection_flags WHERE attempt_id = %(t)s) AS flags",
+            {"a": account_id, "t": attempt_id},
+        )
+
+    def test_the_purge_leaves_nothing_of_the_player_but_the_marker(self):
+        client, login_id, account_id = self._player("vanishing_player")
+        attempt_id = self._played_and_scored(client)
+        self._exec(
+            "INSERT INTO participant_links (account_id, roster_reference) VALUES (%s, %s)",
+            (account_id, "Day shift, badge 1203"),
+        )
+        self._exec(
+            "INSERT INTO attempt_connection_events (attempt_id, kind, occurred_at)"
+            " VALUES (%s, 'loss', now())",
+            (attempt_id,),
+        )
+        self._exec(
+            "INSERT INTO connection_flags (attempt_id, first_loss_at, last_loss_at, flagged_at)"
+            " VALUES (%s, now(), now(), now())",
+            (attempt_id,),
+        )
+        before = self._traces(account_id, attempt_id)
+        self.assertEqual(before["settlements"], 1)  # there really was data to remove
+
+        self.assertEqual(self._delete(client, login_id).status_code, 202)
+        self.assertEqual(self._purge(), 1)
+
+        self.assertEqual(set(self._traces(account_id, attempt_id).values()), {0})
+        marker = self._one(
+            "SELECT COUNT(*) AS n FROM season_markers WHERE roster_reference = %s",
+            ("Day shift, badge 1203",),
+        )
+        self.assertEqual(marker["n"], 1)
+
+    def test_other_players_and_shared_questions_are_untouched(self):
+        client, login_id, account_id = self._player("leaving_for_good")
+        other, _, other_id = self._player("loyal_player")
+        self._played_and_scored(client)
+        theirs = self._played_and_scored(other)
+        versions = self._one("SELECT COUNT(*) AS n FROM question_versions")["n"]
+
+        self._delete(client, login_id)
+        self._purge()
+
+        self.assertEqual(self._one("SELECT COUNT(*) AS n FROM question_versions")["n"], versions)
+        kept = self._traces(other_id, theirs)
+        self.assertEqual(
+            (kept["accounts"], kept["balances"], kept["history"], kept["attempts"],
+             kept["settlements"], kept["answers"]),
+            (1, 1, 1, 1, 1, 1),
+        )
+        self.assertEqual(other.get("/api/auth/me").status_code, 200)
+
+    def test_the_purge_only_touches_accounts_pending_deletion(self):
+        self._player("ordinary_player")
+        self.assertEqual(self._purge(), 0)
+        self.assertEqual(self._one("SELECT COUNT(*) AS n FROM accounts")["n"], 1)
+
+    def test_any_request_runs_the_purge(self):
+        client, login_id, account_id = self._player("swept_player")
+        self.assertEqual(self._delete(client, login_id).status_code, 202)
+        passer_by, _, _ = self._player("passer_by")
+        passer_by.get("/api/ranked/entry")
+        gone = self._one("SELECT COUNT(*) AS n FROM accounts WHERE id = %s", (account_id,))
+        self.assertEqual(gone["n"], 0)
 
 
 if __name__ == "__main__":
