@@ -621,6 +621,64 @@ class RankedRouterTests(unittest.TestCase):
         res = self.client.get(self.HISTORY_URL, params={"phase": "post_season"})
         self.assertEqual(res.status_code, 422)
 
+    # --- season status (issue #23, slice 4) ---
+
+    SEASON_URL = "/api/ranked/season"
+
+    def test_season_status_requires_a_session(self):
+        anon = TestClient(create_app())
+        self.assertEqual(anon.get(self.SEASON_URL).status_code, 401)
+
+    def test_season_status_of_the_pre_season(self):
+        self._sign_in(self.client, "status_player")
+        body = self.client.get(self.SEASON_URL).json()
+        self.assertIn("season_id", body)
+        self.assertEqual(
+            {k: body[k] for k in ("phase", "label", "status", "closes_at", "points_final")},
+            {"phase": "pre_season", "label": "test-season", "status": "open",
+             "closes_at": None, "points_final": False},
+        )
+
+    def test_season_status_follows_launch_and_the_clock(self):
+        self._sign_in_owner(self.client, "status_owner")
+        self.assertEqual(
+            self.client.post(self.LAUNCH_URL, json=self.LAUNCH_BODY).status_code, 201
+        )
+        body = self.client.get(self.SEASON_URL).json()
+        self.assertEqual(
+            (body["phase"], body["label"], body["status"], body["points_final"]),
+            ("official", "Peak Season 2026", "open", False),
+        )
+        self.assertTrue(body["closes_at"].startswith("2100-01-01T04:59:00"))
+
+    def _end_official_season(self, minutes_ago):
+        conn = migrate.connect(self.conninfo)
+        migrate.execute(
+            conn,
+            "UPDATE seasons SET opened_at = now() - interval '1 day',"
+            " closes_at = now() - make_interval(mins => %s) WHERE frozen_at IS NULL",
+            (minutes_ago,),
+        )
+        conn.commit()
+        conn.close()
+
+    def test_season_status_through_the_finishing_window_and_freeze(self):
+        self._sign_in(self.client, "closing_player")
+        self._end_official_season(minutes_ago=1)
+        finishing = self.client.get(self.SEASON_URL).json()
+        self.assertEqual((finishing["status"], finishing["points_final"]), ("finishing", False))
+        self._end_official_season(minutes_ago=6)
+        frozen = self.client.get(self.SEASON_URL).json()
+        self.assertEqual((frozen["status"], frozen["points_final"]), ("frozen", True))
+
+    def test_season_status_with_no_season_is_not_found(self):
+        self._sign_in(self.client, "early_player")
+        conn = migrate.connect(self.conninfo)
+        migrate.execute(conn, "DELETE FROM seasons")
+        conn.commit()
+        conn.close()
+        self.assertEqual(self.client.get(self.SEASON_URL).status_code, 404)
+
     def test_requires_authentication(self):
         anon = TestClient(create_app())
         self.assertEqual(anon.post("/api/ranked/attempts").status_code, 401)

@@ -80,6 +80,40 @@ def season_status(conn, season_id, now: datetime) -> SeasonStatus:
     )
 
 
+def current_season_status(conn, now: datetime) -> SeasonStatus | None:
+    """Status of the newest season, or ``None`` when there is no season yet.
+
+    The lifecycle contract for standings and tie-breaks: a season's points
+    are final exactly when its status is ``frozen``.
+    """
+    row = _newest(conn)
+    return None if row is None else season_status(conn, row["id"], now)
+
+
+@dataclass(frozen=True)
+class LaunchFact:
+    season_id: str
+    label: str
+    launched_at: datetime
+
+
+def official_launch(conn) -> LaunchFact | None:
+    """The durable, exactly-once fact that the official season was launched.
+
+    ``None`` before launch. Launch reminders (#27) read this to create their
+    own per-recipient messages; launch itself writes no outbox row, because
+    those rows need the verified email and consent that #27 owns.
+    """
+    row = migrate.fetch_one(
+        conn,
+        "SELECT id, label, opened_at FROM seasons WHERE phase = 'official'"
+        " ORDER BY opened_at LIMIT 1",
+    )
+    if row is None:
+        return None
+    return LaunchFact(season_id=row["id"], label=row["label"], launched_at=row["opened_at"])
+
+
 def _status(row, now) -> str:
     if row["frozen_at"] is not None:
         return "frozen"

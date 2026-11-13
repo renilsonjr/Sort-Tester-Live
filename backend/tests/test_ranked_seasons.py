@@ -121,6 +121,37 @@ class SeasonClockTests(unittest.TestCase):
             (status.phase, status.label, status.closes_at), ("official", "Peak 2026", END)
         )
 
+    # --- contracts for other features (slice 4) ---
+
+    def test_current_status_is_the_newest_season(self):
+        self.assertIsNone(seasons.current_season_status(self.conn, T0))
+        self._season(phase="pre_season", closed_at=T0, frozen_at=T0, label="Pre-Season")
+        migrate.execute(
+            self.conn,
+            "INSERT INTO seasons (phase, label, opened_at, closes_at)"
+            " VALUES ('official', 'Peak 2026', %s, %s)",
+            (T0, END),
+        )
+        self.conn.commit()
+        current = seasons.current_season_status(self.conn, T0)
+        self.assertEqual(
+            (current.phase, current.label, current.status), ("official", "Peak 2026", "open")
+        )
+
+    def test_official_launch_is_the_durable_launch_fact(self):
+        self._season(phase="pre_season", label="Pre-Season")
+        self.assertIsNone(seasons.official_launch(self.conn))
+        migrate.execute(
+            self.conn,
+            "INSERT INTO seasons (phase, label, opened_at, closes_at)"
+            " VALUES ('official', 'Peak 2026', %s, %s)",
+            (T0, END),
+        )
+        self.conn.commit()
+        fact = seasons.official_launch(self.conn)
+        self.assertEqual((fact.label, fact.launched_at), ("Peak 2026", T0))
+        self.assertIsNotNone(fact.season_id)
+
     # --- the engine admits by the clock ---
 
     def _account(self, tag):
