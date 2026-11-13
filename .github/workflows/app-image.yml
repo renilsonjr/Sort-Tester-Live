@@ -99,14 +99,23 @@ jobs:
           curl -s "$base/" | grep -q 'src="src/app.js' || { echo "/ is not the app page"; exit 1; }
 
           jar=$(mktemp)
+          # Writes must state their origin, exactly as a browser does.
+          same_origin="Origin: http://127.0.0.1:8000"
           code=$(curl -s -c "$jar" -o /tmp/register.json -w '%{http_code}' -X POST "$base/api/auth/register" \
-            -H 'Content-Type: application/json' -d '{"username":"ci_check"}')
+            -H "$same_origin" -H 'Content-Type: application/json' -d '{"username":"ci_check"}')
           [ "$code" = 200 ] || { echo "register: $code $(cat /tmp/register.json)"; docker logs "$container"; exit 1; }
           login_id=$(python3 -c 'import json; print(json.load(open("/tmp/register.json"))["login_id"])')
           code=$(curl -s -c "$jar" -o /dev/null -w '%{http_code}' -X POST "$base/api/auth/login" \
-            -H 'Content-Type: application/json' -d "{\"login_id\":\"$login_id\"}")
+            -H "$same_origin" -H 'Content-Type: application/json' -d "{\"login_id\":\"$login_id\"}")
           [ "$code" = 200 ] || { echo "login: $code"; exit 1; }
           curl -fsS -b "$jar" "$base/api/auth/me" | grep -q '"username":"ci_check"' || { echo "me failed"; exit 1; }
+
+          # A write from another site, carrying the same session cookie, is refused.
+          code=$(curl -s -b "$jar" -o /dev/null -w '%{http_code}' -X POST "$base/api/auth/logout" \
+            -H 'Origin: https://evil.example')
+          [ "$code" = 403 ] || { echo "cross-site logout: expected 403, got $code"; exit 1; }
+          curl -fsS -b "$jar" "$base/api/auth/me" | grep -q '"username":"ci_check"' \
+            || { echo "the rejected cross-site write ended the session"; exit 1; }
           echo 'App image passed smoke tests'
 
       - name: The packages the app imports are the patched versions

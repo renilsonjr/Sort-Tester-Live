@@ -8,6 +8,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 
+from backend import origin_guard
 from backend.auth.rate_limit import RegistrationLimiter
 from backend.routers import auth, ranked
 
@@ -28,6 +29,15 @@ def create_app() -> FastAPI:
     # one sign-up limiter per application instance (owner caps: 30/hour per
     # address, 200/day in total)
     application.state.registration_limiter = RegistrationLimiter()
+
+    # Added first so it sits innermost: CORS still answers preflight, and the
+    # guard only ever sees a real write.
+    origin_guard.install(
+        application,
+        app_origin=os.environ.get("SORT_TESTER_APP_ORIGIN", "").strip(),
+        dev_origins=origins,
+    )
+
     if origins:
         # Development only: allow credentials for auth endpoints on explicit loopback origins.
         application.add_middleware(
