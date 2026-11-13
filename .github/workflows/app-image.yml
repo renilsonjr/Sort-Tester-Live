@@ -118,6 +118,42 @@ jobs:
             || { echo "the rejected cross-site write ended the session"; exit 1; }
           echo 'App image passed smoke tests'
 
+      - name: The hosted configuration behaves as the runbook says
+        # Exactly the environment infra/azure/container-apps-app.bicep sets,
+        # so the deployment runbook's checks are proved before anyone deploys.
+        run: |
+          container=$(docker run -d --rm --network host \
+            -e SORT_TESTER_DATABASE_URL="$DB_URL" \
+            -e SORT_TESTER_COOKIE_SECURE=true \
+            -e SORT_TESTER_APP_ORIGIN=https://sortlab.example.com "$IMAGE")
+          trap 'docker stop "$container" >/dev/null 2>&1 || true' EXIT
+          base=http://127.0.0.1:8000
+          public=https://sortlab.example.com
+          for attempt in $(seq 1 30); do
+            curl -fsS "$base/health" >/dev/null 2>&1 && break
+            docker ps --quiet --filter "id=$container" | grep -q . || { echo 'Container exited'; docker logs "$container"; exit 1; }
+            sleep 1
+          done
+
+          curl -fsS -o /tmp/hosted.json -X POST "$base/api/auth/register" \
+            -H "Origin: $public" -H 'Content-Type: application/json' -d '{"username":"hosted_check"}'
+          login_id=$(python3 -c 'import json; print(json.load(open("/tmp/hosted.json"))["login_id"])')
+          curl -si -X POST "$base/api/auth/login" -H "Origin: $public" \
+            -H 'Content-Type: application/json' -d "{\"login_id\":\"$login_id\"}" >/tmp/hosted-login.txt
+          cookie=$(grep -i '^set-cookie:' /tmp/hosted-login.txt || true)
+          [ -n "$cookie" ] || { echo 'Login set no cookie'; cat /tmp/hosted-login.txt; exit 1; }
+          for flag in Secure HttpOnly SameSite; do
+            echo "$cookie" | grep -qi "$flag" || { echo "Session cookie is missing $flag"; exit 1; }
+          done
+          echo 'Session cookie carries Secure, HttpOnly and SameSite'
+
+          # With a public origin configured, the ingress host alone is not enough.
+          code=$(curl -s -o /dev/null -w '%{http_code}' -X POST "$base/api/auth/login" \
+            -H 'Origin: https://evil.example' -H 'Content-Type: application/json' \
+            -d "{\"login_id\":\"$login_id\"}")
+          [ "$code" = 403 ] || { echo "cross-site login: expected 403, got $code"; exit 1; }
+          echo 'Hosted configuration passed'
+
       - name: The packages the app imports are the patched versions
         # The scan below reports findings for copies vendored inside pip and
         # setuptools, which the FastAPI runtime never imports. Prove the

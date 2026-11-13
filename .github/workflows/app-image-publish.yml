@@ -1,0 +1,92 @@
+name: App image publish
+
+# Publishes the production image to GHCR as a PRIVATE package and prints
+# the digest to paste into the Container Apps deployment (issue #41).
+#
+# Manual only, and only after the App image workflow has passed on the
+# commit being published. The image carries the Ranked question bank, so
+# the package must never be made public.
+on:
+  workflow_dispatch:
+    inputs:
+      confirm_publish:
+        description: 'Type the word publish to confirm'
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    name: Build and publish the app image (private)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+      packages: write
+    env:
+      IMAGE: ghcr.io/${{ github.repository_owner }}/sort-tester-live-app
+    steps:
+      - name: Check the confirmation
+        run: |
+          [ "${{ inputs.confirm_publish }}" = "publish" ] \
+            || { echo 'Not confirmed: type publish to run this workflow.'; exit 1; }
+
+      - name: Check out the repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Require a passing App image run for this commit
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          conclusion=$(gh api "repos/${{ github.repository }}/actions/runs?head_sha=${{ github.sha }}" \
+            --jq '[.workflow_runs[] | select(.name == "App image")] | first | .conclusion // "none"')
+          [ "$conclusion" = "success" ] \
+            || { echo "App image for this commit is '$conclusion', not success. Publish refused."; exit 1; }
+
+      - name: Build the image
+        run: docker build --file infra/azure/app.Dockerfile --tag "$IMAGE:${{ github.sha }}" .
+
+      - name: Log in to GHCR
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io --username "${{ github.actor }}" --password-stdin
+
+      - name: Push and record the digest
+        id: push
+        run: |
+          docker push "$IMAGE:${{ github.sha }}"
+          ref=$(docker inspect --format='{{index .RepoDigests 0}}' "$IMAGE:${{ github.sha }}")
+          digest=${ref#*@sha256:}
+          echo "digest=$digest" >> "$GITHUB_OUTPUT"
+
+      - name: Refuse a package that is public
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          visibility=$(gh api "users/${{ github.repository_owner }}/packages/container/sort-tester-live-app" \
+            --jq '.visibility' 2>/dev/null || echo unknown)
+          echo "Package visibility: $visibility"
+          if [ "$visibility" = "public" ]; then
+            echo 'This image carries the Ranked question bank and must not be public.'
+            echo 'Make the package private in the package settings, then publish again.'
+            exit 1
+          fi
+          if [ "$visibility" = "unknown" ]; then
+            echo 'Could not read the visibility; check it by hand in the package settings before deploying.'
+          fi
+
+      - name: Report the digest to deploy
+        run: |
+          {
+            echo '### Image published (private)'
+            echo
+            echo 'Deploy this digest, and nothing else:'
+            echo
+            echo '```'
+            echo 'imageSha256=${{ steps.push.outputs.digest }}'
+            echo '```'
+            echo
+            echo 'Next: infra/azure/container-apps-app.md'
+          } >> "$GITHUB_STEP_SUMMARY"
