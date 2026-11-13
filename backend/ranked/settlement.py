@@ -34,16 +34,20 @@ def settle_attempt(conn, attempt_id, *, clock) -> scoring.Settlement:
     return result
 
 
-def settle_pending(conn, *, clock) -> int:
+def settle_pending(conn, *, clock, account_id=None) -> int:
     """Settle every attempt waiting in ``terminal_pending``; return how many.
 
-    The sweep a scheduler runs. Each attempt is settled in its own
+    The sweep a scheduler runs; limited to one account when ``account_id`` is
+    given. Each attempt is settled in its own
     transaction, so one failure does not undo the others. An attempt another
     caller settles first is not counted: its points were applied there.
     """
-    rows = migrate.fetch_all(
-        conn, "SELECT id FROM attempts WHERE state = 'terminal_pending' ORDER BY started_at"
-    )
+    sql = "SELECT id FROM attempts WHERE state = 'terminal_pending'"
+    params = ()
+    if account_id is not None:
+        sql += " AND account_id = %s"
+        params = (account_id,)
+    rows = migrate.fetch_all(conn, sql + " ORDER BY started_at", params)
     conn.commit()
     settled = 0
     for row in rows:

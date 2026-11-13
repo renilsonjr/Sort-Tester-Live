@@ -351,6 +351,16 @@ class SettlePendingTests(SettlementTestCase):
         for attempt_id in (first, second, done):
             self.assertEqual(self._count("settlements", attempt_id), 1)
 
+    def test_sweep_can_be_limited_to_one_account(self):
+        first_account, _ = self._ended_attempt(500)
+        second_account, _ = self._ended_attempt(700)
+        settled = settlement.settle_pending(
+            self.conn, clock=self.clock, account_id=first_account
+        )
+        self.assertEqual(settled, 1)
+        self.assertEqual(self._points(first_account), 490)
+        self.assertEqual(self._points(second_account), 700)  # still waiting
+
     def test_sweep_with_nothing_pending_does_nothing(self):
         account_id, attempt_id = self._ended_attempt(500)
         self.assertEqual(settlement.settle_pending(self.conn, clock=self.clock), 1)
