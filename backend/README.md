@@ -255,3 +255,26 @@ dispatcher, which never rewrites the payload.
 
 No DSN or database credentials belong in the repository; keep every real
 connection string in your local environment only.
+
+## Migrate the application database
+
+The test tooling above only ever touches `sort_tester_unittest_scratch`. To
+create or update the tables of the database the app itself uses (local
+development, staging, or the hosted pilot), use the guarded command, from the
+repository root:
+
+```sh
+export SORT_TESTER_DATABASE_URL="postgresql://USER@HOST:5432/DATABASE"
+backend/.venv/bin/python -m backend.db.upgrade_app            # shows the target, changes nothing
+backend/.venv/bin/python -m backend.db.upgrade_app --confirm DATABASE
+```
+
+On Windows use `& backend\.venv\Scripts\python.exe -m backend.db.upgrade_app`.
+
+Before connecting, it refuses (exit code 2) when the URL is missing or invalid,
+when `--confirm` does not repeat the target database name exactly, or when the
+target is the unittest scratch database. It reads only
+`SORT_TESTER_DATABASE_URL`, never the test URL. It prints the target host,
+port and database and the revision before and after, never the password. It
+only upgrades to the latest revision; running it again is harmless. There is
+no downgrade command: take a backup first, and restore from it if needed.
