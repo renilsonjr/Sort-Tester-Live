@@ -1,3 +1,4 @@
+import os
 import threading
 import time
 from collections import defaultdict
@@ -73,11 +74,19 @@ def get_login_rate_limiter() -> LoginRateLimiter:
     return _default_limiter
 
 
+def _trusts_proxy() -> bool:
+    return os.environ.get("SORT_TEST_TRUST_PROXY", "").strip() == "1"
+
+
 def _client_key(request) -> str:
-    # Prefer X-Forwarded-For for deployments behind a trusted proxy; otherwise
-    # fall back to the direct client host. In production this should be set by
-    # the ingress/proxy, never by the client.
+    """The network address a request comes from, for rate limiting.
+
+    X-Forwarded-For is believed only when SORT_TEST_TRUST_PROXY=1, set where a
+    trusted proxy (such as the hosting ingress) writes that header. Without
+    it, anyone could send a made-up address per request and never be limited,
+    so the connection's own address is used.
+    """
     forwarded = request.headers.get("x-forwarded-for")
-    if forwarded:
+    if forwarded and _trusts_proxy():
         return forwarded.split(",")[0].strip()
     return request.client.host if request.client else "unknown"

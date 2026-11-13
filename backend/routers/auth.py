@@ -2,7 +2,7 @@ from contextlib import contextmanager
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from backend.auth.rate_limit import _client_key, get_login_rate_limiter
 from backend.auth.service import (
@@ -33,7 +33,8 @@ def get_db():
 
 
 class RegisterRequest(BaseModel):
-    username: str
+    # the accounts table's own rule: 3-24 letters, digits or underscores
+    username: str = Field(pattern=r"^[A-Za-z0-9_]{3,24}$")
 
 
 class RegisterResponse(BaseModel):
@@ -80,7 +81,15 @@ def _current_account(request: Request):
 @router.post("/register", response_model=RegisterResponse)
 def register(payload: RegisterRequest):
     with _db_connection() as conn:
-        account_id, login_id = register_account(conn, payload.username)
+        try:
+            account_id, login_id = register_account(conn, payload.username)
+        except migrate.IntegrityError:
+            # the unique key on username_lower decides, so a race between two
+            # sign-ups for one name also ends here, never in a server error
+            conn.rollback()
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT, detail="Username taken"
+            ) from None
         conn.commit()
     return {"account_id": str(account_id), "login_id": login_id}
 
