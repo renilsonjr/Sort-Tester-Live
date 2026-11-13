@@ -373,4 +373,5 @@ def season(account: dict = Depends(_current_account), conn=Depends(get_db)):
         "closes_at": None if closes_at is None
         else closes_at.astimezone(timezone.utc).isoformat(),
         "points_final": current.status == "frozen",
+        "approvals_open": current.approvals_open,
     }

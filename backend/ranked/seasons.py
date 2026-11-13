@@ -25,6 +25,17 @@ class SeasonStatus:
     closes_at: datetime | None
     status: str              # 'open', 'finishing', 'closed' or 'frozen'
 
+    @property
+    def approvals_open(self) -> bool:
+        """Whether a new prize-eligibility approval may still be recorded.
+
+        Only while the season is open: from its end onward, including the
+        finishing window, no new approval is admitted (#23). A quiz already
+        approved and validly completed inside the window still counts, since
+        an attempt keeps the season it started in.
+        """
+        return self.status == "open"
+
 
 def ensure_pre_season(conn, label: str = "Pre-Season"):
     """Create the Pre-Season if there is no season yet; return the newest
@@ -88,6 +99,14 @@ def current_season_status(conn, now: datetime) -> SeasonStatus | None:
     """
     row = _newest(conn)
     return None if row is None else season_status(conn, row["id"], now)
+
+
+def approvals_open(conn, now: datetime) -> bool:
+    """Whether the current season still admits new prize-eligibility
+    approvals at ``now``. False when there is no season. The one place the
+    approval feature (#11) asks before recording an approval."""
+    current = current_season_status(conn, now)
+    return current is not None and current.approvals_open
 
 
 @dataclass(frozen=True)

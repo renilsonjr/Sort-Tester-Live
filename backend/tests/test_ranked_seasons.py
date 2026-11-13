@@ -152,6 +152,24 @@ class SeasonClockTests(unittest.TestCase):
         self.assertEqual((fact.label, fact.launched_at), ("Peak 2026", T0))
         self.assertIsNotNone(fact.season_id)
 
+    def test_approvals_are_open_only_while_the_season_is_open(self):
+        self.assertFalse(seasons.approvals_open(self.conn, T0))  # no season at all
+        season_id = self._season(closes_at=END)
+        window = timedelta(seconds=seasons.FINISHING_WINDOW_SECONDS)
+        one_second = timedelta(seconds=1)
+        self.assertTrue(seasons.approvals_open(self.conn, END - one_second))
+        # from the end onward: the finishing window admits no new approval
+        self.assertFalse(seasons.approvals_open(self.conn, END))
+        self.assertFalse(seasons.approvals_open(self.conn, END + window))
+        self.assertTrue(
+            seasons.season_status(self.conn, season_id, END - one_second).approvals_open
+        )
+        self.assertFalse(seasons.season_status(self.conn, season_id, END).approvals_open)
+
+    def test_approvals_are_closed_in_a_frozen_season(self):
+        self._season(closes_at=END, frozen_at=END + timedelta(minutes=6))
+        self.assertFalse(seasons.approvals_open(self.conn, T0))
+
     # --- the engine admits by the clock ---
 
     def _account(self, tag):

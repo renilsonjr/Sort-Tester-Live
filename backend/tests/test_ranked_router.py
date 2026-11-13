@@ -634,9 +634,10 @@ class RankedRouterTests(unittest.TestCase):
         body = self.client.get(self.SEASON_URL).json()
         self.assertIn("season_id", body)
         self.assertEqual(
-            {k: body[k] for k in ("phase", "label", "status", "closes_at", "points_final")},
+            {k: body[k] for k in ("phase", "label", "status", "closes_at", "points_final",
+                                  "approvals_open")},
             {"phase": "pre_season", "label": "test-season", "status": "open",
-             "closes_at": None, "points_final": False},
+             "closes_at": None, "points_final": False, "approvals_open": True},
         )
 
     def test_season_status_follows_launch_and_the_clock(self):
@@ -667,6 +668,7 @@ class RankedRouterTests(unittest.TestCase):
         self._end_official_season(minutes_ago=1)
         finishing = self.client.get(self.SEASON_URL).json()
         self.assertEqual((finishing["status"], finishing["points_final"]), ("finishing", False))
+        self.assertFalse(finishing["approvals_open"])  # no new approvals in the window
         self._end_official_season(minutes_ago=6)
         frozen = self.client.get(self.SEASON_URL).json()
         self.assertEqual((frozen["status"], frozen["points_final"]), ("frozen", True))
