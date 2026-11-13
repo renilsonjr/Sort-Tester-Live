@@ -16,6 +16,7 @@ from pydantic import BaseModel
 from backend.auth.service import get_account_by_session
 from backend.db import migrate, settings
 from backend.ranked import capability, engine, launch, season_close, settlement
+from backend.ranked import history as ranked_history
 from backend.ranked.clock import system_clock
 from backend.ranked_bank.catalog import load_reviewed_bank
 
@@ -324,3 +325,32 @@ def launch_season(
         "label": row["label"],
         "closes_at": row["closes_at"].astimezone(timezone.utc).isoformat(),
     }
+
+
+@router.get("/history")
+def history(
+    phase: Literal["pre_season", "official"] | None = None,
+    account: dict = Depends(_current_account),
+    conn=Depends(get_db),
+):
+    """The signed-in account's own scored attempts, newest first. Private to
+    the account: the request cannot name another account, and the owner gets
+    no exception."""
+    entries = ranked_history.account_history(conn, account["id"], phase)
+    return [
+        {
+            "attempt_id": str(entry["attempt_id"]),
+            "phase": entry["phase"],
+            "label": entry["label"],
+            "mode": entry["mode"],
+            "final_outcome": entry["final_outcome"],
+            "raw_score": entry["raw_score"],
+            "adjustment": entry["adjustment"],
+            "points_before": entry["points_before"],
+            "points_after": entry["points_after"],
+            "badge_before": entry["badge_before"],
+            "badge_after": entry["badge_after"],
+            "settled_at": entry["settled_at"].astimezone(timezone.utc).isoformat(),
+        }
+        for entry in entries
+    ]

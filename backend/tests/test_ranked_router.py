@@ -547,6 +547,80 @@ class RankedRouterTests(unittest.TestCase):
         self._sign_in(late, "too_late_player")
         self.assertEqual(late.post("/api/ranked/attempts").status_code, 409)
 
+    # --- account-private history (issue #23, slice 4) ---
+
+    HISTORY_URL = "/api/ranked/history"
+
+    def _quit_a_quiz(self, client):
+        attempt_id = self._start_as_page(client)
+        client.post(f"/api/ranked/attempts/{attempt_id}/quit")
+        return attempt_id
+
+    def test_history_requires_a_session(self):
+        anon = TestClient(create_app())
+        self.assertEqual(anon.get(self.HISTORY_URL).status_code, 401)
+
+    def test_history_lists_the_players_own_scored_quizzes(self):
+        self._sign_in(self.client, "history_player")
+        attempt_id = self._quit_a_quiz(self.client)
+        other = TestClient(create_app())
+        self._sign_in(other, "history_other")
+        self._quit_a_quiz(other)
+
+        entries = self.client.get(self.HISTORY_URL).json()
+        self.assertEqual(len(entries), 1)  # never the other player's quiz
+        entry = entries[0]
+        self.assertEqual(entry["attempt_id"], attempt_id)
+        self.assertEqual(
+            (entry["phase"], entry["label"], entry["mode"], entry["final_outcome"]),
+            ("pre_season", "test-season", "normal", "quit"),
+        )
+        self.assertEqual(
+            (entry["raw_score"], entry["adjustment"], entry["points_before"],
+             entry["points_after"], entry["badge_before"], entry["badge_after"]),
+            (0, -10, 0, -10, "Iron", "Iron"),
+        )
+        self.assertIn("settled_at", entry)
+
+    def test_history_keeps_pre_season_apart_and_marks_launch_ended_quizzes(self):
+        self._sign_in(self.client, "veteran_player")
+        self._quit_a_quiz(self.client)                 # a scored Pre-Season quiz
+        mid = TestClient(create_app())
+        self._sign_in(mid, "interrupted_player")
+        self._start_as_page(mid)                       # still running at launch
+        owner = TestClient(create_app())
+        self._sign_in_owner(owner, "history_owner")
+        self.assertEqual(owner.post(self.LAUNCH_URL, json=self.LAUNCH_BODY).status_code, 201)
+        self._quit_a_quiz(self.client)                 # an official quiz
+
+        everything = self.client.get(self.HISTORY_URL).json()
+        self.assertEqual([e["phase"] for e in everything], ["official", "pre_season"])
+        pre = self.client.get(self.HISTORY_URL, params={"phase": "pre_season"}).json()
+        self.assertEqual([e["final_outcome"] for e in pre], ["quit"])
+        official = self.client.get(self.HISTORY_URL, params={"phase": "official"}).json()
+        self.assertEqual([e["label"] for e in official], ["Peak Season 2026"])
+
+        ended_at_launch = mid.get(self.HISTORY_URL, params={"phase": "pre_season"}).json()
+        self.assertEqual(len(ended_at_launch), 1)
+        self.assertEqual(ended_at_launch[0]["final_outcome"], "launch_reset")
+        self.assertEqual(ended_at_launch[0]["adjustment"], 0)
+
+    def test_owner_has_no_exception_to_private_history(self):
+        self._sign_in(self.client, "private_player")
+        self._quit_a_quiz(self.client)
+        player_id = self.client.get("/api/auth/me").json()["account_id"]
+        owner = TestClient(create_app())
+        self._sign_in_owner(owner, "nosy_owner")
+        # naming another account changes nothing: history is the session's own
+        seen = owner.get(self.HISTORY_URL, params={"account_id": player_id})
+        self.assertEqual(seen.status_code, 200)
+        self.assertEqual(seen.json(), [])
+
+    def test_history_refuses_an_unknown_phase(self):
+        self._sign_in(self.client, "typo_player")
+        res = self.client.get(self.HISTORY_URL, params={"phase": "post_season"})
+        self.assertEqual(res.status_code, 422)
+
     def test_requires_authentication(self):
         anon = TestClient(create_app())
         self.assertEqual(anon.post("/api/ranked/attempts").status_code, 401)
