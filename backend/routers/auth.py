@@ -79,7 +79,14 @@ def _current_account(request: Request):
 
 
 @router.post("/register", response_model=RegisterResponse)
-def register(payload: RegisterRequest):
+def register(request: Request, payload: RegisterRequest):
+    limiter = request.app.state.registration_limiter
+    client = _client_key(request)
+    if not limiter.is_allowed(client):
+        raise HTTPException(
+            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+            detail="Too many sign-ups; try again later",
+        )
     with _db_connection() as conn:
         try:
             account_id, login_id = register_account(conn, payload.username)
@@ -91,6 +98,7 @@ def register(payload: RegisterRequest):
                 status_code=status.HTTP_409_CONFLICT, detail="Username taken"
             ) from None
         conn.commit()
+    limiter.record(client)  # only a successful sign-up counts
     return {"account_id": str(account_id), "login_id": login_id}
 
 
