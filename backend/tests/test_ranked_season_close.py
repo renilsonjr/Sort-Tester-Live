@@ -189,6 +189,28 @@ class SeasonCloseTests(unittest.TestCase):
         self.assertEqual(self._attempt(attempt_id), ("finalized", "quit"))
         self.assertEqual(self._points(account_id), 490)
 
+    def test_quiz_completed_inside_the_window_counts_for_the_ending_season(self):
+        account_id = self._account(points=500)
+        attempt_id = self._start(account_id)  # started before the end
+        self._answer(attempt_id, 1)
+        self._keep_alive_until(attempt_id, END + timedelta(seconds=30))
+        for seq in range(2, 16):  # the rest is played inside the finishing window
+            engine.advance(self.conn, attempt_id, clock=self.clock)
+            self._answer(attempt_id, seq)
+        self.assertEqual(self._attempt(attempt_id), ("terminal_pending", "completed"))
+        self._go_to(END + WINDOW)
+
+        self.assertTrue(self._finish())
+
+        self.assertEqual(self._attempt(attempt_id), ("finalized", "completed"))
+        credited = self._one(
+            "SELECT st.season_id, st.adjustment FROM settlements st"
+            " WHERE st.attempt_id = %s",
+            (attempt_id,),
+        )
+        self.assertEqual((credited["season_id"], credited["adjustment"]), (self.season, 300))
+        self.assertEqual(self._points(account_id), 800)
+
     def test_season_with_no_attempts_still_freezes(self):
         self._go_to(END + WINDOW)
         self.assertTrue(self._finish())
