@@ -41,7 +41,7 @@ export async function fetchMe() {
   return api('GET', '/auth/me');
 }
 
-export function createAuthPanel(container, onContinueAsGuest) {
+export function createAuthPanel(container, onContinueAsGuest, onLoggedIn) {
   container.innerHTML = `
     <div class="auth-screen">
       <h1>Sort Lab</h1>
@@ -79,6 +79,7 @@ export function createAuthPanel(container, onContinueAsGuest) {
       if (result.ok) {
         showMessage(`Welcome, ${result.data.username}#${result.data.tag}`);
         form.hidden = true;
+        if (onLoggedIn) onLoggedIn(result.data);
       } else {
         showMessage('Invalid login ID. Please try again.', true);
       }
@@ -129,31 +130,55 @@ export function createAuthPanel(container, onContinueAsGuest) {
   return {
     async checkSession() {
       const result = await fetchMe();
-      if (result.ok) {
+      if (result && result.ok) {
         showMessage(`Welcome back, ${result.data.username}#${result.data.tag}`);
+        if (onLoggedIn) onLoggedIn(result.data);
       }
     },
   };
 }
 
-function initAuthPanel() {
-  if (typeof document === 'undefined') return;
-  const panel = document.getElementById('auth-panel');
-  const app = document.getElementById('app');
-  if (!panel) return;
+export function initAuthPanel(doc = document) {
+  const panel = doc.getElementById('auth-panel');
+  const app = doc.getElementById('app');
+  if (!panel) return null;
   panel.hidden = false;
   if (app) app.hidden = true;
-  createAuthPanel(panel, () => {
+  // app.js has already rendered the start screen inside #app; entering the
+  // app (as a guest or after logging in) only swaps which one is visible.
+  const enterApp = () => {
     panel.hidden = true;
     if (app) app.hidden = false;
-    // Trigger the existing app start if it has not already.
-    if (typeof window !== 'undefined' && typeof window.showStart === 'function') {
-      window.showStart();
-    }
-  });
+  };
+  return createAuthPanel(panel, enterApp, enterApp);
 }
 
-// The auth gate is intentionally not auto-initialized: GitHub Pages serves
-// this frontend without a backend, so showing the login screen would dead-end
-// every visitor. Wire it up (with a reachable API base) when the backend is
-// hosted — call initAuthPanel() from the entry point at that point.
+// Is the FastAPI backend serving this page? On GitHub Pages /health does not
+// exist, so the answer is no and the page stays exactly as it was.
+export async function backendIsAvailable(fetchFn = fetch, timeoutMs = 3000) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    const response = await fetchFn('/health', { signal: controller.signal, credentials: 'same-origin' });
+    if (!response.ok) return false;
+    const data = await response.json();
+    return data?.status === 'ok';
+  } catch {
+    return false;
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+// Show the login screen only when the backend answers. Returns true if shown.
+export async function startAuthGate({ doc = document, fetchFn = fetch, timeoutMs = 3000 } = {}) {
+  if (!(await backendIsAvailable(fetchFn, timeoutMs))) return false;
+  const panel = initAuthPanel(doc);
+  if (!panel) return false;
+  await panel.checkSession();
+  return true;
+}
+
+if (typeof document !== 'undefined' && typeof fetch === 'function') {
+  startAuthGate();
+}
