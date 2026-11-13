@@ -11,6 +11,12 @@ from backend.auth.service import (
     login_with_id,
     register_account,
 )
+from backend.auth.deletion import (
+    OwnerAccountError,
+    WrongLoginIdError,
+    purge_deleted_accounts,
+    request_deletion,
+)
 from backend.auth.sessions import revoke_session
 from backend.auth.settings import AuthSettings, get_auth_settings
 from backend.db import migrate, settings
@@ -65,6 +71,17 @@ class AccountResponse(BaseModel):
     username: str
     tag: str
     is_owner: bool
+
+
+def _purge_pending_deletions():
+    # accepted deletions are purged before any auth request is handled, the
+    # same per-request pattern as the season close; one statement when idle
+    with _db_connection() as conn:
+        purge_deleted_accounts(conn)
+
+
+# runs before every auth route below
+router.dependencies.append(Depends(_purge_pending_deletions))
 
 
 def _current_account(request: Request):
@@ -175,3 +192,42 @@ def admin_regenerate(
     if new_login_id is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Not found")
     return {"login_id": new_login_id}
+
+
+class DeleteAccountRequest(BaseModel):
+    login_id: str
+    acknowledge: bool = False
+
+
+@router.post("/account/delete", status_code=status.HTTP_202_ACCEPTED)
+def delete_account(
+    request: Request,
+    response: Response,
+    payload: DeleteAccountRequest,
+    account: dict = Depends(_current_account),
+):
+    """Delete the signed-in account. Irreversible once accepted: the account
+    is locked out at once and its data is purged. Re-entering the login ID
+    is the reauthentication; a wrong one counts as a failed login."""
+    if payload.acknowledge is not True:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="Acknowledge that deletion cannot be undone",
+        )
+    limiter = get_login_rate_limiter()
+    rate_key = _client_key(request)
+    if not limiter.is_allowed(rate_key):
+        raise HTTPException(status_code=status.HTTP_429_TOO_MANY_REQUESTS, detail="Too many requests")
+    with _db_connection() as conn:
+        try:
+            request_deletion(conn, account["id"], payload.login_id)
+        except WrongLoginIdError:
+            limiter.record_failure(rate_key)
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden") from None
+        except OwnerAccountError:
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail="The owner account cannot be deleted",
+            ) from None
+    response.delete_cookie(key="sort_tester_session", path="/")
+    return {"status": "accepted"}

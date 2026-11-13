@@ -120,7 +120,8 @@ def get_account_by_session(conn, raw_token: str) -> dict | None:
         return None
     return migrate.fetch_one(
         conn,
-        "SELECT id, username, tag, is_owner, created_at FROM accounts WHERE id = %s",
+        "SELECT id, username, tag, is_owner, created_at FROM accounts"
+        " WHERE id = %s AND deleted_at IS NULL",
         (session["account_id"],),
     )
 
