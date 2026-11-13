@@ -406,6 +406,93 @@ class RankedRouterTests(unittest.TestCase):
             other.get(f"/api/ranked/attempts/{attempt_id}/result").status_code, 404
         )
 
+    # --- official season launch (issue #23, slice 2) ---
+
+    LAUNCH_URL = "/api/ranked/season/launch"
+    LAUNCH_BODY = {
+        "label": "Peak Season 2026",
+        "confirm": "LAUNCH",
+        "closes_at": "2099-12-31T23:59:00-05:00",
+    }
+
+    def _sign_in_owner(self, client, username):
+        self._sign_in(client, username)
+        conn = migrate.connect(self.conninfo)
+        migrate.execute(
+            conn,
+            "UPDATE accounts SET is_owner = true WHERE username_lower = %s",
+            (username.lower(),),
+        )
+        conn.commit()
+        conn.close()
+
+    def _official_seasons(self):
+        conn = migrate.connect(self.conninfo)
+        try:
+            return migrate.fetch_one(
+                conn, "SELECT COUNT(*) AS n FROM seasons WHERE phase = 'official'"
+            )["n"]
+        finally:
+            conn.close()
+
+    def test_launch_requires_a_session(self):
+        anon = TestClient(create_app())
+        self.assertEqual(anon.post(self.LAUNCH_URL, json=self.LAUNCH_BODY).status_code, 401)
+        self.assertEqual(self._official_seasons(), 0)
+
+    def test_launch_requires_the_owner(self):
+        self._sign_in(self.client, "ordinary_player")
+        res = self.client.post(self.LAUNCH_URL, json=self.LAUNCH_BODY)
+        self.assertEqual(res.status_code, 403)
+        self.assertEqual(self._official_seasons(), 0)
+
+    def test_launch_requires_the_exact_typed_confirmation(self):
+        self._sign_in_owner(self.client, "careful_owner")
+        for confirm in ("launch", "LAUNCH ", "yes", ""):
+            with self.subTest(confirm=confirm):
+                body = dict(self.LAUNCH_BODY, confirm=confirm)
+                self.assertEqual(self.client.post(self.LAUNCH_URL, json=body).status_code, 422)
+        no_confirm = {k: v for k, v in self.LAUNCH_BODY.items() if k != "confirm"}
+        self.assertEqual(self.client.post(self.LAUNCH_URL, json=no_confirm).status_code, 422)
+        self.assertEqual(self._official_seasons(), 0)
+
+    def test_launch_refuses_a_bad_name_or_end_time(self):
+        self._sign_in_owner(self.client, "strict_owner")
+        bad_bodies = [
+            dict(self.LAUNCH_BODY, label="   "),
+            dict(self.LAUNCH_BODY, closes_at="2020-01-01T00:00:00-05:00"),  # in the past
+            dict(self.LAUNCH_BODY, closes_at="2099-12-31T23:59:00"),        # no time zone
+        ]
+        for body in bad_bodies:
+            with self.subTest(body=body):
+                self.assertEqual(self.client.post(self.LAUNCH_URL, json=body).status_code, 422)
+        self.assertEqual(self._official_seasons(), 0)
+
+    def test_owner_launches_once(self):
+        self._sign_in_owner(self.client, "launching_owner")
+        self._set_points("launching_owner", 500)
+        player = TestClient(create_app())
+        self._sign_in(player, "mid_quiz_player")
+        attempt_id = self._start_as_page(player)
+
+        res = self.client.post(self.LAUNCH_URL, json=self.LAUNCH_BODY)
+        self.assertEqual(res.status_code, 201, res.text)
+        body = res.json()
+        self.assertEqual(body["label"], "Peak Season 2026")
+        self.assertIn("season_id", body)
+        self.assertTrue(body["closes_at"].startswith("2100-01-01T04:59:00"))  # stored in UTC
+        self.assertEqual(self._official_seasons(), 1)
+        # everyone is back at zero, and the quiz in progress is over
+        self.assertEqual(self.client.get("/api/ranked/entry").json()["points"], 0)
+        self.assertEqual(
+            player.post(f"/api/ranked/attempts/{attempt_id}/heartbeat").status_code, 410
+        )
+        self.assertEqual(self._attempt_field(attempt_id, "final_outcome"), "launch_reset")
+
+        again = self.client.post(self.LAUNCH_URL, json=self.LAUNCH_BODY)
+        self.assertEqual(again.status_code, 409)
+        self.assertEqual(self._official_seasons(), 1)
+
     def test_requires_authentication(self):
         anon = TestClient(create_app())
         self.assertEqual(anon.post("/api/ranked/attempts").status_code, 401)

@@ -6,6 +6,7 @@ account, and translates engine errors to status codes. It holds no game logic
 of its own. Not wired into the published static site; the backend is unhosted.
 """
 from contextlib import contextmanager
+from datetime import datetime, timezone
 from typing import Literal
 from uuid import UUID
 
@@ -14,7 +15,7 @@ from pydantic import BaseModel
 
 from backend.auth.service import get_account_by_session
 from backend.db import migrate, settings
-from backend.ranked import capability, engine, settlement
+from backend.ranked import capability, engine, launch, settlement
 from backend.ranked.clock import system_clock
 from backend.ranked_bank.catalog import load_reviewed_bank
 
@@ -263,3 +264,58 @@ def result(attempt_id: str, account: dict = Depends(_current_account), conn=Depe
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT, detail="Attempt still running"
         ) from None
+
+
+LAUNCH_CONFIRMATION = "LAUNCH"
+
+
+class LaunchRequest(BaseModel):
+    # every field is optional here so that the owner check runs before any
+    # complaint about the body; the endpoint validates them itself
+    label: str = ""
+    confirm: str = ""
+    closes_at: datetime | None = None
+
+
+def _unprocessable(detail: str) -> HTTPException:
+    return HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=detail)
+
+
+@router.post("/season/launch", status_code=status.HTTP_201_CREATED)
+def launch_season(
+    payload: LaunchRequest,
+    account: dict = Depends(_current_account),
+    conn=Depends(get_db),
+):
+    """Launch the official season. Irreversible: it voids unfinished
+    Pre-Season attempts and resets every balance. Owner only, and only with
+    the typed confirmation, so a stray or replayed request does nothing."""
+    if not account["is_owner"]:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden")
+    if payload.confirm != LAUNCH_CONFIRMATION:
+        raise _unprocessable("Type LAUNCH to confirm")
+    if payload.closes_at is not None and payload.closes_at.tzinfo is None:
+        raise _unprocessable("closes_at needs a time zone")
+    options = {} if payload.closes_at is None else {"closes_at": payload.closes_at}
+    try:
+        season_id = launch.launch_official_season(
+            conn, label=payload.label, clock=_CLOCK, **options
+        )
+    except launch.InvalidLaunchError as exc:
+        raise _unprocessable(str(exc)) from None
+    except launch.AlreadyLaunchedError:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT, detail="Already launched"
+        ) from None
+    except launch.NoPreSeasonError:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT, detail="No Pre-Season to launch from"
+        ) from None
+    row = migrate.fetch_one(
+        conn, "SELECT label, closes_at FROM seasons WHERE id = %s", (season_id,)
+    )
+    return {
+        "season_id": str(season_id),
+        "label": row["label"],
+        "closes_at": row["closes_at"].astimezone(timezone.utc).isoformat(),
+    }
