@@ -493,6 +493,60 @@ class RankedRouterTests(unittest.TestCase):
         self.assertEqual(again.status_code, 409)
         self.assertEqual(self._official_seasons(), 1)
 
+    # --- season close runs by itself (issue #23, slice 3) ---
+
+    def _end_season(self, minutes_ago):
+        """Make the test season's scheduled end ``minutes_ago`` minutes back."""
+        conn = migrate.connect(self.conninfo)
+        migrate.execute(
+            conn,
+            "UPDATE seasons SET opened_at = now() - interval '1 day',"
+            " closes_at = now() - make_interval(mins => %s)",
+            (minutes_ago,),
+        )
+        conn.commit()
+        conn.close()
+
+    def _season_frozen(self):
+        conn = migrate.connect(self.conninfo)
+        try:
+            return migrate.fetch_one(
+                conn, "SELECT frozen_at FROM seasons LIMIT 1"
+            )["frozen_at"] is not None
+        finally:
+            conn.close()
+
+    def test_request_after_the_window_finds_the_attempt_ended_and_scored(self):
+        self._sign_in(self.client, "last_minute_player")
+        attempt_id = self._start_as_page(self.client)
+        self._end_season(minutes_ago=6)  # the five-minute window is over
+        beat = self.client.post(f"/api/ranked/attempts/{attempt_id}/heartbeat")
+        self.assertEqual(beat.status_code, 410)
+        self.assertEqual(self._attempt_field(attempt_id, "state"), "finalized")
+        self.assertEqual(self._attempt_field(attempt_id, "final_outcome"), "season_close")
+        self.assertTrue(self._season_frozen())
+
+    def test_any_ranked_request_after_the_window_freezes_the_season(self):
+        self._sign_in(self.client, "morning_visitor")
+        self._end_season(minutes_ago=6)
+        self.assertFalse(self._season_frozen())
+        self.assertEqual(self.client.get("/api/ranked/entry").status_code, 200)
+        self.assertTrue(self._season_frozen())
+        start = self.client.post("/api/ranked/attempts")
+        self.assertEqual(start.status_code, 409)
+        self.assertEqual(start.json()["detail"], "No open season")
+
+    def test_inside_the_window_running_attempts_continue_and_starts_are_refused(self):
+        self._sign_in(self.client, "finishing_player")
+        attempt_id = self._start_as_page(self.client)
+        self._end_season(minutes_ago=1)  # ended, but inside the five minutes
+        beat = self.client.post(f"/api/ranked/attempts/{attempt_id}/heartbeat")
+        self.assertEqual(beat.status_code, 204)
+        self.assertFalse(self._season_frozen())
+        late = TestClient(create_app())
+        self._sign_in(late, "too_late_player")
+        self.assertEqual(late.post("/api/ranked/attempts").status_code, 409)
+
     def test_requires_authentication(self):
         anon = TestClient(create_app())
         self.assertEqual(anon.post("/api/ranked/attempts").status_code, 401)
