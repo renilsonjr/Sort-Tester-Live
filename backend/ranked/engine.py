@@ -574,7 +574,8 @@ def _settings(conn, attempt_id) -> modes.ModeSettings:
 def _open_season(conn, now) -> str:
     # admission follows the season clock: a season past its scheduled end
     # admits nobody, without anyone having to close it
-    season_id = seasons.admitting_season(conn, now)
+    # share-locked until this start commits, so a season launch waits for it
+    season_id = seasons.admitting_season(conn, now, lock=True)
     if season_id is None:
         raise NoOpenSeasonError("no open season to admit a ranked attempt")
     return season_id
