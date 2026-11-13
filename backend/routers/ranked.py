@@ -15,7 +15,7 @@ from pydantic import BaseModel
 
 from backend.auth.service import get_account_by_session
 from backend.db import migrate, settings
-from backend.ranked import capability, engine, launch, settlement
+from backend.ranked import capability, engine, launch, season_close, settlement
 from backend.ranked.clock import system_clock
 from backend.ranked_bank.catalog import load_reviewed_bank
 
@@ -46,6 +46,11 @@ def _db_connection():
 
 def get_db():
     with _db_connection() as conn:
+        # The season closes by the clock, with no background timer: every
+        # ranked request first finishes any season whose five-minute finishing
+        # window is over (end unfinished attempts, settle, freeze). When
+        # nothing is due this is a single read.
+        season_close.finish_due_seasons(conn, clock=_CLOCK)
         yield conn
 
 
