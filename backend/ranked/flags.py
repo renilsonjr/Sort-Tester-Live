@@ -8,11 +8,14 @@ A flag is an instability signal for a human reviewer, not proof of cheating.
 It never deducts points, suspends, restricts Ranked or creates a Support
 ticket (decision record, Decision 7): nothing reads a flag to decide anything.
 """
+from datetime import timedelta
+
 from backend.db import migrate
 from backend.ranked import instability
 
 _VOID_OUTCOMES = ("outage_void", "launch_reset")
 CLOSING_OUTCOMES = ("network_instability", "insufficient_evidence")
+RETENTION_DAYS = 15
 
 
 class FlagNotFoundError(Exception):
@@ -98,6 +101,32 @@ def close_flag(conn, attempt_id, outcome, *, clock) -> str:
     )
     conn.commit()
     return outcome
+
+
+def purge_closed_flags(conn, *, clock) -> int:
+    """Delete flags closed fifteen days or more ago, with their attempts'
+    detailed connection events; return how many flags were removed.
+
+    Seasonal scores and quiz history (attempts, answers, settlements, balance
+    history) stay. Open flags are never purged. When nothing is due this is a
+    single read.
+    """
+    cutoff = clock.now() - timedelta(days=RETENTION_DAYS)
+    due = migrate.fetch_all(
+        conn,
+        "SELECT attempt_id FROM connection_flags WHERE closed_at <= %s FOR UPDATE",
+        (cutoff,),
+    )
+    for row in due:
+        migrate.execute(
+            conn, "DELETE FROM attempt_connection_events WHERE attempt_id = %s",
+            (row["attempt_id"],),
+        )
+        migrate.execute(
+            conn, "DELETE FROM connection_flags WHERE attempt_id = %s", (row["attempt_id"],)
+        )
+    conn.commit()
+    return len(due)
 
 
 def _counted_events(conn, attempt_id):

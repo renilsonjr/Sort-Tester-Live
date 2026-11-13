@@ -335,5 +335,90 @@ class FlagReviewTests(FlagTestCase):
         self.assertIsNone(self._flag(attempt_id))
 
 
+@unittest.skipUnless(
+    settings.environment_has_test_url(),
+    "SORT_TESTER_TEST_DATABASE_URL not set; database tests skipped",
+)
+class FlagRetentionTests(FlagTestCase):
+    def _closed_flag(self):
+        attempt_id = self._start(self._account())
+        self._flap(attempt_id, 4)
+        self._quit_and_settle(attempt_id)
+        flags.close_flag(self.conn, attempt_id, "network_instability", clock=self.clock)
+        return attempt_id
+
+    def _event_count(self, attempt_id):
+        row = migrate.fetch_one(
+            self.conn,
+            "SELECT COUNT(*) AS n FROM attempt_connection_events WHERE attempt_id = %s",
+            (attempt_id,),
+        )
+        self.conn.commit()
+        return row["n"]
+
+    def _purge(self):
+        return flags.purge_closed_flags(self.conn, clock=self.clock)
+
+    def test_a_closed_flag_is_kept_for_fourteen_days(self):
+        attempt_id = self._closed_flag()
+        self.clock.advance(timedelta(days=15).total_seconds() - 1)
+        self.assertEqual(self._purge(), 0)
+        self.assertIsNotNone(self._flag(attempt_id))
+        self.assertEqual(self._event_count(attempt_id), 8)
+
+    def test_a_closed_flag_and_its_events_go_after_fifteen_days(self):
+        attempt_id = self._closed_flag()
+        self.clock.advance(timedelta(days=15).total_seconds())
+        self.assertEqual(self._purge(), 1)
+        self.assertIsNone(self._flag(attempt_id))
+        self.assertEqual(self._event_count(attempt_id), 0)
+        # seasonal scores and quiz history remain
+        kept = migrate.fetch_one(
+            self.conn,
+            "SELECT (SELECT COUNT(*) FROM attempts WHERE id = %(a)s) AS attempts,"
+            " (SELECT COUNT(*) FROM attempt_answers WHERE attempt_id = %(a)s) AS answers,"
+            " (SELECT COUNT(*) FROM settlements WHERE attempt_id = %(a)s) AS settlements,"
+            " (SELECT COUNT(*) FROM balance_history WHERE settlement_id = %(a)s) AS history",
+            {"a": attempt_id},
+        )
+        self.conn.commit()
+        self.assertEqual(
+            (kept["attempts"], kept["answers"], kept["settlements"], kept["history"]),
+            (1, 1, 1, 1),
+        )
+        self.assertEqual(self._purge(), 0)  # nothing left to do
+
+    def test_an_open_flag_is_never_purged(self):
+        attempt_id = self._start(self._account())
+        self._flap(attempt_id, 4)
+        self._quit_and_settle(attempt_id)
+        self.clock.advance(timedelta(days=60).total_seconds())
+        self.assertEqual(self._purge(), 0)
+        self.assertIsNotNone(self._flag(attempt_id))
+
+    def test_unflagged_attempts_keep_their_events(self):
+        attempt_id = self._start(self._account())
+        self._flap(attempt_id, 2)
+        self._quit_and_settle(attempt_id)
+        self.clock.advance(timedelta(days=60).total_seconds())
+        self._purge()
+        self.assertEqual(self._event_count(attempt_id), 4)
+
+    # --- races ---
+
+    def test_grace_expiry_in_the_middle_of_unstable_play_still_flags(self):
+        attempt_id = self._start(self._account())
+        self._flap(attempt_id, 4)  # losses at 3, 7, 11, 15
+        self.clock.advance(30)     # then the connection never comes back
+        engine.expire_stale_attempts(self.conn, clock=self.clock)
+        settlement.settle_attempt(self.conn, attempt_id, clock=self.clock)
+        row = migrate.fetch_one(
+            self.conn, "SELECT final_outcome FROM attempts WHERE id = %s", (attempt_id,)
+        )
+        self.conn.commit()
+        self.assertEqual(row["final_outcome"], "disconnect")
+        self.assertEqual(self._flag(attempt_id), (at(3), at(15)))
+
+
 if __name__ == "__main__":
     unittest.main()

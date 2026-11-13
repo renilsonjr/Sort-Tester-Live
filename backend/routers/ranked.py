@@ -53,6 +53,9 @@ def get_db():
         # window is over (end unfinished attempts, settle, freeze). When
         # nothing is due this is a single read.
         season_close.finish_due_seasons(conn, clock=_CLOCK)
+        # same idea for retention: closed review flags and their detailed
+        # connection events go fifteen days after closure
+        ranked_flags.purge_closed_flags(conn, clock=_CLOCK)
         yield conn
 
 

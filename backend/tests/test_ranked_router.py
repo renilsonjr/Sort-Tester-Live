@@ -762,6 +762,50 @@ class RankedRouterTests(unittest.TestCase):
             404,
         )
 
+    def test_a_second_tab_cannot_add_or_hide_connection_events(self):
+        self._sign_in(self.client, "flapping_player")
+        attempt_id = self._start_as_page(self.client)
+        tab = self._second_tab()
+        for _ in range(5):
+            self.assertEqual(
+                tab.post(f"/api/ranked/attempts/{attempt_id}/heartbeat").status_code, 403
+            )
+        conn = migrate.connect(self.conninfo)
+        try:
+            events = migrate.fetch_one(
+                conn,
+                "SELECT COUNT(*) AS n FROM attempt_connection_events WHERE attempt_id = %s",
+                (attempt_id,),
+            )["n"]
+        finally:
+            conn.close()
+        self.assertEqual(events, 0)
+
+    def test_old_closed_flags_are_cleaned_up_by_any_ranked_request(self):
+        _, attempt_id = self._flagged_player("old_flag_player")
+        conn = migrate.connect(self.conninfo)
+        migrate.execute(
+            conn,
+            "UPDATE connection_flags SET closed_at = now() - interval '16 days',"
+            " closed_outcome = 'insufficient_evidence' WHERE attempt_id = %s",
+            (attempt_id,),
+        )
+        conn.commit()
+        conn.close()
+        self._sign_in(self.client, "passer_by")
+        self.assertEqual(self.client.get("/api/ranked/entry").status_code, 200)
+        conn = migrate.connect(self.conninfo)
+        try:
+            left = migrate.fetch_one(
+                conn,
+                "SELECT (SELECT COUNT(*) FROM connection_flags) AS flags,"
+                " (SELECT COUNT(*) FROM attempt_connection_events WHERE attempt_id = %s) AS events",
+                (attempt_id,),
+            )
+        finally:
+            conn.close()
+        self.assertEqual((left["flags"], left["events"]), (0, 0))
+
     def test_requires_authentication(self):
         anon = TestClient(create_app())
         self.assertEqual(anon.post("/api/ranked/attempts").status_code, 401)
