@@ -15,7 +15,8 @@ from pydantic import BaseModel
 
 from backend.auth.service import get_account_by_session
 from backend.db import migrate, settings
-from backend.ranked import capability, engine, launch, season_close, settlement
+from backend.ranked import capability, engine, launch, season_close, seasons, settlement
+from backend.ranked import history as ranked_history
 from backend.ranked.clock import system_clock
 from backend.ranked_bank.catalog import load_reviewed_bank
 
@@ -323,4 +324,53 @@ def launch_season(
         "season_id": str(season_id),
         "label": row["label"],
         "closes_at": row["closes_at"].astimezone(timezone.utc).isoformat(),
+    }
+
+
+@router.get("/history")
+def history(
+    phase: Literal["pre_season", "official"] | None = None,
+    account: dict = Depends(_current_account),
+    conn=Depends(get_db),
+):
+    """The signed-in account's own scored attempts, newest first. Private to
+    the account: the request cannot name another account, and the owner gets
+    no exception."""
+    entries = ranked_history.account_history(conn, account["id"], phase)
+    return [
+        {
+            "attempt_id": str(entry["attempt_id"]),
+            "phase": entry["phase"],
+            "label": entry["label"],
+            "mode": entry["mode"],
+            "final_outcome": entry["final_outcome"],
+            "raw_score": entry["raw_score"],
+            "adjustment": entry["adjustment"],
+            "points_before": entry["points_before"],
+            "points_after": entry["points_after"],
+            "badge_before": entry["badge_before"],
+            "badge_after": entry["badge_after"],
+            "settled_at": entry["settled_at"].astimezone(timezone.utc).isoformat(),
+        }
+        for entry in entries
+    ]
+
+
+@router.get("/season")
+def season(account: dict = Depends(_current_account), conn=Depends(get_db)):
+    """Where the current season is in its life. Read-only. ``points_final``
+    is true once the season is frozen; prize standings stay provisional
+    after that until they are finalized elsewhere."""
+    current = seasons.current_season_status(conn, _CLOCK.now())
+    if current is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No season")
+    closes_at = current.closes_at
+    return {
+        "season_id": str(current.season_id),
+        "phase": current.phase,
+        "label": current.label,
+        "status": current.status,
+        "closes_at": None if closes_at is None
+        else closes_at.astimezone(timezone.utc).isoformat(),
+        "points_final": current.status == "frozen",
     }

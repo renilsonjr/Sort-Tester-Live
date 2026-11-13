@@ -145,6 +145,22 @@ class LaunchTests(unittest.TestCase):
         )
         self.assertEqual(seasons.admitting_season(self.conn, T0), official)
 
+    def test_launch_voids_an_attempt_in_connection_grace(self):
+        player = self._account(points=850)
+        attempt_id = self._start(player)
+        self.clock.advance(5)  # silent past the 3s loss, inside the 15s grace
+        engine.expire_stale_attempts(self.conn, clock=self.clock)
+        self.assertEqual(self._attempt(attempt_id), ("grace", None))
+
+        self._launch()
+
+        self.assertEqual(self._attempt(attempt_id), ("finalized", "launch_reset"))
+        settled = self._one(
+            "SELECT adjustment FROM settlements WHERE attempt_id = %s", (attempt_id,)
+        )
+        self.assertEqual(settled["adjustment"], 0)  # no timeout deduction either
+        self.assertEqual(self._points(player), 0)
+
     def test_an_attempt_ended_just_before_launch_keeps_its_real_result(self):
         player = self._account(points=100)
         attempt_id = self._start(player)

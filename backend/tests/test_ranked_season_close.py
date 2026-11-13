@@ -194,6 +194,45 @@ class SeasonCloseTests(unittest.TestCase):
         self.assertTrue(self._finish())
         self.assertEqual(self._status(), "frozen")
 
+    # --- confirmed outage around the close ---
+
+    def test_outage_confirmed_before_the_freeze_scores_zero_and_still_freezes(self):
+        account_id = self._account(points=500)
+        attempt_id = self._start(account_id)
+        self._answer(attempt_id, 1)  # points that the void must not apply
+        self._keep_alive_until(attempt_id, END + timedelta(seconds=100))
+        voided = engine.void_attempts_for_outage(
+            self.conn,
+            outage_start=END + timedelta(seconds=50),
+            outage_end=END + timedelta(seconds=90),
+        )
+        self.assertEqual(voided, 1)
+        self._go_to(END + WINDOW)
+
+        self.assertTrue(self._finish())
+
+        self.assertEqual(self._attempt(attempt_id), ("finalized", "outage_void"))
+        self.assertEqual(self._points(account_id), 500)
+        self.assertEqual(self._status(), "frozen")
+
+    def test_outage_evidence_after_the_freeze_changes_nothing(self):
+        account_id = self._account(points=500)
+        attempt_id = self._start(account_id)
+        self._answer(attempt_id, 1)
+        self._keep_alive_until(attempt_id, END + WINDOW)
+        self.assertTrue(self._finish())
+        points = self._points(account_id)
+        self.assertGreater(points, 500)
+
+        # late evidence: an outage covering the whole close is confirmed afterwards
+        voided = engine.void_attempts_for_outage(
+            self.conn, outage_start=T0, outage_end=END + timedelta(hours=1)
+        )
+
+        self.assertEqual(voided, 0)  # a committed balance is never reversed
+        self.assertEqual(self._attempt(attempt_id), ("finalized", "season_close"))
+        self.assertEqual(self._points(account_id), points)
+
     # --- exactly once ---
 
     def test_finishing_twice_changes_nothing(self):
