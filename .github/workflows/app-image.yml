@@ -1,0 +1,141 @@
+name: App image
+
+# Builds the production image (infra/azure/app.Dockerfile) and checks it
+# end to end against a throwaway PostgreSQL. Nothing is published here.
+on:
+  pull_request:
+  push:
+    branches: [main, codex/ranked-mode]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  app-image:
+    name: Build and test the app image
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    services:
+      postgres:
+        image: postgres:18-alpine
+        env:
+          POSTGRES_USER: ci
+          POSTGRES_PASSWORD: ci-only-password
+          POSTGRES_DB: sort_tester_ci_app
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U ci -d sort_tester_ci_app"
+          --health-interval 2s --health-timeout 5s --health-retries 30
+    env:
+      IMAGE: sort-tester-live-app:ci
+      DB_URL: postgresql://ci:ci-only-password@127.0.0.1:5432/sort_tester_ci_app
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Build the image from the repository root
+        run: docker build --file infra/azure/app.Dockerfile --tag "$IMAGE" .
+
+      - name: Runs as UID 10001 and cannot change its own files
+        run: |
+          uid=$(docker run --rm --entrypoint id "$IMAGE" -u)
+          if [ "$uid" != "10001" ]; then echo "Expected UID 10001, got $uid"; exit 1; fi
+          if docker run --rm --entrypoint sh "$IMAGE" -c 'touch /app/backend/main.py' 2>/dev/null; then
+            echo "The app user can modify /app/backend/main.py"; exit 1
+          fi
+
+      - name: Needed files are present, sensitive ones are absent
+        run: |
+          docker run --rm --entrypoint sh "$IMAGE" -c '
+            missing=0
+            for path in /app/index.html /app/src/app.js /app/src/auth.js /app/assets/nunito-variable.ttf \
+                        /app/backend/main.py /app/backend/data/ranked/manifest.json \
+                        /app/backend/migrations/env.py /app/backend/migrations.ini /app/backend/db/upgrade_app.py; do
+              [ -e "$path" ] || { echo "Missing in image: $path"; missing=1; }
+            done
+            for path in /app/.git /app/.github /app/backend/tests /app/backend/.venv /app/tests /app/dev \
+                        /app/docs /app/infra /app/mockups /app/tools /app/README.md /tmp/requirements.txt; do
+              [ -e "$path" ] && { echo "Unexpected in image: $path"; missing=1; }
+            done
+            found=$(find /app \( -name ".env" -o -name ".env.*" -o -name "*.pem" -o -name "*.key" -o -name "__pycache__" \) -print)
+            [ -z "$found" ] || { echo "Unexpected files: $found"; missing=1; }
+            exit $missing'
+
+      - name: Migrate the throwaway database with the guarded command
+        run: |
+          docker run --rm --network host -e SORT_TESTER_DATABASE_URL="$DB_URL" "$IMAGE" \
+            python -m backend.db.upgrade_app --confirm sort_tester_ci_app | tee /tmp/migrate.txt
+          grep -q "Revision after: " /tmp/migrate.txt
+          if grep -q "ci-only-password" /tmp/migrate.txt; then echo "Password printed"; exit 1; fi
+
+      - name: Smoke-test the running app
+        run: |
+          container=$(docker run -d --rm --network host -e SORT_TESTER_DATABASE_URL="$DB_URL" "$IMAGE")
+          trap 'docker stop "$container" >/dev/null 2>&1 || true' EXIT
+          base=http://127.0.0.1:8000
+          for attempt in $(seq 1 30); do
+            curl -fsS "$base/health" >/tmp/health.json 2>/dev/null && break
+            docker ps --quiet --filter "id=$container" | grep -q . || { echo 'Container exited'; docker logs "$container"; exit 1; }
+            sleep 1
+          done
+          [ "$(cat /tmp/health.json)" = '{"status":"ok"}' ] || { echo "Bad /health: $(cat /tmp/health.json)"; exit 1; }
+
+          expect() { # expect <path> <status>
+            code=$(curl -s --path-as-is -o /dev/null -w '%{http_code}' "$base$1")
+            [ "$code" = "$2" ] || { echo "$1: expected $2, got $code"; docker logs "$container"; exit 1; }
+            echo "$1 -> $code"
+          }
+          expect / 200
+          expect /src/app.js 200
+          expect /assets/quiz-happy.jpg 200
+          expect /backend/main.py 404
+          expect /.git/config 404
+          expect /src/../backend/main.py 404
+          expect /src/%2e%2e/backend/main.py 404
+          curl -s "$base/" | grep -q 'src="src/app.js' || { echo "/ is not the app page"; exit 1; }
+
+          jar=$(mktemp)
+          code=$(curl -s -c "$jar" -o /tmp/register.json -w '%{http_code}' -X POST "$base/api/auth/register" \
+            -H 'Content-Type: application/json' -d '{"username":"ci_check"}')
+          [ "$code" = 200 ] || { echo "register: $code $(cat /tmp/register.json)"; docker logs "$container"; exit 1; }
+          login_id=$(python3 -c 'import json; print(json.load(open("/tmp/register.json"))["login_id"])')
+          code=$(curl -s -c "$jar" -o /dev/null -w '%{http_code}' -X POST "$base/api/auth/login" \
+            -H 'Content-Type: application/json' -d "{\"login_id\":\"$login_id\"}")
+          [ "$code" = 200 ] || { echo "login: $code"; exit 1; }
+          curl -fsS -b "$jar" "$base/api/auth/me" | grep -q '"username":"ci_check"' || { echo "me failed"; exit 1; }
+          echo 'App image passed smoke tests'
+
+      - name: The packages the app imports are the patched versions
+        # The scan below reports findings for copies vendored inside pip and
+        # setuptools, which the FastAPI runtime never imports. Prove the
+        # top-level installs are patched, and that every flagged version is
+        # only ever a vendored copy.
+        run: |
+          docker run --rm --entrypoint python "$IMAGE" - <<'PY'
+          import sys
+          from importlib.metadata import version
+          required = {"setuptools": "78.1.1", "msgpack": "1.2.3", "urllib3": "2.8.0"}
+          bad = {name: version(name) for name, want in required.items() if version(name) != want}
+          if bad:
+              print(f"Top-level packages are not the patched versions: {bad}")
+              sys.exit(1)
+          print("Top-level packages patched:", {n: version(n) for n in required})
+          PY
+          docker run --rm --entrypoint sh "$IMAGE" -c '
+            # the flagged versions must not exist outside a _vendor directory
+            hits=$(find /usr/local/lib/python3.14/site-packages \
+                     \( -name "setuptools-70.3.0.dist-info" -o -name "msgpack-1.1.2.dist-info" \
+                        -o -name "urllib3-2.7.0.dist-info" -o -name "wheel-0.45.1.dist-info" \
+                        -o -name "jaraco.context-5.3.0.dist-info" \) -print | grep -v "/_vendor/" || true)
+            [ -z "$hits" ] || { echo "Flagged versions outside _vendor: $hits"; exit 1; }
+            echo "Every flagged version is a vendored copy only"'
+
+      - name: Vulnerability scan (report only)
+        run: |
+          docker run --rm -v /var/run/docker.sock:/var/run/docker.sock aquasec/trivy:0.76.2 \
+            image --no-progress --severity HIGH,CRITICAL --exit-code 0 "$IMAGE" | tee /tmp/trivy.txt
+          { echo '### Trivy (HIGH/CRITICAL, report only)'; echo '```'; tail -n 60 /tmp/trivy.txt; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
