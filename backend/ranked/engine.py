@@ -22,7 +22,7 @@ from dataclasses import dataclass
 from datetime import datetime, timedelta
 
 from backend.db import migrate
-from backend.ranked import modes, ranks
+from backend.ranked import modes, ranks, seasons
 from backend.ranked.capability import hash_token
 from backend.ranked.versions import materialize_question_version
 from backend.ranked_bank.identity import question_content_digest
@@ -139,7 +139,7 @@ def start_attempt(
         if allowed == ranks.PROMOTION:
             raise PromotionRequiredError("at the badge cap only promotion can start")
         raise PromotionNotAvailableError("promotion is only available at a badge cap")
-    season_id = _open_season(conn)
+    season_id = _open_season(conn, clock.now())
     snapshot = select_assignment(bank)
     expected = modes.settings_for(mode).question_count
     if len(snapshot.questions) != expected:
@@ -571,14 +571,13 @@ def _settings(conn, attempt_id) -> modes.ModeSettings:
     return modes.settings_for(row["mode"])
 
 
-def _open_season(conn) -> str:
-    row = migrate.fetch_one(
-        conn,
-        "SELECT id FROM seasons WHERE closed_at IS NULL ORDER BY opened_at DESC LIMIT 1",
-    )
-    if row is None:
+def _open_season(conn, now) -> str:
+    # admission follows the season clock: a season past its scheduled end
+    # admits nobody, without anyone having to close it
+    season_id = seasons.admitting_season(conn, now)
+    if season_id is None:
         raise NoOpenSeasonError("no open season to admit a ranked attempt")
-    return row["id"]
+    return season_id
 
 
 def _send_question(conn, attempt_id, seq, clock) -> None:
