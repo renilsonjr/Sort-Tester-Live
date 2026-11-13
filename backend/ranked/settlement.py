@@ -13,7 +13,7 @@ result, and ``settlements.attempt_id`` is the primary key.
 import dataclasses
 
 from backend.db import migrate
-from backend.ranked import scoring
+from backend.ranked import flags, scoring
 
 
 class SettlementError(Exception):
@@ -143,6 +143,9 @@ def _settle(conn, attempt_id, clock) -> tuple[scoring.Settlement, bool]:
         "UPDATE attempts SET state = 'finalized', settled_at = %s WHERE id = %s",
         (now, attempt_id),
     )
+    # the private review flag, if any, is saved with the result; it changes
+    # nothing about points or access
+    flags.evaluate_attempt(conn, attempt_id, clock=clock)
     conn.commit()
     return result, True
 
