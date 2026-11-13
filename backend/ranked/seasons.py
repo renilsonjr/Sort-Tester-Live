@@ -83,14 +83,14 @@ def season_status(conn, season_id, now: datetime) -> SeasonStatus:
 def _status(row, now) -> str:
     if row["frozen_at"] is not None:
         return "frozen"
-    ended_at = _ended_at(row, now)
+    ended_at = ended_at_of(row, now)
     if ended_at is None:
         return "open"
     window = timedelta(seconds=FINISHING_WINDOW_SECONDS)
     return "finishing" if now < ended_at + window else "closed"
 
 
-def _ended_at(row, now):
+def ended_at_of(row, now):
     """When the season stopped admitting: a manual close, or the scheduled end
     once it has passed. ``None`` while it still admits."""
     ends = [
