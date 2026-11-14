@@ -14,11 +14,13 @@ WORKDIR /app
 COPY backend/requirements-runtime.txt /tmp/requirements.txt
 # pip is needed to install and then has no job in a running container, so it
 # is removed: nothing can be installed into the image afterwards, and the
-# copies of other libraries that pip bundles inside itself go with it.
+# copies of other libraries that pip bundles inside itself go with it. Python
+# also keeps a spare pip wheel in ensurepip; that goes too.
 RUN python -m pip install --no-cache-dir -r /tmp/requirements.txt \
     && python -m pip check \
     && rm /tmp/requirements.txt \
     && python -m pip uninstall --yes pip \
+    && rm -rf /usr/local/lib/python3.14/ensurepip \
     && adduser -D -u 10001 appuser
 
 # Files stay owned by root: the app user can read them but not change them.
