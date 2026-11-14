@@ -109,6 +109,23 @@ Settings → Delete account. Fictional data only.
 4. Record the disclosure change in the decision record, so a reader does not
    find the approved sentence quietly altered.
 
+## Review record (2026-11-14)
+
+The owner reviewed the screens in a browser at 375 px, in two groups, and
+approved all of them unchanged:
+
+1. Step 1 (question, consequences, unchecked box, disabled Continue) and
+   step 2 (warning, login ID, Delete account).
+2. Accepted, and the owner-account refusal.
+
+Checked before the review, at 320 px and 375 px: the box starts unchecked
+with Continue disabled and a line saying why; ticking it with the keyboard
+enables Continue; a wrong login ID keeps the player on step 2 with one
+message and deletes nothing; a correct one reaches the accepted screen;
+leaving and reopening resets the box, the field and the button; a guest sent
+to the screen lands on Log in; no sideways scroll, and Tab reaches every
+control with a visible outline.
+
 ## Delivery
 
 Branch `codex/deletion-mockups` from `codex/ranked-mode`, holding this
