@@ -178,7 +178,9 @@ and recovery; this one covers the whole app.
   confirmed; during Pre-Season there is no callout and no invented date, as
   Decision 16 already requires. The Ranked landing page remains the main
   season display; this callout is the short notice on the home page, not a
-  second season display.
+  second season display. Guests see it too (settled 2026-11-14), with a
+  second sentence inviting them to log in rather than one about a reset
+  balance they do not have.
 - Issue #27 (verified opt-in launch reminder delivery) has nothing left to
   build.
 - Any email rows, consent records and queued mail that the database already

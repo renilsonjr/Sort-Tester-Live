@@ -188,7 +188,7 @@
           <i aria-hidden="true">!</i>
           <div>
             <h2>The official season has started</h2>
-            <p>It started on <b>example date 4</b> and ends on <b>example date 5</b>. Everyone began again at 0 points and Iron.</p>
+            <p id="launch-text"></p>
           </div>
         </div>
         <div class="change" data-announcement></div>
@@ -367,6 +367,15 @@
         '<span class="belt-chip">BLUE</span></div>';
     }
 
+    // Everyone sees the callout. A guest has no balance, so its second
+    // sentence tells them what to do instead of what was reset.
+    function setLaunchCallout() {
+      document.getElementById('launch-callout').hidden = season !== 'live';
+      document.getElementById('launch-text').innerHTML =
+        'It started on <b>example date 4</b> and ends on <b>example date 5</b>. ' +
+        (mode === 'member' ? 'Everyone began again at 0 points and Iron.' : 'Log in to play for points this season.');
+    }
+
     function show(name) {
       // A guest can never reach a logged-in screen, even through a stray link.
       if (MEMBER_ONLY.includes(name) && mode !== 'member') name = 'login';
@@ -375,7 +384,7 @@
       for (const el of document.querySelectorAll('[data-member]')) el.hidden = mode !== 'member';
       for (const el of document.querySelectorAll('[data-guest]')) el.hidden = mode !== 'guest';
       document.getElementById('home-eyebrow').textContent = mode === 'member' ? 'Welcome back, parcel_fox' : 'Guest practice';
-      document.getElementById('launch-callout').hidden = season !== 'live';
+      setLaunchCallout();
       const signingIn = ['login', 'lost'].includes(name);
       document.getElementById('top-login').hidden = mode !== 'guest' || signingIn;
 
@@ -435,7 +444,7 @@
       if (button.dataset.season) {
         season = button.dataset.season;
         for (const el of document.querySelectorAll('[data-season]')) el.setAttribute('aria-pressed', String(el.dataset.season === season));
-        document.getElementById('launch-callout').hidden = season !== 'live';
+        setLaunchCallout();
         return;
       }
       if (button.dataset.enter) { mode = button.dataset.enter; show('home'); }
