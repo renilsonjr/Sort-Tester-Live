@@ -101,6 +101,21 @@ Support. Fictional data only.
    mobile, keyboard, loading, empty, error and privacy review across every
    slice, and this is the last one.
 
+## Review record (2026-11-14)
+
+The owner reviewed the screens in a browser at 375 px, in three groups, and
+approved all of them unchanged:
+
+1. The ticket list with its retention lines, and the empty state.
+2. Create ticket, and ticket sent.
+3. Open and closed ticket detail, loading and error.
+
+Checked before the review, at 320 px and 375 px: every state renders and the
+screen always opens on the list; the attempt dropdown names each attempt's
+date and outcome, not only its id; Tab reaches the dropdown, the description
+and both buttons with a visible focus outline; no sideways scroll; every
+button is at least 44 px tall.
+
 ## Delivery
 
 Branch `codex/tickets-mockups`, opened as a pull request for review.
