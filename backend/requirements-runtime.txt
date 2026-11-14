@@ -1,0 +1,38 @@
+# Runtime dependencies of the hosted app: exactly what the container installs.
+#
+# backend/requirements.txt is the full development environment (test client,
+# CLI extras, tooling). The app itself imports only FastAPI, uvicorn, psycopg,
+# pydantic, pydantic-settings, argon2 and alembic; everything here is one of
+# those or something they need. Versions match requirements.txt wherever it
+# lists them (checked by backend/tests/test_runtime_requirements.py).
+#
+# Regenerate: in a clean virtual environment,
+#   pip install -c backend/requirements.txt fastapi uvicorn psycopg \
+#     psycopg-binary pydantic pydantic-settings argon2-cffi alembic SQLAlchemy
+#   pip freeze
+alembic==1.20.1
+annotated-doc==0.0.5
+annotated-types==0.8.0
+anyio==4.16.0
+argon2-cffi==23.1.0
+argon2-cffi-bindings==26.2.0
+cffi==2.1.1
+click==8.5.0
+fastapi==0.162.0
+h11==0.16.0
+idna==3.20
+Mako==1.4.3
+MarkupSafe==3.0.4
+opentelemetry-api==1.45.2
+psycopg==3.3.8
+psycopg-binary==3.3.8
+pycparser==3.12
+pydantic==2.14.3
+pydantic-settings==2.16.2
+pydantic_core==2.50.4
+python-dotenv==1.2.4
+SQLAlchemy==2.1.8
+starlette==1.10.0
+typing-inspection==0.4.5
+typing_extensions==4.16.0
+uvicorn==0.54.0

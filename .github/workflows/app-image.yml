@@ -168,33 +168,34 @@ jobs:
           [ "$code" = 403 ] || { echo "cross-site login: expected 403, got $code"; exit 1; }
           echo 'Hosted configuration passed'
 
-      - name: The packages the app imports are the patched versions
-        # The scan below reports findings for copies vendored inside pip and
-        # setuptools, which the FastAPI runtime never imports. Prove the
-        # top-level installs are patched, and that every flagged version is
-        # only ever a vendored copy.
+      - name: The image holds only the runtime packages, and no installer
         run: |
           docker run --rm --entrypoint python "$IMAGE" - <<'PY'
           import sys
-          from importlib.metadata import version
-          required = {"setuptools": "78.1.1", "msgpack": "1.2.3", "urllib3": "2.8.0"}
-          bad = {name: version(name) for name, want in required.items() if version(name) != want}
-          if bad:
-              print(f"Top-level packages are not the patched versions: {bad}")
-              sys.exit(1)
-          print("Top-level packages patched:", {n: version(n) for n in required})
+          from importlib.metadata import distributions
+          installed = sorted({d.metadata["Name"].lower().replace("_", "-") for d in distributions()})
+          print(len(installed), "packages:", " ".join(installed))
+          unwanted = [n for n in installed if n in {
+              "pip", "setuptools", "wheel", "sentry-sdk", "requests", "httpx", "msgpack",
+              "urllib3", "fastapi-cli", "fastapi-cloud-cli", "opentelemetry-sdk", "watchfiles"}]
+          if unwanted:
+              print("Unwanted packages in the image:", unwanted); sys.exit(1)
+          if len(installed) > 30:
+              print("More packages than the runtime list allows"); sys.exit(1)
           PY
+          if docker run --rm --entrypoint python "$IMAGE" -m pip --version 2>/dev/null; then
+            echo 'pip is still runnable in the image'; exit 1
+          fi
           docker run --rm --entrypoint sh "$IMAGE" -c '
-            # the flagged versions must not exist outside a _vendor directory
-            hits=$(find /usr/local/lib/python3.14/site-packages \
-                     \( -name "setuptools-70.3.0.dist-info" -o -name "msgpack-1.1.2.dist-info" \
-                        -o -name "urllib3-2.7.0.dist-info" -o -name "wheel-0.45.1.dist-info" \
-                        -o -name "jaraco.context-5.3.0.dist-info" \) -print | grep -v "/_vendor/" || true)
-            [ -z "$hits" ] || { echo "Flagged versions outside _vendor: $hits"; exit 1; }
-            echo "Every flagged version is a vendored copy only"'
+            hits=$(find / -xdev \( -path "*/_vendor/*" -o -name "pip" -o -name "pip-*" \) -print 2>/dev/null | grep -v "^/proc" | head -5)
+            [ -z "$hits" ] || { echo "Bundled copies or pip left behind: $hits"; exit 1; }
+            echo "No pip and no vendored library copies in the image"'
 
-      - name: Vulnerability scan (report only)
+      - name: Vulnerability scan (blocking)
+        # With pip and the unused packages gone, the image scanned clean of
+        # HIGH and CRITICAL findings, so a new one now fails the build.
         run: |
+          set -o pipefail  # without it, tee would hide a failing scan
           docker run --rm -v /var/run/docker.sock:/var/run/docker.sock aquasec/trivy:0.76.2 \
-            image --no-progress --severity HIGH,CRITICAL --exit-code 0 "$IMAGE" | tee /tmp/trivy.txt
-          { echo '### Trivy (HIGH/CRITICAL, report only)'; echo '```'; tail -n 60 /tmp/trivy.txt; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
+            image --no-progress --severity HIGH,CRITICAL --exit-code 1 "$IMAGE" | tee /tmp/trivy.txt
+          { echo '### Trivy (HIGH/CRITICAL, blocking)'; echo '```'; tail -n 40 /tmp/trivy.txt; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
