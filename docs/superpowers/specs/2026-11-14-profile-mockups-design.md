@@ -67,28 +67,31 @@ leads into them as it would in the app. Fictional data only.
 Also mocked, as #16 asks: the history tab **loading**, **empty** and
 **error** states.
 
-## Open question — email
+## Email removed from the app (settled 2026-11-14)
 
-On review the owner said the email part had already been asked for earlier
-and should not be added, so the Settings tab holds no email row.
+On review the owner removed the email row, then settled the wider question:
+the app collects no email address at all. Before asking, the only recorded
+removal was inside the login ID auth plan (2026-11-11) and covered
+authentication and recovery alone, while Decision 14 still kept an optional
+private email and Decision 15 was the email launch reminder behind issue
+#27.
 
-The repository records an email removal only inside the login ID auth plan
-(2026-11-11), scoped to that plan: recovery is in-person, not by email. Two
-settled items still assume an email exists:
+The owner's call is now recorded in the decision record: Decision 15 is
+withdrawn, Decision 14 no longer collects an email, and the official season
+start is announced in the app with a small callout on the main home page
+carrying the start date, shown only once a start is confirmed.
 
-- Decision 14 keeps an optional private email, never shown in profiles or
-  the leaderboard.
-- Decision 15 is the launch reminder opt-in, "Email me when the first
-  official season starts", and issue #27 is its delivery. Both need a
-  verified email address.
+Consequences this slice does not carry out, because they are not mockup
+work:
 
-The backend already has an `emails` table (migration 0003) and deletion
-cascades it.
+- Issue #27 has nothing left to build.
+- The backend already has an `emails` table (migration 0003), consent
+  records and an outbox (0009). Removing them is a separate implementation
+  task.
+- The home-page launch callout needs a mock of its own; it belongs to the
+  home screen, not to Profile.
 
-So "no email anywhere in the app" would supersede Decision 15 and close
-issue #27, and "no email on this screen" would not. This slice takes the
-narrow reading: the mock shows no email row. The broader call is the
-owner's and is not recorded here as made.
+So the Settings tab holds only Delete account and Log out.
 
 ## Limits
 
