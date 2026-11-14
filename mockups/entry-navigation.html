@@ -88,6 +88,21 @@
     .launch p { margin-top: 3px; color: #3b4668; font-size: 13px; }
     .launch b { font-weight: 900; }
 
+    /* Leaderboard (issue #16, slice 2) */
+    .notice-box { border: 1px solid #d9dff7; border-radius: 17px; background: #eff2ff; padding: 13px 15px; }
+    .notice-box h2 { font-size: 16px; }
+    .notice-box p { margin-top: 4px; color: #3b4668; font-size: 13px; }
+    .board li .marker { grid-column: 1 / -1; margin-top: 4px; font-size: 12px; font-weight: 800; }
+    .board li.tied, .board li.filled { border-color: #e3c88a; background: #fffdf3; }
+    .board li.tied .marker, .board li.filled .marker { color: #7a5200; }
+    .board li.winner { border-color: #2d7a57; background: #f1faf5; }
+    .board li.winner .marker { color: #1f5a3a; }
+    .board li.vacant { border-style: dashed; color: var(--muted); }
+    .board .pos { font-weight: 900; font-variant-numeric: tabular-nums; }
+    /* A long username must not push the points off the row. */
+    .board .who { min-width: 0; }
+    .board .who b { display: block; overflow-wrap: anywhere; }
+
     /* Profile (issue #16, slice 1) */
     .tabs { display: flex; flex-wrap: wrap; gap: 2px; border-bottom: 2px solid var(--line); }
     .tabs button { min-height: 44px; padding: 8px 10px; margin-bottom: -2px; border-bottom: 3px solid transparent; background: none; color: var(--muted); font-size: 13px; font-weight: 900; }
@@ -232,12 +247,24 @@
         <button class="link" type="button" data-go="ranked">← Back to Ranked</button>
         <p class="eyebrow">Ranked</p>
         <h1 tabindex="-1">Leaderboard</h1>
-        <ol class="board">
-          <li><b>1</b><span><b>dock_owl</b> <small>#A1B2C3 · Bronze</small></span><b>1,420</b></li>
-          <li><b>2</b><span><b>belt_runner</b> <small>#D4E5F6 · Iron</small></span><b>910</b></li>
-          <li class="me"><b>3</b><span><b>parcel_fox</b> <small>#K7Q2MX · Iron · You</small></span><b>640</b></li>
-        </ol>
-        <p class="note"><strong>Placeholder.</strong> Fictional players. What the standings show is decided in issue #16.</p>
+        <div class="notice-box" id="lb-notice" hidden></div>
+        <p class="small" id="lb-sub"></p>
+        <ol class="board" id="lb-rows"></ol>
+        <div id="lb-end"></div>
+        <div class="mock-controls">
+          <p>Mock controls · not part of the app</p>
+          <div class="row" role="group" aria-label="Leaderboard state">
+            <button type="button" data-lb="during" aria-pressed="true">During the season</button>
+            <button type="button" data-lb="nopos" aria-pressed="false">No position</button>
+            <button type="button" data-lb="tie" aria-pressed="false">Tie</button>
+            <button type="button" data-lb="replaced" aria-pressed="false">Replacement</button>
+            <button type="button" data-lb="final" aria-pressed="false">Final</button>
+            <button type="button" data-lb="fewer" aria-pressed="false">Fewer winners</button>
+            <button type="button" data-lb="loading" aria-pressed="false">Loading</button>
+            <button type="button" data-lb="empty" aria-pressed="false">Empty</button>
+            <button type="button" data-lb="error" aria-pressed="false">Error</button>
+          </div>
+        </div>
       </section>
 
       <!-- 9. Profile -->
@@ -399,6 +426,75 @@
       document.querySelector(`[data-view="${name}"] h1`).focus({ preventScroll: true });
     }
 
+    // Leaderboard. No timestamps anywhere: the first-reached-score rule was
+    // superseded by tie-break quizzes, and showing a time would revive it.
+    const P = {
+      owl: { name: 'dock_owl', tag: '#A1B2C3', badge: 'Bronze', points: '1,420' },
+      belt: { name: 'belt_runner', tag: '#D4E5F6', badge: 'Iron', points: '910' },
+      fox: { name: 'parcel_fox', tag: '#K7Q2MX', badge: 'Iron', points: '640', you: true },
+      gull: { name: 'tape_gull', tag: '#G8H9JK', badge: 'Iron', points: '505' },
+      hare: { name: 'chute_hare', tag: '#L2M3NP', badge: 'Iron', points: '505' },
+      long: { name: 'a_very_long_example_username', tag: '#Q9R8ST', badge: 'Iron', points: '120' },
+    };
+    const row = (pos, p, extra = {}) => ({ pos, ...p, ...extra });
+
+    const LEADERBOARD = {
+      during: {
+        sub: 'Standings update after each settled Ranked quiz, not once a day.',
+        rows: [row(1, P.owl), row(2, P.belt), row(3, P.fox), row(4, P.gull), row(5, P.long)],
+      },
+      nopos: {
+        sub: 'Standings update after each settled Ranked quiz, not once a day.',
+        rows: [row(1, P.owl), row(2, P.belt), row(3, P.gull), row(4, P.long)],
+        end: {
+          title: 'You are not in the standings',
+          text: 'You have 640 points and Iron, and they count as usual. The competition is for Primary Sort on the Twilight shift, approved by the owner. Ask the owner if that should be you.',
+        },
+      },
+      tie: {
+        notice: { title: 'Not final yet', text: 'The season is closed and two players are tied for third. A tie-break quiz decides that place, so positions can still change.' },
+        rows: [row(1, P.owl), row(2, P.belt), row(3, P.gull, { cls: 'tied', marker: 'Tied for third · tie-break quiz pending' }), row(3, P.hare, { cls: 'tied', marker: 'Tied for third · tie-break quiz pending' })],
+      },
+      replaced: {
+        notice: { title: 'Not final yet', text: 'A prize place was filled after a player withdrew, so the places below it moved up. A filled place can create a new tie, which then needs its own tie-break quiz.' },
+        rows: [row(1, P.owl), row(2, P.belt), row(3, P.gull, { cls: 'filled', marker: 'Place filled after a withdrawal' }), row(4, P.long)],
+      },
+      final: {
+        sub: 'Final results for this season.',
+        rows: [row(1, P.owl, { cls: 'winner', marker: 'Hat winner' }), row(2, P.belt, { cls: 'winner', marker: 'Hat winner' }), row(3, P.gull, { cls: 'winner', marker: 'Hat winner' }), row(4, P.fox), row(5, P.long)],
+      },
+      fewer: {
+        notice: { title: 'Two hats awarded, not three', text: 'Only two eligible players finished this season, so the third place stays empty. No third winner is chosen.' },
+        rows: [row(1, P.owl, { cls: 'winner', marker: 'Hat winner' }), row(2, P.belt, { cls: 'winner', marker: 'Hat winner' }), row(3, null, { cls: 'vacant', marker: 'No eligible player for this place' })],
+      },
+      loading: { sub: 'Loading the standings…', rows: [] },
+      empty: { notice: { title: 'No standings yet', text: 'The season has started and nobody has completed a Ranked quiz, so there is nothing to rank.' }, rows: [] },
+      error: { notice: { title: 'Could not load the standings', text: 'Your points are safe. Try again in a moment.' }, rows: [] },
+    };
+
+    function setLeaderboard(state) {
+      const s = LEADERBOARD[state];
+      const notice = document.getElementById('lb-notice');
+      notice.hidden = !s.notice;
+      if (s.notice) notice.innerHTML = `<h2>${s.notice.title}</h2><p>${s.notice.text}</p>`;
+      const sub = document.getElementById('lb-sub');
+      sub.hidden = !s.sub;
+      sub.textContent = s.sub || '';
+      sub.setAttribute('role', state === 'loading' ? 'status' : 'presentation');
+      document.getElementById('lb-rows').innerHTML = s.rows.map(r => {
+        const who = r.name
+          ? `<b>${r.name}</b><small>${r.tag} · ${r.badge}${r.you ? ' · your place' : ''}</small>`
+          : '<b>Empty place</b>';
+        return `<li class="${[r.cls, r.you ? 'me' : ''].filter(Boolean).join(' ')}">`
+          + `<span class="pos">${r.pos}</span><span class="who">${who}</span>`
+          + `<b>${r.points || '—'}</b>${r.marker ? `<span class="marker">${r.marker}</span>` : ''}</li>`;
+      }).join('');
+      document.getElementById('lb-end').innerHTML = s.end
+        ? `<div class="notice-box" style="margin-top:12px"><h2>${s.end.title}</h2><p>${s.end.text}</p></div>`
+        : '';
+      for (const el of document.querySelectorAll('[data-lb]')) el.setAttribute('aria-pressed', String(el.dataset.lb === state));
+    }
+
     // Profile. Three balances, because the screen has to hold a negative total
     // and the cap as well as an ordinary one.
     const BALANCES = {
@@ -433,6 +529,7 @@
 
     setBalance('640');
     setHistory('pre');
+    setLeaderboard('during');
 
     document.addEventListener('click', event => {
       const button = event.target.closest('button');
@@ -441,6 +538,7 @@
       if (button.dataset.state) return setBalance(button.dataset.state);
       if (button.dataset.histState) { setHistory(button.dataset.histState); return setTab('history'); }
       if (button.dataset.filter) return setFilter(button.dataset.filter);
+      if (button.dataset.lb) return setLeaderboard(button.dataset.lb);
       if (button.dataset.season) {
         season = button.dataset.season;
         for (const el of document.querySelectorAll('[data-season]')) el.setAttribute('aria-pressed', String(el.dataset.season === season));
