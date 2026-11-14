@@ -88,6 +88,20 @@
     .launch p { margin-top: 3px; color: #3b4668; font-size: 13px; }
     .launch b { font-weight: 900; }
 
+    /* Support tickets (issue #16, slice 4) */
+    .tickets { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 9px; }
+    .tickets li { border: 1px solid var(--line); border-radius: 17px; background: #fff; padding: 13px 14px; }
+    .tickets b { display: block; font-size: 16px; font-weight: 900; }
+    .tickets small { display: block; color: var(--muted); font-size: 12px; margin-top: 2px; }
+    .pill { display: inline-block; margin-bottom: 6px; padding: 3px 10px; border-radius: 99px; font-size: 11px; font-weight: 900; }
+    .pill.open { background: var(--soft); color: var(--accent); }
+    .pill.closed { background: #eceef4; color: #4e5770; }
+    .keep { display: block; margin-top: 9px; padding-top: 9px; border-top: 1px solid #eceef4; color: #4e5770; font-size: 12px; font-weight: 700; line-height: 1.45; }
+    .keep b { display: inline; font-size: 12px; }
+    select, textarea { font: inherit; width: 100%; padding: 14px; border: 1px solid #c9cfe0; border-radius: 14px; background: #fff; color: var(--ink); font-size: 15px; }
+    select:focus-visible, textarea:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+    textarea { resize: vertical; }
+
     /* Account deletion (issue #16, slice 3) */
     .steps { display: flex; gap: 5px; }
     .steps span { flex: 1; height: 6px; border-radius: 99px; background: var(--line); }
@@ -373,8 +387,106 @@
         <button class="link" type="button" data-go="profile">← Back to Profile</button>
         <p class="eyebrow">Support</p>
         <h1 tabindex="-1">Tickets</h1>
-        <div class="panel"><p class="small">You have no tickets. Only you can see your tickets.</p></div>
-        <button class="primary" type="button" data-stub="The ticket form is designed in issue #26.">Create ticket</button>
+        <!-- Support tickets (issue #16, slice 4). Decision 8: tickets only,
+             created by the player alone, never changing points or access.
+             A closed ticket's description and connection details go 15 days
+             after closure, unless its log is shared with an open case. -->
+        <div class="view" data-tk="list">
+          <div class="panel">
+            <p class="small">Only you can see your tickets. When a ticket is closed, its description and connection details are deleted 15 days later. Evidence shared with another case that is still open is kept until that case closes.</p>
+          </div>
+          <ul class="tickets">
+            <li><span class="pill open">Open</span><b>Quiz cut out halfway</b><small>Attempt #EX-204 · example date 7</small>
+              <span class="keep">Your evidence is kept while this case is open.</span></li>
+            <li><span class="pill closed">Closed · network instability</span><b>Lost connection twice</b><small>Attempt #EX-187 · example date 5</small>
+              <span class="keep">Description and connection details are deleted on <b>example date 9</b>.</span></li>
+            <li><span class="pill closed">Closed · not enough evidence</span><b>Question did not load</b><small>Attempt #EX-152 · example date 3</small>
+              <span class="keep">Kept for now: this connection log is shared with another case that is still open.</span></li>
+          </ul>
+          <p class="small">Opening a ticket never changes your points or your access.</p>
+          <button class="primary" type="button" data-tk-go="create">Create ticket</button>
+        </div>
+
+        <div class="view" data-tk="empty" hidden>
+          <div class="panel">
+            <p class="small">You have no tickets. Support only opens one when you ask for it: nothing here is created automatically, and a connection problem does not open a ticket by itself.</p>
+          </div>
+          <button class="primary" type="button" data-tk-go="create">Create ticket</button>
+        </div>
+
+        <div class="view" data-tk="loading" hidden><p class="small" role="status">Loading your tickets…</p></div>
+
+        <div class="view" data-tk="error" hidden>
+          <div class="panel">
+            <h2>Could not load your tickets</h2>
+            <p class="small" style="margin-top:6px">Your tickets and your points are safe. Try again in a moment.</p>
+          </div>
+          <button class="ghost" type="button" data-stub="This mock does not reload anything.">Try again</button>
+        </div>
+
+        <div class="view" data-tk="create" hidden>
+          <h2>Create ticket</h2>
+          <label class="field"><span>Which attempt</span>
+            <select id="tk-attempt">
+              <option>Ranked quiz #EX-204 · example date 7 · ended early</option>
+              <option>Ranked quiz #EX-198 · example date 6 · finished, 15 of 15</option>
+              <option>Ranked quiz #EX-187 · example date 5 · ended early</option>
+            </select>
+          </label>
+          <label class="field"><span>What happened (optional)</span>
+            <textarea id="tk-note" rows="4" placeholder="Anything that helps. You can leave this empty."></textarea>
+          </label>
+          <div class="panel">
+            <h2>Sent with your ticket</h2>
+            <p class="small" style="margin-top:6px">The attempt you picked and the connection events recorded for it. Only you and the people reviewing your ticket can see them. Your tickets never appear on your profile or the leaderboard.</p>
+          </div>
+          <button class="primary" type="button" data-tk-go="sent">Send ticket</button>
+          <button class="ghost" type="button" data-tk-go="list">Cancel</button>
+        </div>
+
+        <div class="view" data-tk="sent" hidden>
+          <h2>Ticket sent</h2>
+          <p class="lead">Someone will look at it. You can close the app; nothing is waiting on you.</p>
+          <div class="panel"><p class="small">This does not change your points or your access, whatever the outcome is.</p></div>
+          <button class="ghost" type="button" data-tk-go="list">Back to your tickets</button>
+        </div>
+
+        <div class="view" data-tk="open" hidden>
+          <h2>Quiz cut out halfway</h2>
+          <p class="lead"><span class="pill open">Open</span></p>
+          <div class="panel">
+            <p class="small"><b>Attempt</b> #EX-204 · example date 7</p>
+            <p class="small" style="margin-top:6px"><b>What you wrote</b> The quiz stopped answering and I could not get back in.</p>
+            <p class="small" style="margin-top:6px"><b>Sent with it</b> The connection events for that attempt.</p>
+          </div>
+          <p class="small">Your evidence is kept while this case is open. Nothing here changes your points or your access.</p>
+          <button class="ghost" type="button" data-tk-go="list">Back to your tickets</button>
+        </div>
+
+        <div class="view" data-tk="closed" hidden>
+          <h2>Lost connection twice</h2>
+          <p class="lead"><span class="pill closed">Closed · network instability</span></p>
+          <div class="panel">
+            <p class="small"><b>Attempt</b> #EX-187 · example date 5</p>
+            <p class="small" style="margin-top:6px"><b>Outcome</b> Closed as network instability. Your points and your access are unchanged.</p>
+          </div>
+          <p class="small">The description and the connection details of this ticket are deleted on <b>example date 9</b>. Your season points and quiz history stay.</p>
+          <button class="ghost" type="button" data-tk-go="list">Back to your tickets</button>
+        </div>
+
+        <div class="mock-controls">
+          <p>Mock controls · not part of the app</p>
+          <div class="row" role="group" aria-label="Tickets screen">
+            <button type="button" data-tk-go="list" aria-pressed="true">List</button>
+            <button type="button" data-tk-go="empty" aria-pressed="false">Empty</button>
+            <button type="button" data-tk-go="create" aria-pressed="false">Create</button>
+            <button type="button" data-tk-go="sent" aria-pressed="false">Sent</button>
+            <button type="button" data-tk-go="open" aria-pressed="false">Open ticket</button>
+            <button type="button" data-tk-go="closed" aria-pressed="false">Closed ticket</button>
+            <button type="button" data-tk-go="loading" aria-pressed="false">Loading</button>
+            <button type="button" data-tk-go="error" aria-pressed="false">Error</button>
+          </div>
+        </div>
       </section>
 
       <!-- Account deletion (issue #16, slice 3). The server behaviour is
@@ -484,6 +596,7 @@
       if (MEMBER_ONLY.includes(name) && mode !== 'member') name = 'login';
       stub.hidden = true;
       if (name === 'delete') setDelete('step1');
+      if (name === 'tickets') setTickets('list');
       for (const view of document.querySelectorAll('[data-view]')) view.hidden = view.dataset.view !== name;
       for (const el of document.querySelectorAll('[data-member]')) el.hidden = mode !== 'member';
       for (const el of document.querySelectorAll('[data-guest]')) el.hidden = mode !== 'guest';
@@ -503,6 +616,12 @@
       // The delete screen holds one h1 per step, so focus the visible one.
       const heading = [...document.querySelectorAll(`[data-view="${name}"] h1`)].find(h => h.offsetParent !== null);
       if (heading) heading.focus({ preventScroll: true });
+    }
+
+    // Support tickets. Opening Support always lands on the list.
+    function setTickets(state) {
+      for (const el of document.querySelectorAll('[data-tk]')) el.hidden = el.dataset.tk !== state;
+      for (const el of document.querySelectorAll('[data-tk-go]')) el.setAttribute('aria-pressed', String(el.dataset.tkGo === state));
     }
 
     // Account deletion. Opening the screen always resets to step 1 with the
@@ -652,6 +771,7 @@
       if (button.dataset.filter) return setFilter(button.dataset.filter);
       if (button.dataset.lb) return setLeaderboard(button.dataset.lb);
       if (button.dataset.delGo) return setDelete(button.dataset.delGo);
+      if (button.dataset.tkGo) return setTickets(button.dataset.tkGo);
       if (button.dataset.season) {
         season = button.dataset.season;
         for (const el of document.querySelectorAll('[data-season]')) el.setAttribute('aria-pressed', String(el.dataset.season === season));

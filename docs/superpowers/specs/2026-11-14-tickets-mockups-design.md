@@ -105,7 +105,6 @@ Support. Fictional data only.
 
 Branch `codex/tickets-mockups`, opened as a pull request for review.
 
-**Ordering note:** this branch starts from `codex/deletion-mockups` (PR #99)
-because both edit the same mockup file and #99 has not merged. #99 must merge
-first; this branch is then rebased onto `codex/ranked-mode` before its own
-pull request is opened, so the two never race on that file.
+**Ordering note:** this slice waited for PR #99 (slice 3), because both edit
+the same mockup file. #99 merged first, and this branch was then rebuilt on
+`codex/ranked-mode`, so the two never raced on that file.
