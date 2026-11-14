@@ -59,7 +59,8 @@ has to remember to remove. The spill is noted here rather than hidden.
 
 - The home mascot is still `assets/parcel-buddy.jpg`, whose pale blue
   backdrop now sits in a warm page. Slice 3.
-- The quiz feedback comparison block keeps a cold blue surface. Slice 2.
+- The quiz feedback comparison block keeps a cold blue surface. Fixed in
+  slice 2 below.
 
 ## Slice 2 — the quiz screens
 
@@ -87,3 +88,6 @@ This leaves two primary-button treatments in one app on purpose. The rule in
 - `node --test 'tests/*.test.mjs'`: 395 passing before and after.
 - Home, study, name entry and the deck picker at 320 px and 375 px: nothing
   cut off, no sideways scroll, no JavaScript error.
+- A whole quiz played through in a browser at 375 px: question card, timer,
+  belt answers, feedback for a wrong answer and the Continue action. No
+  sideways scroll and no JavaScript error.
