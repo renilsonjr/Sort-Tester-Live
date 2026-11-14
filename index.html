@@ -456,6 +456,13 @@
   .quiz-feedback .answer-compare { border: 0; border-radius: 17px; background: #fbf3e1; }
   .quiz-feedback .answer-row .answer { border-radius: 11px; }
   .quiz-feedback .why { border-color: var(--accent); }
+  /* On quiz screens the primary action is brown, not gold: the library's gold
+     (#f4bd38) and the YELLOW belt (#f6d33c) are nearly the same colour, and
+     on these screens yellow has to mean a belt, never a button. Deliberate,
+     settled with the owner 2026-11-14 — do not "fix" it back to gold. */
+  .quiz-card .primary, .quiz-feedback .primary, .bail .primary {
+    background: var(--accent); color: var(--accent-ink); border-color: var(--accent);
+  }
   .quiz-feedback .primary { border-radius: 14px; }
   .logl li { border-radius: 17px; }
   .bail { background: var(--bg); }

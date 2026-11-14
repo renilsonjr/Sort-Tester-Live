@@ -61,6 +61,27 @@ has to remember to remove. The spill is noted here rather than hidden.
   backdrop now sits in a warm page. Slice 3.
 - The quiz feedback comparison block keeps a cold blue surface. Slice 2.
 
+## Slice 2 — the quiz screens
+
+- The feedback comparison block and the remaining plain whites moved to the
+  warm surfaces.
+- **Belt answer colours are untouched**, from `BELT_STYLE`.
+
+### Gold cannot mean "button" where yellow means "belt"
+
+The library's gold is `#f4bd38`; the YELLOW belt is `#f6d33c`. They differ by
+2, 22 and 4 per channel — side by side on a phone they read as one colour.
+In the app gold now means "this is the primary action", while YELLOW means
+"this package goes to the yellow belt". On the feedback screen a YELLOW chip
+would sit beside a gold Continue: information and action, identical.
+
+**Settled with the owner on 2026-11-14:** on quiz screens the primary action
+is brown; the calm screens keep the library's gold. On a quiz screen, yellow
+therefore always means a belt and never a button.
+
+This leaves two primary-button treatments in one app on purpose. The rule in
+`index.html` carries a comment saying so, so nobody "fixes" it back to gold.
+
 ## Checks
 
 - `node --test 'tests/*.test.mjs'`: 395 passing before and after.
