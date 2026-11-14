@@ -6,13 +6,11 @@ name: App image publish
 # Manual only, and only after the App image workflow has passed on the
 # commit being published.
 #
-# Visibility: the image carries the Ranked question bank. That bank is
-# already in this public repository, and the owner decided on 2026-11-14
-# to keep the package public too. The workflow therefore does not insist
-# on private; it insists that the package is what the person publishing
-# says it should be, and it checks BEFORE pushing, so a surprise stops
-# the run while nothing has been published. If the repository ever goes
-# private, publish with expected_visibility=private.
+# Visibility: the image carries the Ranked question bank, and the owner
+# made the package PRIVATE on 2026-11-14. The workflow checks that the
+# package is what the person publishing says it should be (private by
+# default), and it checks BEFORE pushing, so a surprise stops the run
+# while nothing has been published.
 on:
   workflow_dispatch:
     inputs:
@@ -24,10 +22,10 @@ on:
         description: 'What the GHCR package visibility must be'
         required: true
         type: choice
-        default: public
+        default: private
         options:
-          - public
           - private
+          - public
 
 permissions:
   contents: read
