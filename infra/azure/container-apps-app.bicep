@@ -53,10 +53,10 @@ param appOrigin string = ''
 param trustedProxies string = ''
 
 var appTags = {
-  'project': 'sort-tester-live'
-  'environment': 'staging'
+  project: 'sort-tester-live'
+  environment: 'staging'
   'data-classification': 'fictional-only'
-  'purpose': 'single-origin-app-container-apps'
+  purpose: 'single-origin-app-container-apps'
   'expires-on': expiresOn
 }
 

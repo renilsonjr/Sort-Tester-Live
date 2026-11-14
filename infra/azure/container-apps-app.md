@@ -185,6 +185,11 @@ az deployment group what-if \
                databaseUrl=<url from step 1>
 ```
 
+On a **re**deployment the summary is `2 to modify` instead: the app (image and
+settings) and the environment, whose two `-` lines (`mtls.enabled: false`,
+`encryption.enabled: false`) are defaults this template does not declare and
+are reported as noise. The four older resources must still show as ignored.
+
 Read the **whole** what-if output. It must show exactly two creates,
 `cae-sort-app-stg` and `ca-sort-app-stg`, with **zero** Delete, Modify or
 Replace lines. Stop if either name already exists, if anything else is
@@ -278,6 +283,11 @@ for n in $(seq 1 12); do curl -s -o /dev/null -w '%{http_code} ' -X POST "$URL/a
 curl -s -o /dev/null -w '%{http_code}\n' -X POST "$URL/api/auth/login" \
   -H "Origin: $URL" -H 'Content-Type: application/json' -d '{"login_id":"AAAA-AAAA-AAAA-AAAA"}'
 ```
+
+**Verified on staging, 2026-11-14:** with `trustedProxies=1`, A gave ten `401`
+then `429`, and B gave `401` while the first machine was still locked. The
+Container Apps ingress appends the real client address after anything the
+client sent, so one trusted proxy is the right setting there.
 
 - A must print ten `401` then `429`: forging the header does not evade the limit.
 - B must print `401`: another network has its own counter.

@@ -59,13 +59,13 @@ class SingleOriginAppTemplateTests(unittest.TestCase):
         self.assertIn("workloadProfileName: 'Consumption'", self.code)
         self.assertIn("cpu: json('0.25')", self.code)
         self.assertIn("memory: '0.5Gi'", self.code)
-        for key, value in {
-            "project": "sort-tester-live",
-            "environment": "staging",
-            "data-classification": "fictional-only",
-            "purpose": "single-origin-app-container-apps",
-        }.items():
-            self.assertIn(f"'{key}': '{value}'", self.code)
+        for line in (
+            "project: 'sort-tester-live'",
+            "environment: 'staging'",
+            "'data-classification': 'fictional-only'",
+            "purpose: 'single-origin-app-container-apps'",
+        ):
+            self.assertIn(line, self.code)
         self.assertIn("'expires-on': expiresOn", self.code)
 
     def test_https_only_ingress_with_a_health_probe(self):
