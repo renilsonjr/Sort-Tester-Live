@@ -36,21 +36,110 @@ grant.
 
 ## 1. Prepare the database
 
-The app does not create its own tables.
+The app does not create its own tables. Done once, on 2026-11-13, against
+`pg-sort-tester-rjstg1109`; the steps below are what actually worked.
 
-1. Create a database for the app on the existing server (not the one any
-   other work uses).
-2. From the repository root, with the app's URL in the environment:
+### 1a. Check how the server authenticates
 
-   ```sh
-   export SORT_TESTER_DATABASE_URL="postgresql://USER:PASSWORD@HOST:5432/DATABASE"
-   backend/.venv/bin/python -m backend.db.upgrade_app            # shows the target only
-   backend/.venv/bin/python -m backend.db.upgrade_app --confirm DATABASE
-   ```
+```sh
+az postgres flexible-server show -g rg-sort-tester-staging -n <server> \
+  --query '{admin:administratorLogin, auth:authConfig, net:network.publicNetworkAccess}' \
+  --output json
+```
 
-Check: it prints `Revision after: 0020` (or later) and never prints the
-password. Reachability from your machine may need a firewall rule on the
-PostgreSQL server; add the narrowest one that works and remove it afterwards.
+Use `--output json`, not `table`: a table silently hides null and nested
+fields, which is how the Entra-only setting was missed the first time.
+
+**If `passwordAuth` is `Disabled`,** the app cannot connect at all: it sends a
+static `postgresql://` string, while an Entra credential is a token that
+expires within the hour. Enable password authentication **in the portal**
+(server → Authentication → "PostgreSQL and Microsoft Entra ID authentication"),
+because `az postgres flexible-server update` has `--admin-password` but **no**
+flag for the admin username, so the CLI path fails with
+`EngineCredentialsNotProvided`. It takes several minutes; let it finish.
+Managed identity instead of a password is #84.
+
+Password rules: at least 8 characters, from three of uppercase, lowercase,
+digits and symbols. Generate one that is also safe inside a URL — letters and
+digits only, so nothing needs percent-encoding:
+
+```sh
+LC_ALL=C tr -dc 'A-Za-z0-9' </dev/urandom | head -c 32; echo
+```
+
+Keep it in a password manager. Never let a command print it: `az ... update
+--password-auth Enabled` with no `-p` **generates and prints** one.
+
+### 1b. Create the database
+
+```sh
+az postgres flexible-server db create -g rg-sort-tester-staging \
+  --server-name <server> --name sort_tester_app
+```
+
+The flag is `--name`, not `--database-name`. In this command group `--name` is
+always the thing being acted on — hence `firewall-rule` below, where `--name`
+is the *rule* and the server is `--server-name`.
+
+### 1c. Open the firewall for your machine only
+
+```sh
+curl -s https://api.ipify.org                      # your public IP
+az postgres flexible-server firewall-rule create -g rg-sort-tester-staging \
+  --server-name <server> --name migration --start-ip-address <IP> --end-ip-address <IP>
+```
+
+Confirm the path works before typing the real password — a deliberately wrong
+one proves the network, TLS and the user are fine:
+
+```sh
+PGCONNECT_TIMEOUT=15 PGPASSWORD='wrong-on-purpose' psql \
+  "host=<server>.postgres.database.azure.com port=5432 dbname=sort_tester_app user=<admin> sslmode=require" -c 'select 1'
+```
+
+`FATAL: password authentication failed` is the answer you want. A timeout
+means the firewall rule is wrong.
+
+### 1d. Migrate
+
+From a checkout that **has** `backend/db/upgrade_app.py` (it landed in #79, so
+an older branch will not have it), one line at a time:
+
+```sh
+read -rsp "Paste the password and press Enter: " PGPW; echo
+echo "length: ${#PGPW}"     # must match the password you generated
+export SORT_TESTER_DATABASE_URL="postgresql://<admin>:$PGPW@<server>.postgres.database.azure.com:5432/sort_tester_app?sslmode=require"
+backend/.venv/bin/python -m backend.db.upgrade_app                      # shows the target only
+backend/.venv/bin/python -m backend.db.upgrade_app --confirm sort_tester_app
+```
+
+`read -rsp` prints a prompt, hides what you type, and keeps the password out of
+shell history. Run it **alone**: pasted together with the next command, `read`
+swallows that command as the password. The length check catches exactly that.
+
+Check `Revision after: 0020` (or later), then that every table arrived:
+
+```sh
+backend/.venv/bin/python -c "
+from backend.db import migrate, settings
+u = settings.app_database_url()
+names = '''accounts assignment_questions assignments attempt_answers
+attempt_connection_events attempts balance_history balances confirmed_outages
+connection_flags emails login_credentials outbox participant_links
+question_versions season_markers seasons sessions settlements'''.split()
+print('revision:', migrate.current_revision(u))
+print('missing:', [t for t in names if not migrate.table_exists(u, t)] or 'none')
+"
+```
+
+### 1e. Close the firewall again
+
+```sh
+az postgres flexible-server firewall-rule delete -g rg-sort-tester-staging \
+  --server-name <server> --name migration --yes
+```
+
+`az` lives in Cloud Shell, not on your own machine, unless you installed it.
 
 ## 2. Publish the image privately
 
@@ -94,6 +183,28 @@ Replace lines. Stop if either name already exists, if anything else is
 touched, or if the output is cut off.
 
 ## 5. Deploy
+
+### 5a. Let the app reach the database
+
+The app runs inside Azure, not on your machine, so the rule from step 1c does
+nothing for it. A Consumption Container App has no fixed outbound IP, so the
+only rule that fits is the Azure-services one — the all-zero range is how
+Azure spells "any Azure resource", not "the whole internet":
+
+```sh
+az postgres flexible-server firewall-rule create -g rg-sort-tester-staging \
+  --server-name <server> --name allow-azure-services \
+  --start-ip-address 0.0.0.0 --end-ip-address 0.0.0.0
+```
+
+Be clear about what this gives away: at the network layer, any Azure resource,
+including other people's, can reach the server. The password is then the only
+barrier. That is the price of the Consumption plan's dynamic egress, and it is
+a large part of why #84 (managed identity) matters before employee data. Add
+this rule at deployment time, not earlier, and remove it when the app is
+removed in step 8.
+
+### 5b. Create the app
 
 ```sh
 az deployment group create \
@@ -160,7 +271,12 @@ database keeps costing until it is deleted or stopped separately.
 ```sh
 az containerapp delete --name ca-sort-app-stg --resource-group rg-sort-tester-staging
 az containerapp env delete --name cae-sort-app-stg --resource-group rg-sort-tester-staging
+az postgres flexible-server firewall-rule delete -g rg-sort-tester-staging \
+  --server-name <server> --name allow-azure-services --yes
 ```
+
+Remove the firewall rule from step 5a too: with no app, nothing should be able
+to reach the database.
 
 Confirm both are gone and that **every pre-existing resource ID from step 0 is
 still there**. Do not delete the resource group. Record any cleanup failure
