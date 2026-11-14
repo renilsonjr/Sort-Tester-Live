@@ -10,7 +10,8 @@ request:
 
 1. Profile (this slice).
 2. Leaderboard.
-3. Private settings: email and the launch reminder opt-in.
+3. Private settings: the launch reminder opt-in, and email only if the open
+   question below is settled that way.
 4. Account deletion.
 5. Support tickets and retention states.
 
@@ -60,11 +61,34 @@ leads into them as it would in the app. Fictional data only.
 5. **pre season history, after launch.** The filtered list, each row showing
    the date, the result and a written status: Completed or Ended at launch.
    An attempt ended at launch shows no score and no invented answers.
-6. **Settings.** The row names only: email and reminders, delete account,
-   log out.
+6. **Settings.** The row names only: delete account and log out. The owner
+   removed the email row on review (see Open question below).
 
 Also mocked, as #16 asks: the history tab **loading**, **empty** and
 **error** states.
+
+## Open question — email
+
+On review the owner said the email part had already been asked for earlier
+and should not be added, so the Settings tab holds no email row.
+
+The repository records an email removal only inside the login ID auth plan
+(2026-11-11), scoped to that plan: recovery is in-person, not by email. Two
+settled items still assume an email exists:
+
+- Decision 14 keeps an optional private email, never shown in profiles or
+  the leaderboard.
+- Decision 15 is the launch reminder opt-in, "Email me when the first
+  official season starts", and issue #27 is its delivery. Both need a
+  verified email address.
+
+The backend already has an `emails` table (migration 0003) and deletion
+cascades it.
+
+So "no email anywhere in the app" would supersede Decision 15 and close
+issue #27, and "no email on this screen" would not. This slice takes the
+narrow reading: the mock shows no email row. The broader call is the
+owner's and is not recorded here as made.
 
 ## Limits
 
