@@ -21,21 +21,66 @@ class _Request:
 
 
 class ClientAddressTests(unittest.TestCase):
-    def test_forwarded_header_is_ignored_without_a_trusted_proxy(self):
-        with mock.patch.dict(os.environ, {}, clear=False):
-            os.environ.pop("SORT_TEST_TRUST_PROXY", None)
-            key = _client_key(_Request("10.0.0.5", forwarded="203.0.113.9"))
-        self.assertEqual(key, "10.0.0.5")
+    """Which address a request is counted under (issue #78).
 
-    def test_forwarded_header_is_used_behind_a_trusted_proxy(self):
-        with mock.patch.dict(os.environ, {"SORT_TEST_TRUST_PROXY": "1"}):
-            key = _client_key(_Request("10.0.0.5", forwarded="203.0.113.9, 10.0.0.1"))
-        self.assertEqual(key, "203.0.113.9")
+    Each proxy APPENDS the address it received the request from, so only the
+    entries written by our own proxies, counted from the right, can be
+    believed. Everything to their left is whatever the client chose to send.
+    """
+
+    def key(self, host, forwarded=None, trust=None):
+        environment = {} if trust is None else {"SORT_TEST_TRUST_PROXY": trust}
+        with mock.patch.dict(os.environ, environment, clear=True):
+            return _client_key(_Request(host, forwarded=forwarded))
+
+    def test_forwarded_header_is_ignored_without_a_trusted_proxy(self):
+        self.assertEqual(self.key("10.0.0.5", "203.0.113.9"), "10.0.0.5")
+
+    def test_one_trusted_proxy_uses_the_last_entry(self):
+        self.assertEqual(self.key("10.0.0.5", "203.0.113.9", trust="1"), "203.0.113.9")
+
+    def test_a_forged_entry_in_front_is_not_believed(self):
+        # The client sent "1.2.3.4"; the ingress appended the real address.
+        for forged in ("1.2.3.4", "1.2.3.4, 5.6.7.8", "evil, 1.2.3.4"):
+            with self.subTest(forged=forged):
+                self.assertEqual(
+                    self.key("10.0.0.5", f"{forged}, 203.0.113.9", trust="1"), "203.0.113.9"
+                )
+
+    def test_changing_the_forged_part_never_changes_the_key(self):
+        keys = {self.key("10.0.0.5", f"9.9.9.{n}, 203.0.113.9", trust="1") for n in range(20)}
+        self.assertEqual(keys, {"203.0.113.9"})
+
+    def test_two_trusted_proxies_use_the_second_entry_from_the_right(self):
+        self.assertEqual(
+            self.key("10.0.0.5", "1.2.3.4, 203.0.113.9, 10.9.9.9", trust="2"), "203.0.113.9"
+        )
+
+    def test_fewer_entries_than_trusted_proxies_falls_back_to_the_connection(self):
+        self.assertEqual(self.key("10.0.0.5", "203.0.113.9", trust="2"), "10.0.0.5")
 
     def test_no_header_uses_the_connection_address(self):
-        with mock.patch.dict(os.environ, {"SORT_TEST_TRUST_PROXY": "1"}):
-            key = _client_key(_Request("10.0.0.5"))
-        self.assertEqual(key, "10.0.0.5")
+        self.assertEqual(self.key("10.0.0.5", trust="1"), "10.0.0.5")
+
+    def test_an_entry_that_is_not_an_address_falls_back_to_the_connection(self):
+        for junk in ("unknown", "", "not-an-ip", "203.0.113.9 extra", "<script>"):
+            with self.subTest(junk=junk):
+                self.assertEqual(self.key("10.0.0.5", f"1.2.3.4, {junk}", trust="1"), "10.0.0.5")
+
+    def test_a_port_on_the_entry_is_dropped(self):
+        self.assertEqual(self.key("10.0.0.5", "203.0.113.9:51234", trust="1"), "203.0.113.9")
+        self.assertEqual(self.key("10.0.0.5", "[2001:db8::1]:443", trust="1"), "2001:db8::1")
+
+    def test_ipv6_addresses_are_normalised_to_one_spelling(self):
+        self.assertEqual(
+            self.key("10.0.0.5", "2001:0DB8:0000:0000:0000:0000:0000:0001", trust="1"),
+            "2001:db8::1",
+        )
+
+    def test_a_setting_that_is_not_a_small_whole_number_trusts_nothing(self):
+        for value in ("yes", "true", "-1", "0", "1.5", "99", ""):
+            with self.subTest(value=value):
+                self.assertEqual(self.key("10.0.0.5", "203.0.113.9", trust=value), "10.0.0.5")
 
 
 @unittest.skipUnless(

@@ -260,6 +260,32 @@ Optional, once the FQDN is known: redeploy with `appOrigin=$URL` so writes are
 checked against the public origin rather than the ingress host. Everything
 above must still pass afterwards.
 
+### 6a. Decide whether to trust the ingress for client addresses (issue #78)
+
+Without this the app sees every request as coming from the ingress, so ALL
+players share one login-attempt counter: ten wrong logins by anyone lock
+everyone out for five minutes. `trustedProxies=1` makes the app count each
+request under the last `X-Forwarded-For` entry, the one the ingress wrote.
+Prove that entry is the real client before relying on it. Redeploy with
+`trustedProxies=1` added to the step 5b parameters, then, with `URL` set:
+
+```sh
+# A. From one machine: a different forged address on every request.
+for n in $(seq 1 12); do curl -s -o /dev/null -w '%{http_code} ' -X POST "$URL/api/auth/login" \
+  -H "Origin: $URL" -H 'Content-Type: application/json' -H "X-Forwarded-For: 9.9.9.$n" \
+  -d '{"login_id":"AAAA-AAAA-AAAA-AAAA"}'; done; echo
+# B. Straight afterwards, from a DIFFERENT network (Cloud Shell, a phone on mobile data):
+curl -s -o /dev/null -w '%{http_code}\n' -X POST "$URL/api/auth/login" \
+  -H "Origin: $URL" -H 'Content-Type: application/json' -d '{"login_id":"AAAA-AAAA-AAAA-AAAA"}'
+```
+
+- A must print ten `401` then `429`: forging the header does not evade the limit.
+- B must print `401`: another network has its own counter.
+- If A never reaches `429`, the counted entry is client-controlled: set
+  `trustedProxies` back to empty and stop.
+- If B prints `429`, the counted entry is a shared internal address: try
+  `trustedProxies=2`, repeat both, and if that fails too, leave it empty.
+
 ## 7. Read the real cost
 
 Billing data lags, usually 8 to 24 hours.
