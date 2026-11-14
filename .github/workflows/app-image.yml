@@ -98,6 +98,20 @@ jobs:
           expect /src/%2e%2e/backend/main.py 404
           curl -s "$base/" | grep -q 'src="src/app.js' || { echo "/ is not the app page"; exit 1; }
 
+          # The generated API docs are closed, and every answer is hardened.
+          expect /docs 404
+          expect /redoc 404
+          expect /openapi.json 404
+          curl -s -D /tmp/page-headers.txt -o /dev/null "$base/"
+          for header in strict-transport-security x-content-type-options x-frame-options \
+                        referrer-policy content-security-policy; do
+            grep -qi "^$header:" /tmp/page-headers.txt || { echo "Missing header: $header"; cat /tmp/page-headers.txt; exit 1; }
+          done
+          if grep -qi '^server: *uvicorn' /tmp/page-headers.txt; then echo 'Server software is advertised'; exit 1; fi
+          code=$(head -c 200000 /dev/zero | tr '\0' 'a' | curl -s -o /dev/null -w '%{http_code}' -X POST "$base/api/auth/register" \
+            -H "Origin: $base" -H 'Content-Type: application/json' --data-binary @-)
+          [ "$code" = 413 ] || { echo "oversized body: expected 413, got $code"; exit 1; }
+
           jar=$(mktemp)
           # Writes must state their origin, exactly as a browser does.
           same_origin="Origin: http://127.0.0.1:8000"
