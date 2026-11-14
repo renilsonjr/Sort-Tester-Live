@@ -144,9 +144,9 @@ Stop new Ranked admission at closing. Already-started attempts get five extra mi
 
 **SETTLED OWNER POLICY (revised 2026-11-11 for login ID auth; see [login ID auth plan (v2)](../plans/2026-11-11-login-id-auth-plan.md)); technical defaults proposed separately.** Owners: #6/#7/#10/#11/#12/#15/#16.
 
-- Case-insensitive unique username, stable internal ownership (`accounts.id` UUID) and generated permanent unique six-character uppercase alphanumeric tag. Supported renames keep ownership/tag. No required real name, employee-ID upload or phone collection. Optional email remains private and never appears in profiles/leaderboards.
+- Case-insensitive unique username, stable internal ownership (`accounts.id` UUID) and generated permanent unique six-character uppercase alphanumeric tag. Supported renames keep ownership/tag. No required real name, employee-ID upload or phone collection. **No email address is collected (settled 2026-11-14; supersedes the earlier optional private email).**
 - **Login credential (v2):** on account creation the system generates a separate **login ID** (short, grouped, easy-to-type secret) shown **once**; the login page accepts only this login ID (no password). It is distinct from the display identity beside names (`username`/`tag`). Store only a verifier (no raw login ID); treat as a bearer secret with rate limiting and generic failures.
-- **Lost access / recovery (v2):** there is no self-service password or secret recovery. If a user loses the login ID, only the **admin/owner may grant/regenerate access** after **in-person verification at work against a trusted participant/account link established before the request** (owner-approved). Public username/tag alone is insufficient; no trusted prior link means no reset/grant via this route. Recovery restores access only to the same existing account by issuing a **new login ID shown once** (revoking the old credential and sessions); never disclose the old secret, never transfer points, never create substitute prize eligibility, and never restore wiped data or grant player-private history access. Adding/verifying email or recovering access never grants reminder consent.
+- **Lost access / recovery (v2):** there is no self-service password or secret recovery. If a user loses the login ID, only the **admin/owner may grant/regenerate access** after **in-person verification at work against a trusted participant/account link established before the request** (owner-approved). Public username/tag alone is insufficient; no trusted prior link means no reset/grant via this route. Recovery restores access only to the same existing account by issuing a **new login ID shown once** (revoking the old credential and sessions); never disclose the old secret, never transfer points, never create substitute prize eligibility, and never restore wiped data or grant player-private history access. Recovering access never grants any notification consent.
 - The exact “pre season history” tab and all underlying lists/attempts/details/downloads are private to the owning player, server-enforced; no other-player access or automatic administrator exception. Authorized Support incident review remains limited to its incident scope.
 - Own-account deletion is self-service, authenticated and ownership-confirmed; no owner/admin approval. Opening the screen, checking a checkbox, canceling, a recovery request or a failed/unconfirmed deletion does not delete or withdraw anyone. The server must validate explicit acknowledgment and ownership, not trust a disabled browser button.
 - Dialog question: “Are you sure you want to proceed with deleting this account?” Required initially unchecked checkbox: “I agree to delete my account. I understand that deleting it before prizes are finalized removes this account from this season’s competition.” Offer Cancel and final Delete account, disabled until checked. Reopening resets it unchecked. Explain: “After deletion is completed, your profile, quiz history and points are removed. A new account starts at 0 points / Iron.” Disclose: “Your profile, email, quiz history and points are deleted. We keep only a private season-ineligibility record until prizes are finalized.”
@@ -158,14 +158,35 @@ Stop new Ranked admission at closing. Already-started attempts get five extra mi
 
 ## Decision 15 — one-time launch reminders
 
-**ADOPT NEW.** Owners: #27/#7/#10/#16/#23.
+**WITHDRAWN 2026-11-14 — no email anywhere in the app.** Owners: #27/#7/#10/#16/#23.
 
-- Separate initially unchecked option: “Email me when the first official season starts.” Recovery email alone is not consent; preference can change before launch.
-- Delivery requires verified email plus active opt-in; choosing preference before verification does not permit unverified delivery.
-- At launch retire opt-in, show season-start notice, preserve recovery email, and do not carry consent into future seasons.
-- Consent withdrawal/email removal cancels unsent/queued mail. Recheck consent/verification immediately before sending.
-- One initial attempt plus at most two retries within the first hour after launch: three total. Stop after provider-confirmed success, cancellation or exhaustion; record failure without blocking Ranked.
-- Proposed provider/budget, uncertain-send reconciliation and post-launch pending cancellation behavior are in [[2026-11-07-ranked-security-operations-design]] (Q11). No provider-independent exactly-once email guarantee is approved.
+The owner settled on 2026-11-14 that the app collects no email address at
+all. The earlier removal recorded in the [login ID auth plan
+(v2)](../plans/2026-11-11-login-id-auth-plan.md) covered only authentication
+and recovery; this one covers the whole app.
+
+- No email field, no verification, no stored address, and no mail of any
+  kind, including the launch reminder.
+- The withdrawn opt-in was: “Email me when the first official season starts,”
+  with verified email plus active consent, bounded retries and consent
+  rechecks. None of it applies.
+- The official season start is announced in the app only. Players learn
+  about the launch by opening Sort Lab.
+- **Launch notice placement (settled 2026-11-14):** the main home page shows
+  a small callout announcing the start and carrying the start date, beside
+  the existing sort-change announcements. It appears only once a start is
+  confirmed; during Pre-Season there is no callout and no invented date, as
+  Decision 16 already requires. The Ranked landing page remains the main
+  season display; this callout is the short notice on the home page, not a
+  second season display. Guests see it too (settled 2026-11-14), with a
+  second sentence inviting them to log in rather than one about a reset
+  balance they do not have.
+- Issue #27 (verified opt-in launch reminder delivery) has nothing left to
+  build.
+- Any email rows, consent records and queued mail that the database already
+  carries are to be removed; their removal is an implementation task, not a
+  new retention exception. The deletion wipe in Decision 14 continues to name
+  email records so an existing row cannot survive a deletion.
 
 ## Decision 16 — standings and notices
 
@@ -189,6 +210,7 @@ Logged-in Ranked landing page is the main season display: Pre-Season with no inv
 | Count four ended quizzes | Count distinct server-observed losses within an attempt |
 | Automatic Support ticket / 90-day closed retention | Player-requested ticket / 15 days after closure |
 | Phone/SMS, extra achievements, January season start | Deferred/unapproved |
+| Optional private email and the one-time email launch reminder | Withdrawn 2026-11-14: no email anywhere; the launch is announced in the app only |
 
 ## Decision status and implementation gates
 
