@@ -88,6 +88,19 @@
     .launch p { margin-top: 3px; color: #3b4668; font-size: 13px; }
     .launch b { font-weight: 900; }
 
+    /* Account deletion (issue #16, slice 3) */
+    .steps { display: flex; gap: 5px; }
+    .steps span { flex: 1; height: 6px; border-radius: 99px; background: var(--line); }
+    .steps span.on { background: #a3332c; }
+    .check { display: flex; gap: 11px; align-items: flex-start; border: 1px solid var(--line); border-radius: 17px; background: #fff; padding: 14px; font-size: 14px; line-height: 1.45; cursor: pointer; }
+    .check input { width: 22px; height: 22px; flex: none; margin: 0; accent-color: var(--accent); }
+    .danger { background: #a3332c; color: #fff; }
+    .danger:disabled { background: #eceef4; color: #8d94a6; cursor: not-allowed; }
+    .warn-box { border: 1px solid #f0c9c5; border-radius: 17px; background: #fdf2f1; padding: 13px 15px; color: #7a2622; }
+    .warn-box h2 { font-size: 16px; }
+    .warn-box p { margin-top: 4px; font-size: 13px; }
+    .error-text { color: #a3332c; font-size: 14px; font-weight: 900; }
+
     /* Leaderboard (issue #16, slice 2) */
     .notice-box { border: 1px solid #d9dff7; border-radius: 17px; background: #eff2ff; padding: 13px 15px; }
     .notice-box h2 { font-size: 16px; }
@@ -334,7 +347,7 @@
         </div>
 
         <div class="view" id="panel-settings" role="tabpanel" aria-labelledby="tab-settings" hidden>
-          <button class="choice alt" type="button" data-stub="Account deletion is designed in slice 4 of issue #16."><span class="choice-icon" aria-hidden="true">!</span><span><strong>Delete account</strong><small>Removes your profile, history and points.</small></span><span class="arrow" aria-hidden="true">→</span></button>
+          <button class="choice alt" type="button" data-go="delete"><span class="choice-icon" aria-hidden="true">!</span><span><strong>Delete account</strong><small>Removes your profile, history and points.</small></span><span class="arrow" aria-hidden="true">→</span></button>
           <button class="ghost" type="button" data-leave>Log out</button>
         </div>
 
@@ -364,6 +377,69 @@
         <button class="primary" type="button" data-stub="The ticket form is designed in issue #26.">Create ticket</button>
       </section>
 
+      <!-- Account deletion (issue #16, slice 3). The server behaviour is
+           already built in #47: the login ID typed here is the
+           reauthentication, a wrong one changes nothing and does not say
+           which part was wrong, the owner cannot delete, and an accepted
+           deletion is pending, never completed. -->
+      <section class="view" data-view="delete" hidden>
+        <button class="link" type="button" data-go="profile">← Back to Profile</button>
+        <p class="eyebrow" id="del-step-label">Settings · step 1 of 2</p>
+        <div class="steps" aria-hidden="true"><span class="on" id="del-bar-1"></span><span id="del-bar-2"></span></div>
+
+        <div class="view" data-del="step1">
+          <h1 tabindex="-1">Are you sure you want to proceed with deleting this account?</h1>
+          <p class="lead">After deletion is completed, your profile, quiz history and points are removed. A new account starts at 0 points / Iron.</p>
+          <label class="check">
+            <input type="checkbox" id="del-ack">
+            <span>I agree to delete my account. I understand that deleting it before prizes are finalized removes this account from this season's competition.</span>
+          </label>
+          <p class="small" id="del-hint">Tick the box above to continue.</p>
+          <button class="primary danger" type="button" id="del-continue" disabled>Continue</button>
+          <button class="ghost" type="button" data-go="profile">Cancel</button>
+          <p class="note">Your profile, quiz history and points are deleted. We keep only a private season-ineligibility record until prizes are finalized.</p>
+        </div>
+
+        <div class="view" data-del="step2" hidden>
+          <h1 tabindex="-1">Type your login ID to confirm</h1>
+          <div class="warn-box">
+            <h2>This cannot be undone</h2>
+            <p>Once this is accepted there is no undo, no restore and no way to get this season's prizes back.</p>
+          </div>
+          <label class="field"><span>Login ID</span><input type="text" id="del-id" autocomplete="off" placeholder="EXAMPLE-ID"></label>
+          <p class="error-text" id="del-error" role="alert" hidden>That did not work. Nothing has been deleted.</p>
+          <button class="primary danger" type="button" id="del-confirm">Delete account</button>
+          <button class="ghost" type="button" data-go="profile">Cancel</button>
+          <p class="note"><strong>Design mock.</strong> Typing <strong>EXAMPLE-ID</strong> shows the accepted screen; anything else shows the failure. Nothing is sent.</p>
+        </div>
+
+        <div class="view" data-del="pending" hidden>
+          <h1 tabindex="-1">Deletion accepted</h1>
+          <p class="lead">You have been signed out and this account can no longer be used. Removing your data is under way.</p>
+          <div class="panel">
+            <p class="small">There is no undo and nothing to restore. A new account would start at 0 points and Iron, and cannot get this season's prizes back.</p>
+          </div>
+          <button class="ghost" type="button" data-leave>Back to the start</button>
+          <p class="note"><strong>No "completed" screen exists on purpose.</strong> The app can only say a deletion is accepted and under way. Saying "completed" needs verified erasure from backups and outside providers, which are not built yet (#13, #41).</p>
+        </div>
+
+        <div class="view" data-del="owner" hidden>
+          <h1 tabindex="-1">This account cannot be deleted</h1>
+          <p class="lead">You are the owner. The owner account stays, so Sort Lab is never left with nobody in charge.</p>
+          <button class="ghost" type="button" data-go="profile">Back to Profile</button>
+        </div>
+
+        <div class="mock-controls">
+          <p>Mock controls · not part of the app</p>
+          <div class="row" role="group" aria-label="Deletion screen">
+            <button type="button" data-del-go="step1" aria-pressed="true">Step 1</button>
+            <button type="button" data-del-go="step2" aria-pressed="false">Step 2</button>
+            <button type="button" data-del-go="pending" aria-pressed="false">Accepted</button>
+            <button type="button" data-del-go="owner" aria-pressed="false">Owner account</button>
+          </div>
+        </div>
+      </section>
+
       <p class="note" id="stub" role="status" style="margin-top:12px" hidden></p>
     </main>
 
@@ -378,8 +454,8 @@
       member: [['home', '⌂', 'Home'], ['practice', '≡', 'Practice'], ['ranked', '◆', 'Ranked'], ['profile', '●', 'Profile']],
     };
     // Screens that live inside a tab keep that tab marked as current.
-    const PARENT_TAB = { leaderboard: 'ranked', tickets: 'profile' };
-    const MEMBER_ONLY = ['ranked', 'leaderboard', 'profile', 'tickets'];
+    const PARENT_TAB = { leaderboard: 'ranked', tickets: 'profile', delete: 'profile' };
+    const MEMBER_ONLY = ['ranked', 'leaderboard', 'profile', 'tickets', 'delete'];
     let mode = 'public';
     // The home callout appears only once a start is confirmed. During
     // Pre-Season there is no callout and no invented date.
@@ -407,6 +483,7 @@
       // A guest can never reach a logged-in screen, even through a stray link.
       if (MEMBER_ONLY.includes(name) && mode !== 'member') name = 'login';
       stub.hidden = true;
+      if (name === 'delete') setDelete('step1');
       for (const view of document.querySelectorAll('[data-view]')) view.hidden = view.dataset.view !== name;
       for (const el of document.querySelectorAll('[data-member]')) el.hidden = mode !== 'member';
       for (const el of document.querySelectorAll('[data-guest]')) el.hidden = mode !== 'guest';
@@ -423,8 +500,43 @@
         `<button type="button" data-go="${id}"${id === current ? ' aria-current="page"' : ''}><i aria-hidden="true">${icon}</i>${label}</button>`).join('');
 
       window.scrollTo(0, 0);
-      document.querySelector(`[data-view="${name}"] h1`).focus({ preventScroll: true });
+      // The delete screen holds one h1 per step, so focus the visible one.
+      const heading = [...document.querySelectorAll(`[data-view="${name}"] h1`)].find(h => h.offsetParent !== null);
+      if (heading) heading.focus({ preventScroll: true });
     }
+
+    // Account deletion. Opening the screen always resets to step 1 with the
+    // box unchecked and the field empty: nothing about a previous visit
+    // carries over, and nothing here deletes anything.
+    function setDelete(step) {
+      for (const el of document.querySelectorAll('[data-del]')) el.hidden = el.dataset.del !== step;
+      for (const el of document.querySelectorAll('[data-del-go]')) el.setAttribute('aria-pressed', String(el.dataset.delGo === step));
+      const onStep2 = step === 'step2';
+      document.getElementById('del-bar-2').classList.toggle('on', onStep2);
+      document.getElementById('del-step-label').textContent =
+        step === 'step1' ? 'Settings · step 1 of 2'
+          : onStep2 ? 'Settings · step 2 of 2'
+            : 'Settings';
+      document.getElementById('del-error').hidden = true;
+      if (step === 'step1') {
+        document.getElementById('del-ack').checked = false;
+        document.getElementById('del-continue').disabled = true;
+        document.getElementById('del-hint').hidden = false;
+        document.getElementById('del-id').value = '';
+      }
+    }
+
+    document.getElementById('del-ack').addEventListener('change', event => {
+      document.getElementById('del-continue').disabled = !event.target.checked;
+      document.getElementById('del-hint').hidden = event.target.checked;
+    });
+    document.getElementById('del-continue').addEventListener('click', () => setDelete('step2'));
+    document.getElementById('del-confirm').addEventListener('click', () => {
+      // One message for every failure, so nobody can learn whether an
+      // account exists by trying login IDs against it.
+      if (document.getElementById('del-id').value.trim().toUpperCase() === 'EXAMPLE-ID') setDelete('pending');
+      else document.getElementById('del-error').hidden = false;
+    });
 
     // Leaderboard. No timestamps anywhere: the first-reached-score rule was
     // superseded by tie-break quizzes, and showing a time would revive it.
@@ -539,6 +651,7 @@
       if (button.dataset.histState) { setHistory(button.dataset.histState); return setTab('history'); }
       if (button.dataset.filter) return setFilter(button.dataset.filter);
       if (button.dataset.lb) return setLeaderboard(button.dataset.lb);
+      if (button.dataset.delGo) return setDelete(button.dataset.delGo);
       if (button.dataset.season) {
         season = button.dataset.season;
         for (const el of document.querySelectorAll('[data-season]')) el.setAttribute('aria-pressed', String(el.dataset.season === season));
