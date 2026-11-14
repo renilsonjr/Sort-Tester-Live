@@ -8,7 +8,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 
-from backend import origin_guard
+from backend import http_hardening, origin_guard
 from backend.auth.rate_limit import RegistrationLimiter
 from backend.routers import auth, ranked
 
@@ -25,7 +25,14 @@ def create_app() -> FastAPI:
         # urlsplit also rejects invalid IPv6 addresses and out-of-range ports.
         urlsplit(origin).port
 
-    application = FastAPI()
+    # The generated API docs list every route, owner and admin ones included,
+    # so they exist only where a developer asks for them.
+    docs = os.environ.get("SORT_TESTER_API_DOCS", "").strip() == "1"
+    application = FastAPI(
+        docs_url="/docs" if docs else None,
+        redoc_url="/redoc" if docs else None,
+        openapi_url="/openapi.json" if docs else None,
+    )
     # one sign-up limiter per application instance (owner caps: 30/hour per
     # address, 200/day in total)
     application.state.registration_limiter = RegistrationLimiter()
@@ -47,6 +54,10 @@ def create_app() -> FastAPI:
             allow_headers=["Content-Type", "X-Attempt-Capability"],
             allow_credentials=True,
         )
+
+    # Added after the guard and CORS so it is outermost: its headers and the
+    # body cap apply to every answer, refusals and preflight included.
+    http_hardening.install(application)
 
     application.include_router(auth.router)
     application.include_router(ranked.router)
