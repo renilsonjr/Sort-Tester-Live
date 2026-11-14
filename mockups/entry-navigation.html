@@ -153,7 +153,16 @@
     .fold[open] summary::after { content: "−"; }
     .fold-body { border-top: 1px solid var(--line); padding: 14px 16px; }
     .ladder { list-style: none; margin: 0 0 10px; padding: 0; display: flex; flex-direction: column; gap: 6px; }
-    .ladder li { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; border: 1px solid var(--line); border-radius: 13px; padding: 9px 11px; font-size: 14px; font-weight: 900; }
+    .ladder li { display: grid; grid-template-columns: 44px 1fr auto; align-items: center; gap: 4px 11px; border: 1px solid var(--line); border-radius: 13px; padding: 9px 11px; font-size: 14px; font-weight: 900; }
+    .ladder img { width: 44px; height: 44px; object-fit: contain; grid-row: span 2; }
+    .ladder b { font-size: 15px; font-weight: 900; }
+    /* The approved badge art, from mockups/design-library/badges. */
+    .balance { display: flex; align-items: center; gap: 14px; }
+    .balance > div { min-width: 0; flex: 1; }
+    .balance-badge { width: 76px; height: 76px; flex: none; object-fit: contain; }
+    /* The approved Blender render carries its own backdrop, so it is framed
+       as a portrait rather than floated on the page. */
+    .avatar { display: block; width: 148px; height: 148px; margin: 2px auto 4px; border-radius: 24px; border: 1px solid var(--line); object-fit: cover; background: #ede6da; }
     .ladder li[aria-current="true"] { border: 2px solid var(--gold-line); background: var(--soft); color: var(--accent); }
     .ladder span { color: var(--muted); font-size: 12px; font-weight: 600; }
     .ladder li[aria-current="true"] span { color: var(--accent); font-weight: 900; }
@@ -234,6 +243,7 @@
       <!-- 4 and 6. Home (guest and logged in) -->
       <section class="view" data-view="home" hidden>
         <p class="eyebrow" id="home-eyebrow"></p>
+        <img class="avatar" src="assets-sm/avatar-idle.png" alt="">
         <h1 tabindex="-1">Test your skills and study the chart.</h1>
         <div class="launch" id="launch-callout" hidden>
           <i aria-hidden="true">!</i>
@@ -259,6 +269,7 @@
       <!-- 5. Practice (same for guest and logged in) -->
       <section class="view" data-view="practice" hidden>
         <p class="eyebrow">Practice</p>
+        <img class="avatar" src="assets-sm/avatar-thinking.png" alt="">
         <h1 tabindex="-1">Study and practice</h1>
         <p class="lead">Practice never changes Ranked points.</p>
         <button class="choice" type="button" data-stub="The study chart already exists in the live app."><span class="choice-icon" aria-hidden="true">01</span><span><strong>Know the chart</strong><small>Small chunks for ranges, sort changes and exceptions.</small></span><span class="arrow" aria-hidden="true">→</span></button>
@@ -316,11 +327,14 @@
         </div>
 
         <div class="view" id="panel-overview" role="tabpanel" aria-labelledby="tab-overview">
-          <div class="panel">
-            <p class="small">Your balance</p>
-            <p class="stat" id="balance-points">640 points</p>
-            <div class="bar"><i id="balance-bar" style="width:64%"></i></div>
-            <p class="small" id="balance-note">Iron · 360 points to the Iron cap (1,000)</p>
+          <div class="panel balance">
+            <img class="balance-badge" id="balance-art" src="assets-sm/badge-iron.png" alt="">
+            <div>
+              <p class="small">Your balance</p>
+              <p class="stat" id="balance-points">640 points</p>
+              <div class="bar"><i id="balance-bar" style="width:64%"></i></div>
+              <p class="small" id="balance-note">Iron · 360 points to the Iron cap (1,000)</p>
+            </div>
           </div>
           <div class="panel promo" id="promo" hidden>
             <h2>Promotion available</h2>
@@ -330,11 +344,11 @@
             <summary>How badges work</summary>
             <div class="fold-body">
               <ol class="ladder">
-                <li data-badge="Challenger">Challenger <span>4,001 and up, no cap</span></li>
-                <li data-badge="Gold">Gold <span>3,001–4,000</span></li>
-                <li data-badge="Silver">Silver <span>2,001–3,000</span></li>
-                <li data-badge="Bronze">Bronze <span>1,001–2,000</span></li>
-                <li data-badge="Iron" aria-current="true">Iron <span>Through 1,000 · you are here</span></li>
+                <li data-badge="Challenger"><img src="assets-sm/badge-challenger.png" alt=""><b>Challenger</b><span>4,001 and up, no cap</span></li>
+                <li data-badge="Gold"><img src="assets-sm/badge-gold.png" alt=""><b>Gold</b><span>3,001–4,000</span></li>
+                <li data-badge="Silver"><img src="assets-sm/badge-silver.png" alt=""><b>Silver</b><span>2,001–3,000</span></li>
+                <li data-badge="Bronze"><img src="assets-sm/badge-bronze.png" alt=""><b>Bronze</b><span>1,001–2,000</span></li>
+                <li data-badge="Iron" aria-current="true"><img src="assets-sm/badge-iron.png" alt=""><b>Iron</b><span>Through 1,000 · you are here</span></li>
               </ol>
               <p class="small">One balance decides your badge. Reaching a cap makes promotion available; only a perfect promotion quiz moves you up.</p>
             </div>
@@ -738,9 +752,9 @@
     // Profile. Three balances, because the screen has to hold a negative total
     // and the cap as well as an ordinary one.
     const BALANCES = {
-      '640': { points: '640 points', bar: 64, note: 'Iron · 360 points to the Iron cap (1,000)', promo: false },
-      '-40': { points: '−40 points', bar: 0, note: 'Iron · a negative total stays in Iron', promo: false },
-      '1000': { points: '1,000 points', bar: 100, note: 'Iron · at the Iron cap (1,000)', promo: true },
+      '640': { points: '640 points', bar: 64, note: 'Iron · 360 points to the Iron cap (1,000)', promo: false, badge: 'iron' },
+      '-40': { points: '−40 points', bar: 0, note: 'Iron · a negative total stays in Iron', promo: false, badge: 'iron' },
+      '1000': { points: '1,000 points', bar: 100, note: 'Iron · at the Iron cap (1,000)', promo: true, badge: 'iron' },
     };
 
     function setBalance(key) {
@@ -749,6 +763,7 @@
       document.getElementById('balance-bar').style.width = b.bar + '%';
       document.getElementById('balance-note').textContent = b.note;
       document.getElementById('promo').hidden = !b.promo;
+      document.getElementById('balance-art').src = 'assets-sm/badge-' + b.badge + '.png';
       for (const el of document.querySelectorAll('[data-state]')) el.setAttribute('aria-pressed', String(el.dataset.state === key));
     }
 
