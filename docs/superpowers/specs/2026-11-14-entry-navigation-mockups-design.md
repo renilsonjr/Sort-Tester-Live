@@ -90,6 +90,28 @@ fictional data, in the same manner as `mockups/friendly-study.html`.
 3. Tick an acceptance box on #15 only when everything it asks for is done and
    merged.
 
+## Review record (2026-11-14)
+
+The owner reviewed `mockups/entry-navigation.html` in a browser at 375 px
+wide, one group of screens at a time, and approved all of them unchanged:
+
+1. Entry.
+2. Log in and Lost login ID, keeping the wording "the Sort Lab owner".
+3. Guest home and Practice, without the mascot or the shift-log link.
+4. Logged-in Home, Ranked, Leaderboard, Profile and Support → Tickets.
+
+For the placeholders (Ranked, Leaderboard, Profile, Tickets) the approval
+covers the path to each screen, not its content.
+
+Checked before the review, at 320 px and 375 px: every path above reaches the
+right screen with the right tab marked; a guest who is sent to a logged-in
+screen lands on Log in; no screen scrolls sideways; every button is at least
+44 px tall; Tab reaches the controls with a visible outline and Enter
+activates them.
+
+Known and accepted: on the entry screen, Continue as guest sits below the
+first screenful on a phone and needs a short scroll.
+
 ## Delivery
 
 Branch `codex/entry-navigation-mockups` from `codex/ranked-mode`, holding this
