@@ -181,6 +181,7 @@ jobs:
         # With pip and the unused packages gone, the image scanned clean of
         # HIGH and CRITICAL findings, so a new one now fails the build.
         run: |
+          set -o pipefail  # without it, tee would hide a failing scan
           docker run --rm -v /var/run/docker.sock:/var/run/docker.sock aquasec/trivy:0.76.2 \
             image --no-progress --severity HIGH,CRITICAL --exit-code 1 "$IMAGE" | tee /tmp/trivy.txt
           { echo '### Trivy (HIGH/CRITICAL, blocking)'; echo '```'; tail -n 40 /tmp/trivy.txt; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
