@@ -154,19 +154,17 @@ az postgres flexible-server firewall-rule delete -g rg-sort-tester-staging \
 3. The job summary prints `imageSha256=<64 hex characters>`. That digest is
    the only thing you deploy.
 
-Visibility (owner decision, 2026-11-14): the package is **public**. The image
-contains the Ranked question bank, but that bank is already in this public
-repository, so a public image exposes nothing more. If the repository ever
-becomes private, make the package private first and publish with
-`expected_visibility=private`.
+Visibility: the package is **private** (set by the owner on 2026-11-14, after
+the first publish created it public). The image contains the Ranked question
+bank. A private package does not affect the repository or GitHub Pages. Check
+the package page shows **Private** before deploying.
 
 First published 2026-11-14 from `b21e2aa`:
 `imageSha256=130d9ee7ca5b4abe79ad354a5c618571ebfc83d2411c6f644a359791b876b6ee`.
 
 ## 3. Create a read-only token for the registry
 
-The deployment template passes registry credentials, which a public package
-does not strictly need but still accepts.
+Container Apps pulls from the private GHCR package with a token.
 
 1. Create a personal access token with `read:packages` and nothing else.
 2. Keep it out of the repository and out of your shell history; it is passed
