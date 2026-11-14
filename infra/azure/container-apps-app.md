@@ -141,22 +141,30 @@ az postgres flexible-server firewall-rule delete -g rg-sort-tester-staging \
 
 `az` lives in Cloud Shell, not on your own machine, unless you installed it.
 
-## 2. Publish the image privately
+## 2. Publish the image
 
 1. Confirm the **App image** workflow passed on the commit you intend to
    deploy.
-2. Run **App image publish** manually, typing `publish` to confirm. It refuses
-   to run if App image did not succeed for that commit, and it fails if the
-   GHCR package is public.
+2. Run **App image publish** manually on `codex/ranked-mode`
+   (`gh workflow run "App image publish" --ref codex/ranked-mode -f confirm_publish=publish`),
+   typing `publish` to confirm and choosing the visibility the package must
+   have. It refuses if App image did not succeed for that commit, and it
+   checks the package visibility **before** pushing, so a mismatch stops the
+   run with nothing published.
 3. The job summary prints `imageSha256=<64 hex characters>`. That digest is
    the only thing you deploy.
 
-Check: the package page shows the image as **private**. The image contains the
-Ranked question bank, so a public package hands out the answers.
+Visibility: the package is **private** (set by the owner on 2026-11-14, after
+the first publish created it public). The image contains the Ranked question
+bank. A private package does not affect the repository or GitHub Pages. Check
+the package page shows **Private** before deploying.
+
+First published 2026-11-14 from `b21e2aa`:
+`imageSha256=130d9ee7ca5b4abe79ad354a5c618571ebfc83d2411c6f644a359791b876b6ee`.
 
 ## 3. Create a read-only token for the registry
 
-Container Apps pulls from a private GHCR package with a token.
+Container Apps pulls from the private GHCR package with a token.
 
 1. Create a personal access token with `read:packages` and nothing else.
 2. Keep it out of the repository and out of your shell history; it is passed
