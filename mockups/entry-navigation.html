@@ -81,6 +81,13 @@
     .nav button[aria-current="page"] { background: var(--soft); color: var(--accent); box-shadow: inset 0 -3px var(--accent); }
     .nav i { display: block; margin: 0 auto 2px; font-style: normal; font-size: 19px; }
 
+    /* Season-start callout on the home page (Decision 15, 2026-11-14) */
+    .launch { display: flex; gap: 11px; padding: 14px 15px; border: 1px solid #b9c2e8; border-radius: 19px; background: var(--soft); }
+    .launch i { display: grid; place-items: center; width: 34px; height: 34px; flex: none; border-radius: 50%; background: var(--accent); color: #fff; font-style: normal; font-size: 17px; font-weight: 900; }
+    .launch h2 { font-size: 17px; }
+    .launch p { margin-top: 3px; color: #3b4668; font-size: 13px; }
+    .launch b { font-weight: 900; }
+
     /* Profile (issue #16, slice 1) */
     .tabs { display: flex; flex-wrap: wrap; gap: 2px; border-bottom: 2px solid var(--line); }
     .tabs button { min-height: 44px; padding: 8px 10px; margin-bottom: -2px; border-bottom: 3px solid transparent; background: none; color: var(--muted); font-size: 13px; font-weight: 900; }
@@ -177,11 +184,25 @@
       <section class="view" data-view="home" hidden>
         <p class="eyebrow" id="home-eyebrow"></p>
         <h1 tabindex="-1">Test your skills and study the chart.</h1>
+        <div class="launch" id="launch-callout" hidden>
+          <i aria-hidden="true">!</i>
+          <div>
+            <h2>The official season has started</h2>
+            <p>It started on <b>example date 4</b> and ends on <b>example date 5</b>. Everyone began again at 0 points and Iron.</p>
+          </div>
+        </div>
         <div class="change" data-announcement></div>
         <h2>Where do you want to start?</h2>
         <button class="choice" type="button" data-go="practice"><span class="choice-icon" aria-hidden="true">01</span><span><strong>Practice</strong><small>Study the chart or try a practice quiz.</small></span><span class="arrow" aria-hidden="true">→</span></button>
         <button class="choice alt" type="button" data-go="ranked" data-member><span class="choice-icon" aria-hidden="true">02</span><span><strong>Ranked</strong><small>Play for points this season.</small></span><span class="arrow" aria-hidden="true">→</span></button>
         <p class="note" data-guest><strong>You are a guest.</strong> Ranked and the leaderboard need an account. Use Log in at the top when you want one.</p>
+        <div class="mock-controls">
+          <p>Mock controls · not part of the app</p>
+          <div class="row" role="group" aria-label="Season state">
+            <button type="button" data-season="pre" aria-pressed="true">Pre-Season</button>
+            <button type="button" data-season="live" aria-pressed="false">Season started</button>
+          </div>
+        </div>
       </section>
 
       <!-- 5. Practice (same for guest and logged in) -->
@@ -333,6 +354,9 @@
     const PARENT_TAB = { leaderboard: 'ranked', tickets: 'profile' };
     const MEMBER_ONLY = ['ranked', 'leaderboard', 'profile', 'tickets'];
     let mode = 'public';
+    // The home callout appears only once a start is confirmed. During
+    // Pre-Season there is no callout and no invented date.
+    let season = 'pre';
 
     const nav = document.getElementById('nav');
     const stub = document.getElementById('stub');
@@ -351,6 +375,7 @@
       for (const el of document.querySelectorAll('[data-member]')) el.hidden = mode !== 'member';
       for (const el of document.querySelectorAll('[data-guest]')) el.hidden = mode !== 'guest';
       document.getElementById('home-eyebrow').textContent = mode === 'member' ? 'Welcome back, parcel_fox' : 'Guest practice';
+      document.getElementById('launch-callout').hidden = season !== 'live';
       const signingIn = ['login', 'lost'].includes(name);
       document.getElementById('top-login').hidden = mode !== 'guest' || signingIn;
 
@@ -407,6 +432,12 @@
       if (button.dataset.state) return setBalance(button.dataset.state);
       if (button.dataset.histState) { setHistory(button.dataset.histState); return setTab('history'); }
       if (button.dataset.filter) return setFilter(button.dataset.filter);
+      if (button.dataset.season) {
+        season = button.dataset.season;
+        for (const el of document.querySelectorAll('[data-season]')) el.setAttribute('aria-pressed', String(el.dataset.season === season));
+        document.getElementById('launch-callout').hidden = season !== 'live';
+        return;
+      }
       if (button.dataset.enter) { mode = button.dataset.enter; show('home'); }
       else if ('leave' in button.dataset) { mode = 'public'; show('entry'); }
       else if (button.dataset.go) show(button.dataset.go);
