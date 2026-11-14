@@ -300,3 +300,14 @@ Set `SORT_TESTER_APP_ORIGIN` on the hosted app. A script that calls a write
 endpoint must send an `Origin` header, as `curl -H "Origin: https://..."`;
 a browser does this on its own. Tests that drive the API like a browser use
 `backend/tests/browser.py`.
+
+## Client addresses behind a proxy
+
+Login attempts and sign-ups are limited per client address. Behind a proxy the
+connection's address is the proxy's, the same for everyone, so set
+`SORT_TEST_TRUST_PROXY` to the number of proxies of your own in front of the
+app (`1` for a single ingress). The app then reads that entry of
+`X-Forwarded-For` counted **from the right** — the one your proxy appended —
+and never the first entry, which the client controls. Leave it unset when
+nothing trusted sits in front of the app. The hosting runbook, step 6a, has the
+two-request check that proves the setting on a real deployment.

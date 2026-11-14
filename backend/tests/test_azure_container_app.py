@@ -103,6 +103,11 @@ class SingleOriginAppTemplateTests(unittest.TestCase):
         self.assertIn("param appOrigin string = ''", self.code)
         self.assertIn("output appOriginToConfigure string", self.code)
 
+    def test_proxy_trust_is_off_unless_explicitly_set(self):
+        self.assertIn("SORT_TEST_TRUST_PROXY", self.code)
+        self.assertIn("param trustedProxies string = ''", self.code)
+        self.assertRegex(self.code, r"'SORT_TEST_TRUST_PROXY'\s*\n\s*value: trustedProxies")
+
 
 if __name__ == "__main__":
     unittest.main()

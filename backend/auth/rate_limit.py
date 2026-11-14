@@ -1,3 +1,4 @@
+import ipaddress
 import os
 import threading
 import time
@@ -74,22 +75,59 @@ def get_login_rate_limiter() -> LoginRateLimiter:
     return _default_limiter
 
 
-def _trusts_proxy() -> bool:
-    return os.environ.get("SORT_TEST_TRUST_PROXY", "").strip() == "1"
+MAX_TRUSTED_PROXIES = 5
+
+
+def _trusted_proxies() -> int:
+    """How many proxies of our own sit in front of the app (0 = none).
+
+    Set SORT_TEST_TRUST_PROXY to that count where the hosting ingress writes
+    X-Forwarded-For; "1" for a single ingress. Anything that is not a small
+    whole number trusts nothing.
+    """
+    raw = os.environ.get("SORT_TEST_TRUST_PROXY", "").strip()
+    if not raw.isdigit():
+        return 0
+    count = int(raw)
+    return count if 1 <= count <= MAX_TRUSTED_PROXIES else 0
+
+
+def _address(entry: str) -> str | None:
+    """Return *entry* as one canonical IP address, or None if it is not one."""
+    entry = entry.strip()
+    if entry.startswith("["):  # [v6]:port
+        entry = entry[1:].partition("]")[0]
+    elif entry.count(":") == 1:  # v4:port
+        entry = entry.partition(":")[0]
+    try:
+        return str(ipaddress.ip_address(entry))
+    except ValueError:
+        return None
 
 
 def _client_key(request) -> str:
     """The network address a request comes from, for rate limiting.
 
-    X-Forwarded-For is believed only when SORT_TEST_TRUST_PROXY=1, set where a
-    trusted proxy (such as the hosting ingress) writes that header. Without
-    it, anyone could send a made-up address per request and never be limited,
-    so the connection's own address is used.
+    Each proxy appends the address it received the request from to
+    X-Forwarded-For, so the header reads `client-supplied..., real, proxy...`.
+    Only the entries our own proxies wrote can be believed, and they are the
+    last ones: with N trusted proxies the client's address is the Nth entry
+    from the right. Everything further left is whatever the client chose to
+    send, so reading the FIRST entry would let anyone pick a fresh address per
+    request and never be limited.
+
+    With no trusted proxy, or a header too short or malformed to hold that
+    entry, the connection's own address is used.
     """
+    connection = request.client.host if request.client else "unknown"
+    proxies = _trusted_proxies()
     forwarded = request.headers.get("x-forwarded-for")
-    if forwarded and _trusts_proxy():
-        return forwarded.split(",")[0].strip()
-    return request.client.host if request.client else "unknown"
+    if not proxies or not forwarded:
+        return connection
+    entries = forwarded.split(",")
+    if len(entries) < proxies:
+        return connection
+    return _address(entries[-proxies]) or connection
 
 
 class RegistrationLimiter:

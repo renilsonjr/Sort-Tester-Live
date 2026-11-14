@@ -44,6 +44,14 @@ param databaseUrl string
 @description('Public origin, such as https://example.com, once it is known. Empty is correct on the first deployment: writes are then checked against the app own ingress host.')
 param appOrigin string = ''
 
+@description('Number of trusted proxies in front of the app, for reading the client address from X-Forwarded-For. Empty trusts none. Set to 1 only after the check in the runbook shows the ingress appends the real client address (issue #78).')
+@allowed([
+  ''
+  '1'
+  '2'
+])
+param trustedProxies string = ''
+
 var appTags = {
   'project': 'sort-tester-live'
   'environment': 'staging'
@@ -122,6 +130,10 @@ resource app 'Microsoft.App/containerApps@2025-01-01' = {
             {
               name: 'SORT_TESTER_APP_ORIGIN'
               value: appOrigin
+            }
+            {
+              name: 'SORT_TEST_TRUST_PROXY'
+              value: trustedProxies
             }
           ]
           probes: [
