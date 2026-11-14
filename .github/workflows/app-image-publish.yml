@@ -1,11 +1,18 @@
 name: App image publish
 
-# Publishes the production image to GHCR as a PRIVATE package and prints
-# the digest to paste into the Container Apps deployment (issue #41).
+# Publishes the production image to GHCR and prints the digest to paste
+# into the Container Apps deployment (issue #41).
 #
 # Manual only, and only after the App image workflow has passed on the
-# commit being published. The image carries the Ranked question bank, so
-# the package must never be made public.
+# commit being published.
+#
+# Visibility: the image carries the Ranked question bank. That bank is
+# already in this public repository, and the owner decided on 2026-11-14
+# to keep the package public too. The workflow therefore does not insist
+# on private; it insists that the package is what the person publishing
+# says it should be, and it checks BEFORE pushing, so a surprise stops
+# the run while nothing has been published. If the repository ever goes
+# private, publish with expected_visibility=private.
 on:
   workflow_dispatch:
     inputs:
@@ -13,13 +20,21 @@ on:
         description: 'Type the word publish to confirm'
         required: true
         type: string
+      expected_visibility:
+        description: 'What the GHCR package visibility must be'
+        required: true
+        type: choice
+        default: public
+        options:
+          - public
+          - private
 
 permissions:
   contents: read
 
 jobs:
   publish:
-    name: Build and publish the app image (private)
+    name: Build and publish the app image
     runs-on: ubuntu-latest
     timeout-minutes: 20
     permissions:
@@ -27,11 +42,27 @@ jobs:
       packages: write
     env:
       IMAGE: ghcr.io/${{ github.repository_owner }}/sort-tester-live-app
+      PACKAGE_API: users/${{ github.repository_owner }}/packages/container/sort-tester-live-app
+      EXPECTED: ${{ inputs.expected_visibility }}
     steps:
       - name: Check the confirmation
         run: |
           [ "${{ inputs.confirm_publish }}" = "publish" ] \
             || { echo 'Not confirmed: type publish to run this workflow.'; exit 1; }
+
+      - name: Check the package visibility before publishing anything
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          visibility=$(gh api "$PACKAGE_API" --jq '.visibility' 2>/dev/null || echo absent)
+          echo "Package visibility now: $visibility (expected: $EXPECTED)"
+          if [ "$visibility" = "absent" ]; then
+            echo 'No readable package yet: a first publish creates it. It is checked again after the push.'
+          elif [ "$visibility" != "$EXPECTED" ]; then
+            echo "The package is $visibility but this run expects $EXPECTED. Nothing was published."
+            echo 'Change the package visibility in its settings, or run again with the matching choice.'
+            exit 1
+          fi
 
       - name: Check out the repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -61,26 +92,10 @@ jobs:
           digest=${ref#*@sha256:}
           echo "digest=$digest" >> "$GITHUB_OUTPUT"
 
-      - name: Refuse a package that is public
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          visibility=$(gh api "users/${{ github.repository_owner }}/packages/container/sort-tester-live-app" \
-            --jq '.visibility' 2>/dev/null || echo unknown)
-          echo "Package visibility: $visibility"
-          if [ "$visibility" = "public" ]; then
-            echo 'This image carries the Ranked question bank and must not be public.'
-            echo 'Make the package private in the package settings, then publish again.'
-            exit 1
-          fi
-          if [ "$visibility" = "unknown" ]; then
-            echo 'Could not read the visibility; check it by hand in the package settings before deploying.'
-          fi
-
       - name: Report the digest to deploy
         run: |
           {
-            echo '### Image published (private)'
+            echo "### Image published (package expected: $EXPECTED)"
             echo
             echo 'Deploy this digest, and nothing else:'
             echo
@@ -90,3 +105,17 @@ jobs:
             echo
             echo 'Next: infra/azure/container-apps-app.md'
           } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Check the visibility again after a first publish
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          visibility=$(gh api "$PACKAGE_API" --jq '.visibility' 2>/dev/null || echo unknown)
+          echo "Package visibility after the push: $visibility (expected: $EXPECTED)"
+          if [ "$visibility" = "unknown" ]; then
+            echo 'Could not read the visibility; check it by hand in the package settings.'
+          elif [ "$visibility" != "$EXPECTED" ]; then
+            echo "The package is $visibility but this run expected $EXPECTED."
+            echo 'The image above WAS published. Fix the visibility in the package settings now.'
+            exit 1
+          fi
