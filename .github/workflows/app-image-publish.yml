@@ -42,10 +42,13 @@ jobs:
       IMAGE: ghcr.io/${{ github.repository_owner }}/sort-tester-live-app
       PACKAGE_API: users/${{ github.repository_owner }}/packages/container/sort-tester-live-app
       EXPECTED: ${{ inputs.expected_visibility }}
+      CONFIRM: ${{ inputs.confirm_publish }}
     steps:
       - name: Check the confirmation
         run: |
-          [ "${{ inputs.confirm_publish }}" = "publish" ] \
+          # Inputs reach the shell only through the environment, never spliced
+          # into the script text.
+          [ "$CONFIRM" = "publish" ] \
             || { echo 'Not confirmed: type publish to run this workflow.'; exit 1; }
 
       - name: Check the package visibility before publishing anything
