@@ -84,6 +84,22 @@ as #15 settled. Fictional data only. Mock controls switch between the states.
 2. Post one comment on #16 listing the approved states and the choices.
 3. Tick box 2 only once this slice is merged. Box 6 waits for the last slice.
 
+## Review record (2026-11-14)
+
+The owner reviewed the states in a browser at 375 px, in three groups, and
+approved all of them unchanged:
+
+1. During the season, and no competition position.
+2. Provisional tie, provisional replacement, final, and fewer than three
+   winners.
+3. Loading, empty and error.
+
+Checked before the review, at 320 px and 375 px: each state renders the
+right rows and markers; no state scrolls sideways; a deliberately long
+username wraps without pushing the points off the row; Tab reaches the
+controls with a visible outline. An automated check confirmed no state
+renders a clock time anywhere in the view.
+
 ## Delivery
 
 Branch `codex/leaderboard-mockups` from `codex/ranked-mode`, holding this
