@@ -722,6 +722,13 @@ function showStart() {
         </div>
         <img class="lab-mascot" src="assets/avatar-idle.jpg" alt="${language.code === 'es' ? 'Personaje azul sonriente con una caja de cartón' : 'Smiling blue character holding a cardboard package'}">
       </div>
+      <section class="lab-launch" id="launch-callout" hidden aria-live="polite">
+        <i aria-hidden="true">!</i>
+        <div>
+          <h2>${esc(t('The official season has started'))}</h2>
+          <p id="launch-text"></p>
+        </div>
+      </section>
       <section class="lab-change" aria-labelledby="sort-change-title">
         <p class="lab-change-kicker">${esc(t('Recent sort changes'))}</p>
         <div class="lab-change-row">
@@ -754,6 +761,34 @@ function showStart() {
   view.querySelector('#study').addEventListener('click', showStudy);
   view.querySelector('#quiz').addEventListener('click', () => showNameEntry());
   view.querySelector('#viewlog').addEventListener('click', showLog);
+  fillLaunchCallout(view);
+}
+
+// The season-start notice (Decision 15, placement settled 2026-11-15). It
+// appears only once a start is confirmed: during Pre-Season there is no
+// callout and no invented date. Guests see it too, which is why it reads a
+// public endpoint rather than the authenticated one.
+async function fillLaunchCallout(view) {
+  const box = view.querySelector('#launch-callout');
+  if (!box) return;
+  let notice;
+  try {
+    const response = await fetch('/api/ranked/season/notice', { credentials: 'same-origin' });
+    if (!response.ok) return;
+    notice = await response.json();
+  } catch {
+    return;  // no backend, as on the static page: show nothing at all
+  }
+  if (!notice?.started || !notice.started_at) return;
+  const started = new Date(notice.started_at).toLocaleDateString();
+  const closes = notice.closes_at ? new Date(notice.closes_at).toLocaleDateString() : null;
+  const when = closes
+    ? `${t('It started on')} ${started} ${t('and ends on')} ${closes}.`
+    : `${t('It started on')} ${started}.`;
+  view.querySelector('#launch-text').textContent = signedIn()
+    ? `${when} ${t('Everyone began again at 0 points and Iron.')}`
+    : `${when} ${t('Log in to play for points this season.')}`;
+  box.hidden = false;
 }
 
 // The auth panel calls this when the visitor enters the app, with the

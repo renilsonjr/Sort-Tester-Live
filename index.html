@@ -400,6 +400,12 @@
   .lab-chart-row small { margin-top: 2px; font-size: 11px; }
   .lab-chart-row .lab-belt-chip { min-width: 75px; border-radius: 0; padding: 7px 8px; font-size: 11px; }
 
+  /* The season-start notice on the home page (Decision 15) */
+  .lab-launch { display: flex; gap: 11px; margin-top: 16px; padding: 14px 15px; border: 1px solid #b9c2e8; border-color: var(--soft-line); border-radius: 19px; background: var(--soft); }
+  .lab-launch i { display: grid; place-items: center; width: 34px; height: 34px; flex: none; border-radius: 50%; background: var(--accent); color: var(--accent-ink); font-style: normal; font-size: 17px; font-weight: 900; }
+  .lab-launch h2 { margin: 0; font-size: 17px; font-weight: 900; letter-spacing: -.03em; text-transform: none; color: var(--ink); }
+  .lab-launch p { margin: 3px 0 0; color: #3b4668; color: #54412f; font-size: 13px; line-height: 1.5; }
+
   /* Support tickets (issue #10, slice 5) */
   .support-list { list-style: none; margin: 10px 0; padding: 0; display: flex; flex-direction: column; gap: 9px; }
   .support-list li { border: 1px solid var(--line); border-radius: 17px; background: var(--panel); padding: 13px 14px; }
@@ -546,7 +552,7 @@
 <div id="auth-panel" hidden></div>
 <main id="app"></main>
 <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js" integrity="sha384-EnyY0/GSHQGSxSgMwaIPzSESbqoOLSexfnSMN2AP+39Ckmn92stwABZynq1JyzdT" crossorigin="anonymous"></script>
-<script type="module" src="src/app.js?v=support-20261115"></script>
+<script type="module" src="src/app.js?v=launch-20261115"></script>
 <script type="module" src="src/auth.js"></script>
 </body>
 </html>
