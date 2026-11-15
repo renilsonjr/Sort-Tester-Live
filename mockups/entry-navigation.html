@@ -1150,7 +1150,7 @@
           <h1 tabindex="-1">You are tied for third place</h1>
           <p class="lead">One more player has the same points as you. A separate quiz decides which of you takes the third hat.</p>
           <ol class="rules">
-            <li>Five Hard work-methods questions, the same five for everyone in this round.</li>
+            <li>Five Hard route questions, the same five for everyone in this round.</li>
             <li>Five seconds each. Questions move on by themselves — there is no Next.</li>
             <li>Play once, at any time before the round closes.</li>
             <li>Nothing is shown until the round closes, for anyone.</li>
@@ -1171,14 +1171,21 @@
           </div>
           <div class="tb-bar"><i></i></div>
           <h1 tabindex="-1" class="sr-only">Tie-break question 4 of 5</h1>
-          <p class="rq-service">Work methods · Hard</p>
-          <p class="tb-ask">Which load is scanned first?</p>
-          <div class="tb-opts" role="group" aria-label="Choose an answer">
-            <button type="button" data-tb-go="submitted">The one nearest the belt</button>
-            <button type="button" data-tb-go="submitted">The one with the earliest commit time</button>
-            <button type="button" data-tb-go="submitted">The heaviest one</button>
-            <button type="button" data-tb-go="submitted">Whichever is already open</button>
+          <!-- Owner decision 2026-11-15 (#136): tie-breaks draw from the
+               approved Hard route questions, so the question looks like an
+               ordinary Ranked one and is answered by belt colour. -->
+          <div class="rq-prompt">
+            <p class="rq-service">Ground · New Jersey · Hard</p>
+            <p class="rq-code">079&ndash;079</p>
           </div>
+          <p class="small">Where does this go?</p>
+          <div class="belts" role="group" aria-label="Choose a belt">
+            <button type="button" style="background:#5b2d8e" data-tb-go="submitted">PURPLE</button>
+            <button type="button" style="background:#b34d06" data-tb-go="submitted">ORANGE</button>
+            <button type="button" style="background:#1e6b3a" data-tb-go="submitted">GREEN</button>
+            <button type="button" style="background:#f6d33c;color:#35271e" data-tb-go="submitted">YELLOW</button>
+          </div>
+          <p class="small">No feedback: whether you were right stays hidden until the round closes.</p>
           <p class="note">There is no Next button. The next question opens by itself when the time runs out, whether or not you answered.</p>
         </div>
 
