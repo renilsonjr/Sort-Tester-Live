@@ -562,6 +562,46 @@ class RankedRouterTests(unittest.TestCase):
         anon = TestClient(create_app(), headers=BROWSER)
         self.assertEqual(anon.get(self.HISTORY_URL).status_code, 401)
 
+    def test_the_owner_gets_no_history_exception(self):
+        """Settled Q10: a player's history is private, with no automatic
+        administrator exception, and #11 grants no performance dashboard.
+        The owner reading /history sees their own quizzes and nobody
+        else's, and there is no route that names another account."""
+        player = TestClient(create_app(), headers=BROWSER)
+        self._sign_in(player, "history_private")
+        self._quit_a_quiz(player)
+
+        owner = TestClient(create_app(), headers=BROWSER)
+        self._sign_in_owner(owner, "history_nosy_owner")
+        own_attempt = self._quit_a_quiz(owner)
+
+        entries = owner.get(self.HISTORY_URL).json()
+        self.assertEqual([e["attempt_id"] for e in entries], [own_attempt])
+
+        # and no way to ask for somebody else's, by parameter or by path
+        lookup = migrate.connect(self.conninfo)
+        try:
+            account_id = migrate.fetch_one(
+                lookup,
+                "SELECT id FROM accounts WHERE username_lower = 'history_private'",
+            )["id"]
+        finally:
+            lookup.close()
+        for url in (
+            f"{self.HISTORY_URL}?account_id={account_id}",
+            f"{self.HISTORY_URL}/{account_id}",
+            f"/api/ranked/owner/history/{account_id}",
+        ):
+            with self.subTest(url=url):
+                answer = owner.get(url)
+                if answer.status_code == 200:
+                    # a stray query parameter must be ignored, never obeyed
+                    self.assertEqual(
+                        [e["attempt_id"] for e in answer.json()], [own_attempt]
+                    )
+                else:
+                    self.assertIn(answer.status_code, (404, 422))
+
     def test_history_lists_the_players_own_scored_quizzes(self):
         self._sign_in(self.client, "history_player")
         attempt_id = self._quit_a_quiz(self.client)
