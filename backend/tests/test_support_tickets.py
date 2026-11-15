@@ -4,6 +4,7 @@ from datetime import datetime, timedelta, timezone
 import unittest
 
 from backend.db import migrate, settings
+from backend.auth.deletion import purge_deleted_accounts
 from backend.ranked import engine, settlement
 from backend.support import retention, tickets
 from backend.tests.ranked_helpers import make_unconstrained_bank
@@ -647,3 +648,194 @@ class RetentionTests(TicketTestCase):
         self.clock.advance(20 * self.DAY)
         self.assertEqual(self._sweep(), {"descriptions": 1, "logs": 1})
         self.assertEqual(self._sweep(), {"descriptions": 0, "logs": 0})
+
+
+@unittest.skipUnless(
+    settings.environment_has_test_url(),
+    "SORT_TESTER_TEST_DATABASE_URL not set; database tests skipped",
+)
+class AccountDeletionTests(TicketTestCase):
+    """A confirmed wipe takes the account's own case detail, and nobody else's."""
+
+    def _owner(self):
+        account = self._account()
+        migrate.execute(
+            self.conn, "UPDATE accounts SET is_owner = true WHERE id = %s", (account,)
+        )
+        self.conn.commit()
+        return account
+
+    def _flapping_attempt(self, account):
+        attempt_id = engine.start_attempt(
+            self.conn, account, clock=self.clock, bank=self.bank
+        )
+        for _ in range(4):
+            self.clock.advance(4)
+            engine.heartbeat(self.conn, attempt_id, clock=self.clock)
+        engine.quit_attempt(self.conn, attempt_id, clock=self.clock)
+        settlement.settle_attempt(self.conn, attempt_id, clock=self.clock)
+        self.conn.commit()
+        return attempt_id
+
+    def _count(self, sql, params):
+        row = migrate.fetch_one(self.conn, sql, params)
+        self.conn.commit()
+        return row["n"]
+
+    def _delete_and_purge(self, account):
+        migrate.execute(
+            self.conn,
+            "UPDATE accounts SET deleted_at = now() WHERE id = %s",
+            (account,),
+        )
+        self.conn.commit()
+        return purge_deleted_accounts(self.conn)
+
+    def test_an_open_ticket_does_not_block_the_wipe(self):
+        account = self._account()
+        attempt = self._flapping_attempt(account)
+        tickets.open_ticket(self.conn, account, attempt, description="still open")
+        self.conn.commit()
+        self.assertEqual(self._delete_and_purge(account), 1)
+        self.assertEqual(
+            self._count("SELECT COUNT(*) AS n FROM accounts WHERE id=%s", (account,)), 0
+        )
+
+    def test_the_wipe_takes_the_ticket_and_its_evidence(self):
+        account = self._account()
+        attempt = self._flapping_attempt(account)
+        tickets.open_ticket(self.conn, account, attempt, description="private note")
+        self.conn.commit()
+        self._delete_and_purge(account)
+        self.assertEqual(
+            self._count(
+                "SELECT COUNT(*) AS n FROM support_tickets WHERE account_id=%s",
+                (account,),
+            ),
+            0,
+        )
+        self.assertEqual(
+            self._count(
+                "SELECT COUNT(*) AS n FROM attempt_connection_events WHERE attempt_id=%s",
+                (attempt,),
+            ),
+            0,
+        )
+        self.assertEqual(
+            self._count(
+                "SELECT COUNT(*) AS n FROM connection_flags WHERE attempt_id=%s",
+                (attempt,),
+            ),
+            0,
+        )
+
+    def test_a_closed_case_is_wiped_too_even_inside_the_fifteen_days(self):
+        owner = self._owner()
+        account = self._account()
+        attempt = self._flapping_attempt(account)
+        ticket = tickets.open_ticket(self.conn, account, attempt, description="note")
+        tickets.close_ticket(
+            self.conn, owner, ticket, "network_instability", clock=self.clock
+        )
+        self.conn.commit()
+        self.clock.advance(86400)  # one day: far inside the retention window
+        self._delete_and_purge(account)
+        self.assertEqual(
+            self._count(
+                "SELECT COUNT(*) AS n FROM support_tickets WHERE id=%s", (ticket,)
+            ),
+            0,
+        )
+
+    def test_another_players_case_survives_the_wipe(self):
+        going, staying = self._account(), self._account()
+        going_attempt = self._flapping_attempt(going)
+        staying_attempt = self._flapping_attempt(staying)
+        tickets.open_ticket(self.conn, going, going_attempt, description="mine")
+        staying_ticket = tickets.open_ticket(
+            self.conn, staying, staying_attempt, description="theirs"
+        )
+        self.conn.commit()
+        self._delete_and_purge(going)
+        kept = tickets.ticket_for(self.conn, staying, staying_ticket)
+        self.assertIsNotNone(kept)
+        self.assertEqual(kept["description"], "theirs")
+        self.assertGreater(
+            self._count(
+                "SELECT COUNT(*) AS n FROM attempt_connection_events WHERE attempt_id=%s",
+                (staying_attempt,),
+            ),
+            0,
+        )
+        self.assertEqual(
+            self._count(
+                "SELECT COUNT(*) AS n FROM connection_flags WHERE attempt_id=%s",
+                (staying_attempt,),
+            ),
+            1,
+        )
+
+    def test_the_review_queue_loses_only_the_deleted_players_case(self):
+        owner = self._owner()
+        going, staying = self._account(), self._account()
+        tickets.open_ticket(self.conn, going, self._ended_attempt(going))
+        staying_ticket = tickets.open_ticket(
+            self.conn, staying, self._ended_attempt(staying)
+        )
+        self.conn.commit()
+        self._delete_and_purge(going)
+        self.assertEqual(
+            [row["id"] for row in tickets.open_tickets_for_review(self.conn, owner)],
+            [staying_ticket],
+        )
+
+    def test_the_retention_sweep_still_runs_after_a_wipe(self):
+        owner = self._owner()
+        going, staying = self._account(), self._account()
+        going_attempt = self._flapping_attempt(going)
+        staying_attempt = self._flapping_attempt(staying)
+        going_ticket = tickets.open_ticket(self.conn, going, going_attempt)
+        staying_ticket = tickets.open_ticket(self.conn, staying, staying_attempt)
+        from backend.ranked import flags
+
+        flags.close_flag(self.conn, going_attempt, "network_instability", clock=self.clock)
+        flags.close_flag(
+            self.conn, staying_attempt, "network_instability", clock=self.clock
+        )
+        tickets.close_ticket(
+            self.conn, owner, staying_ticket, "network_instability", clock=self.clock
+        )
+        self.conn.commit()
+        self._delete_and_purge(going)
+        self.clock.advance(20 * 86400)
+        result = retention.purge_due_cases(self.conn, clock=self.clock)
+        self.conn.commit()
+        # the remaining player's case is due and swept; the deleted one left
+        # nothing behind for the sweep to trip on
+        self.assertEqual(result["logs"], 1)
+        self.assertEqual(
+            self._count(
+                "SELECT COUNT(*) AS n FROM attempt_connection_events WHERE attempt_id=%s",
+                (staying_attempt,),
+            ),
+            0,
+        )
+
+    def test_the_database_refuses_a_ticket_about_another_accounts_attempt(self):
+        """Defence in depth: open_ticket refuses it, and so does the schema.
+
+        Every Support read filters by account_id. A ticket pointing at
+        another player's attempt would pass every ownership check — the
+        check is on the ticket — while showing a reviewer that player's
+        connection events.
+        """
+        mine, theirs = self._account(), self._account()
+        their_attempt = self._ended_attempt(theirs)
+        with self.assertRaises(Exception) as caught:
+            migrate.execute(
+                self.conn,
+                "INSERT INTO support_tickets (account_id, attempt_id) VALUES (%s, %s)",
+                (mine, their_attempt),
+            )
+        self.conn.rollback()
+        self.assertIn("support_tickets_attempt_same_account", str(caught.exception))
