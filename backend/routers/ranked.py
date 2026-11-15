@@ -19,6 +19,7 @@ from backend.db import migrate, settings
 from backend.ranked import capability, engine, launch, season_close, seasons, settlement
 from backend.ranked import history as ranked_history
 from backend.ranked import flags as ranked_flags
+from backend.support import retention as support_retention
 from backend.ranked.clock import system_clock
 from backend.ranked_bank.catalog import load_reviewed_bank
 
@@ -54,9 +55,10 @@ def get_db():
         # window is over (end unfinished attempts, settle, freeze). When
         # nothing is due this is a single read.
         season_close.finish_due_seasons(conn, clock=_CLOCK)
-        # same idea for retention: closed review flags and their detailed
-        # connection events go fifteen days after closure
-        ranked_flags.purge_closed_flags(conn, clock=_CLOCK)
+        # same idea for retention: a closed ticket's description goes fifteen
+        # days after its own closure, and an attempt's shared connection log
+        # goes fifteen days after the last case on it closes (#26)
+        support_retention.purge_due_cases(conn, clock=_CLOCK)
         # and for accepted account deletions (#47)
         purge_deleted_accounts(conn)
         yield conn

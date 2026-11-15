@@ -5,6 +5,7 @@ import unittest
 
 from backend.db import migrate, settings
 from backend.ranked import engine, flags, outages, scoring, settlement
+from backend.support import retention
 from backend.tests.ranked_helpers import make_unconstrained_bank
 from backend.tests.test_ranked_clock import FakeClock
 
@@ -357,7 +358,12 @@ class FlagRetentionTests(FlagTestCase):
         return row["n"]
 
     def _purge(self):
-        return flags.purge_closed_flags(self.conn, clock=self.clock)
+        # Retention moved to one sweep over the attempt when tickets arrived
+        # (#26): a flag and a ticket about the same attempt share one log.
+        # These tests still describe flag retention, so they count logs.
+        removed = retention.purge_due_cases(self.conn, clock=self.clock)
+        self.conn.commit()
+        return removed["logs"]
 
     def test_a_closed_flag_is_kept_for_fourteen_days(self):
         attempt_id = self._closed_flag()
