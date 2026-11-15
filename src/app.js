@@ -9,6 +9,7 @@ import { saveWorkbook } from './exportFile.js';
 import { CHART, searchChart } from './study.js?v=chart-destination-20261108-r2';
 import { selectLevelCards } from './levels.js?v=chart-destination-20261108-r2';
 import { createLanguage } from './i18n.js?v=chart-destination-20261108-r2';
+import * as support from './support.js';
 
 const app = document.getElementById('app');
 const log = createShiftLog(typeof localStorage === 'undefined' ? null : localStorage);
@@ -389,6 +390,117 @@ async function fillHistory(panel) {
     </ul>`;
 }
 
+// Support (#10, slice 5; the screen half of #26). Support holds Tickets and
+// nothing else, and a ticket exists only because the player asked for one.
+function showSupport() {
+  stopTick();
+  clock = null;
+  const view = labPage(`
+    <section class="lab-screen">
+      <p class="lab-eyebrow">${esc(t('Support'))}</p>
+      <h1 class="lab-title">${esc(t('Tickets'))}</h1>
+      <div id="support-panel"><p class="lab-intro">${esc(t('Loading\u2026'))}</p></div>
+    </section>
+  `, 'profile', showSupport);
+  fillSupport(view.querySelector('#support-panel'));
+  return view;
+}
+
+async function fillSupport(panel) {
+  const result = await support.listTickets();
+  if (!result || !result.ok) {
+    panel.innerHTML = `<p class="notice">${esc(t('Could not load your tickets. Your tickets and your points are safe.'))}</p>`;
+    return;
+  }
+  const tickets = result.data ?? [];
+  panel.innerHTML = `
+    <p class="lab-intro">${esc(t('Only you can see your tickets. When a ticket is closed, its description and connection details are deleted 15 days later. Evidence shared with another case that is still open is kept until that case closes.'))}</p>
+    ${tickets.length === 0 ? `
+      <p class="lab-intro">${esc(t('You have no tickets. Support only opens one when you ask for it: nothing here is created automatically, and a connection problem does not open a ticket by itself.'))}</p>
+    ` : `<ul class="support-list">
+      ${tickets.map((ticket) => `
+      <li>
+        <span class="support-pill ${ticket.closed_at ? 'closed' : 'open'}">${esc(support.outcomeLabel(ticket))}</span>
+        <b>${esc(t('Ranked quiz'))}</b>
+        <small>${esc(new Date(ticket.opened_at).toLocaleDateString())}</small>
+        <span class="support-keep">${esc(support.retentionLine(ticket, (iso) => new Date(iso).toLocaleDateString()))}</span>
+      </li>`).join('')}
+    </ul>`}
+    <p class="lab-intro">${esc(t('Opening a ticket never changes your points or your access.'))}</p>
+    <button id="support-create" class="lab-choice lab-choice-quiz" type="button">
+      <span class="lab-choice-icon">+</span>
+      <span><strong>${esc(t('Create ticket'))}</strong><small>${esc(t('About one of your own Ranked attempts.'))}</small></span>
+      <span class="lab-arrow" aria-hidden="true">\u2192</span>
+    </button>
+  `;
+  panel.querySelector('#support-create').addEventListener('click', showCreateTicket);
+}
+
+async function showCreateTicket() {
+  const history = await api('/ranked/history');
+  const attempts = history ?? [];
+  const view = labPage(`
+    <section class="lab-screen">
+      <p class="lab-eyebrow">${esc(t('Support'))}</p>
+      <h1 class="lab-title">${esc(t('Create ticket'))}</h1>
+      ${attempts.length === 0 ? `
+        <p class="lab-intro">${esc(t('A ticket is about a Ranked attempt, and you have none yet.'))}</p>
+      ` : `
+      <label class="field">
+        <span>${esc(t('Which attempt'))}</span>
+        <select id="ticket-attempt">
+          ${attempts.map((a) => `<option value="${a.attempt_id}">${esc(t('Ranked quiz'))} \u00b7 ${esc(new Date(a.settled_at).toLocaleDateString())} \u00b7 ${esc(a.final_outcome)}</option>`).join('')}
+        </select>
+      </label>
+      <label class="field">
+        <span>${esc(t('What happened (optional)'))}</span>
+        <textarea id="ticket-note" rows="4" placeholder="${esc(t('Anything that helps. You can leave this empty.'))}"></textarea>
+      </label>
+      <aside class="lab-disclaimer">
+        <strong>${esc(t('Sent with your ticket'))}</strong> ${esc(t('The attempt you picked and the connection events recorded for it. Only you and the people reviewing your ticket can see them. Your tickets never appear on your profile or the leaderboard.'))}
+      </aside>
+      <p class="notice" id="ticket-error" hidden></p>
+      <button id="ticket-send" class="primary" type="button">${esc(t('Send ticket'))}</button>
+      `}
+      <button id="ticket-cancel" class="ghost" type="button">${esc(t('Cancel'))}</button>
+    </section>
+  `, 'profile', showCreateTicket);
+
+  view.querySelector('#ticket-cancel').addEventListener('click', showSupport);
+  const send = view.querySelector('#ticket-send');
+  if (!send) return view;
+  send.addEventListener('click', async () => {
+    const error = view.querySelector('#ticket-error');
+    error.hidden = true;
+    send.disabled = true;
+    const result = await support.createTicket(
+      view.querySelector('#ticket-attempt').value,
+      view.querySelector('#ticket-note').value,
+    );
+    if (result?.ok) return showTicketSent();
+    error.textContent = result?.status === 409
+      ? t('A ticket about this attempt is already open.')
+      : t('Could not send the ticket. Nothing was sent.');
+    error.hidden = false;
+    send.disabled = false;
+  });
+  return view;
+}
+
+function showTicketSent() {
+  const view = labPage(`
+    <section class="lab-screen">
+      <p class="lab-eyebrow">${esc(t('Support'))}</p>
+      <h1 class="lab-title">${esc(t('Ticket sent'))}</h1>
+      <p class="lab-intro">${esc(t('Someone will look at it. You can close the app; nothing is waiting on you.'))}</p>
+      <aside class="lab-disclaimer">${esc(t('This does not change your points or your access, whatever the outcome is.'))}</aside>
+      <button id="ticket-back" class="ghost" type="button">${esc(t('Back to your tickets'))}</button>
+    </section>
+  `, 'profile', showTicketSent);
+  view.querySelector('#ticket-back').addEventListener('click', showSupport);
+  return view;
+}
+
 // Account deletion (#10, slice 4). The wording is fixed by Decision 14 and
 // is reproduced exactly, minus the word "email": the app collects none, and
 // promising to delete one would imply it had been held.
@@ -496,8 +608,8 @@ function fillSettings(panel) {
       <span><strong>${esc(t('Delete account'))}</strong><small>${esc(t('Removes your profile, history and points.'))}</small></span>
       <span class="lab-arrow" aria-hidden="true">\u2192</span>
     </button>
-    <p class="lab-intro">${esc(t('Support is being built.'))}</p>
   `;
+  panel.querySelector('#profile-support').addEventListener('click', showSupport);
   panel.querySelector('#profile-delete').addEventListener('click', showDeleteAccount);
 }
 
