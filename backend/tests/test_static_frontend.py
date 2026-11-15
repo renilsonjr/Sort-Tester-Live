@@ -18,7 +18,7 @@ class StaticFrontendTests(unittest.TestCase):
         self.assertIn('src="src/app.js', response.text)
 
     def test_allowed_frontend_files_are_served(self) -> None:
-        for path in ("/src/app.js", "/src/auth.js", "/assets/nunito-variable.ttf", "/assets/quiz-happy.jpg"):
+        for path in ("/src/app.js", "/src/auth.js", "/assets/nunito-variable.ttf", "/assets/avatar-idle.jpg"):
             with self.subTest(path=path):
                 self.assertEqual(self.client.get(path).status_code, 200)
 
