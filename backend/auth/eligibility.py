@@ -32,6 +32,10 @@ from uuid import UUID
 
 from backend.db import migrate
 from backend.ranked import seasons
+# The same two kinds of attempt the standings count: a tie-break alone
+# never satisfied the one-completed-quiz minimum, so it cannot stand for
+# accumulation here either.
+from backend.ranked.standings import QUALIFYING_MODES
 
 
 class EligibilityError(Exception):
@@ -86,6 +90,62 @@ def account_id_for_tag(conn, tag: str) -> UUID:
     return row["id"]
 
 
+def _refuse_a_second_account_for_this_sorter(
+    conn, reference: str, account_id: UUID
+) -> None:
+    """The approved account is fixed for the official season (settled Q5).
+
+    Withdrawing an approval is still allowed, because the owner must be
+    able to take back one that should not stand. What may not follow is a
+    **swap**: approving a different account for the same sorter once the
+    first one has played, which would move eligibility onto a balance it
+    did not earn. So a second account is refused when the sorter already
+    has an official-season record under this reference, by either route:
+
+    * a completed quiz on the account that was withdrawn, which is the
+      accumulation the rule exists to stop; or
+    * a season marker, written when an account is deleted. Deletion
+      withdraws the account from the season and a fresh one "cannot regain
+      this season's prizes", and the marker says so after the account
+      itself is gone.
+
+    Correcting a mistyped tag stays possible, because a tag approved by
+    mistake and withdrawn straight away has neither.
+    """
+    marker = migrate.fetch_one(
+        conn,
+        "SELECT ineligible FROM season_markers"
+        " WHERE roster_reference = %s AND ineligible = true",
+        (reference,),
+    )
+    if marker is not None:
+        raise EligibilityError(
+            "That sorter is out of this season and cannot be approved again."
+        )
+    played = migrate.fetch_one(
+        conn,
+        """
+        SELECT 1 AS played
+        FROM withdrawn_approvals wa
+        JOIN attempts at ON at.account_id = wa.account_id
+        WHERE wa.roster_reference = %s
+          -- putting the same account back is not a move, so it is not
+          -- the withdrawn account's own quizzes that block it
+          AND wa.account_id <> %s
+          AND at.state = 'finalized'
+          AND at.final_outcome = 'completed'
+          AND at.mode = ANY(%s)
+        LIMIT 1
+        """,
+        (reference, account_id, list(QUALIFYING_MODES)),
+    )
+    if played is not None:
+        raise EligibilityError(
+            "That sorter has already played this season on another account,"
+            " so the approval cannot move."
+        )
+
+
 def approve(
     conn,
     owner_account_id: UUID,
@@ -115,6 +175,7 @@ def approve(
     )
     if target is None:
         raise EligibilityError("No such account.")
+    _refuse_a_second_account_for_this_sorter(conn, reference, account_id)
     existing = migrate.fetch_one(
         conn,
         "SELECT account_id, roster_reference FROM participant_links"
@@ -148,11 +209,21 @@ def withdraw(conn, owner_account_id: UUID, account_id: UUID) -> None:
     _require_owner(conn, owner_account_id)
     removed = migrate.fetch_one(
         conn,
-        "DELETE FROM participant_links WHERE account_id = %s RETURNING account_id",
+        "DELETE FROM participant_links WHERE account_id = %s"
+        " RETURNING account_id, roster_reference",
         (account_id,),
     )
     if removed is None:
         raise EligibilityError("That account is not approved.")
+    # Remember that this sorter held this account, so that approving a
+    # different one for them later can tell a correction from a swap.
+    migrate.execute(
+        conn,
+        "INSERT INTO withdrawn_approvals (account_id, roster_reference)"
+        " VALUES (%s, %s)"
+        " ON CONFLICT (account_id, roster_reference) DO NOTHING",
+        (removed["account_id"], removed["roster_reference"]),
+    )
 
 
 def approvals(conn, owner_account_id: UUID) -> list[Approval]:

@@ -130,10 +130,58 @@ class EligibilityTests(unittest.TestCase):
             self._approve(reference="twilight-primary-2")
         self.assertIn("already approved", caught.exception.reason)
 
-    def test_withdrawing_frees_the_sorter_for_a_new_account(self):
-        """The recovery path: a lost account is withdrawn and the sorter's
-        new one is approved in its place."""
+    def test_a_mistyped_tag_can_be_corrected(self):
+        """The owner approved the wrong account and withdrew it straight
+        away. Nothing was played on it, so the right account can take the
+        place. This is a correction, not a swap."""
+        wrong = self._account("belt_runner")
+        self._approve(account_id=wrong)
+        eligibility.withdraw(self.conn, self.owner, wrong)
+        self._approve(account_id=self.player, reference="twilight-primary-1")
+        self.assertEqual([row.username for row in self._all()], ["dock_owl"])
+
+    def test_the_approval_cannot_move_once_the_sorter_has_played(self):
+        """The approved account is fixed for the official season: no
+        eligibility swap. Points earned on one account cannot become
+        eligibility on another."""
         self._approve()
+        self._completed_quiz(self.player)
+        eligibility.withdraw(self.conn, self.owner, self.player)
+        replacement = self._account("dock_owl_two")
+        with self.assertRaises(eligibility.EligibilityError) as caught:
+            self._approve(account_id=replacement, reference="twilight-primary-1")
+        self.assertIn("already played this season", caught.exception.reason)
+        self.assertEqual(self._all(), [])
+
+    def test_the_same_account_can_be_approved_again_after_a_withdrawal(self):
+        """Recovery uses the same account, so putting back an approval the
+        owner took back by mistake is not a swap, played or not."""
+        self._approve()
+        self._completed_quiz(self.player)
+        eligibility.withdraw(self.conn, self.owner, self.player)
+        self._approve(reference="twilight-primary-1")
+        self.assertEqual([row.username for row in self._all()], ["dock_owl"])
+
+    def test_a_deleted_sorter_cannot_come_back_on_a_fresh_account(self):
+        """Deletion withdraws the account from the season, and a new
+        account "cannot regain this season's prizes". The season marker
+        says so after the account itself is gone."""
+        migrate.execute(
+            self.conn,
+            "INSERT INTO season_markers (roster_reference, season, ineligible)"
+            " VALUES (%s, %s, true)",
+            ("twilight-primary-1", str(self.season)),
+        )
+        fresh = self._account("dock_owl_fresh")
+        with self.assertRaises(eligibility.EligibilityError) as caught:
+            self._approve(account_id=fresh, reference="twilight-primary-1")
+        self.assertIn("out of this season", caught.exception.reason)
+
+    def test_a_tiebreak_attempt_does_not_count_as_having_played(self):
+        """A tie-break alone never satisfied the one-quiz minimum, so it
+        cannot stand for accumulation either."""
+        self._approve()
+        self._completed_quiz(self.player, mode="tiebreak")
         eligibility.withdraw(self.conn, self.owner, self.player)
         replacement = self._account("dock_owl_two")
         self._approve(account_id=replacement, reference="twilight-primary-1")
@@ -233,6 +281,21 @@ class EligibilityTests(unittest.TestCase):
             eligibility.withdraw(self.conn, self.owner, self.player)
 
     # --- helpers ---
+
+    def _completed_quiz(self, account_id, mode="normal"):
+        assignment_id = migrate.fetch_one(
+            self.conn,
+            "INSERT INTO assignments (account_id, mode, season_id)"
+            " VALUES (%s, %s, %s) RETURNING id",
+            (account_id, mode, self.season),
+        )["id"]
+        migrate.execute(
+            self.conn,
+            "INSERT INTO attempts (account_id, assignment_id, mode, season_id,"
+            " state, final_outcome, settled_at)"
+            " VALUES (%s, %s, %s, %s, 'finalized', 'completed', now())",
+            (account_id, assignment_id, mode, self.season),
+        )
 
     def _links(self):
         return migrate.fetch_all(self.conn, "SELECT * FROM participant_links")
