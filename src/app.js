@@ -328,6 +328,63 @@ async function apiSend(method, path, body) {
   };
 }
 
+// Recent reauthentication (#11 box 5). The server answers 428 when an
+// owner action needs the login ID re-entered on this device; the page asks
+// for it, confirms it, and repeats the action once. One entry covers five
+// minutes of work, so a run of approvals asks once, not once per click.
+//
+// The field is a password field on purpose: the owner does this standing
+// in front of a sorter, and the login ID should not be readable over their
+// shoulder. It also lets a password manager fill it in.
+function askForLoginId(reason) {
+  return new Promise((resolve) => {
+    const dialog = document.createElement('div');
+    dialog.className = 'reauth-dialog';
+    dialog.setAttribute('role', 'dialog');
+    dialog.setAttribute('aria-modal', 'true');
+    dialog.setAttribute('aria-labelledby', 'reauth-title');
+    dialog.innerHTML = `
+      <form class="reauth-card">
+        <h2 id="reauth-title">${esc(t('Confirm it is you'))}</h2>
+        <p class="lab-study-meta">${esc(reason || t('Re-enter your login ID to continue. It stays confirmed on this device for five minutes.'))}</p>
+        <label class="field"><span>${esc(t('Your login ID'))}</span>
+          <input id="reauth-input" type="password" autocomplete="current-password" spellcheck="false" placeholder="ABCD-EFGH-JKLM-NPQR"></label>
+        <p class="notice" id="reauth-error" role="status" hidden></p>
+        <button class="primary" type="submit">${esc(t('Confirm'))}</button>
+        <button class="ghost" type="button" id="reauth-cancel">${esc(t('Cancel'))}</button>
+      </form>`;
+    const close = (value) => { dialog.remove(); resolve(value); };
+    dialog.querySelector('#reauth-cancel').addEventListener('click', () => close(null));
+    dialog.querySelector('form').addEventListener('submit', async (event) => {
+      event.preventDefault();
+      const input = dialog.querySelector('#reauth-input');
+      const result = await apiSend('POST', '/auth/reauthenticate', { login_id: input.value });
+      input.value = '';
+      if (result.ok) { close(true); return; }
+      const error = dialog.querySelector('#reauth-error');
+      error.hidden = false;
+      error.textContent = result.status === 429
+        ? t('Too many attempts. Wait a moment and try again.')
+        : (result.reason || t('That did not work. Nothing has been changed.'));
+      input.focus();
+    });
+    document.body.append(dialog);
+    dialog.querySelector('#reauth-input').focus();
+  });
+}
+
+// apiSend for the owner's guarded actions: asks for the login ID when the
+// server wants it, then tries the action exactly once more.
+async function apiSendOwner(method, path, body) {
+  const first = await apiSend(method, path, body);
+  if (first.status !== 428) return first;
+  const confirmed = await askForLoginId(first.reason);
+  if (!confirmed) {
+    return { ok: false, status: 428, data: null, reason: t('Cancelled. Nothing has been changed.') };
+  }
+  return apiSend(method, path, body);
+}
+
 function badgeArt(badge) {
   return `assets/badge-${badge.toLowerCase()}.jpg`;
 }
@@ -788,7 +845,7 @@ async function fillEligibility(panel) {
 async function approveSorter(panel) {
   const button = panel.querySelector('#elig-approve');
   button.disabled = true;
-  const result = await apiSend('POST', '/ranked/owner/approvals', {
+  const result = await apiSendOwner('POST', '/ranked/owner/approvals', {
     tag: panel.querySelector('#elig-tag').value,
     roster_reference: panel.querySelector('#elig-ref').value,
   });
@@ -820,7 +877,7 @@ function confirmWithdraw(accountId, username) {
   view.querySelector('#withdraw-keep').addEventListener('click', () => showOwnerEligibility());
   view.querySelector('#withdraw-go').addEventListener('click', async () => {
     view.querySelector('#withdraw-go').disabled = true;
-    const result = await apiSend('DELETE', `/ranked/owner/approvals/${accountId}`);
+    const result = await apiSendOwner('DELETE', `/ranked/owner/approvals/${accountId}`);
     showOwnerEligibility(
       result.ok ? `${t('Withdrawn')}: ${username}.` : (result.reason || t('That did not work. Nothing has been changed.')),
       !result.ok,
@@ -1054,7 +1111,7 @@ function showRecoveryCheck(request) {
   view.querySelector('#rec-hand').addEventListener('click', async () => {
     const button = view.querySelector('#rec-hand');
     button.disabled = true;
-    const result = await apiSend('POST', `/ranked/owner/recoveries/${request.id}/handover`);
+    const result = await apiSendOwner('POST', `/ranked/owner/recoveries/${request.id}/handover`);
     if (result.ok) {
       showHandover(result.data);
       return;
