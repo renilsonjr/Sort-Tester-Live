@@ -39,12 +39,21 @@ class OwnerApprovalsRouterTests(unittest.TestCase):
         )
         self.conn.commit()
         self.owner = TestClient(create_app(), headers=BROWSER)
-        self._sign_in(self.owner, "the_owner")
+        owner_login = self._sign_in(self.owner, "the_owner")
         migrate.execute(
             self.conn,
             "UPDATE accounts SET is_owner = true WHERE username_lower = 'the_owner'",
         )
         self.conn.commit()
+        # The owner's actions need the login ID re-entered on this session
+        # (#11 box 5); these tests are about what the actions do, so the
+        # owner confirms once up front. test_auth_reauth.py covers the gate.
+        self.assertEqual(
+            self.owner.post(
+                "/api/auth/reauthenticate", json={"login_id": owner_login}
+            ).status_code,
+            204,
+        )
         self.player = TestClient(create_app(), headers=BROWSER)
         self._sign_in(self.player, "dock_owl")
         self.player_tag = self._tag("dock_owl")
@@ -54,6 +63,7 @@ class OwnerApprovalsRouterTests(unittest.TestCase):
         self.assertEqual(reg.status_code, 200, reg.text)
         login = client.post("/api/auth/login", json={"login_id": reg.json()["login_id"]})
         self.assertEqual(login.status_code, 200, login.text)
+        return reg.json()["login_id"]
 
     def _tag(self, username):
         return migrate.fetch_one(

@@ -208,6 +208,49 @@ def admin_regenerate(
     )
 
 
+class ReauthenticateRequest(BaseModel):
+    login_id: str
+
+
+@router.post("/reauthenticate", status_code=status.HTTP_204_NO_CONTENT)
+def reauthenticate_session(
+    request: Request,
+    payload: ReauthenticateRequest,
+    account: dict = Depends(_current_account),
+):
+    """Re-enter the login ID on this session (#11 box 5).
+
+    Confirms this device for the owner's sensitive actions for five
+    minutes. The login ID is checked against the signed-in account only,
+    so this cannot test somebody else's; a wrong one counts as a failed
+    login against the same limiter as sign-in, and the refusal is the same
+    whatever was wrong with it.
+    """
+    from backend.auth import reauth
+    from backend.ranked.clock import system_clock
+
+    limiter = get_login_rate_limiter()
+    rate_key = _client_key(request)
+    if not limiter.is_allowed(rate_key):
+        raise HTTPException(status_code=status.HTTP_429_TOO_MANY_REQUESTS, detail="Too many requests")
+    with _db_connection() as conn:
+        try:
+            reauth.reauthenticate(
+                conn,
+                request.cookies.get("sort_tester_session") or "",
+                payload.login_id,
+                clock=system_clock(),
+            )
+        except reauth.WrongLoginId:
+            limiter.record_failure(rate_key)
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="That login ID does not match this account.",
+            ) from None
+        conn.commit()
+    return None
+
+
 class DeleteAccountRequest(BaseModel):
     login_id: str
     acknowledge: bool = False

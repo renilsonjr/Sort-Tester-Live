@@ -13,7 +13,7 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
 from pydantic import BaseModel
 
-from backend.auth import eligibility, recovery
+from backend.auth import eligibility, reauth, recovery
 from backend.auth.deletion import purge_deleted_accounts
 from backend.auth.service import get_account_by_session
 from backend.db import migrate, settings
@@ -436,6 +436,27 @@ def leaderboard(account: dict = Depends(_current_account), conn=Depends(get_db))
     }
 
 
+# Recent login-ID reauthentication (#11 box 5). The owner's eligibility
+# and recovery actions need the login ID re-entered on this session within
+# five minutes. 428 rather than 401 or 403 on purpose: the session is
+# valid and the owner is allowed, a precondition is simply missing, and the
+# page answers 428 by asking for the login ID instead of signing out.
+REAUTH_DETAIL = (
+    "Re-enter your login ID to continue. It stays confirmed on this device"
+    " for five minutes."
+)
+
+
+def _require_recent_reauth(request: Request, conn) -> None:
+    raw_token = request.cookies.get("sort_tester_session") or ""
+    try:
+        reauth.require_recent(conn, raw_token, clock=_CLOCK)
+    except reauth.ReauthRequired:
+        raise HTTPException(
+            status_code=status.HTTP_428_PRECONDITION_REQUIRED, detail=REAUTH_DETAIL
+        ) from None
+
+
 # Prize eligibility, the owner's own screen (#11). The rule lives in
 # backend/auth/eligibility.py; these three only carry it over HTTP. There
 # is no player list, no points endpoint and no history here, because the
@@ -471,10 +492,13 @@ def list_approvals(account: dict = Depends(_current_account), conn=Depends(get_d
 
 @router.post("/owner/approvals", status_code=status.HTTP_201_CREATED)
 def approve_sorter(
+    request: Request,
     payload: ApproveRequest,
     account: dict = Depends(_current_account),
     conn=Depends(get_db),
 ):
+    _require_owner(account)
+    _require_recent_reauth(request, conn)
     try:
         target_id = eligibility.account_id_for_tag(conn, payload.tag)
         approval = eligibility.approve(
@@ -499,10 +523,13 @@ def approve_sorter(
 
 @router.delete("/owner/approvals/{account_id}", status_code=status.HTTP_204_NO_CONTENT)
 def withdraw_approval(
+    request: Request,
     account_id: str,
     account: dict = Depends(_current_account),
     conn=Depends(get_db),
 ):
+    _require_owner(account)
+    _require_recent_reauth(request, conn)
     try:
         eligibility.withdraw(conn, account["id"], UUID(account_id))
     except ValueError:
@@ -577,12 +604,15 @@ def open_recovery(
 
 @router.post("/owner/recoveries/{request_id}/handover")
 def hand_over_recovery(
+    request: Request,
     request_id: str,
     account: dict = Depends(_current_account),
     conn=Depends(get_db),
 ):
     """Issue the new login ID. The response carries it once; the server
     keeps only its hash, so nothing can read it back afterwards."""
+    _require_owner(account)
+    _require_recent_reauth(request, conn)
     try:
         handover = recovery.hand_over(
             conn, account["id"], UUID(request_id), clock=_CLOCK
