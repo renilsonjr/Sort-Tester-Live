@@ -16,7 +16,8 @@
        white refresh). Belt colours are routing information and never change. */
     :root {
       --bg: #fffdf8; --panel: #fffdf8; --ink: #35271e; --muted: #6e5c4d;
-      --line: #ded4c5; --accent: #38261b; --soft: #f7eac7; --soft-line: #d6bc75;
+      --line: #ded4c5; --accent: #38261b; --accent-ink: #fffdf8;
+      --soft: #f7eac7; --soft-line: #d6bc75;
       --gold: #f4bd38; --gold-line: #b47d15; --focus: #175e94;
       --success: #226442; --danger: #a12d2d;
     }
@@ -98,6 +99,19 @@
     /* Announced to screen readers, not drawn: the question number is already
        visible in the header above. */
     .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
+
+    /* Same rule as the app: on quiz and promotion screens the primary action
+       is brown, never gold. The library's gold (#f4bd38) and the YELLOW belt
+       (#f6d33c) are nearly the same colour, and GOLD is a belt too, so on
+       these screens yellow must mean a belt and never a button. Settled with
+       the owner 2026-11-14 — do not "fix" it back to gold. */
+    [data-view="rquiz"] .primary, [data-view="promo"] .primary {
+      background: var(--accent); color: var(--accent-ink); border-color: var(--accent);
+    }
+
+    /* Promotion (issue #17, slice 2) */
+    .rules { margin: 0; padding-left: 22px; display: flex; flex-direction: column; gap: 9px; font-size: 15px; line-height: 1.5; }
+    .rules li::marker { font-weight: 900; color: var(--accent); }
 
     /* Ranked quiz (issue #17, slice 1). Belt colours are BELT_STYLE from
        src/belts.js: routing information, never restyled. */
@@ -646,7 +660,7 @@
             <h2>Iron stops at 1,000</h2>
             <p>Points above a cap are not saved for later. Reaching the cap is what makes promotion available.</p>
           </div>
-          <button class="primary" type="button" data-stub="Promotion is designed in slice 2 of issue #17.">Start promotion</button>
+          <button class="primary" type="button" data-go="promo">Start promotion</button>
           <button class="ghost" type="button" data-go="ranked">Back to Ranked</button>
         </div>
 
@@ -686,6 +700,131 @@
             <button type="button" data-rq-go="cap" aria-pressed="false">Result at cap</button>
             <button type="button" data-rq-go="plain" aria-pressed="false">Result below cap</button>
             <button type="button" data-rq-go="negative" aria-pressed="false">Result negative</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Promotion (issue #17, slice 2). At a cap, promotion is the only
+           Ranked option. 15 of 15 required; a correct answer adds nothing,
+           a wrong one deducts and ends the attempt, dropping the player
+           below the cap. Opening this screen starts nothing. -->
+      <section class="view" data-view="promo" hidden>
+        <button class="link" type="button" data-go="ranked">← Back to Ranked</button>
+
+        <div class="view" data-pr="offer">
+          <p class="eyebrow">Ranked · Pre-Season</p>
+          <h1 tabindex="-1">Promotion to Bronze</h1>
+          <div class="panel balance">
+            <img class="balance-badge" src="assets-sm/badge-iron.png" alt="">
+            <div>
+              <p class="small">Your balance</p>
+              <p class="stat">1,000 points</p>
+              <p class="small">Iron · at the Iron cap</p>
+            </div>
+          </div>
+          <ol class="rules">
+            <li>15 questions. You need every one of them right.</li>
+            <li>A wrong answer or a timeout ends the attempt and deducts points.</li>
+            <li>Losing points drops you below the cap, so promotion is not available again until you earn them back.</li>
+            <li>Passing sets you to 1,001 points and Bronze.</li>
+          </ol>
+          <p class="small">Opening this screen has not started anything. No question has been sent and no clock is running.</p>
+          <button class="primary" type="button" data-pr-go="question">Start promotion</button>
+          <button class="ghost" type="button" data-go="ranked">Not now</button>
+          <p class="small">Ordinary Ranked quizzes are not available at the cap. Practice is, and never changes these points.</p>
+        </div>
+
+        <div class="view" data-pr="question" hidden>
+          <div class="rq-top">
+            <span class="rq-count">Question 9 of 15</span>
+            <span class="rq-clock">06</span>
+          </div>
+          <span class="rq-stake">◆ Promotion · 8 of 8 right so far</span>
+          <h1 tabindex="-1" class="sr-only">Promotion question 9 of 15</h1>
+          <div class="rq-prompt">
+            <p class="rq-service">Next Day Air · New York</p>
+            <p class="rq-code">136</p>
+          </div>
+          <p class="small">Where does this go?</p>
+          <div class="belts" role="group" aria-label="Choose a belt">
+            <button type="button" style="background:#5b2d8e" data-pr-go="right">PURPLE</button>
+            <button type="button" style="background:#8a6400" data-pr-go="failed">GOLD</button>
+            <button type="button" style="background:#1f4e9c" data-pr-go="failed">BLUE</button>
+            <button type="button" style="background:#a81c1c" data-pr-go="failed">RED</button>
+          </div>
+          <p class="note"><strong>Design mock.</strong> PURPLE is the right answer and continues; the others show a failed promotion.</p>
+        </div>
+
+        <div class="view" data-pr="right" hidden>
+          <h1 tabindex="-1" class="rq-verdict good">Correct · still perfect</h1>
+          <p class="rq-worth">9 of 9 right. Six questions to go.</p>
+          <div class="rq-cmp"><div><span>Correct belt</span><span class="chip" style="background:#5b2d8e">PURPLE</span></div></div>
+          <div class="notice-box">
+            <h2>A right answer in promotion adds no points</h2>
+            <p>It keeps the attempt alive. Only passing all fifteen changes your balance, and it sets you to 1,001.</p>
+          </div>
+          <button class="primary" type="button" data-pr-go="passed">Next</button>
+        </div>
+
+        <div class="view" data-pr="failed" hidden>
+          <p class="eyebrow">Promotion · ended</p>
+          <h1 tabindex="-1">14 of 15 — promotion needs all 15</h1>
+          <div class="rq-cmp">
+            <div><span>Question 9 · your choice</span><span class="chip" style="background:#a81f5e">PINK</span></div>
+            <div><span>Correct belt</span><span class="chip" style="background:#8a6400">GOLD</span></div>
+          </div>
+          <div class="sum">
+            <div><span>Before this attempt</span><b>1,000</b></div>
+            <div class="lost"><span>Wrong Easy question</span><b>−15</b></div>
+            <div class="total"><span>Your balance now</span><b>985</b></div>
+          </div>
+          <div class="notice-box">
+            <h2>15 points to the Iron cap again</h2>
+            <p>Earn them in ordinary Ranked quizzes. Promotion comes back when you reach 1,000.</p>
+          </div>
+          <button class="ghost" type="button" data-go="ranked">Back to Ranked</button>
+          <p class="small">Your history keeps the raw +275 from this attempt as well as the −15 that was applied.</p>
+        </div>
+
+        <div class="view" data-pr="passed" hidden>
+          <p class="eyebrow">Promotion · passed</p>
+          <h1 tabindex="-1">15 of 15. You are Bronze.</h1>
+          <div class="panel balance">
+            <img class="balance-badge" src="assets-sm/badge-bronze.png" alt="">
+            <div>
+              <p class="small">Your balance</p>
+              <p class="stat">1,001 points</p>
+              <p class="small">Bronze · 999 points to the Bronze cap (2,000)</p>
+            </div>
+          </div>
+          <p class="small">Passing sets the new badge's first point total. Ordinary Ranked quizzes are available again until you reach 2,000.</p>
+          <button class="ghost" type="button" data-go="ranked">Back to Ranked</button>
+        </div>
+
+        <div class="view" data-pr="demoted" hidden>
+          <p class="eyebrow">Ranked · attempt finished</p>
+          <h1 tabindex="-1">3 of 15 correct</h1>
+          <div class="sum">
+            <div><span>Before this attempt</span><b>1,010</b></div>
+            <div class="lost"><span>Lost this attempt</span><b>−150</b></div>
+            <div class="total"><span>Your balance now</span><b>860</b></div>
+          </div>
+          <div class="notice-box">
+            <h2>You are Iron again</h2>
+            <p>Bronze starts at 1,001, and 860 is below it. Getting Bronze back takes two things: reach 1,000, then pass another perfect promotion.</p>
+          </div>
+          <button class="ghost" type="button" data-go="ranked">Back to Ranked</button>
+        </div>
+
+        <div class="mock-controls">
+          <p>Mock controls · not part of the app</p>
+          <div class="row" role="group" aria-label="Promotion screen">
+            <button type="button" data-pr-go="offer" aria-pressed="true">At the cap</button>
+            <button type="button" data-pr-go="question" aria-pressed="false">Question</button>
+            <button type="button" data-pr-go="right" aria-pressed="false">Correct</button>
+            <button type="button" data-pr-go="failed" aria-pressed="false">Failed</button>
+            <button type="button" data-pr-go="passed" aria-pressed="false">Passed</button>
+            <button type="button" data-pr-go="demoted" aria-pressed="false">Demoted</button>
           </div>
         </div>
       </section>
@@ -767,8 +906,8 @@
       member: [['home', '⌂', 'Home'], ['practice', '≡', 'Practice'], ['ranked', '◆', 'Ranked'], ['profile', '●', 'Profile']],
     };
     // Screens that live inside a tab keep that tab marked as current.
-    const PARENT_TAB = { leaderboard: 'ranked', tickets: 'profile', delete: 'profile', rquiz: 'ranked' };
-    const MEMBER_ONLY = ['ranked', 'leaderboard', 'profile', 'tickets', 'delete', 'rquiz'];
+    const PARENT_TAB = { leaderboard: 'ranked', tickets: 'profile', delete: 'profile', rquiz: 'ranked', promo: 'ranked' };
+    const MEMBER_ONLY = ['ranked', 'leaderboard', 'profile', 'tickets', 'delete', 'rquiz', 'promo'];
     let mode = 'public';
     // The home callout appears only once a start is confirmed. During
     // Pre-Season there is no callout and no invented date.
@@ -799,6 +938,7 @@
       if (name === 'delete') setDelete('step1');
       if (name === 'tickets') setTickets('list');
       if (name === 'rquiz') setRanked('question');
+      if (name === 'promo') setPromotion('offer');
       for (const view of document.querySelectorAll('[data-view]')) view.hidden = view.dataset.view !== name;
       for (const el of document.querySelectorAll('[data-member]')) el.hidden = mode !== 'member';
       for (const el of document.querySelectorAll('[data-guest]')) el.hidden = mode !== 'guest';
@@ -817,6 +957,15 @@
       window.scrollTo(0, 0);
       // The delete screen holds one h1 per step, so focus the visible one.
       const heading = [...document.querySelectorAll(`[data-view="${name}"] h1`)].find(h => h.offsetParent !== null);
+      if (heading) heading.focus({ preventScroll: true });
+    }
+
+    // Promotion. Opening the screen lands on the offer, never mid-attempt:
+    // information must not start an attempt or a clock.
+    function setPromotion(state) {
+      for (const el of document.querySelectorAll('[data-pr]')) el.hidden = el.dataset.pr !== state;
+      for (const el of document.querySelectorAll('[data-pr-go]')) el.setAttribute('aria-pressed', String(el.dataset.prGo === state));
+      const heading = document.querySelector(`[data-pr="${state}"] h1`);
       if (heading) heading.focus({ preventScroll: true });
     }
 
@@ -1004,6 +1153,7 @@
       if (button.dataset.delGo) return setDelete(button.dataset.delGo);
       if (button.dataset.tkGo) return setTickets(button.dataset.tkGo);
       if (button.dataset.rqGo) return setRanked(button.dataset.rqGo);
+      if (button.dataset.prGo) return setPromotion(button.dataset.prGo);
       if (button.dataset.season) {
         season = button.dataset.season;
         for (const el of document.querySelectorAll('[data-season]')) el.setAttribute('aria-pressed', String(el.dataset.season === season));
