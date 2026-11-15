@@ -296,6 +296,38 @@ async function api(path) {
   }
 }
 
+// The writing half of `api`. A refusal carries the server's reason, which
+// is written for the person reading it; `ok` is false for a dead server
+// too, so a caller never has to tell the two apart before showing
+// something.
+async function apiSend(method, path, body) {
+  const options = {
+    method,
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'same-origin',
+  };
+  if (body !== undefined) options.body = JSON.stringify(body);
+  let response;
+  try {
+    response = await fetch(`/api${path}`, options);
+  } catch {
+    return { ok: false, status: 0, data: null, reason: t('Could not reach the server. Nothing has been changed.') };
+  }
+  if (response.status === 204) return { ok: true, status: 204, data: null };
+  let data = null;
+  try {
+    data = await response.json();
+  } catch {
+    data = null;
+  }
+  return {
+    ok: response.ok,
+    status: response.status,
+    data,
+    reason: typeof data?.detail === 'string' ? data.detail : null,
+  };
+}
+
 function badgeArt(badge) {
   return `assets/badge-${badge.toLowerCase()}.jpg`;
 }
@@ -619,8 +651,13 @@ function showDeletionAccepted() {
   `, 'home', showDeletionAccepted);
 }
 
-function fillSettings(panel) {
+async function fillSettings(panel) {
   panel.innerHTML = `
+    <button id="profile-owner" class="lab-choice" type="button" hidden>
+      <span class="lab-choice-icon">★</span>
+      <span><strong>${esc(t('Owner tools'))}</strong><small>${esc(t('Prize eligibility, access recovery, case review.'))}</small></span>
+      <span class="lab-arrow" aria-hidden="true">→</span>
+    </button>` + `
     <button id="profile-support" class="lab-choice" type="button">
       <span class="lab-choice-icon">?</span>
       <span><strong>${esc(t('Support'))}</strong><small>${esc(t('Your tickets.'))}</small></span>
@@ -640,6 +677,152 @@ function fillSettings(panel) {
   panel.querySelector('#profile-support').addEventListener('click', showSupport);
   panel.querySelector('#profile-logout').addEventListener('click', () => signOut());
   panel.querySelector('#profile-delete').addEventListener('click', showDeleteAccount);
+  // One account in the whole app is the owner's. For everybody else the
+  // row stays absent rather than disabled: a locked door still says there
+  // is a room. The server refuses the calls regardless of this.
+  const owner = panel.querySelector('#profile-owner');
+  owner.addEventListener('click', showOwnerTools);
+  const me = await api('/auth/me');
+  if (me?.is_owner) owner.hidden = false;
+}
+
+// Owner tools (#11), built to the screens approved on 2026-11-15.
+//
+// Scoped on purpose: approving prize eligibility, approving access
+// recovery in person, and reviewing cases. There is no player list, no
+// points screen, no history browser and no ban button, because the owner
+// was never granted those. What is missing here is missing on purpose.
+function showOwnerTools() {
+  stopTick();
+  clock = null;
+  const view = labPage(`
+    <section class="lab-screen">
+      <p class="lab-eyebrow">${esc(t('Owner'))}</p>
+      <h1 class="lab-title">${esc(t('Owner tools'))}</h1>
+      <aside class="lab-disclaimer">${esc(t('These are the only administrator powers this app has. Approving does not change anybody’s points, badge or history, and gives you no access to a player’s record.'))}</aside>
+      <button id="owner-eligibility" class="lab-choice" type="button">
+        <span class="lab-choice-icon">✓</span>
+        <span><strong>${esc(t('Prize eligibility'))}</strong><small>${esc(t('Who may win a hat this season.'))}</small></span>
+        <span class="lab-arrow" aria-hidden="true">→</span>
+      </button>
+      <button class="lab-choice" type="button" disabled>
+        <span class="lab-choice-icon">↺</span>
+        <span><strong>${esc(t('Access recovery'))}</strong><small>${esc(t('In person only. Not built yet.'))}</small></span>
+      </button>
+      <button class="lab-choice" type="button" disabled>
+        <span class="lab-choice-icon">?</span>
+        <span><strong>${esc(t('Case review'))}</strong><small>${esc(t('Tickets and connection flags. Not built yet.'))}</small></span>
+      </button>
+      <button id="owner-back" class="ghost">${esc(t('Back to Profile'))}</button>
+    </section>
+  `, 'profile', showOwnerTools);
+  view.querySelector('#owner-eligibility').addEventListener('click', () => showOwnerEligibility());
+  view.querySelector('#owner-back').addEventListener('click', () => showProfile('settings'));
+  return view;
+}
+
+// Prize eligibility. One sorter, one account, recorded while the season is
+// open; withdrawal stays available afterwards, because leaving a wrong
+// approval in place would hand a hat to somebody not entitled to it.
+function showOwnerEligibility(message = null, bad = false) {
+  stopTick();
+  clock = null;
+  const view = labPage(`
+    <section class="lab-screen">
+      <p class="lab-eyebrow">${esc(t('Owner'))}</p>
+      <h1 class="lab-title">${esc(t('Prize eligibility'))}</h1>
+      ${message ? `<div class="board-notice${bad ? ' board-notice-bad' : ''}" role="status"><p>${esc(message)}</p></div>` : ''}
+      <div id="elig-panel"><p class="lab-intro" role="status">${esc(t('Loading…'))}</p></div>
+      <button id="elig-back" class="ghost">${esc(t('Back to Owner tools'))}</button>
+    </section>
+  `, 'profile', () => showOwnerEligibility(message, bad));
+  view.querySelector('#elig-back').addEventListener('click', showOwnerTools);
+  fillEligibility(view.querySelector('#elig-panel'));
+  return view;
+}
+
+async function fillEligibility(panel) {
+  const body = await api('/ranked/owner/approvals');
+  if (!body) {
+    panel.innerHTML = `<div class="board-notice board-notice-bad"><h2>${esc(t('Could not load the approvals'))}</h2><p>${esc(t('Nothing has been changed. Try again in a moment.'))}</p></div>`;
+    return;
+  }
+  const approvals = body.approvals ?? [];
+  panel.innerHTML = `
+    <p class="lab-intro">${esc(t('Approved sorters may win one of the three hats. Each sorter holds one approved account. New approvals close when the season ends; you can still withdraw one afterwards.'))}</p>
+    ${body.approvals_open ? `
+      <div class="owner-form">
+        <h2>${esc(t('Approve a sorter'))}</h2>
+        <label class="field"><span>${esc(t('Player tag'))}</span>
+          <input id="elig-tag" type="text" autocomplete="off" autocapitalize="characters" placeholder="#K7Q2MX"></label>
+        <label class="field"><span>${esc(t('Roster reference'))}</span>
+          <input id="elig-ref" type="text" autocomplete="off" placeholder="${esc(t('Primary Sort · Twilight · badge 4471'))}"></label>
+        <p class="lab-study-meta">${esc(t('The roster reference is how you identify this person on your own roster. It is never shown to players.'))}</p>
+        <button id="elig-approve" class="primary">${esc(t('Approve'))}</button>
+      </div>
+    ` : `<div class="board-notice"><h2>${esc(t('The season is closed to new approvals'))}</h2><p>${esc(t('Approvals close when the season ends, including the five-minute finishing window. You can still withdraw an approval that should not stand.'))}</p></div>`}
+    <h2 class="owner-count">${approvals.length
+      ? `${esc(t('Approved this season'))} (${approvals.length})`
+      : esc(t('Approved this season'))}</h2>
+    ${approvals.length === 0
+      ? `<p class="lab-intro">${esc(t('Nobody is approved yet. Until you approve a sorter, the leaderboard has nobody to rank.'))}</p>`
+      : `<ul class="approved">${approvals.map((row) => `
+        <li>
+          <span class="approved-who">
+            <b>${esc(row.username)}</b>
+            <small>#${esc(row.tag)} · ${esc(row.roster_reference)}</small>
+          </span>
+          <button class="ghost owner-withdraw" type="button" data-account="${esc(row.account_id)}" data-name="${esc(row.username)}">${esc(t('Withdraw'))}</button>
+        </li>`).join('')}</ul>`}
+  `;
+  panel.querySelector('#elig-approve')?.addEventListener('click', () => approveSorter(panel));
+  panel.querySelectorAll('.owner-withdraw').forEach((button) => {
+    button.addEventListener('click', () => confirmWithdraw(button.dataset.account, button.dataset.name));
+  });
+}
+
+async function approveSorter(panel) {
+  const button = panel.querySelector('#elig-approve');
+  button.disabled = true;
+  const result = await apiSend('POST', '/ranked/owner/approvals', {
+    tag: panel.querySelector('#elig-tag').value,
+    roster_reference: panel.querySelector('#elig-ref').value,
+  });
+  if (result.ok) {
+    showOwnerEligibility(`${t('Approved')} ${result.data.username}.`);
+    return;
+  }
+  button.disabled = false;
+  // The server's refusal already says which rule stopped it, in words.
+  const note = panel.querySelector('.owner-note') ?? document.createElement('p');
+  note.className = 'owner-note notice';
+  note.setAttribute('role', 'status');
+  note.textContent = result.reason || t('That did not work. Nothing has been changed.');
+  button.after(note);
+}
+
+// Withdrawing is the one thing here that takes something away, so it asks
+// first, and keeping the approval is the easy answer.
+function confirmWithdraw(accountId, username) {
+  const view = labPage(`
+    <section class="lab-screen">
+      <p class="lab-eyebrow">${esc(t('Owner'))}</p>
+      <h1 class="lab-title">${esc(t('Withdraw'))} ${esc(username)}?</h1>
+      <p class="lab-intro">${esc(t('They leave the standings and cannot win a hat this season. Their points, badge and history do not change, and they can go on playing. You can approve this sorter again while the season is open.'))}</p>
+      <button id="withdraw-keep" class="primary">${esc(t('Keep it'))}</button>
+      <button id="withdraw-go" class="ghost owner-danger">${esc(t('Withdraw approval'))}</button>
+    </section>
+  `, 'profile', () => confirmWithdraw(accountId, username));
+  view.querySelector('#withdraw-keep').addEventListener('click', () => showOwnerEligibility());
+  view.querySelector('#withdraw-go').addEventListener('click', async () => {
+    view.querySelector('#withdraw-go').disabled = true;
+    const result = await apiSend('DELETE', `/ranked/owner/approvals/${accountId}`);
+    showOwnerEligibility(
+      result.ok ? `${t('Withdrawn')}: ${username}.` : (result.reason || t('That did not work. Nothing has been changed.')),
+      !result.ok,
+    );
+  });
+  return view;
 }
 
 // The leaderboard (#12, slice 2), built to the screen approved in #16.

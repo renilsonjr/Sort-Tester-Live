@@ -205,6 +205,14 @@
     .notice-box { border: 1px solid #e4d3a8; border-radius: 17px; background: #fbf3e1; padding: 13px 15px; }
     .notice-box h2 { font-size: 16px; }
     .notice-box p { margin-top: 4px; color: #54412f; font-size: 13px; }
+    /* The approved list is not a ranking, so it is not the board grid:
+       a name, the roster reference under it, and the way to withdraw. */
+    .danger-btn { color: var(--danger); border-color: #d8b6b6; }
+    .approved { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+    .approved li { display: flex; align-items: center; gap: 10px; border: 1px solid var(--line); border-radius: 17px; background: #fffdf8; padding: 12px 14px; }
+    .approved .who { min-width: 0; flex: 1; }
+    .approved .who b { display: block; font-weight: 900; overflow-wrap: anywhere; }
+    .approved .who small { display: block; color: var(--muted); font-size: 12px; overflow-wrap: anywhere; }
     .board li .marker { grid-column: 1 / -1; margin-top: 4px; font-size: 12px; font-weight: 800; }
     .board li.tied, .board li.filled { border-color: #c79a2c; background: #fdf6e4; }
     .board li.tied .marker, .board li.filled .marker { color: #7a5200; }
@@ -462,6 +470,12 @@
         </div>
 
         <div class="view" id="panel-settings" role="tabpanel" aria-labelledby="tab-settings" hidden>
+          <!-- Owner tools live inside Settings, not in a tab of their own:
+               the owner is a sorter with one extra job, not a different
+               kind of visitor, and a fourth tab would cost every player
+               width on a phone. The row is absent for everyone else. -->
+          <button class="choice" type="button" data-go="owner" id="owner-row" hidden><span class="choice-icon" aria-hidden="true">★</span><span><strong>Owner tools</strong><small>Prize eligibility, access recovery, case review.</small></span><span class="arrow" aria-hidden="true">→</span></button>
+          <button class="choice" type="button" data-go="tickets"><span class="choice-icon" aria-hidden="true">?</span><span><strong>Support</strong><small>Your tickets.</small></span><span class="arrow" aria-hidden="true">→</span></button>
           <button class="choice alt" type="button" data-go="delete"><span class="choice-icon" aria-hidden="true">!</span><span><strong>Delete account</strong><small>Removes your profile, history and points.</small></span><span class="arrow" aria-hidden="true">→</span></button>
           <button class="ghost" type="button" data-leave>Log out</button>
         </div>
@@ -472,6 +486,10 @@
             <button type="button" data-state="640" aria-pressed="true">640 points</button>
             <button type="button" data-state="-40" aria-pressed="false">−40 points</button>
             <button type="button" data-state="1000" aria-pressed="false">At the cap</button>
+          </div>
+          <div class="row" role="group" aria-label="Who is signed in">
+            <button type="button" data-owner="no" aria-pressed="true">A player</button>
+            <button type="button" data-owner="yes" aria-pressed="false">The owner</button>
           </div>
           <div class="row" role="group" aria-label="History tab state">
             <button type="button" data-hist-state="pre" aria-pressed="true">Before launch</button>
@@ -484,6 +502,57 @@
       </section>
 
       <!-- Support → Tickets (inside Profile) -->
+      <!-- Owner tools (issue #11). Scoped on purpose: approving prize
+           eligibility, approving access recovery in person, and reviewing
+           cases. There is no player list, no points screen, no history
+           browser and no ban button, because the owner was never granted
+           those. What is not drawn here is not an omission. -->
+      <section class="view" data-view="owner" hidden>
+        <button class="link" type="button" data-go="profile">← Back to Profile</button>
+        <p class="eyebrow">Owner</p>
+        <h1 tabindex="-1">Owner tools</h1>
+        <div class="panel">
+          <p class="small">These are the only administrator powers this app has. Approving does not change anybody's points, badge or history, and gives you no access to a player's record.</p>
+        </div>
+        <button class="choice" type="button" data-go="owner-eligibility"><span class="choice-icon" aria-hidden="true">✓</span><span><strong>Prize eligibility</strong><small>Who may win a hat this season.</small></span><span class="arrow" aria-hidden="true">→</span></button>
+        <button class="choice" type="button"><span class="choice-icon" aria-hidden="true">↺</span><span><strong>Access recovery</strong><small>In person only. Not built yet.</small></span><span class="arrow" aria-hidden="true">→</span></button>
+        <button class="choice" type="button"><span class="choice-icon" aria-hidden="true">?</span><span><strong>Case review</strong><small>Tickets and connection flags. Not built yet.</small></span><span class="arrow" aria-hidden="true">→</span></button>
+      </section>
+
+      <!-- Prize eligibility (issue #11, slice 2). One sorter, one account,
+           recorded while the season is open. -->
+      <section class="view" data-view="owner-eligibility" hidden>
+        <button class="link" type="button" data-go="owner">← Back to Owner tools</button>
+        <p class="eyebrow">Owner</p>
+        <h1 tabindex="-1">Prize eligibility</h1>
+        <div class="notice-box" id="elig-notice" hidden></div>
+        <p class="small" id="elig-sub">Approved sorters may win one of the three hats. Each sorter holds one approved account. New approvals close when the season ends; you can still withdraw one afterwards.</p>
+
+        <div class="panel" id="elig-form">
+          <h2>Approve a sorter</h2>
+          <label class="field"><span>Player tag</span><input type="text" placeholder="#K7Q2MX" value=""></label>
+          <label class="field"><span>Roster reference</span><input type="text" placeholder="Primary Sort · Twilight · badge 4471"></label>
+          <p class="small">The roster reference is how you identify this person on your own roster. It is never shown to players.</p>
+          <button class="primary" type="button">Approve</button>
+        </div>
+
+        <h2 id="elig-count">Approved this season</h2>
+        <ul class="approved" id="elig-rows"></ul>
+
+        <div class="mock-controls">
+          <p>Mock controls · not part of the app</p>
+          <div class="row" role="group" aria-label="Eligibility state">
+            <button type="button" data-el="list" aria-pressed="true">Approved list</button>
+            <button type="button" data-el="empty" aria-pressed="false">Nobody yet</button>
+            <button type="button" data-el="withdraw" aria-pressed="false">Withdrawing</button>
+            <button type="button" data-el="dupe" aria-pressed="false">Sorter already approved</button>
+            <button type="button" data-el="self" aria-pressed="false">Your own account</button>
+            <button type="button" data-el="closed" aria-pressed="false">Season closed</button>
+            <button type="button" data-el="error" aria-pressed="false">Error</button>
+          </div>
+        </div>
+      </section>
+
       <section class="view" data-view="tickets" hidden>
         <button class="link" type="button" data-go="profile">← Back to Profile</button>
         <p class="eyebrow">Support</p>
@@ -1220,9 +1289,12 @@
       member: [['home', '⌂', 'Home'], ['practice', '≡', 'Practice'], ['ranked', '◆', 'Ranked'], ['profile', '●', 'Profile']],
     };
     // Screens that live inside a tab keep that tab marked as current.
-    const PARENT_TAB = { leaderboard: 'ranked', tickets: 'profile', delete: 'profile', rquiz: 'ranked', promo: 'ranked', qc: 'ranked', tb: 'ranked' };
-    const MEMBER_ONLY = ['ranked', 'leaderboard', 'profile', 'tickets', 'delete', 'rquiz', 'promo', 'qc', 'tb'];
+    const PARENT_TAB = { leaderboard: 'ranked', tickets: 'profile', delete: 'profile', rquiz: 'ranked', promo: 'ranked', qc: 'ranked', tb: 'ranked', owner: 'profile', 'owner-eligibility': 'profile' };
+    const MEMBER_ONLY = ['ranked', 'leaderboard', 'profile', 'tickets', 'delete', 'rquiz', 'promo', 'qc', 'tb', 'owner', 'owner-eligibility'];
     let mode = 'public';
+    // Whether this signed-in account is the owner. One account in the whole
+    // app is, so the Owner tools row is absent for everybody else.
+    let owner = false;
     // The home callout appears only once a start is confirmed. During
     // Pre-Season there is no callout and no invented date.
     let season = 'pre';
@@ -1471,9 +1543,89 @@
       for (const row of document.querySelectorAll('.hist li')) row.hidden = kind !== 'all' && row.dataset.kind !== kind;
     }
 
+    // Prize eligibility (issue #11). The owner's own screen: who may win a
+    // hat. No points here and no history: approving is not a way into
+    // anybody's record, so the row carries a name, a tag and the roster
+    // reference the owner typed, and nothing else.
+    const APPROVED = [
+      { name: 'dock_owl', tag: '#A1B2C3', ref: 'Primary Sort · Twilight · badge 4471' },
+      { name: 'belt_runner', tag: '#D4E5F6', ref: 'Primary Sort · Twilight · badge 2210' },
+      { name: 'tape_gull', tag: '#G8H9JK', ref: 'Primary Sort · Twilight · badge 8806' },
+    ];
+
+    const ELIGIBILITY = {
+      list: { rows: APPROVED },
+      empty: {
+        rows: [],
+        sub: 'Nobody is approved yet. Until you approve a sorter, the leaderboard has nobody to rank.',
+      },
+      withdraw: {
+        rows: APPROVED,
+        confirm: {
+          title: 'Withdraw belt_runner?',
+          text: 'They leave the standings and cannot win a hat this season. Their points, badge and history do not change, and they can go on playing. You can approve this sorter again while the season is open.',
+        },
+      },
+      dupe: {
+        rows: APPROVED,
+        notice: {
+          title: 'That sorter already has an approved account',
+          text: 'One sorter holds one approved account. Withdraw the approval below before approving a different account for the same person.',
+        },
+      },
+      self: {
+        rows: APPROVED,
+        notice: {
+          title: 'You cannot approve your own account',
+          text: 'Deciding who may win and being one of the winners is the one thing this screen does not allow.',
+        },
+      },
+      closed: {
+        rows: APPROVED,
+        form: false,
+        notice: {
+          title: 'The season is closed to new approvals',
+          text: 'Approvals close when the season ends, including the five-minute finishing window. You can still withdraw an approval that should not stand.',
+        },
+      },
+      error: {
+        rows: [],
+        form: false,
+        notice: {
+          title: 'Could not load the approvals',
+          text: 'Nothing has been changed. Try again in a moment.',
+        },
+      },
+    };
+
+    function setEligibility(state) {
+      const s = ELIGIBILITY[state];
+      const notice = document.getElementById('elig-notice');
+      notice.hidden = !(s.notice || s.confirm);
+      if (s.confirm) {
+        notice.innerHTML = `<h2>${s.confirm.title}</h2><p>${s.confirm.text}</p>`
+          // Withdrawing is the one destructive thing on this screen, so it
+          // is the quieter button and keeping the approval is the easy one.
+          + '<div class="row" style="margin-top:10px"><button class="ghost danger-btn" type="button">Withdraw approval</button>'
+          + '<button class="primary" type="button">Keep it</button></div>';
+      } else if (s.notice) {
+        notice.innerHTML = `<h2>${s.notice.title}</h2><p>${s.notice.text}</p>`;
+      }
+      document.getElementById('elig-form').hidden = s.form === false;
+      document.getElementById('elig-sub').textContent = s.sub
+        || 'Approved sorters may win one of the three hats. Each sorter holds one approved account. New approvals close when the season ends; you can still withdraw one afterwards.';
+      document.getElementById('elig-count').textContent = s.rows.length
+        ? `Approved this season (${s.rows.length})` : 'Approved this season';
+      document.getElementById('elig-rows').innerHTML = s.rows.map(r =>
+        `<li><span class="who"><b>${r.name}</b><small>${r.tag} · ${r.ref}</small></span>`
+        + '<button class="ghost" type="button" style="width:auto;padding:8px 12px">Withdraw</button></li>').join('');
+      for (const el of document.querySelectorAll('[data-el]')) el.setAttribute('aria-pressed', String(el.dataset.el === state));
+    }
+
     setBalance('640');
     setHistory('pre');
     setLeaderboard('during');
+    setEligibility('list');
 
     document.addEventListener('click', event => {
       const button = event.target.closest('button');
@@ -1483,6 +1635,13 @@
       if (button.dataset.histState) { setHistory(button.dataset.histState); return setTab('history'); }
       if (button.dataset.filter) return setFilter(button.dataset.filter);
       if (button.dataset.lb) return setLeaderboard(button.dataset.lb);
+      if (button.dataset.el) return setEligibility(button.dataset.el);
+      if (button.dataset.owner) {
+        owner = button.dataset.owner === 'yes';
+        document.getElementById('owner-row').hidden = !owner;
+        for (const el of document.querySelectorAll('[data-owner]')) el.setAttribute('aria-pressed', String((el.dataset.owner === 'yes') === owner));
+        return setTab('settings');
+      }
       if (button.dataset.delGo) return setDelete(button.dataset.delGo);
       if (button.dataset.tkGo) return setTickets(button.dataset.tkGo);
       if (button.dataset.rqGo) return setRanked(button.dataset.rqGo);

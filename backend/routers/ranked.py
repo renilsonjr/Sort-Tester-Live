@@ -13,6 +13,7 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
 from pydantic import BaseModel
 
+from backend.auth import eligibility
 from backend.auth.deletion import purge_deleted_accounts
 from backend.auth.service import get_account_by_session
 from backend.db import migrate, settings
@@ -433,6 +434,90 @@ def leaderboard(account: dict = Depends(_current_account), conn=Depends(get_db))
         "your_place": place,
         "eligible": place is not None,
     }
+
+
+# Prize eligibility, the owner's own screen (#11). The rule lives in
+# backend/auth/eligibility.py; these three only carry it over HTTP. There
+# is no player list, no points endpoint and no history here, because the
+# owner was never granted those: what is missing is missing on purpose.
+class ApproveRequest(BaseModel):
+    tag: str
+    roster_reference: str
+
+
+def _approval_json(approval) -> dict:
+    return {
+        "account_id": str(approval.account_id),
+        "username": approval.username,
+        "tag": approval.tag,
+        "roster_reference": approval.roster_reference,
+        "established_at": _utc(approval.established_at),
+    }
+
+
+@router.get("/owner/approvals")
+def list_approvals(account: dict = Depends(_current_account), conn=Depends(get_db)):
+    try:
+        approvals = eligibility.approvals(conn, account["id"])
+    except eligibility.EligibilityError as error:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN, detail=error.reason
+        ) from None
+    return {
+        "approvals_open": seasons.approvals_open(conn, _CLOCK.now()),
+        "approvals": [_approval_json(approval) for approval in approvals],
+    }
+
+
+@router.post("/owner/approvals", status_code=status.HTTP_201_CREATED)
+def approve_sorter(
+    payload: ApproveRequest,
+    account: dict = Depends(_current_account),
+    conn=Depends(get_db),
+):
+    try:
+        target_id = eligibility.account_id_for_tag(conn, payload.tag)
+        approval = eligibility.approve(
+            conn,
+            account["id"],
+            target_id,
+            payload.roster_reference,
+            clock=_CLOCK,
+        )
+    except eligibility.EligibilityError as error:
+        # 403 only when the caller is not the owner; everything else is a
+        # refusal of this particular approval, not of the person asking.
+        code = (
+            status.HTTP_403_FORBIDDEN
+            if error.reason.startswith("Only the owner")
+            else status.HTTP_422_UNPROCESSABLE_ENTITY
+        )
+        raise HTTPException(status_code=code, detail=error.reason) from None
+    conn.commit()
+    return _approval_json(approval)
+
+
+@router.delete("/owner/approvals/{account_id}", status_code=status.HTTP_204_NO_CONTENT)
+def withdraw_approval(
+    account_id: str,
+    account: dict = Depends(_current_account),
+    conn=Depends(get_db),
+):
+    try:
+        eligibility.withdraw(conn, account["id"], UUID(account_id))
+    except ValueError:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Not found"
+        ) from None
+    except eligibility.EligibilityError as error:
+        code = (
+            status.HTTP_403_FORBIDDEN
+            if error.reason.startswith("Only the owner")
+            else status.HTTP_404_NOT_FOUND
+        )
+        raise HTTPException(status_code=code, detail=error.reason) from None
+    conn.commit()
+    return None
 
 
 class CloseFlagRequest(BaseModel):
