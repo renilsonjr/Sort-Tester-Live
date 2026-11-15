@@ -105,6 +105,45 @@ without dressing the loss up.
 3. With this slice merged, boxes 1 and 2 are both covered — box 1 entirely,
    box 2 completed by its promotion half, which slice 1 left open.
 
+## Review record (2026-11-15)
+
+The owner reviewed the states in a browser at 375 px, in two groups, and
+approved them unchanged:
+
+1. The cap offer and the promotion question.
+2. The correct answer, the failed promotion, the passed promotion and the
+   demotion.
+
+Wording settled while building:
+
+- **The correct answer never shows "+0".** It reads "Correct · still
+  perfect", says how many are right so far and how many remain, and
+  explains that a right answer keeps the attempt alive rather than adding
+  points.
+- **The failed promotion names the raw total too**, so a player can see
+  that the +275 they earned is kept in history even though −15 was applied.
+- **The demotion states both conditions** for getting the badge back:
+  reaching 1,000 again *and* passing another perfect promotion.
+- The cap screen says in as many words that opening it has started nothing,
+  because the rule requires it and because otherwise a player hesitates to
+  look.
+
+### A fix this slice forced
+
+The app settled on 2026-11-14 that quiz screens use a brown primary so that
+yellow only ever means a belt. The mock had kept gold on those screens,
+which contradicted the app exactly where GOLD and YELLOW chips appear — the
+failed promotion shows a GOLD chip. The mock now carries the same rule and
+the same comment.
+
+Applying it exposed a missing `--accent-ink` token in the mock: the button
+label turned dark-on-dark and vanished. Found by looking at the screen after
+the change, not by the tests.
+
+Checked at 320 px and 375 px: all six states render, reopening always lands
+on the offer rather than mid-attempt, no sideways scroll, no broken image,
+no JavaScript error.
+
 ## Delivery
 
 Branch `codex/promotion-mockups` from `codex/ranked-mode`, opened as a pull
