@@ -550,3 +550,127 @@ def _restart_round(conn, round_id, *, clock, bank, rng) -> bool:
         )
     conn.commit()
     return True
+
+
+# --- the owner's selection (slice 6) -------------------------------------
+
+class SelectionError(Exception):
+    """A refusal with a reason the owner may be shown."""
+
+    def __init__(self, reason: str):
+        super().__init__(reason)
+        self.reason = reason
+
+
+def _require_owner(conn, owner_account_id) -> None:
+    row = migrate.fetch_one(
+        conn,
+        "SELECT id FROM accounts WHERE id = %s AND is_owner AND deleted_at IS NULL",
+        (owner_account_id,),
+    )
+    if row is None:
+        raise SelectionError("Only the owner may select.")
+
+
+def _hats_left(conn, group) -> int:
+    given = migrate.fetch_one(
+        conn,
+        "SELECT count(*) AS n FROM tiebreak_placements WHERE group_id = %s AND status = 'hat'",
+        (group["id"],),
+    )["n"]
+    return group["hats_available"] - given
+
+
+def selection_cases(conn, owner_account_id) -> list[dict]:
+    """The ties waiting for the owner, each with its players' tie-break
+    history -- the owner decided on 2026-11-15 to see it, so the choice is
+    made with the same information the quiz had. Voided rounds are left out:
+    they never counted. Nothing else about the players is returned, and no
+    points appear, because none can be changed here."""
+    _require_owner(conn, owner_account_id)
+    groups = migrate.fetch_all(
+        conn,
+        "SELECT id, tied_points, hats_available FROM tiebreak_groups"
+        " WHERE status = 'owner_selection' ORDER BY tied_points DESC, opened_at",
+    )
+    cases = []
+    for group in groups:
+        players = migrate.fetch_all(
+            conn,
+            "SELECT a.id, a.username, a.tag FROM tiebreak_placements p"
+            " JOIN accounts a ON a.id = p.account_id"
+            " WHERE p.group_id = %s AND p.status = 'owner_selection' AND a.deleted_at IS NULL"
+            " ORDER BY a.username",
+            (group["id"],),
+        )
+        for player in players:
+            player["history"] = migrate.fetch_all(
+                conn,
+                "SELECT r.round_number, res.outcome, res.score"
+                " FROM tiebreak_round_results res"
+                " JOIN tiebreak_rounds r ON r.id = res.round_id"
+                " WHERE r.group_id = %s AND res.account_id = %s AND r.status = 'closed'"
+                " ORDER BY r.round_number",
+                (group["id"], player["id"]),
+            )
+        cases.append({
+            "group_id": group["id"],
+            "tied_points": group["tied_points"],
+            "hats": _hats_left(conn, group),
+            "players": players,
+        })
+    conn.commit()
+    return cases
+
+
+def record_selection(conn, owner_account_id, group_id, chosen_ids, *, clock) -> None:
+    """Give the hats left in a waiting tie to exactly these players. Final.
+
+    Only the players the rules sent to the owner may be chosen, and exactly
+    as many as there are hats left. The others in the tie take none. No
+    points, badge or tie-break result changes. Recorded with who chose and
+    when; a second selection on the same tie is refused rather than
+    overwriting the first.
+    """
+    _require_owner(conn, owner_account_id)
+    group = migrate.fetch_one(
+        conn,
+        "SELECT id, status, hats_available FROM tiebreak_groups WHERE id = %s FOR UPDATE",
+        (group_id,),
+    )
+    if group is None:
+        conn.rollback()
+        raise SelectionError("There is no such tie.")
+    if group["status"] != "owner_selection":
+        conn.rollback()
+        raise SelectionError("That tie is already settled. A selection is final.")
+    pending = {
+        row["account_id"]
+        for row in migrate.fetch_all(
+            conn,
+            "SELECT account_id FROM tiebreak_placements"
+            " WHERE group_id = %s AND status = 'owner_selection'",
+            (group_id,),
+        )
+    }
+    chosen = set(chosen_ids)
+    if not chosen <= pending:
+        conn.rollback()
+        raise SelectionError("Only the players waiting in this tie can be chosen.")
+    hats = _hats_left(conn, group)
+    if len(chosen) != hats:
+        conn.rollback()
+        raise SelectionError(f"Choose exactly {hats}.")
+    for account_id in pending:
+        migrate.execute(
+            conn,
+            "UPDATE tiebreak_placements SET status = %s WHERE group_id = %s AND account_id = %s",
+            ("hat" if account_id in chosen else "no_hat", group_id, account_id),
+        )
+    migrate.execute(
+        conn,
+        "UPDATE tiebreak_groups SET status = 'resolved', selected_by = %s, selected_at = %s"
+        " WHERE id = %s",
+        (owner_account_id, clock.now(), group_id),
+    )
+    conn.commit()
