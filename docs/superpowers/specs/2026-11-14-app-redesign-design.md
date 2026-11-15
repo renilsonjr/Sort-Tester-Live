@@ -118,6 +118,32 @@ iframe-mounted model would reload 2 MB every question. Doing it properly
 means mounting the viewer once outside the re-rendered node and sending it
 the state. That is its own piece of work and is not in this slice.
 
+## Slice 4 — the sign-in panel
+
+The panel already inherited the warm palette from slice 1, so this slice is
+about what it says, not its colours. It was a title and three bare buttons
+— Log in, Create account, Continue as guest — with nothing explaining the
+difference.
+
+It now follows the entry screen the owner approved in
+`mockups/entry-navigation.html`: two cards that each say what that way in
+gives you. Log in and Create account sit in the account card; Continue as
+guest sits in the no-account card, which states plainly that nothing is
+saved.
+
+- **The button ids are unchanged**, so the panel's own behaviour and the
+  `auth-gate` tests still find them.
+- The avatar is hidden below 700 px of height, so both cards and their
+  buttons always fit without the panel scrolling.
+
+### One wording change worth flagging
+
+The approved mock's account card is about Ranked: "Log in to play Ranked
+quizzes, earn a badge and see the leaderboard." None of that is built yet,
+so the panel would be promising features that do not exist. The card says
+"Log in to keep your quiz history on this account" instead — true of the app
+as it stands today. When Ranked ships, this is the line to revisit.
+
 ## Checks
 
 - `node --test 'tests/*.test.mjs'`: 395 passing before and after.
@@ -128,3 +154,6 @@ the state. That is its own piece of work and is not in this slice.
   sideways scroll and no JavaScript error.
 - `backend.tests.test_static_frontend`: 5 passing after the asset rename.
 - Home and the question screen checked with the new renders loaded.
+- The sign-in panel at 320 px and 375 px: both cards and their buttons fit
+  without the panel scrolling, the login form opens and cancels, and
+  Continue as guest still enters the app.
