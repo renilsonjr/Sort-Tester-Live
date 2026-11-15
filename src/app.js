@@ -200,7 +200,7 @@ function labPage(content, active = 'home', rerender = showStart) {
     if (button.dataset.nav === active) return;
     if (button.dataset.nav === 'practice') showPractice();
     else if (button.dataset.nav === 'ranked') showRankedPlaceholder();
-    else if (button.dataset.nav === 'profile') showProfilePlaceholder();
+    else if (button.dataset.nav === 'profile') showProfile();
     else showStart();
   }));
   return view;
@@ -253,6 +253,156 @@ function comingSoon(eyebrow, title, note, active) {
       <p class="lab-intro">${esc(note)}</p>
     </section>
   `, active, () => comingSoon(eyebrow, title, note, active));
+}
+
+// Profile (#10, slice 2). Everything here is the signed-in account's own:
+// the server returns no other account's, and asks for none.
+const BADGES = [
+  ['Challenger', '4,001 and up, no cap'],
+  ['Gold', '3,001\u20134,000'],
+  ['Silver', '2,001\u20133,000'],
+  ['Bronze', '1,001\u20132,000'],
+  ['Iron', 'Through 1,000'],
+];
+const BADGE_CAP = { Iron: 1000, Bronze: 2000, Silver: 3000, Gold: 4000 };
+
+async function api(path) {
+  const response = await fetch(`/api${path}`, { credentials: 'same-origin' });
+  if (!response.ok) return null;
+  return response.json();
+}
+
+function badgeArt(badge) {
+  return `assets/badge-${badge.toLowerCase()}.jpg`;
+}
+
+function balanceLine(entry) {
+  const cap = BADGE_CAP[entry.badge];
+  if (cap === undefined) return `${entry.badge} \u00b7 ${t('no cap')}`;
+  if (entry.points >= cap) return `${entry.badge} \u00b7 ${t('at the cap')} (${cap.toLocaleString()})`;
+  if (entry.points < 0) return `${entry.badge} \u00b7 ${t('a negative total stays in Iron')}`;
+  const left = (cap - entry.points).toLocaleString();
+  return `${entry.badge} \u00b7 ${left} ${t('points to the cap')} (${cap.toLocaleString()})`;
+}
+
+function showProfile(tab = 'overview') {
+  stopTick();
+  clock = null;
+  const view = labPage(`
+    <section class="lab-screen">
+      <p class="lab-eyebrow">${esc(t('Profile'))}</p>
+      <h1 class="lab-title" id="profile-name">\u2026</h1>
+      <p class="lab-intro" id="profile-tag"></p>
+      <div class="profile-tabs" role="tablist" aria-label="${esc(t('Profile sections'))}">
+        <button type="button" role="tab" data-tab="overview" aria-selected="${tab === 'overview'}">${esc(t('Overview'))}</button>
+        <button type="button" role="tab" data-tab="history" aria-selected="${tab === 'history'}">pre season history</button>
+        <button type="button" role="tab" data-tab="settings" aria-selected="${tab === 'settings'}">${esc(t('Settings'))}</button>
+      </div>
+      <div id="profile-panel"><p class="lab-intro">${esc(t('Loading\u2026'))}</p></div>
+    </section>
+  `, 'profile', () => showProfile(tab));
+
+  view.querySelectorAll('[data-tab]').forEach((button) => button.addEventListener('click', () => {
+    if (button.dataset.tab !== tab) showProfile(button.dataset.tab);
+  }));
+
+  const panel = view.querySelector('#profile-panel');
+  fillProfile(view, panel, tab);
+  return view;
+}
+
+async function fillProfile(view, panel, tab) {
+  const me = await api('/auth/me');
+  if (me) {
+    view.querySelector('#profile-name').textContent = me.username;
+    view.querySelector('#profile-tag').textContent = `${t('Tag')} #${me.tag}`;
+  }
+  if (tab === 'overview') return fillOverview(panel);
+  if (tab === 'history') return fillHistory(panel);
+  return fillSettings(panel);
+}
+
+async function fillOverview(panel) {
+  const entry = await api('/ranked/entry');
+  if (!entry) {
+    panel.innerHTML = `<p class="notice">${esc(t('Could not load your balance. Your points are safe.'))}</p>`;
+    return;
+  }
+  const cap = BADGE_CAP[entry.badge];
+  const filled = cap === undefined ? 100
+    : Math.max(0, Math.min(100, Math.round((entry.points / cap) * 100)));
+  panel.innerHTML = `
+    <div class="profile-balance">
+      <img class="profile-badge" src="${badgeArt(entry.badge)}" alt="">
+      <div>
+        <p class="lab-study-meta">${esc(t('Your balance'))}</p>
+        <p class="profile-points">${entry.points.toLocaleString()} ${esc(t('points'))}</p>
+        <div class="profile-bar"><i style="width:${filled}%"></i></div>
+        <p class="lab-study-meta">${esc(balanceLine(entry))}</p>
+      </div>
+    </div>
+    ${entry.mode === 'promotion' ? `
+    <div class="profile-promo">
+      <h2>${esc(t('Promotion available'))}</h2>
+      <p>${esc(t('A perfect 15 out of 15 quiz moves you up. Start promotion is on the Ranked screen; nothing starts from here.'))}</p>
+    </div>` : ''}
+    <details class="lab-study-card">
+      <summary><span><strong>${esc(t('How badges work'))}</strong></span></summary>
+      <div class="lab-study-body">
+        <ol class="profile-ladder">
+          ${BADGES.map(([name, range]) => `
+          <li ${name === entry.badge ? 'aria-current="true"' : ''}>
+            <img src="${badgeArt(name)}" alt="">
+            <b>${esc(name)}</b>
+            <span>${esc(range)}${name === entry.badge ? ` \u00b7 ${esc(t('you are here'))}` : ''}</span>
+          </li>`).join('')}
+        </ol>
+        <p>${esc(t('One balance decides your badge. Reaching a cap makes promotion available; only a perfect promotion quiz moves you up.'))}</p>
+      </div>
+    </details>
+  `;
+}
+
+async function fillHistory(panel) {
+  const rows = await api('/ranked/history?phase=pre_season');
+  if (rows === null) {
+    panel.innerHTML = `<p class="notice">${esc(t('Could not load your history. Your attempts are safe.'))}</p>`;
+    return;
+  }
+  if (rows.length === 0) {
+    panel.innerHTML = `<p class="lab-intro">${esc(t('Only you can see this. Pre-Season results never count toward the official season.'))}</p>
+      <p class="lab-intro">${esc(t('You played no Ranked quizzes during Pre-Season, so there is nothing here.'))}</p>`;
+    return;
+  }
+  panel.innerHTML = `
+    <p class="lab-intro">${esc(t('Only you can see this. Pre-Season results never count toward the official season.'))}</p>
+    <ul class="profile-history">
+      ${rows.map((row) => {
+        const ended = row.final_outcome === 'launch_reset';
+        return `<li class="${ended ? 'ended' : ''}">
+          <b>${esc(t('Ranked quiz'))}</b>
+          <span class="score">${ended ? '\u2014' : (row.adjustment > 0 ? '+' : '') + row.adjustment}</span>
+          <small>${esc(new Date(row.settled_at).toLocaleDateString())}</small>
+          <span class="status ${ended ? 'ended' : ''}">${esc(ended ? t('Ended at launch \u00b7 no score applied') : t('Completed'))}</span>
+        </li>`;
+      }).join('')}
+    </ul>`;
+}
+
+function fillSettings(panel) {
+  panel.innerHTML = `
+    <button id="profile-support" class="lab-choice" type="button">
+      <span class="lab-choice-icon">?</span>
+      <span><strong>${esc(t('Support'))}</strong><small>${esc(t('Your tickets.'))}</small></span>
+      <span class="lab-arrow" aria-hidden="true">\u2192</span>
+    </button>
+    <button id="profile-delete" class="lab-choice lab-choice-quiz" type="button">
+      <span class="lab-choice-icon">!</span>
+      <span><strong>${esc(t('Delete account'))}</strong><small>${esc(t('Removes your profile, history and points.'))}</small></span>
+      <span class="lab-arrow" aria-hidden="true">\u2192</span>
+    </button>
+    <p class="lab-intro">${esc(t('Support and account deletion are being built.'))}</p>
+  `;
 }
 
 function showRankedPlaceholder() {
