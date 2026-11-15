@@ -206,7 +206,7 @@ function showStart() {
         <div class="lab-hero-copy">
           <h1>${esc(t('Practice'))}<br>${esc(t('the chart.'))}</h1>
         </div>
-        <img class="lab-mascot" src="assets/parcel-buddy.jpg" alt="${language.code === 'es' ? 'Personaje azul sonriente con una caja de cartón' : 'Smiling blue character holding a cardboard package'}">
+        <img class="lab-mascot" src="assets/avatar-idle.jpg" alt="${language.code === 'es' ? 'Personaje azul sonriente con una caja de cartón' : 'Smiling blue character holding a cardboard package'}">
       </div>
       <section class="lab-change" aria-labelledby="sort-change-title">
         <p class="lab-change-kicker">${esc(t('Recent sort changes'))}</p>
@@ -382,10 +382,15 @@ function leaveRun() {
   activeDeck = null;
 }
 
+// The approved Blender avatar, rendered to stills. The animated model is
+// 2 MB with its viewer, so it stays out of the question screens, which
+// re-render once per question.
+const AVATAR_POSE = { thinking: 'thinking', happy: 'correct', sad: 'incorrect' };
+
 function quizAvatar(mood) {
   const label = mood === 'thinking' ? 'Blue mascot thinking with a question mark'
     : mood === 'happy' ? 'Happy blue mascot' : 'Sad blue mascot';
-  return `<img class="quiz-avatar" src="assets/quiz-${mood}.jpg" alt="${esc(t(label))}">`;
+  return `<img class="quiz-avatar" src="assets/avatar-${AVATAR_POSE[mood]}.jpg" alt="${esc(t(label))}">`;
 }
 
 function quizHeader(cardNumber, total, withTimer = false) {
