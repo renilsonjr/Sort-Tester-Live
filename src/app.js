@@ -389,6 +389,101 @@ async function fillHistory(panel) {
     </ul>`;
 }
 
+// Account deletion (#10, slice 4). The wording is fixed by Decision 14 and
+// is reproduced exactly, minus the word "email": the app collects none, and
+// promising to delete one would imply it had been held.
+const DELETE_QUESTION = 'Are you sure you want to proceed with deleting this account?';
+const DELETE_ACK = 'I agree to delete my account. I understand that deleting it before prizes are finalized removes this account from this season\u2019s competition.';
+const DELETE_CONSEQUENCE = 'After deletion is completed, your profile, quiz history and points are removed. A new account starts at 0 points / Iron.';
+const DELETE_DISCLOSURE = 'Your profile, quiz history and points are deleted. We keep only a private season-ineligibility record until prizes are finalized.';
+
+function showDeleteAccount() {
+  stopTick();
+  clock = null;
+  // Reopening always starts clean: the box unchecked, the field empty, the
+  // final action disabled. Decision 14 requires the reset.
+  const view = labPage(`
+    <section class="lab-screen">
+      <p class="lab-eyebrow">${esc(t('Settings'))}</p>
+      <h1 class="lab-title">${esc(t(DELETE_QUESTION))}</h1>
+      <p class="lab-intro">${esc(t(DELETE_CONSEQUENCE))}</p>
+      <label class="delete-ack">
+        <input type="checkbox" id="delete-ack">
+        <span>${esc(t(DELETE_ACK))}</span>
+      </label>
+      <p class="lab-intro" id="delete-hint">${esc(t('Tick the box above to continue.'))}</p>
+      <div id="delete-step2" hidden>
+        <div class="delete-warn">
+          <h2>${esc(t('This cannot be undone'))}</h2>
+          <p>${esc(t('Once this is accepted there is no undo and no restore.'))}</p>
+        </div>
+        <label class="field">
+          <span>${esc(t('Login ID'))}</span>
+          <input id="delete-login-id" type="text" autocomplete="off" placeholder="ABCD-EFGH-JKLM-NPQR">
+        </label>
+        <p class="notice" id="delete-error" hidden></p>
+      </div>
+      <button id="delete-go" class="primary delete-danger" type="button" disabled>${esc(t('Delete account'))}</button>
+      <button id="delete-cancel" class="ghost" type="button">${esc(t('Cancel'))}</button>
+      <p class="lab-disclaimer">${esc(t(DELETE_DISCLOSURE))}</p>
+    </section>
+  `, 'profile', showDeleteAccount);
+
+  const ack = view.querySelector('#delete-ack');
+  const step2 = view.querySelector('#delete-step2');
+  const go = view.querySelector('#delete-go');
+  const hint = view.querySelector('#delete-hint');
+  const error = view.querySelector('#delete-error');
+
+  ack.addEventListener('change', () => {
+    step2.hidden = !ack.checked;
+    hint.hidden = ack.checked;
+    go.disabled = !ack.checked;
+  });
+  view.querySelector('#delete-cancel').addEventListener('click', () => showProfile('settings'));
+  go.addEventListener('click', async () => {
+    error.hidden = true;
+    go.disabled = true;
+    const result = await deleteAccount(view.querySelector('#delete-login-id').value);
+    if (result === 'accepted') return showDeletionAccepted();
+    error.textContent = result;
+    error.hidden = false;
+    go.disabled = false;
+  });
+  return view;
+}
+
+async function deleteAccount(loginId) {
+  let response;
+  try {
+    response = await fetch('/api/auth/account/delete', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'same-origin',
+      body: JSON.stringify({ login_id: loginId, acknowledge: true }),
+    });
+  } catch {
+    return t('Could not reach the server. Nothing has been deleted.');
+  }
+  if (response.status === 202) return 'accepted';
+  // One message for every refusal, so nobody learns which part was wrong.
+  if (response.status === 409) return t('The owner account cannot be deleted.');
+  if (response.status === 429) return t('Too many attempts. Wait a moment and try again.');
+  return t('That did not work. Nothing has been deleted.');
+}
+
+function showDeletionAccepted() {
+  session = null;
+  labPage(`
+    <section class="lab-screen">
+      <p class="lab-eyebrow">${esc(t('Account'))}</p>
+      <h1 class="lab-title">${esc(t('Deletion accepted'))}</h1>
+      <p class="lab-intro">${esc(t('You have been signed out and this account can no longer be used. Removing your data is under way.'))}</p>
+      <aside class="lab-disclaimer">${esc(t('There is no undo and nothing to restore. A new account would start at 0 points and Iron, and cannot get this season\u2019s prizes back.'))}</aside>
+    </section>
+  `, 'home', showDeletionAccepted);
+}
+
 function fillSettings(panel) {
   panel.innerHTML = `
     <button id="profile-support" class="lab-choice" type="button">
@@ -401,8 +496,9 @@ function fillSettings(panel) {
       <span><strong>${esc(t('Delete account'))}</strong><small>${esc(t('Removes your profile, history and points.'))}</small></span>
       <span class="lab-arrow" aria-hidden="true">\u2192</span>
     </button>
-    <p class="lab-intro">${esc(t('Support and account deletion are being built.'))}</p>
+    <p class="lab-intro">${esc(t('Support is being built.'))}</p>
   `;
+  panel.querySelector('#profile-delete').addEventListener('click', showDeleteAccount);
 }
 
 function showRankedPlaceholder() {
