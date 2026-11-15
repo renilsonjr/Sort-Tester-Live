@@ -400,6 +400,34 @@
   .lab-chart-row small { margin-top: 2px; font-size: 11px; }
   .lab-chart-row .lab-belt-chip { min-width: 75px; border-radius: 0; padding: 7px 8px; font-size: 11px; }
 
+  /* Profile (issue #10, slice 2). The badge art is the approved set from
+     mockups/design-library/badges. */
+  .profile-tabs { display: flex; flex-wrap: wrap; gap: 2px; border-bottom: 2px solid var(--line); margin: 14px 0 12px; }
+  .profile-tabs button { min-height: 44px; padding: 8px 10px; margin-bottom: -2px; border: 0; border-bottom: 3px solid transparent; background: none; color: var(--muted); font-size: 13px; font-weight: 900; }
+  .profile-tabs button[aria-selected="true"] { color: var(--accent); border-bottom-color: var(--gold-line); }
+  .profile-balance { display: flex; align-items: center; gap: 14px; border: 1px solid var(--line); border-radius: 20px; background: var(--panel); padding: 16px; margin-bottom: 10px; }
+  .profile-balance > div { min-width: 0; flex: 1; }
+  .profile-badge { width: 76px; height: 76px; flex: none; object-fit: contain; border-radius: 14px; }
+  .profile-points { margin: 2px 0; font-size: 30px; font-weight: 900; letter-spacing: -.04em; line-height: 1.1; }
+  .profile-bar { height: 12px; margin: 8px 0 6px; border-radius: 99px; background: #ede3d2; overflow: hidden; }
+  .profile-bar i { display: block; height: 100%; border-radius: 99px; background: var(--accent); }
+  .profile-promo { border: 1px solid var(--soft-line); border-radius: 19px; background: var(--soft); padding: 14px 16px; margin-bottom: 10px; }
+  .profile-promo h2 { margin: 0; font-size: 17px; font-weight: 900; letter-spacing: -.03em; text-transform: none; color: var(--ink); }
+  .profile-promo p { margin: 5px 0 0; color: #54412f; font-size: 13px; line-height: 1.5; }
+  .profile-ladder { list-style: none; margin: 0 0 12px; padding: 0; display: flex; flex-direction: column; gap: 7px; }
+  .profile-ladder li { display: grid; grid-template-columns: 44px 1fr; align-items: center; gap: 3px 11px; border: 1px solid var(--line); border-radius: 13px; padding: 9px 11px; font-size: 14px; font-weight: 900; }
+  .profile-ladder img { width: 44px; height: 44px; object-fit: contain; grid-row: span 2; }
+  .profile-ladder span { color: var(--muted); font-size: 12px; font-weight: 600; }
+  .profile-ladder li[aria-current="true"] { border: 2px solid var(--gold-line); background: var(--soft); color: var(--accent); }
+  .profile-ladder li[aria-current="true"] span { color: var(--accent); font-weight: 900; }
+  .profile-history { list-style: none; margin: 10px 0 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+  .profile-history li { border: 1px solid var(--line); border-radius: 17px; background: var(--panel); padding: 12px 14px; display: grid; grid-template-columns: 1fr auto; gap: 3px 10px; }
+  .profile-history li.ended { border-style: dashed; }
+  .profile-history .score { font-size: 16px; font-weight: 900; font-variant-numeric: tabular-nums; }
+  .profile-history small { grid-column: 1 / -1; color: var(--muted); font-size: 12px; }
+  .profile-history .status { grid-column: 1 / -1; justify-self: start; margin-top: 3px; padding: 3px 10px; border-radius: 99px; background: #dff2e8; color: #1f5a3a; font-size: 11px; font-weight: 900; }
+  .profile-history .status.ended { background: #f3ece0; color: #6e5c4d; border: 1px dashed #9a876f; }
+
   /* Friendly study concept: softer learning surfaces and a stronger reading
      hierarchy. The answer buttons and chart chips keep BELT_STYLE colors. */
   body { background: #f7f3ec; color: var(--ink); font-family: Nunito, "Trebuchet MS", sans-serif; font-weight: 600; }
@@ -497,7 +525,7 @@
 <div id="auth-panel" hidden></div>
 <main id="app"></main>
 <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js" integrity="sha384-EnyY0/GSHQGSxSgMwaIPzSESbqoOLSexfnSMN2AP+39Ckmn92stwABZynq1JyzdT" crossorigin="anonymous"></script>
-<script type="module" src="src/app.js?v=navigation-20261115"></script>
+<script type="module" src="src/app.js?v=profile-20261115"></script>
 <script type="module" src="src/auth.js"></script>
 </body>
 </html>
