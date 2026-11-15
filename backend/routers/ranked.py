@@ -62,6 +62,14 @@ def get_db():
         # and a tie-break round closes at its own deadline the same way:
         # score it, place its players, open the next round if one is due
         ranked_tiebreaks.close_due_rounds(conn, clock=_CLOCK, bank=_reviewed_bank())
+        # once rounds are closed, resolve the three hats: carry a freed hat
+        # down to the next player, open a replacement round if that creates
+        # a tie, and write the winners when nothing is left pending
+        launch = seasons.official_launch(conn)
+        if launch is not None:
+            ranked_tiebreaks.finalize_prizes(
+                conn, launch.season_id, clock=_CLOCK, bank=_reviewed_bank()
+            )
         # same idea for retention: a closed ticket's description goes fifteen
         # days after its own closure, and an attempt's shared connection log
         # goes fifteen days after the last case on it closes (#26)
@@ -502,9 +510,25 @@ def leaderboard(account: dict = Depends(_current_account), conn=Depends(get_db))
     rows = ranked_standings.standings(conn, launch_fact.season_id)
     current = seasons.current_season_status(conn, _CLOCK.now())
     place = ranked_standings.place_of(rows, account["id"])
+    season_row = migrate.fetch_one(
+        conn, "SELECT prizes_final_at FROM seasons WHERE id = %s", (launch_fact.season_id,)
+    )
+    prizes_final = season_row is not None and season_row["prizes_final_at"] is not None
+    winners = set()
+    if prizes_final:
+        winners = {
+            r["account_id"]
+            for r in migrate.fetch_all(
+                conn, "SELECT account_id FROM season_prizes WHERE season_id = %s",
+                (launch_fact.season_id,),
+            )
+        }
     return {
         "season_label": launch_fact.label,
         "points_final": current is not None and current.status == "frozen",
+        # prize places stay provisional until every tie-break and selection
+        # is resolved; only then does a row carry a hat
+        "prizes_final": prizes_final,
         "rows": [
             {
                 "place": row.place,
@@ -514,6 +538,7 @@ def leaderboard(account: dict = Depends(_current_account), conn=Depends(get_db))
                 "badge": row.badge,
                 "tied": row.tied,
                 "you": row.account_id == account["id"],
+                "hat": row.account_id in winners,
             }
             for row in rows
         ],

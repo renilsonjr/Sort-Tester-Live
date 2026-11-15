@@ -722,6 +722,11 @@ def record_selection(conn, owner_account_id, group_id, chosen_ids, *, clock) -> 
         (owner_account_id, clock.now(), group_id),
     )
     conn.commit()
+    # a selection may have been the last thing pending: try to finalize
+    season_id = migrate.fetch_one(
+        conn, "SELECT season_id FROM tiebreak_groups WHERE id = %s", (group_id,)
+    )["season_id"]
+    finalize_prizes(conn, season_id, clock=clock)
 
 
 # --- what a player is told about their own tie (slice 7) ------------------
@@ -793,3 +798,200 @@ def my_tiebreak(conn, account_id) -> dict | None:
             "attempt_id": open_round["attempt_id"],
         }
     return out
+
+
+# --- awarding the three hats (slice 8) -----------------------------------
+#
+# The per-group work above decides who wins each contested place. This part
+# stands above the groups and answers the season's question: who holds the
+# three hats. It carries the hats down past an excluded player to the next
+# eligible one (settled Q14 backfill), opens a replacement round when the
+# next players are themselves tied for a prize, and finalizes when nothing
+# is left pending.
+
+@dataclass(frozen=True)
+class PrizeOutcome:
+    kind: str                 # 'final', 'pending', or 'needs_group'
+    winners: tuple = ()       # account ids, for 'final'
+    tie_points: int | None = None    # for 'needs_group'
+    tie_accounts: tuple = ()  # for 'needs_group'
+    tie_hats: int = 0         # for 'needs_group'
+
+
+def resolve_prizes(levels) -> PrizeOutcome:
+    """Who holds the three hats, from the eligible standings and the
+    tie-break outcomes. Pure: no database.
+
+    ``levels`` is the eligible standings grouped by points, highest first.
+    Each level is a list of (account_id, state), where state is:
+
+    * ``winner``   -- took a hat in a resolved group, or an owner selection
+    * ``loser``    -- lost a resolved group at this level (takes no hat)
+    * ``excluded`` -- a Challenger no-show/incomplete (skipped entirely)
+    * ``pending``  -- in an open round, or waiting for the owner
+    * ``plain``    -- in no group; wins by points if there is room
+
+    A hat freed by an excluded player falls to the next level, which is the
+    backfill. When the players who would take the remaining hats are tied
+    among themselves and too many for the hats left, and no group has
+    decided them, a replacement group is needed first.
+    """
+    hats = HATS
+    winners = []
+    for level in levels:
+        if hats == 0:
+            break
+        candidates = [(a, s) for a, s in level if s != "excluded"]
+        if any(s in ("pending",) for _, s in candidates):
+            return PrizeOutcome(kind="pending")
+        decided = [a for a, s in candidates if s == "winner"]
+        if decided:
+            # a group settled this level; its losers take nothing and the
+            # walk goes on for any hats still free
+            for a in decided:
+                if hats > 0:
+                    winners.append(a)
+                    hats -= 1
+            continue
+        if any(s == "loser" for _, s in candidates):
+            # resolved group with no winner left at this level (all its hats
+            # went to higher levels already): move on
+            continue
+        plain = [a for a, s in candidates if s == "plain"]
+        if not plain:
+            continue
+        if len(plain) <= hats:
+            winners.extend(plain)
+            hats -= len(plain)
+            continue
+        # more tied candidates than hats left, undecided: a group is needed
+        return PrizeOutcome(
+            kind="needs_group", tie_accounts=tuple(plain), tie_hats=hats,
+        )
+    return PrizeOutcome(kind="final", winners=tuple(winners))
+
+
+def _prize_levels(conn, season_id):
+    """The eligible standings as resolve_prizes wants them: levels of
+    (account_id, state), highest points first."""
+    rows = standings.standings(conn, season_id)
+    placements = {
+        row["account_id"]: row["status"]
+        for row in migrate.fetch_all(
+            conn,
+            "SELECT p.account_id, p.status FROM tiebreak_placements p"
+            " JOIN tiebreak_groups g ON g.id = p.group_id WHERE g.season_id = %s",
+            (season_id,),
+        )
+    }
+    open_members = {
+        row["account_id"]
+        for row in migrate.fetch_all(
+            conn,
+            "SELECT m.account_id FROM tiebreak_group_members m"
+            " JOIN tiebreak_groups g ON g.id = m.group_id"
+            " WHERE g.season_id = %s AND g.status = 'open'",
+            (season_id,),
+        )
+    }
+
+    def state(account_id):
+        p = placements.get(account_id)
+        if p == "hat":
+            return "winner"
+        if p == "no_hat":
+            return "loser"
+        if p == "excluded":
+            return "excluded"
+        if p == "owner_selection" or account_id in open_members:
+            return "pending"
+        return "plain"
+
+    levels = []
+    for row in rows:
+        if levels and levels[-1][0] == row.points:
+            levels[-1][1].append((row.account_id, state(row.account_id)))
+        else:
+            levels.append((row.points, [(row.account_id, state(row.account_id))]))
+    return [members for _points, members in levels], rows
+
+
+def finalize_prizes(conn, season_id, *, clock, bank=None, rng=None) -> str:
+    """Resolve the season's hats, opening a replacement round if a backfill
+    tie needs one, and writing the final winners when nothing is pending.
+
+    Returns 'final', 'pending' or 'opened_round'. Only acts on a frozen
+    official season whose prizes are not already final. Commits.
+    """
+    season = migrate.fetch_one(
+        conn,
+        "SELECT phase, frozen_at, prizes_final_at, closes_at, closed_at"
+        " FROM seasons WHERE id = %s FOR UPDATE",
+        (season_id,),
+    )
+    if (season is None or season["phase"] != "official"
+            or season["frozen_at"] is None or season["prizes_final_at"] is not None):
+        conn.commit()
+        return "final" if season and season["prizes_final_at"] else "pending"
+    levels, rows = _prize_levels(conn, season_id)
+    outcome = resolve_prizes(levels)
+    if outcome.kind == "pending":
+        conn.commit()
+        return "pending"
+    if outcome.kind == "needs_group":
+        if bank is None:
+            from backend.ranked_bank.catalog import load_reviewed_bank
+
+            bank = load_reviewed_bank()
+        points = next(r.points for r in rows if r.account_id == outcome.tie_accounts[0])
+        now = clock.now()
+        group_id = migrate.fetch_one(
+            conn,
+            "INSERT INTO tiebreak_groups"
+            " (season_id, reason, tied_points, hats_available, opened_at)"
+            " VALUES (%s, 'replacement', %s, %s, %s) RETURNING id",
+            (season_id, points, outcome.tie_hats, now),
+        )["id"]
+        for account_id in outcome.tie_accounts:
+            migrate.execute(
+                conn,
+                "INSERT INTO tiebreak_group_members (group_id, account_id) VALUES (%s, %s)",
+                (group_id, account_id),
+            )
+        try:
+            _open_round(
+                conn, group_id, season_id, 1, outcome.tie_accounts, outcome.tie_hats,
+                opened_at=now, deadline_at=now + ROUND_WINDOW, bank=bank, rng=rng,
+            )
+        except NoFreshSet:
+            for account_id in outcome.tie_accounts:
+                migrate.execute(
+                    conn,
+                    "INSERT INTO tiebreak_placements"
+                    " (group_id, account_id, status, decided_in_round)"
+                    " VALUES (%s, %s, 'owner_selection', 1)"
+                    " ON CONFLICT (group_id, account_id) DO NOTHING",
+                    (group_id, account_id),
+                )
+            migrate.execute(
+                conn,
+                "UPDATE tiebreak_groups SET status = 'owner_selection' WHERE id = %s",
+                (group_id,),
+            )
+            conn.commit()
+            return "pending"
+        conn.commit()
+        return "opened_round"
+    # final
+    for account_id in outcome.winners:
+        migrate.execute(
+            conn,
+            "INSERT INTO season_prizes (season_id, account_id) VALUES (%s, %s)"
+            " ON CONFLICT DO NOTHING",
+            (season_id, account_id),
+        )
+    migrate.execute(
+        conn, "UPDATE seasons SET prizes_final_at = %s WHERE id = %s", (clock.now(), season_id)
+    )
+    conn.commit()
+    return "final"
