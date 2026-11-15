@@ -10,7 +10,7 @@ module applies the consequences once it is confirmed. It lives apart from
 :mod:`backend.ranked.flags` because it uses settlement, which uses flags.
 """
 from backend.db import migrate
-from backend.ranked import engine, flags, settlement
+from backend.ranked import engine, flags, settlement, tiebreaks
 
 
 def record_outage(conn, *, starts_at, ends_at, clock) -> int:
@@ -31,6 +31,11 @@ def record_outage(conn, *, starts_at, ends_at, clock) -> int:
 
     engine.void_attempts_for_outage(conn, outage_start=starts_at, outage_end=ends_at)
     settlement.settle_pending(conn, clock=clock)
+    # a prize tie-break round is restarted whole rather than voided attempt
+    # by attempt (settled Decisions 9-10)
+    tiebreaks.void_rounds_for_outage(
+        conn, outage_start=starts_at, outage_end=ends_at, clock=clock
+    )
 
     overlapping = migrate.fetch_all(
         conn,
