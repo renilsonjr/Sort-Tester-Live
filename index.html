@@ -82,8 +82,19 @@
     background: var(--bg); display: flex; align-items: center; justify-content: center;
     padding: 20px;
   }
-  .auth-screen { width: min(360px, 100%); display: flex; flex-direction: column; gap: 16px; }
+  .auth-screen { width: min(360px, 100%); display: flex; flex-direction: column; gap: 14px; }
   .auth-buttons { display: flex; flex-direction: column; gap: 10px; }
+  /* The approved entry screen: two cards that say what each way in gives
+     you. See mockups/entry-navigation.html. */
+  .auth-brand { display: flex; align-items: center; gap: 10px; font-size: 21px; font-weight: 900; letter-spacing: -.05em; }
+  .auth-avatar { display: block; width: 116px; height: 116px; margin: 0 auto; border-radius: 22px; border: 1px solid var(--line); object-fit: cover; }
+  .auth-screen h1 { font-size: 26px; line-height: 1.12; }
+  .auth-card { display: flex; flex-direction: column; gap: 8px; padding: 17px; border-radius: 20px; background: var(--soft); border: 1px solid var(--soft-line); }
+  .auth-card.guest { background: #e8efdf; border-color: #c4d3b4; }
+  .auth-card h2 { margin: 0; font-size: 19px; font-weight: 900; letter-spacing: -.035em; text-transform: none; color: var(--ink); }
+  .auth-eyebrow { margin: 0; color: var(--accent); font-size: 11px; font-weight: 900; letter-spacing: .13em; text-transform: uppercase; }
+  .auth-copy { margin: 0 0 4px; color: #54412f; font-size: 14px; line-height: 1.45; }
+  @media (max-height: 700px) { .auth-avatar { display: none; } .auth-screen h1 { font-size: 22px; } }
   .auth-screen input[readonly] { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; letter-spacing: 0.05em; }
 
   .decks { display: flex; flex-direction: column; gap: 10px; }
