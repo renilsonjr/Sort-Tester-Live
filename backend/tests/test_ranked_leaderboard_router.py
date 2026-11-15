@@ -166,7 +166,8 @@ class LeaderboardRouterTests(unittest.TestCase):
         self._make_eligible(me, season_id, 900)
         row = self.client.get("/api/ranked/leaderboard").json()["rows"][0]
         self.assertEqual(
-            set(row), {"place", "username", "tag", "points", "badge", "tied", "you"}
+            set(row),
+            {"place", "username", "tag", "points", "badge", "tied", "you", "hat"},
         )
 
     def test_the_board_says_nothing_about_a_deleted_player(self):

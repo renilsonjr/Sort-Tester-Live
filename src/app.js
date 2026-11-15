@@ -1430,20 +1430,24 @@ async function fillLeaderboard(panel) {
     return;
   }
   const rows = board.rows.map((row) => `
-    <li class="${row.you ? 'board-you' : ''}${row.tied ? ' board-tied' : ''}">
-      <span class="board-place">${row.place}</span>
+    <li class="${row.you ? 'board-you' : ''}${row.hat ? ' board-hat' : (row.tied ? ' board-tied' : '')}">
+      <span class="board-place">${row.hat ? '♛' : row.place}</span>
       <span class="board-who">
         <b>${esc(row.username)}</b>
         <small>#${esc(row.tag)} · ${esc(row.badge)}${row.you ? ` · ${esc(t('your place'))}` : ''}</small>
       </span>
       <b class="board-points">${row.points.toLocaleString()}</b>
-      ${row.tied ? `<span class="board-marker">${esc(t('Tied on points'))}</span>` : ''}
+      ${row.hat ? `<span class="board-marker board-marker-hat">${esc(t('Hat winner'))}</span>`
+        : (row.tied ? `<span class="board-marker">${esc(t('Tied on points'))}</span>` : '')}
     </li>
   `).join('');
-  panel.innerHTML = `
-    <p class="lab-intro">${esc(board.points_final
+  const intro = board.prizes_final
+    ? t('Final results. The three hats are decided.')
+    : (board.points_final
       ? t('Points are final for this season. Prize places stay provisional until any tie-break quizzes are played.')
-      : t('Standings update after each settled Ranked quiz, not once a day.'))}</p>
+      : t('Standings update after each settled Ranked quiz, not once a day.'));
+  panel.innerHTML = `
+    <p class="lab-intro">${esc(intro)}</p>
     <ol class="board">${rows}</ol>
     ${board.eligible ? '' : boardNotice(
       t('You are not in the standings'),
