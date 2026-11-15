@@ -321,6 +321,15 @@
   .lab-log-link span:last-child { margin-left: auto; font-size: 20px; }
   .lab-disclaimer { border: 1px solid #ded4c5; background: #f3ece0; padding: 13px 14px; border-radius: 15px; color: #6e5c4d; font-size: 12px; line-height: 1.5; }
   .lab-disclaimer strong { color: var(--ink); }
+  /* The inactivity warning. It sits above the navigation, not over the
+     question, so a player reading a card is never covered by it. */
+  .idle-warning { position: fixed; z-index: 30; left: 50%; transform: translateX(-50%); bottom: calc(68px + env(safe-area-inset-bottom)); width: min(100% - 28px, 402px); display: flex; align-items: center; gap: 11px; padding: 12px 14px; border: 1px solid var(--soft-line); border-radius: 15px; background: var(--soft); color: var(--ink); box-shadow: 0 10px 30px #35271e26; }
+  .idle-warning p { margin: 0; font-size: 13px; font-weight: 700; line-height: 1.35; }
+  /* Brown, not gold. This bar can appear over a quiz card, where the gold
+     #f4bd38 is a near match for the YELLOW belt and would read as a belt
+     answer. Same reason the quiz and promotion screens use brown: do not
+     "fix" it back to gold. */
+  .idle-warning button { margin-left: auto; flex: none; width: auto; padding: 9px 13px; font-size: 13px; background: var(--accent); color: var(--accent-ink); }
   .lab-nav { position: fixed; z-index: 20; left: 50%; bottom: 0; transform: translateX(-50%); width: min(100%, 430px); display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; padding: 10px 18px max(10px, env(safe-area-inset-bottom)); background: #fffdf8ed; backdrop-filter: blur(15px); border-top: 1px solid var(--line); }
   .lab-nav button { border: 0; border-radius: 11px; background: transparent; color: #79634e; padding: 8px 5px; font-size: 12px; font-weight: 700; }
   .lab-nav button[aria-current="page"] { background: var(--soft); color: var(--ink); }
@@ -552,7 +561,7 @@
 <div id="auth-panel" hidden></div>
 <main id="app"></main>
 <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js" integrity="sha384-EnyY0/GSHQGSxSgMwaIPzSESbqoOLSexfnSMN2AP+39Ckmn92stwABZynq1JyzdT" crossorigin="anonymous"></script>
-<script type="module" src="src/app.js?v=launch-20261115"></script>
+<script type="module" src="src/app.js?v=logout-20261115"></script>
 <script type="module" src="src/auth.js"></script>
 </body>
 </html>

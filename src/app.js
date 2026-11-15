@@ -10,6 +10,8 @@ import { CHART, searchChart } from './study.js?v=chart-destination-20261108-r2';
 import { selectLevelCards } from './levels.js?v=chart-destination-20261108-r2';
 import { createLanguage } from './i18n.js?v=chart-destination-20261108-r2';
 import * as support from './support.js';
+import { logout } from './auth.js';
+import { idleVerdict } from './idle.js';
 
 const app = document.getElementById('app');
 const log = createShiftLog(typeof localStorage === 'undefined' ? null : localStorage);
@@ -267,10 +269,31 @@ const BADGES = [
 ];
 const BADGE_CAP = { Iron: 1000, Bronze: 2000, Silver: 3000, Gold: 4000 };
 
+// A screen that calls this shows its own "could not load" notice when the
+// answer is null. An unreachable server (stopped, no network, a phone that
+// lost signal mid-sort) throws instead of answering, so without this catch
+// the promise rejected and the screen sat on "Loading..." for ever.
 async function api(path) {
-  const response = await fetch(`/api${path}`, { credentials: 'same-origin' });
+  let response;
+  try {
+    response = await fetch(`/api${path}`, { credentials: 'same-origin' });
+  } catch {
+    return null;
+  }
+  // The server enforces the same idle window. When it has already ended the
+  // session, every screen would otherwise show "could not load" as if the
+  // server were broken; the player is sent to the entry screen instead,
+  // told why.
+  if (response.status === 401 && signedIn()) {
+    signOut(t('Your session ended because the app sat untouched. Log in to carry on.'));
+    return null;
+  }
   if (!response.ok) return null;
-  return response.json();
+  try {
+    return await response.json();
+  } catch {
+    return null;
+  }
 }
 
 function badgeArt(badge) {
@@ -603,6 +626,11 @@ function fillSettings(panel) {
       <span><strong>${esc(t('Support'))}</strong><small>${esc(t('Your tickets.'))}</small></span>
       <span class="lab-arrow" aria-hidden="true">\u2192</span>
     </button>
+    <button id="profile-logout" class="lab-choice" type="button">
+      <span class="lab-choice-icon">\u21aa</span>
+      <span><strong>${esc(t('Log out'))}</strong><small>${esc(t('Ends this session on this device. Your points and history stay.'))}</small></span>
+      <span class="lab-arrow" aria-hidden="true">\u2192</span>
+    </button>
     <button id="profile-delete" class="lab-choice lab-choice-quiz" type="button">
       <span class="lab-choice-icon">!</span>
       <span><strong>${esc(t('Delete account'))}</strong><small>${esc(t('Removes your profile, history and points.'))}</small></span>
@@ -610,6 +638,7 @@ function fillSettings(panel) {
     </button>
   `;
   panel.querySelector('#profile-support').addEventListener('click', showSupport);
+  panel.querySelector('#profile-logout').addEventListener('click', () => signOut());
   panel.querySelector('#profile-delete').addEventListener('click', showDeleteAccount);
 }
 
@@ -796,10 +825,113 @@ async function fillLaunchCallout(view) {
 // makes the navigation change shape.
 function setSession(account) {
   session = account;
+  if (signedIn()) startIdleWatch();
+  else stopIdleWatch();
   showStart();
 }
 
 if (typeof window !== 'undefined') window.setSortLabSession = setSession;
+
+// Leaving the app, by the Log out button or because the phone sat untouched
+// through a sort. The server call revokes the session; even if it cannot be
+// reached, this device is cleared and sent back to the entry screen, which
+// is the half the player can see.
+async function signOut(notice = '') {
+  stopIdleWatch();
+  stopTick();
+  clock = null;
+  session = null;
+  try {
+    await logout();
+  } catch {
+    // Nothing to tell the player: the cookie is gone from this device either
+    // way, and a session the server still holds expires on its own.
+  }
+  if (typeof window !== 'undefined' && typeof window.showSortLabEntry === 'function') {
+    window.showSortLabEntry(notice);
+    return;
+  }
+  showStart();
+}
+
+// Inactivity logout (#10). The rule itself lives in src/idle.js; what
+// follows is the part that needs a page: when to ask, and what to show.
+let idleLastSeen = 0;
+let idleTimer = null;
+let idleBar = null;
+
+function removeIdleBar() {
+  idleBar?.remove();
+  idleBar = null;
+}
+
+function showIdleWarning() {
+  if (idleBar) return;
+  idleBar = document.createElement('div');
+  idleBar.className = 'idle-warning';
+  idleBar.setAttribute('role', 'alertdialog');
+  idleBar.setAttribute('aria-live', 'assertive');
+  idleBar.innerHTML = `
+    <p>${esc(t('Still there? You will be logged out in a minute.'))}</p>
+    <button type="button" class="primary">${esc(t('Keep me signed in'))}</button>
+  `;
+  idleBar.querySelector('button').addEventListener('click', () => {
+    noteActivity();
+    removeIdleBar();
+  });
+  document.body.append(idleBar);
+  idleBar.querySelector('button').focus();
+}
+
+function checkIdle() {
+  if (!signedIn()) return;
+  const verdict = idleVerdict(Date.now(), idleLastSeen);
+  if (verdict === 'out') {
+    removeIdleBar();
+    signOut(t('You were logged out because the app sat untouched for 15 minutes.'));
+    return;
+  }
+  if (verdict === 'warn') showIdleWarning();
+  else removeIdleBar();
+}
+
+function noteActivity() {
+  idleLastSeen = Date.now();
+}
+
+const IDLE_EVENTS = ['pointerdown', 'keydown', 'touchstart', 'visibilitychange'];
+
+function startIdleWatch() {
+  if (typeof document === 'undefined') return;
+  noteActivity();
+  if (idleTimer !== null) return;
+  IDLE_EVENTS.forEach((name) => document.addEventListener(name, onIdleEvent, { passive: true }));
+  idleTimer = setInterval(checkIdle, 10 * 1000);
+}
+
+// Coming back to a tab is not activity: the check runs so a phone that was
+// away past the limit is signed out the moment it is looked at again.
+function onIdleEvent(event) {
+  if (event.type === 'visibilitychange') {
+    if (!document.hidden) checkIdle();
+    return;
+  }
+  // A press on the warning's own button is handled there, so that the
+  // warning cannot be dismissed by a stray tap elsewhere on the screen.
+  if (idleBar && idleBar.contains(event.target)) return;
+  if (idleBar) return;
+  noteActivity();
+}
+
+function stopIdleWatch() {
+  if (typeof document === 'undefined') return;
+  removeIdleBar();
+  if (idleTimer !== null) {
+    clearInterval(idleTimer);
+    idleTimer = null;
+  }
+  IDLE_EVENTS.forEach((name) => document.removeEventListener(name, onIdleEvent));
+}
 
 function showNameEntry(previousName = '') {
   const view = labPage(`

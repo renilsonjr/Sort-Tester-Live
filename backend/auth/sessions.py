@@ -34,8 +34,26 @@ def create_session(
     return raw_token, row["id"]
 
 
-def authenticate_session(conn, raw_token: str) -> dict | None:
-    """Return the active session row for a raw token, or None."""
+def authenticate_session(
+    conn, raw_token: str, idle_seconds: int | None = None
+) -> dict | None:
+    """Return the active session row for a raw token, or None.
+
+    ``idle_seconds`` ends a session that has been left alone that long, even
+    though ``expires_at`` is still in the future: a phone put down on a sort
+    floor should not keep an account open. Every request already refreshes
+    ``last_seen_at`` below, so an account in use never trips it, and the
+    check is here rather than in each router because this is the one gate
+    every authenticated request passes through.
+
+    The expiry is lazy: the row is revoked when the token is next presented.
+    A session nobody comes back to simply stays unusable until
+    ``expires_at`` removes it, which is the same outcome without a sweep.
+    """
+    if idle_seconds is None:
+        from backend.auth.settings import get_auth_settings
+
+        idle_seconds = get_auth_settings().session_idle_seconds
     token_hash = _hash_token(raw_token)
     now = datetime.now(timezone.utc)
     row = migrate.fetch_one(
@@ -49,6 +67,9 @@ def authenticate_session(conn, raw_token: str) -> dict | None:
         (token_hash, now),
     )
     if row is None:
+        return None
+    if idle_seconds > 0 and row["last_seen_at"] <= now - timedelta(seconds=idle_seconds):
+        revoke_session(conn, row["id"])
         return None
     migrate.execute(
         conn,

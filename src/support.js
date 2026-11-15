@@ -17,9 +17,16 @@ async function api(method, path, body) {
     credentials: 'same-origin',
   };
   if (body !== undefined) options.body = JSON.stringify(body);
-  const response = await fetch(`${API_BASE}${path}`, options);
+  let response;
+  try {
+    response = await fetch(`${API_BASE}${path}`, options);
+  } catch {
+    // The screens treat a not-ok answer as "could not load". An unreachable
+    // server is that, not a crash: status 0 says no answer came back.
+    return { ok: false, status: 0, data: null };
+  }
   const data = response.headers.get('content-type')?.includes('application/json')
-    ? await response.json()
+    ? await response.json().catch(() => null)
     : null;
   return { ok: response.ok, status: response.status, data };
 }
