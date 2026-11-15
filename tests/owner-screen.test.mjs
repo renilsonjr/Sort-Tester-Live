@@ -34,8 +34,11 @@ test('Owner tools offers the three scoped powers and nothing else', () => {
   for (const power of ['Prize eligibility', 'Access recovery', 'Case review']) {
     assert.match(tools, new RegExp(power));
   }
-  // the two that are not built say so rather than pretending
-  assert.match(tools, /Not built yet/);
+  // all three are built now, and each one leads somewhere
+  for (const id of ['owner-eligibility', 'owner-recovery', 'owner-cases']) {
+    assert.match(tools, new RegExp(`id="${id}"`), id);
+  }
+  assert.doesNotMatch(tools, /Not built yet/);
   assert.match(tools, /only administrator powers this app has/);
 });
 

@@ -710,15 +710,17 @@ function showOwnerTools() {
         <span><strong>${esc(t('Access recovery'))}</strong><small>${esc(t('In person, for a sorter who lost their login ID.'))}</small></span>
         <span class="lab-arrow" aria-hidden="true">→</span>
       </button>
-      <button class="lab-choice" type="button" disabled>
+      <button id="owner-cases" class="lab-choice" type="button">
         <span class="lab-choice-icon">?</span>
-        <span><strong>${esc(t('Case review'))}</strong><small>${esc(t('Tickets and connection flags. Not built yet.'))}</small></span>
+        <span><strong>${esc(t('Case review'))}</strong><small>${esc(t('Tickets players opened, and connection flags.'))}</small></span>
+        <span class="lab-arrow" aria-hidden="true">→</span>
       </button>
       <button id="owner-back" class="ghost">${esc(t('Back to Profile'))}</button>
     </section>
   `, 'profile', showOwnerTools);
   view.querySelector('#owner-eligibility').addEventListener('click', () => showOwnerEligibility());
   view.querySelector('#owner-recovery').addEventListener('click', () => showRecovery());
+  view.querySelector('#owner-cases').addEventListener('click', () => showCases());
   view.querySelector('#owner-back').addEventListener('click', () => showProfile('settings'));
   return view;
 }
@@ -823,6 +825,137 @@ function confirmWithdraw(accountId, username) {
       result.ok ? `${t('Withdrawn')}: ${username}.` : (result.reason || t('That did not work. Nothing has been changed.')),
       !result.ok,
     );
+  });
+  return view;
+}
+
+// Case review (#11, boxes 3 and 6), built to the screen approved on
+// 2026-11-15.
+//
+// Two kinds of case, kept apart because they arrive differently: a ticket
+// is a player asking, a flag is the server noticing a pattern. Neither is
+// proof that anybody cheated and neither can change points or access, so
+// there is no sanction on this screen to press -- only an outcome to
+// record, or the choice to leave the case open.
+//
+// The retention line sits inside each case rather than in a footnote: a
+// reviewer deciding what to do should see how long the evidence they are
+// looking at will exist.
+const CASE_OUTCOMES = [
+  ['network_instability', 'Close · network instability'],
+  ['insufficient_evidence', 'Close · not enough evidence'],
+];
+
+function showCases(kind = 'tickets', message = null) {
+  stopTick();
+  clock = null;
+  const view = labPage(`
+    <section class="lab-screen">
+      <p class="lab-eyebrow">${esc(t('Owner'))}</p>
+      <h1 class="lab-title">${esc(t('Case review'))}</h1>
+      <aside class="lab-disclaimer">${esc(t('Closing a case records what you found. It never changes anybody’s points, badge or access, and it opens no ticket by itself. A connection flag is a pattern the server noticed, not evidence that somebody cheated.'))}</aside>
+      ${message ? `<div class="board-notice" role="status"><p>${esc(message)}</p></div>` : ''}
+      <div class="profile-tabs" role="tablist" aria-label="${esc(t('Case kind'))}">
+        <button type="button" role="tab" data-case="tickets" aria-selected="${kind === 'tickets'}">${esc(t('Tickets'))}</button>
+        <button type="button" role="tab" data-case="flags" aria-selected="${kind === 'flags'}">${esc(t('Flags'))}</button>
+      </div>
+      <div id="case-panel"><p class="lab-intro" role="status">${esc(t('Loading…'))}</p></div>
+      <button id="case-back" class="ghost">${esc(t('Back to Owner tools'))}</button>
+    </section>
+  `, 'profile', () => showCases(kind, message));
+  view.querySelectorAll('[data-case]').forEach((button) => button.addEventListener('click', () => {
+    if (button.dataset.case !== kind) showCases(button.dataset.case);
+  }));
+  view.querySelector('#case-back').addEventListener('click', showOwnerTools);
+  fillCases(view.querySelector('#case-panel'), kind);
+  return view;
+}
+
+function caseEvents(events) {
+  if (!events || events.length === 0) return '';
+  return `
+    <details class="lab-fold">
+      <summary>${esc(t('Connection events'))} (${events.length})</summary>
+      <ul class="case-events">${events.map((event) => `
+        <li>${esc(event.kind.replace(/_/g, ' '))} · ${esc(new Date(event.occurred_at).toLocaleString())}</li>
+      `).join('')}</ul>
+    </details>`;
+}
+
+function outcomeButtons(id, kindLabel) {
+  return `<div class="case-actions">${CASE_OUTCOMES.map(([outcome, label]) => `
+    <button class="ghost case-close" type="button" data-id="${esc(id)}" data-outcome="${outcome}" data-label="${esc(t(label))}">${esc(t(label))}</button>
+  `).join('')}</div>
+  <p class="lab-study-meta">${esc(t('Or leave it open. Nothing happens until you choose.'))}</p>`;
+}
+
+async function fillCases(panel, kind) {
+  const body = await api(kind === 'flags' ? '/ranked/flags' : '/ranked/support/review');
+  if (!body) {
+    panel.innerHTML = `<p class="notice">${esc(t('Could not load the cases. Nothing has been changed.'))}</p>`;
+    return;
+  }
+  if (body.length === 0) {
+    panel.innerHTML = `
+      <div class="owner-form">
+        <h2>${esc(t('Nothing waiting'))}</h2>
+        <p class="lab-study-meta">${esc(kind === 'flags'
+          ? t('No open flags. A flag appears only when the server notices repeated connection loss in one attempt.')
+          : t('No open tickets. Tickets only appear when a player opens one; a connection problem does not open a ticket by itself.'))}</p>
+      </div>`;
+    return;
+  }
+  panel.innerHTML = `<ul class="cases">${body.map((row) => (kind === 'flags' ? `
+    <li>
+      <p class="lab-eyebrow">${esc(t('Flag'))} · ${esc(t('noticed'))} ${esc(new Date(row.flagged_at).toLocaleDateString())}</p>
+      <h2>${esc(row.username)} · #${esc(row.tag)}</h2>
+      <p class="lab-study-meta">${esc(t('Losses between'))} ${esc(new Date(row.first_loss_at).toLocaleString())} ${esc(t('and'))} ${esc(new Date(row.last_loss_at).toLocaleString())}</p>
+      <div class="board-notice"><p>${esc(t('This is a pattern the server noticed. It is not proof that anybody cheated, and closing it changes no points and no access.'))}</p></div>
+      ${caseEvents(row.events)}
+      <p class="case-keep">${esc(t('Kept while this review is open. Fifteen days after it closes, these connection details are deleted, unless a case still open shares the same log.'))}</p>
+      ${outcomeButtons(row.attempt_id)}
+    </li>` : `
+    <li>
+      <p class="lab-eyebrow">${esc(t('Ticket'))} · ${esc(t('opened'))} ${esc(new Date(row.opened_at).toLocaleDateString())}</p>
+      <h2>${esc(row.username)} · #${esc(row.tag)}</h2>
+      ${row.description ? `<blockquote class="case-said">${esc(row.description)}</blockquote>`
+        : `<p class="lab-study-meta">${esc(t('They wrote no description.'))}</p>`}
+      ${caseEvents(row.events)}
+      <p class="case-keep">${esc(t('While this case is open, its description and connection details are kept.'))}</p>
+      ${outcomeButtons(row.id)}
+    </li>`)).join('')}</ul>`;
+  panel.querySelectorAll('.case-close').forEach((button) => {
+    button.addEventListener('click', () => confirmCloseCase(
+      kind, button.dataset.id, button.dataset.outcome, button.dataset.label,
+    ));
+  });
+}
+
+// Closing asks first and says which words the player will see, because
+// the outcome is shown to them and cannot be taken back by this screen.
+function confirmCloseCase(kind, id, outcome, label) {
+  const view = labPage(`
+    <section class="lab-screen">
+      <p class="lab-eyebrow">${esc(t('Owner'))}</p>
+      <h1 class="lab-title">${esc(label)}?</h1>
+      <p class="lab-intro">${esc(outcome === 'network_instability'
+        ? t('The player sees this outcome in those words. Their points, badge and access do not change either way.')
+        : t('The player sees “not enough evidence”, which is not an accusation. Their points, badge and access do not change either way.'))}</p>
+      <p class="lab-intro">${esc(t('The description and connection details are deleted 15 days after closure, unless a case still open shares the same log.'))}</p>
+      <button id="case-keep" class="primary">${esc(t('Keep it open'))}</button>
+      <button id="case-go" class="ghost owner-danger">${esc(t('Close the case'))}</button>
+    </section>
+  `, 'profile', () => confirmCloseCase(kind, id, outcome, label));
+  view.querySelector('#case-keep').addEventListener('click', () => showCases(kind));
+  view.querySelector('#case-go').addEventListener('click', async () => {
+    view.querySelector('#case-go').disabled = true;
+    const path = kind === 'flags'
+      ? `/ranked/flags/${id}/close`
+      : `/ranked/support/review/${id}/close`;
+    const result = await apiSend('POST', path, { outcome });
+    showCases(kind, result.ok
+      ? `${t('Closed')} · ${label.replace(/^Close · /, '')}.`
+      : (result.reason || t('That did not work. Nothing has been changed.')));
   });
   return view;
 }

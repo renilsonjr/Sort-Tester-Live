@@ -207,6 +207,10 @@
     .notice-box p { margin-top: 4px; color: #54412f; font-size: 13px; }
     /* The approved list is not a ranking, so it is not the board grid:
        a name, the roster reference under it, and the way to withdraw. */
+    .cases { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 12px; }
+    .cases li { border: 1px solid var(--line); border-radius: 17px; background: #fffdf8; padding: 14px; display: flex; flex-direction: column; gap: 8px; }
+    .cases blockquote { margin: 0; padding-left: 11px; border-left: 3px solid var(--soft-line); color: #54412f; font-size: 14px; }
+    .cases .row button { width: auto; flex: 1; min-height: 44px; font-size: 13px; }
     .danger-btn { color: var(--danger); border-color: #d8b6b6; }
     .approved { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
     .approved li { display: flex; align-items: center; gap: 10px; border: 1px solid var(--line); border-radius: 17px; background: #fffdf8; padding: 12px 14px; }
@@ -516,7 +520,37 @@
         </div>
         <button class="choice" type="button" data-go="owner-eligibility"><span class="choice-icon" aria-hidden="true">✓</span><span><strong>Prize eligibility</strong><small>Who may win a hat this season.</small></span><span class="arrow" aria-hidden="true">→</span></button>
         <button class="choice" type="button" data-go="owner-recovery"><span class="choice-icon" aria-hidden="true">↺</span><span><strong>Access recovery</strong><small>In person, for a sorter who lost their login ID.</small></span><span class="arrow" aria-hidden="true">→</span></button>
-        <button class="choice" type="button"><span class="choice-icon" aria-hidden="true">?</span><span><strong>Case review</strong><small>Tickets and connection flags. Not built yet.</small></span><span class="arrow" aria-hidden="true">→</span></button>
+        <button class="choice" type="button" data-go="owner-cases"><span class="choice-icon" aria-hidden="true">?</span><span><strong>Case review</strong><small>Tickets players opened, and connection flags.</small></span><span class="arrow" aria-hidden="true">→</span></button>
+      </section>
+
+      <!-- Case review (issue #11, boxes 3 and 6). Two kinds of case, kept
+           apart because they arrive differently: a ticket is a player
+           asking, a flag is the server noticing. Neither is proof of
+           cheating and neither can change points or access, so there is
+           no sanction here to press -- only an outcome to record. -->
+      <section class="view" data-view="owner-cases" hidden>
+        <button class="link" type="button" data-go="owner">← Back to Owner tools</button>
+        <p class="eyebrow">Owner</p>
+        <h1 tabindex="-1">Case review</h1>
+        <div class="panel">
+          <p class="small">Closing a case records what you found. It never changes anybody's points, badge or access, and it opens no ticket by itself. A connection flag is a pattern the server noticed, not evidence that somebody cheated.</p>
+        </div>
+        <div class="tabs" role="tablist" aria-label="Case kind">
+          <button type="button" role="tab" data-case="tickets" aria-selected="true">Tickets</button>
+          <button type="button" role="tab" data-case="flags" aria-selected="false">Flags</button>
+        </div>
+        <div id="case-body"></div>
+
+        <div class="mock-controls">
+          <p>Mock controls · not part of the app</p>
+          <div class="row" role="group" aria-label="Case review state">
+            <button type="button" data-cs="tickets" aria-pressed="true">Open tickets</button>
+            <button type="button" data-cs="flags" aria-pressed="false">Open flags</button>
+            <button type="button" data-cs="closing" aria-pressed="false">Closing one</button>
+            <button type="button" data-cs="closed" aria-pressed="false">Just closed</button>
+            <button type="button" data-cs="none" aria-pressed="false">Nothing waiting</button>
+          </div>
+        </div>
       </section>
 
       <!-- Access recovery (issue #11, box 2). In person, at work. The
@@ -1313,8 +1347,8 @@
       member: [['home', '⌂', 'Home'], ['practice', '≡', 'Practice'], ['ranked', '◆', 'Ranked'], ['profile', '●', 'Profile']],
     };
     // Screens that live inside a tab keep that tab marked as current.
-    const PARENT_TAB = { leaderboard: 'ranked', tickets: 'profile', delete: 'profile', rquiz: 'ranked', promo: 'ranked', qc: 'ranked', tb: 'ranked', owner: 'profile', 'owner-eligibility': 'profile', 'owner-recovery': 'profile' };
-    const MEMBER_ONLY = ['ranked', 'leaderboard', 'profile', 'tickets', 'delete', 'rquiz', 'promo', 'qc', 'tb', 'owner', 'owner-eligibility', 'owner-recovery'];
+    const PARENT_TAB = { leaderboard: 'ranked', tickets: 'profile', delete: 'profile', rquiz: 'ranked', promo: 'ranked', qc: 'ranked', tb: 'ranked', owner: 'profile', 'owner-eligibility': 'profile', 'owner-recovery': 'profile', 'owner-cases': 'profile' };
+    const MEMBER_ONLY = ['ranked', 'leaderboard', 'profile', 'tickets', 'delete', 'rquiz', 'promo', 'qc', 'tb', 'owner', 'owner-eligibility', 'owner-recovery', 'owner-cases'];
     let mode = 'public';
     // Whether this signed-in account is the owner. One account in the whole
     // app is, so the Owner tools row is absent for everybody else.
@@ -1720,6 +1754,76 @@
     setEligibility('list');
     setRecovery('start');
 
+    // Case review. The retention line is part of the case, not a footnote:
+    // a reviewer deciding what to do should see how long the evidence
+    // they are looking at will exist (#11 box 6).
+    const CASES = {
+      tickets: { tab: 'tickets', body: `
+        <ul class="cases">
+          <li>
+            <p class="eyebrow">Ticket · opened example date 7</p>
+            <h2>dock_owl · #A1B2C3</h2>
+            <p class="small">Attempt #EX-204</p>
+            <blockquote>"The quiz cut out halfway through and I could not get back in."</blockquote>
+            <details class="fold"><summary>Connection events (4)</summary><div class="fold-body">
+              <ul class="small">
+                <li>lost · example time 1</li><li>regained · example time 2</li>
+                <li>lost · example time 3</li><li>grace expired · example time 4</li>
+              </ul></div></details>
+            <p class="keep">While this case is open, its description and connection details are kept.</p>
+            <div class="row">
+              <button class="ghost" type="button">Close · network instability</button>
+              <button class="ghost" type="button">Close · not enough evidence</button>
+            </div>
+            <p class="small">Or leave it open. Nothing happens until you choose.</p>
+          </li>
+        </ul>` },
+      flags: { tab: 'flags', body: `
+        <ul class="cases">
+          <li>
+            <p class="eyebrow">Flag · noticed example date 6</p>
+            <h2>belt_runner · #D4E5F6</h2>
+            <p class="small">Attempt #EX-187 · losses between example time 1 and example time 5</p>
+            <div class="notice-box"><p>This is a pattern the server noticed. It is not proof that anybody cheated, and closing it changes no points and no access.</p></div>
+            <details class="fold"><summary>Connection events (6)</summary><div class="fold-body">
+              <ul class="small"><li>lost · example time 1</li><li>regained · example time 2</li><li>lost · example time 3</li></ul></div></details>
+            <p class="keep">Kept while this review is open. Fifteen days after it closes, these connection details are deleted, unless a ticket still open shares the same log.</p>
+            <div class="row">
+              <button class="ghost" type="button">Close · network instability</button>
+              <button class="ghost" type="button">Close · not enough evidence</button>
+            </div>
+          </li>
+        </ul>` },
+      closing: { tab: 'tickets', body: `
+        <div class="notice-box">
+          <h2>Close as network instability?</h2>
+          <p>That is the outcome the player sees, in those words. Their points, badge and access do not change either way. The description and connection details are deleted 15 days after closure, unless a case still open shares the log.</p>
+          <div class="row" style="margin-top:10px">
+            <button class="ghost danger-btn" type="button">Close the case</button>
+            <button class="primary" type="button">Keep it open</button>
+          </div>
+        </div>` },
+      closed: { tab: 'tickets', notice: {
+          title: 'Closed · network instability',
+          text: 'dock_owl can see that outcome on their ticket. Its description and connection details are deleted on example date 9.',
+        }, body: '<p class="small">Nothing else is waiting.</p>' },
+      none: { tab: 'tickets', body: `
+        <div class="panel">
+          <h2>Nothing waiting</h2>
+          <p class="small">No open tickets and no open flags. Tickets only appear when a player opens one; a connection problem does not open a ticket by itself.</p>
+        </div>` },
+    };
+
+    function setCases(state) {
+      const s = CASES[state];
+      document.getElementById('case-body').innerHTML =
+        (s.notice ? `<div class="notice-box"><h2>${s.notice.title}</h2><p>${s.notice.text}</p></div>` : '') + s.body;
+      for (const el of document.querySelectorAll('[data-case]')) el.setAttribute('aria-selected', String(el.dataset.case === s.tab));
+      for (const el of document.querySelectorAll('[data-cs]')) el.setAttribute('aria-pressed', String(el.dataset.cs === state));
+    }
+
+    setCases('tickets');
+
     document.addEventListener('click', event => {
       const button = event.target.closest('button');
       if (!button) return;
@@ -1730,6 +1834,8 @@
       if (button.dataset.lb) return setLeaderboard(button.dataset.lb);
       if (button.dataset.el) return setEligibility(button.dataset.el);
       if (button.dataset.rec) return setRecovery(button.dataset.rec);
+      if (button.dataset.cs) return setCases(button.dataset.cs);
+      if (button.dataset.case) return setCases(button.dataset.case);
       if (button.dataset.owner) {
         owner = button.dataset.owner === 'yes';
         document.getElementById('owner-row').hidden = !owner;
