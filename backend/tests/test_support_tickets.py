@@ -222,3 +222,187 @@ class NoAutomaticTicketTests(TicketTestCase):
             [],
             "a flag must never become a ticket",
         )
+
+
+@unittest.skipUnless(
+    settings.environment_has_test_url(),
+    "SORT_TESTER_TEST_DATABASE_URL not set; database tests skipped",
+)
+class ReviewTests(TicketTestCase):
+    def _owner(self):
+        account = self._account()
+        migrate.execute(
+            self.conn, "UPDATE accounts SET is_owner = true WHERE id = %s", (account,)
+        )
+        self.conn.commit()
+        return account
+
+    def _open(self, account=None, description=None):
+        account = account or self._account()
+        ticket = tickets.open_ticket(
+            self.conn, account, self._ended_attempt(account), description=description
+        )
+        self.conn.commit()
+        return account, ticket
+
+    def test_a_reviewer_sees_open_tickets_with_their_evidence(self):
+        owner = self._owner()
+        account, ticket = self._open(description="It cut out.")
+        rows = tickets.open_tickets_for_review(self.conn, owner)
+        self.conn.commit()
+        self.assertEqual([row["id"] for row in rows], [ticket])
+        self.assertEqual(rows[0]["description"], "It cut out.")
+        self.assertIn("events", rows[0])
+
+    def test_review_returns_only_display_identity(self):
+        owner = self._owner()
+        self._open()
+        row = tickets.open_tickets_for_review(self.conn, owner)[0]
+        self.conn.commit()
+        self.assertEqual(
+            set(row) - {"events"},
+            {"id", "attempt_id", "description", "opened_at", "username", "tag"},
+        )
+
+    def test_an_ordinary_player_cannot_review(self):
+        account, _ = self._open()
+        with self.assertRaises(tickets.NotAuthorizedError):
+            tickets.open_tickets_for_review(self.conn, account)
+        self.conn.rollback()
+
+    def test_an_ordinary_player_cannot_close(self):
+        owner = self._owner()
+        account, ticket = self._open()
+        with self.assertRaises(tickets.NotAuthorizedError):
+            tickets.close_ticket(
+                self.conn, account, ticket, "network_instability", clock=self.clock
+            )
+        self.conn.rollback()
+        self.assertIsNone(tickets.ticket_for(self.conn, account, ticket)["closed_at"])
+
+    def test_closing_as_network_instability(self):
+        owner = self._owner()
+        account, ticket = self._open()
+        outcome = tickets.close_ticket(
+            self.conn, owner, ticket, "network_instability", clock=self.clock
+        )
+        self.conn.commit()
+        stored = tickets.ticket_for(self.conn, account, ticket)
+        self.assertEqual(outcome, "network_instability")
+        self.assertEqual(stored["closed_outcome"], "network_instability")
+        self.assertEqual(stored["closed_at"], self.clock.now())
+
+    def test_closing_as_insufficient_evidence(self):
+        owner = self._owner()
+        account, ticket = self._open()
+        tickets.close_ticket(
+            self.conn, owner, ticket, "insufficient_evidence", clock=self.clock
+        )
+        self.conn.commit()
+        self.assertEqual(
+            tickets.ticket_for(self.conn, account, ticket)["closed_outcome"],
+            "insufficient_evidence",
+        )
+
+    def test_an_unknown_outcome_is_refused(self):
+        owner = self._owner()
+        _, ticket = self._open()
+        with self.assertRaises(ValueError):
+            tickets.close_ticket(self.conn, owner, ticket, "cheating", clock=self.clock)
+        self.conn.rollback()
+
+    def test_closing_twice_keeps_the_first_decision_and_time(self):
+        owner = self._owner()
+        account, ticket = self._open()
+        tickets.close_ticket(
+            self.conn, owner, ticket, "network_instability", clock=self.clock
+        )
+        self.conn.commit()
+        first = tickets.ticket_for(self.conn, account, ticket)["closed_at"]
+        self.clock.advance(3600)
+        again = tickets.close_ticket(
+            self.conn, owner, ticket, "insufficient_evidence", clock=self.clock
+        )
+        self.conn.commit()
+        stored = tickets.ticket_for(self.conn, account, ticket)
+        self.assertEqual(again, "network_instability")
+        self.assertEqual(stored["closed_outcome"], "network_instability")
+        self.assertEqual(stored["closed_at"], first)
+
+    def test_closing_changes_no_points(self):
+        owner = self._owner()
+        account, ticket = self._open()
+        before = self._balance(account)
+        tickets.close_ticket(
+            self.conn, owner, ticket, "insufficient_evidence", clock=self.clock
+        )
+        self.conn.commit()
+        self.assertEqual(self._balance(account), before)
+
+    def test_closing_changes_no_account_access(self):
+        owner = self._owner()
+        account, ticket = self._open()
+        before = migrate.fetch_one(
+            self.conn,
+            "SELECT is_owner, deleted_at FROM accounts WHERE id = %s",
+            (account,),
+        )
+        tickets.close_ticket(
+            self.conn, owner, ticket, "network_instability", clock=self.clock
+        )
+        self.conn.commit()
+        after = migrate.fetch_one(
+            self.conn,
+            "SELECT is_owner, deleted_at FROM accounts WHERE id = %s",
+            (account,),
+        )
+        self.conn.commit()
+        self.assertEqual(before, after)
+
+    def test_a_closed_ticket_leaves_the_review_queue(self):
+        owner = self._owner()
+        _, ticket = self._open()
+        tickets.close_ticket(
+            self.conn, owner, ticket, "network_instability", clock=self.clock
+        )
+        self.conn.commit()
+        self.assertEqual(tickets.open_tickets_for_review(self.conn, owner), [])
+
+    def test_reopening_puts_it_back_and_clears_the_closure(self):
+        owner = self._owner()
+        account, ticket = self._open()
+        tickets.close_ticket(
+            self.conn, owner, ticket, "network_instability", clock=self.clock
+        )
+        self.conn.commit()
+        tickets.reopen_ticket(self.conn, owner, ticket)
+        self.conn.commit()
+        stored = tickets.ticket_for(self.conn, account, ticket)
+        self.assertIsNone(stored["closed_at"])
+        self.assertIsNone(stored["closed_outcome"])
+        self.assertEqual(
+            [row["id"] for row in tickets.open_tickets_for_review(self.conn, owner)],
+            [ticket],
+        )
+
+    def test_an_ordinary_player_cannot_reopen(self):
+        owner = self._owner()
+        account, ticket = self._open()
+        tickets.close_ticket(
+            self.conn, owner, ticket, "network_instability", clock=self.clock
+        )
+        self.conn.commit()
+        with self.assertRaises(tickets.NotAuthorizedError):
+            tickets.reopen_ticket(self.conn, account, ticket)
+        self.conn.rollback()
+
+    def test_a_player_still_sees_only_their_own_after_closure(self):
+        owner = self._owner()
+        mine, my_ticket = self._open()
+        theirs, their_ticket = self._open()
+        tickets.close_ticket(
+            self.conn, owner, their_ticket, "network_instability", clock=self.clock
+        )
+        self.conn.commit()
+        self.assertEqual([r["id"] for r in tickets.tickets_for(self.conn, mine)], [my_ticket])
+        self.assertIsNone(tickets.ticket_for(self.conn, mine, their_ticket))

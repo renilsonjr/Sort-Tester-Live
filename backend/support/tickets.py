@@ -26,6 +26,14 @@ class TicketAlreadyOpenError(Exception):
     """This account already has an open ticket about this attempt."""
 
 
+class NotAuthorizedError(Exception):
+    """The caller is not an authorized reviewer."""
+
+
+class TicketNotFoundError(Exception):
+    """No such ticket."""
+
+
 def open_ticket(conn, account_id, attempt_id, *, description=None):
     """Open a ticket for this account about one of its own attempts.
 
@@ -87,4 +95,106 @@ def ticket_for(conn, account_id, ticket_id) -> dict | None:
         "SELECT id, attempt_id, description, opened_at, closed_at, closed_outcome"
         " FROM support_tickets WHERE id = %s AND account_id = %s",
         (ticket_id, account_id),
+    )
+
+
+def _require_reviewer(conn, admin_account_id):
+    """Raise unless this account is the owner.
+
+    Decision 8 allows authorized administrators to review tickets. Today the
+    owner is the only such role (`accounts.is_owner`, migration 0012); when
+    more exist, this is the one place that changes.
+    """
+    row = migrate.fetch_one(
+        conn,
+        "SELECT 1 AS ok FROM accounts WHERE id = %s AND is_owner = true",
+        (admin_account_id,),
+    )
+    if row is None:
+        raise NotAuthorizedError(admin_account_id)
+
+
+def open_tickets_for_review(conn, admin_account_id) -> list[dict]:
+    """Open tickets, oldest first, with only what a reviewer needs.
+
+    The player's display identity, the attempt, the description they wrote
+    and that attempt's connection events. Nothing else about the player is
+    returned: not their balance, not their badge, not their other tickets,
+    not their email — there is none — and not another player's case.
+    """
+    _require_reviewer(conn, admin_account_id)
+    rows = migrate.fetch_all(
+        conn,
+        "SELECT t.id, t.attempt_id, t.description, t.opened_at,"
+        " ac.username, ac.tag"
+        " FROM support_tickets t"
+        " JOIN accounts ac ON ac.id = t.account_id"
+        " WHERE t.closed_at IS NULL"
+        " ORDER BY t.opened_at, t.id",
+    )
+    for row in rows:
+        row["events"] = migrate.fetch_all(
+            conn,
+            "SELECT kind, occurred_at FROM attempt_connection_events"
+            " WHERE attempt_id = %s ORDER BY occurred_at, kind",
+            (row["attempt_id"],),
+        )
+    return rows
+
+
+def close_ticket(conn, admin_account_id, ticket_id, outcome, *, clock) -> str:
+    """Close an open ticket with a review outcome; return the stored outcome.
+
+    The outcomes are the two Decision 8 allows: ``network_instability``, and
+    ``insufficient_evidence``, which ends a case without accusing anybody.
+    Leaving a ticket open for follow-up is not closing it, so it has no
+    outcome here.
+
+    Closing an already closed ticket changes nothing and returns the outcome
+    it already had, so a repeated request cannot rewrite a decision or move
+    the fifteen-day clock. **Closure touches no points and no access**: this
+    function writes to one table, and that table has no column that could.
+    """
+    if outcome not in CLOSING_OUTCOMES:
+        raise ValueError(f"unknown review outcome: {outcome!r}")
+    _require_reviewer(conn, admin_account_id)
+    row = migrate.fetch_one(
+        conn,
+        "SELECT closed_outcome FROM support_tickets WHERE id = %s FOR UPDATE",
+        (ticket_id,),
+    )
+    if row is None:
+        raise TicketNotFoundError(ticket_id)
+    if row["closed_outcome"] is not None:
+        return row["closed_outcome"]
+    migrate.execute(
+        conn,
+        "UPDATE support_tickets SET closed_at = %s, closed_outcome = %s WHERE id = %s",
+        (clock.now(), outcome, ticket_id),
+    )
+    return outcome
+
+
+def reopen_ticket(conn, admin_account_id, ticket_id) -> None:
+    """Reopen a closed ticket for follow-up.
+
+    Clears the closure, which also stops the fifteen-day cleanup: evidence an
+    open case still needs must not be deleted underneath it. Reopening an
+    open ticket changes nothing.
+    """
+    _require_reviewer(conn, admin_account_id)
+    row = migrate.fetch_one(
+        conn,
+        "SELECT closed_at FROM support_tickets WHERE id = %s FOR UPDATE",
+        (ticket_id,),
+    )
+    if row is None:
+        raise TicketNotFoundError(ticket_id)
+    if row["closed_at"] is None:
+        return
+    migrate.execute(
+        conn,
+        "UPDATE support_tickets SET closed_at = NULL, closed_outcome = NULL"
+        " WHERE id = %s",
+        (ticket_id,),
     )
