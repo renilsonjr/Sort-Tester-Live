@@ -334,6 +334,23 @@
   .board-who { min-width: 0; }
   .board-who b { display: block; overflow-wrap: anywhere; }
   .board-marker { grid-column: 1 / -1; margin-top: 4px; color: #7a5200; font-size: 12px; font-weight: 800; }
+  /* Owner tools (#11). The approved list is not a ranking, so it is not
+     the board grid: a name, the roster reference under it, and the way to
+     withdraw. */
+  .approved { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+  .approved li { display: flex; align-items: center; gap: 10px; border: 1px solid var(--line); border-radius: 17px; background: var(--panel); padding: 12px 14px; }
+  .approved-who { min-width: 0; flex: 1; }
+  .approved-who b { display: block; font-weight: 900; overflow-wrap: anywhere; }
+  .approved-who small { display: block; color: var(--muted); font-size: 12px; overflow-wrap: anywhere; }
+  .approved .ghost { flex: none; width: auto; min-height: 0; padding: 9px 13px; font-size: 13px; }
+  .owner-form { border: 1px solid var(--line); border-radius: 17px; background: var(--panel); padding: 14px; display: flex; flex-direction: column; gap: 10px; }
+  .owner-form h2 { font-size: 16px; }
+  .owner-count { font-size: 16px; margin-top: 4px; }
+  /* Withdrawing is the one destructive thing on that screen, so it is the
+     quieter button and keeping the approval is the easy one. */
+  .owner-danger { color: var(--bad); border-color: #d8b6b6; }
+  .owner-note { margin-top: 2px; }
+  .board-notice-bad { border-color: #d8b6b6; background: #fbf0ee; }
   .board-notice { margin-top: 12px; border: 1px solid #e4d3a8; border-radius: 17px; background: #fbf3e1; padding: 13px 15px; }
   .board-notice h2 { font-size: 16px; }
   .board-notice p { margin-top: 4px; color: #54412f; font-size: 13px; }
@@ -578,7 +595,7 @@
 <div id="auth-panel" hidden></div>
 <main id="app"></main>
 <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js" integrity="sha384-EnyY0/GSHQGSxSgMwaIPzSESbqoOLSexfnSMN2AP+39Ckmn92stwABZynq1JyzdT" crossorigin="anonymous"></script>
-<script type="module" src="src/app.js?v=board-20261115b"></script>
+<script type="module" src="src/app.js?v=owner-20261115"></script>
 <script type="module" src="src/auth.js"></script>
 </body>
 </html>

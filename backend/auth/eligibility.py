@@ -63,6 +63,29 @@ def _require_owner(conn, owner_account_id: UUID) -> None:
         raise EligibilityError("Only the owner may approve prize eligibility.")
 
 
+def account_id_for_tag(conn, tag: str) -> UUID:
+    """Resolve the tag the owner typed to an account.
+
+    The owner works from a tag, because that is what a sorter can read off
+    their own profile and say out loud; account ids are not something
+    anybody carries around. A leading ``#`` and the surrounding space are
+    what people type, so they are accepted rather than refused, and the
+    answer is only yes-or-no: this returns an id or raises, and never
+    reports anything else about the account.
+    """
+    cleaned = (tag or "").strip().lstrip("#").strip().upper()
+    if not cleaned:
+        raise EligibilityError("A player tag is required.")
+    row = migrate.fetch_one(
+        conn,
+        "SELECT id FROM accounts WHERE tag = %s AND deleted_at IS NULL",
+        (cleaned,),
+    )
+    if row is None:
+        raise EligibilityError("No account with that tag.")
+    return row["id"]
+
+
 def approve(
     conn,
     owner_account_id: UUID,
