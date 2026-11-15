@@ -91,7 +91,7 @@ jobs:
           }
           expect / 200
           expect /src/app.js 200
-          expect /assets/quiz-happy.jpg 200
+          expect /assets/avatar-idle.jpg 200
           expect /backend/main.py 404
           expect /.git/config 404
           expect /src/../backend/main.py 404
