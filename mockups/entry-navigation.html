@@ -16,7 +16,8 @@
        white refresh). Belt colours are routing information and never change. */
     :root {
       --bg: #fffdf8; --panel: #fffdf8; --ink: #35271e; --muted: #6e5c4d;
-      --line: #ded4c5; --accent: #38261b; --soft: #f7eac7; --soft-line: #d6bc75;
+      --line: #ded4c5; --accent: #38261b; --accent-ink: #fffdf8;
+      --soft: #f7eac7; --soft-line: #d6bc75;
       --gold: #f4bd38; --gold-line: #b47d15; --focus: #175e94;
       --success: #226442; --danger: #a12d2d;
     }
@@ -98,6 +99,15 @@
     /* Announced to screen readers, not drawn: the question number is already
        visible in the header above. */
     .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
+
+    /* Same rule as the app: on quiz and promotion screens the primary action
+       is brown, never gold. The library's gold (#f4bd38) and the YELLOW belt
+       (#f6d33c) are nearly the same colour, and GOLD is a belt too, so on
+       these screens yellow must mean a belt and never a button. Settled with
+       the owner 2026-11-14 — do not "fix" it back to gold. */
+    [data-view="rquiz"] .primary, [data-view="promo"] .primary {
+      background: var(--accent); color: var(--accent-ink); border-color: var(--accent);
+    }
 
     /* Promotion (issue #17, slice 2) */
     .rules { margin: 0; padding-left: 22px; display: flex; flex-direction: column; gap: 9px; font-size: 15px; line-height: 1.5; }
