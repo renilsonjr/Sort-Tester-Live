@@ -42,12 +42,26 @@ export async function fetchMe() {
 }
 
 export function createAuthPanel(container, onContinueAsGuest, onLoggedIn) {
+  // The entry screen the owner approved in mockups/entry-navigation.html:
+  // two cards that say what each way in gives you, rather than three bare
+  // buttons. The button ids are unchanged, so the behaviour below and the
+  // auth-gate tests still find them.
   container.innerHTML = `
     <div class="auth-screen">
-      <h1>Sort Lab</h1>
-      <div class="auth-buttons">
+      <div class="auth-brand"><span class="lab-mark" aria-hidden="true">RJ</span> Sort Lab</div>
+      <img class="auth-avatar" src="assets/avatar-idle.jpg" alt="">
+      <h1>How do you want to use Sort Lab?</h1>
+      <div class="auth-card">
+        <p class="auth-eyebrow">With an account</p>
+        <h2>Keep your results</h2>
+        <p class="auth-copy">Log in to keep your quiz history on this account.</p>
         <button id="auth-login-btn" class="primary">Log in</button>
         <button id="auth-register-btn" class="ghost">Create account</button>
+      </div>
+      <div class="auth-card guest">
+        <p class="auth-eyebrow">No account</p>
+        <h2>Study and practice</h2>
+        <p class="auth-copy">Study the chart and take quizzes. Nothing is saved to an account.</p>
         <button id="auth-guest-btn" class="ghost">Continue as guest</button>
       </div>
       <div id="auth-form" hidden></div>
