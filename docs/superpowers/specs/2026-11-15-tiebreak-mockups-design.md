@@ -126,6 +126,40 @@ badge, history, and the relative order already earned in valid rounds.
    mobile, keyboard and readability review across all four slices — this is
    the last one, so #17 can close when this merges.
 
+## Review record (2026-11-15)
+
+The owner reviewed the states in a browser at 375 px, in two groups, and
+approved them unchanged:
+
+1. The invitation, the question, and the submitted screen.
+2. The six endings: settled, still tied, did not play, rounds exhausted, no
+   questions available, and the outage restart.
+
+Wording settled while building:
+
+- **The question screen says the next one opens whether or not you
+  answered.** Without it, a player who missed the three seconds waits for
+  something to happen and loses the next question too.
+- **The submitted screen names the question that ran out of time**, which
+  reveals nothing about correctness and answers the fear that an answer was
+  lost.
+- **"No questions available" gives the reason, not the rule**: a repeated
+  question would favour whoever saw it first. Stated that way it reads as
+  protection rather than bureaucracy.
+- **The two owner-decision screens name the limit that was reached and say
+  the rule was set before the season**, then list what is preserved —
+  points, badge, history and the order already earned. The fear in that
+  moment is "have I lost everything", and the answer is no.
+- **Still tied shows "=" for both players**, with no invented order.
+- **The outage restart says it does not count against the round limit**,
+  and that answers already given are discarded for everyone equally.
+
+An automated check across all nine states found no phrase revealing a score,
+correctness or an answer before a round closes.
+
+Checked at 320 px and 375 px: all nine states render, no sideways scroll, no
+JavaScript error.
+
 ## Delivery
 
 Branch `codex/tiebreak-mockups` from `codex/ranked-mode`, opened as a pull
