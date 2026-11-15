@@ -109,6 +109,17 @@
       background: var(--accent); color: var(--accent-ink); border-color: var(--accent);
     }
 
+    /* Quitting and lost connection (issue #17, slice 3) */
+    .qc-clock { display: flex; align-items: center; gap: 10px; border: 1px solid var(--soft-line); border-radius: 14px; background: var(--soft); padding: 10px 12px; font-size: 13px; color: #54412f; }
+    .qc-clock i { display: grid; place-items: center; width: 36px; height: 36px; flex: none; border: 4px solid var(--danger); border-radius: 50%; font-style: normal; font-size: 14px; font-weight: 900; color: var(--danger); }
+    .qc-bar { height: 10px; border-radius: 99px; background: #ede3d2; overflow: hidden; }
+    .qc-bar i { display: block; height: 100%; width: 60%; background: var(--danger); }
+    .qc-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+    .qc-list li { display: flex; gap: 10px; font-size: 14px; line-height: 1.45; }
+    .qc-list i { display: grid; place-items: center; width: 24px; height: 24px; flex: none; border-radius: 50%; background: #fbefed; color: var(--danger); font-style: normal; font-weight: 900; font-size: 13px; }
+    .danger-eye { color: var(--danger); }
+    .ghost.danger { color: var(--danger); border-color: #e8c5bf; }
+
     /* Promotion (issue #17, slice 2) */
     .rules { margin: 0; padding-left: 22px; display: flex; flex-direction: column; gap: 9px; font-size: 15px; line-height: 1.5; }
     .rules li::marker { font-weight: 900; color: var(--accent); }
@@ -588,7 +599,7 @@
             <button type="button" style="background:#1e6b3a" data-rq-go="right">GREEN</button>
             <button type="button" style="background:#f6d33c;color:#35271e" data-rq-go="timeout">YELLOW</button>
           </div>
-          <button class="ghost" type="button" data-stub="Quitting is designed in slice 3 of issue #17.">Cancel this attempt</button>
+          <button class="ghost" type="button" data-go="qc">Cancel this attempt</button>
           <p class="note"><strong>Design mock.</strong> Each belt opens a different outcome so you can see them all: PURPLE shows the locked moment, ORANGE a wrong answer, GREEN a right one, YELLOW a timeout.</p>
         </div>
 
@@ -829,6 +840,136 @@
         </div>
       </section>
 
+      <!-- Quitting and lost connection (issue #17, slice 3). Quitting costs
+           the partial score plus 10, before the cap. A lost connection
+           costs no extra penalty. A confirmed outage costs nothing at all.
+           No screen says whose fault it was: the app cannot tell. -->
+      <section class="view" data-view="qc" hidden>
+        <button class="link" type="button" data-go="ranked">← Back to Ranked</button>
+
+        <div class="view" data-qc="confirm">
+          <div class="qc-clock"><i>04</i><span>The question clock keeps running while you decide.</span></div>
+          <h1 tabindex="-1">Quit this ranked quiz?</h1>
+          <p class="lead">Your current score will count, and 10 points are taken off it. You cannot resume this attempt.</p>
+          <button class="primary" type="button" data-qc-go="back">Continue quiz</button>
+          <button class="ghost danger" type="button" data-qc-go="quit">Quit quiz</button>
+        </div>
+
+        <div class="view" data-qc="back" hidden>
+          <h1 tabindex="-1">Back in the quiz</h1>
+          <p class="lead">Nothing changed. The question you were on still has its own time left.</p>
+          <button class="ghost" type="button" data-qc-go="confirm">Show the quit confirmation again</button>
+        </div>
+
+        <div class="view" data-qc="quit" hidden>
+          <p class="eyebrow">Ranked · attempt ended</p>
+          <h1 tabindex="-1">You quit this attempt</h1>
+          <div class="sum">
+            <div><span>Before this attempt</span><b>340</b></div>
+            <div><span>Right before you quit</span><b>+100</b></div>
+            <div class="lost"><span>Quitting costs</span><b>−10</b></div>
+            <div class="total"><span>Your balance now</span><b>430</b></div>
+          </div>
+          <p class="small">The attempt is over and cannot be resumed. The questions you never saw deducted nothing.</p>
+          <button class="ghost" type="button" data-go="ranked">Back to Ranked</button>
+        </div>
+
+        <div class="view" data-qc="quitcap" hidden>
+          <p class="eyebrow">Ranked · attempt ended</p>
+          <h1 tabindex="-1">You quit this attempt</h1>
+          <div class="sum">
+            <div><span>Before this attempt</span><b>990</b></div>
+            <div><span>Right before you quit</span><b>+100</b></div>
+            <div class="lost"><span>Quitting costs</span><b>−10</b></div>
+            <div><span>Which comes to</span><b>1,080</b></div>
+            <div class="lost"><span>Did not fit in Iron</span><b>−80</b></div>
+            <div class="total"><span>Your balance now</span><b>1,000</b></div>
+          </div>
+          <div class="notice-box">
+            <h2>The 10 points came off, even though your balance went up</h2>
+            <p>They are taken from the attempt's result before the Iron cap is applied. This close to the cap, the overflow absorbs them.</p>
+          </div>
+          <button class="ghost" type="button" data-go="ranked">Back to Ranked</button>
+        </div>
+
+        <div class="view" data-qc="lost" hidden>
+          <p class="eyebrow danger-eye">Connection</p>
+          <h1 tabindex="-1">The server lost contact with this quiz</h1>
+          <div class="qc-bar"><i></i></div>
+          <p class="lead"><b>9 seconds left</b> to come back and carry on.</p>
+          <ul class="qc-list">
+            <li><i aria-hidden="true">!</i><span>The current question's clock is still running, and it can run out while you are away.</span></li>
+            <li><i aria-hidden="true">!</i><span>Reloading or closing this page ends the attempt, even now.</span></li>
+            <li><i aria-hidden="true">!</i><span>No new question is sent until contact returns.</span></li>
+          </ul>
+          <p class="note">The app cannot tell whether the problem is this device, the signal here, or the server. It only reports that contact stopped.</p>
+        </div>
+
+        <div class="view" data-qc="reconnected" hidden>
+          <p class="eyebrow">Connection</p>
+          <h1 tabindex="-1">Back in contact</h1>
+          <p class="lead">The attempt carried on. Question 7 of 15 has 3 seconds left.</p>
+          <div class="panel"><p class="small">Nothing was deducted for the time away. A question that ran out while contact was lost still counts as wrong, like any other.</p></div>
+          <button class="primary" type="button" data-go="rquiz">Back to the question</button>
+        </div>
+
+        <div class="view" data-qc="expired" hidden>
+          <p class="eyebrow">Ranked · attempt ended</p>
+          <h1 tabindex="-1">Contact did not come back in time</h1>
+          <div class="sum">
+            <div><span>Before this attempt</span><b>340</b></div>
+            <div><span>Right up to the loss</span><b>+100</b></div>
+            <div class="total"><span>Your balance now</span><b>440</b></div>
+          </div>
+          <div class="notice-box">
+            <h2>No extra penalty</h2>
+            <p>Losing contact is not quitting. The 10-point quit penalty was not applied, and the questions never sent deducted nothing.</p>
+          </div>
+          <button class="ghost" type="button" data-go="ranked">Back to Ranked</button>
+        </div>
+
+        <div class="view" data-qc="outage" hidden>
+          <p class="eyebrow">Ranked · attempt voided</p>
+          <h1 tabindex="-1">This attempt does not count</h1>
+          <div class="sum">
+            <div><span>Before this attempt</span><b>340</b></div>
+            <div><span>Applied from this attempt</span><b>0</b></div>
+            <div class="total"><span>Your balance now</span><b>340</b></div>
+          </div>
+          <div class="notice-box">
+            <h2>A confirmed server problem</h2>
+            <p>Nothing from this attempt is counted and nothing is deducted. There is no quit penalty and no mark against your account. You can start a fresh attempt once the season is open again.</p>
+          </div>
+          <button class="ghost" type="button" data-go="ranked">Back to Ranked</button>
+        </div>
+
+        <div class="view" data-qc="reloaded" hidden>
+          <p class="eyebrow">Ranked · attempt ended</p>
+          <h1 tabindex="-1">This attempt ended when the page reloaded</h1>
+          <div class="sum">
+            <div><span>Before this attempt</span><b>340</b></div>
+            <div><span>Right up to the reload</span><b>+60</b></div>
+            <div class="total"><span>Your balance now</span><b>400</b></div>
+          </div>
+          <p class="small">A reloaded page cannot carry on an attempt, even within the 15 seconds of grace. Your answers up to that point counted, and there was no quit penalty.</p>
+          <button class="ghost" type="button" data-go="ranked">Back to Ranked</button>
+        </div>
+
+        <div class="mock-controls">
+          <p>Mock controls · not part of the app</p>
+          <div class="row" role="group" aria-label="Ending screen">
+            <button type="button" data-qc-go="confirm" aria-pressed="true">Quit?</button>
+            <button type="button" data-qc-go="quit" aria-pressed="false">Quit done</button>
+            <button type="button" data-qc-go="quitcap" aria-pressed="false">Quit near cap</button>
+            <button type="button" data-qc-go="lost" aria-pressed="false">Contact lost</button>
+            <button type="button" data-qc-go="reconnected" aria-pressed="false">Back in time</button>
+            <button type="button" data-qc-go="expired" aria-pressed="false">Grace expired</button>
+            <button type="button" data-qc-go="outage" aria-pressed="false">Server outage</button>
+            <button type="button" data-qc-go="reloaded" aria-pressed="false">Page reloaded</button>
+          </div>
+        </div>
+      </section>
+
       <!-- Account deletion (issue #16, slice 3). The server behaviour is
            already built in #47: the login ID typed here is the
            reauthentication, a wrong one changes nothing and does not say
@@ -906,8 +1047,8 @@
       member: [['home', '⌂', 'Home'], ['practice', '≡', 'Practice'], ['ranked', '◆', 'Ranked'], ['profile', '●', 'Profile']],
     };
     // Screens that live inside a tab keep that tab marked as current.
-    const PARENT_TAB = { leaderboard: 'ranked', tickets: 'profile', delete: 'profile', rquiz: 'ranked', promo: 'ranked' };
-    const MEMBER_ONLY = ['ranked', 'leaderboard', 'profile', 'tickets', 'delete', 'rquiz', 'promo'];
+    const PARENT_TAB = { leaderboard: 'ranked', tickets: 'profile', delete: 'profile', rquiz: 'ranked', promo: 'ranked', qc: 'ranked' };
+    const MEMBER_ONLY = ['ranked', 'leaderboard', 'profile', 'tickets', 'delete', 'rquiz', 'promo', 'qc'];
     let mode = 'public';
     // The home callout appears only once a start is confirmed. During
     // Pre-Season there is no callout and no invented date.
@@ -939,6 +1080,7 @@
       if (name === 'tickets') setTickets('list');
       if (name === 'rquiz') setRanked('question');
       if (name === 'promo') setPromotion('offer');
+      if (name === 'qc') setQc('confirm');
       for (const view of document.querySelectorAll('[data-view]')) view.hidden = view.dataset.view !== name;
       for (const el of document.querySelectorAll('[data-member]')) el.hidden = mode !== 'member';
       for (const el of document.querySelectorAll('[data-guest]')) el.hidden = mode !== 'guest';
@@ -957,6 +1099,14 @@
       window.scrollTo(0, 0);
       // The delete screen holds one h1 per step, so focus the visible one.
       const heading = [...document.querySelectorAll(`[data-view="${name}"] h1`)].find(h => h.offsetParent !== null);
+      if (heading) heading.focus({ preventScroll: true });
+    }
+
+    // Quitting and lost connection. Opening lands on the confirmation.
+    function setQc(state) {
+      for (const el of document.querySelectorAll('[data-qc]')) el.hidden = el.dataset.qc !== state;
+      for (const el of document.querySelectorAll('[data-qc-go]')) el.setAttribute('aria-pressed', String(el.dataset.qcGo === state));
+      const heading = document.querySelector(`[data-qc="${state}"] h1`);
       if (heading) heading.focus({ preventScroll: true });
     }
 
@@ -1154,6 +1304,7 @@
       if (button.dataset.tkGo) return setTickets(button.dataset.tkGo);
       if (button.dataset.rqGo) return setRanked(button.dataset.rqGo);
       if (button.dataset.prGo) return setPromotion(button.dataset.prGo);
+      if (button.dataset.qcGo) return setQc(button.dataset.qcGo);
       if (button.dataset.season) {
         season = button.dataset.season;
         for (const el of document.querySelectorAll('[data-season]')) el.setAttribute('aria-pressed', String(el.dataset.season === season));
