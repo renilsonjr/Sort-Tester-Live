@@ -3,6 +3,7 @@ from uuid import UUID
 
 from backend.auth.service import (
     admin_regenerate_login_id,
+    issue_new_login_id,
     get_account_by_session,
     login_with_id,
     register_account,
@@ -49,31 +50,33 @@ class AuthServiceTests(unittest.TestCase):
         result = login_with_id(self.conn, "WRNG-WRNG-WRNG-WRNG", 3600, None, None)
         self.assertIsNone(result)
 
-    def test_admin_regenerate_login_id_revokes_old_sessions(self):
-        # bootstrap an owner account
+    def test_the_unchecked_admin_regenerate_is_gone(self):
+        """It reset a login ID on the owner's say-so alone, which the
+        settled recovery policy does not allow: recovery needs a trusted
+        roster link established before the request. backend.auth.recovery
+        is that route now, and an old caller fails loudly."""
         owner_id = migrate.fetch_one(
             self.conn,
-            "INSERT INTO accounts (username, username_lower, tag, is_owner) VALUES ('owner_1', 'owner_1', 'OWN001', true) RETURNING id",
+            "INSERT INTO accounts (username, username_lower, tag, is_owner)"
+            " VALUES ('owner_1', 'owner_1', 'OWN001', true) RETURNING id",
         )["id"]
-        target_id, login_id = register_account(self.conn, "bob_1")
+        target_id, _ = register_account(self.conn, "bob_1")
+        with self.assertRaises(NotImplementedError) as caught:
+            admin_regenerate_login_id(self.conn, owner_id, target_id)
+        self.assertIn("recovery", str(caught.exception))
+
+    def test_issuing_a_new_login_id_replaces_the_old_one(self):
+        """The piece recovery uses: the old credential and every session
+        stop at the moment the new login ID starts."""
+        target_id, login_id = register_account(self.conn, "bob_2")
         token, _ = login_with_id(self.conn, login_id, 3600, None, None)
         self.assertIsNotNone(get_account_by_session(self.conn, token))
 
-        new_login_id = admin_regenerate_login_id(self.conn, owner_id, target_id)
-        self.assertIsNotNone(new_login_id)
+        new_login_id = issue_new_login_id(self.conn, target_id)
         self.assertNotEqual(new_login_id, login_id)
-
-        # old session revoked
         self.assertIsNone(get_account_by_session(self.conn, token))
-        # new login ID works
-        result = login_with_id(self.conn, new_login_id, 3600, None, None)
-        self.assertIsNotNone(result)
-
-    def test_admin_regenerate_by_non_owner_returns_none(self):
-        non_owner_id, _ = register_account(self.conn, "charlie_1")
-        target_id, login_id = register_account(self.conn, "dave_1")
-        result = admin_regenerate_login_id(self.conn, non_owner_id, target_id)
-        self.assertIsNone(result)
+        self.assertIsNone(login_with_id(self.conn, login_id, 3600, None, None))
+        self.assertIsNotNone(login_with_id(self.conn, new_login_id, 3600, None, None))
 
 
 if __name__ == "__main__":

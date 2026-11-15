@@ -115,6 +115,72 @@ class OwnerBootstrapTests(unittest.TestCase):
         self.assertIn("ZZZZZZ", err)
         self.assertEqual(self._owners(), [])
 
+    # --- show: "which account is the owner here?" ---
+
+    def test_show_names_the_owner(self):
+        self._account("A1B2C3", username="renilson")
+        self._run("designate", "--tag", "A1B2C3")
+        code, out, err = self._run("show")
+        self.assertEqual(code, 0, err)
+        self.assertIn("renilson", out)
+        self.assertIn("A1B2C3", out)
+
+    def test_show_says_so_when_no_owner_has_been_designated(self):
+        """How a fresh deployment is checked."""
+        code, out, err = self._run("show")
+        self.assertEqual(code, 0, err)
+        self.assertIn("No owner", out)
+
+    def test_show_changes_nothing(self):
+        self._account("A1B2C3")
+        self._run("designate", "--tag", "A1B2C3")
+        self._run("show")
+        self.assertEqual(self._owners(), ["A1B2C3"])
+
+    # --- reissue-login-id: the locked-out owner ---
+
+    def test_reissue_gives_the_owner_a_new_login_id(self):
+        """The owner cannot use the in-app recovery, because that needs an
+        owner session and a locked-out owner has none."""
+        self._account("A1B2C3", username="renilson")
+        self._run("designate", "--tag", "A1B2C3")
+        code, out, err = self._run("reissue-login-id")
+        self.assertEqual(code, 0, err)
+        self.assertIn("renilson", out)
+        self.assertIn("shown once", out)
+
+    def test_reissue_is_refused_when_there_is_no_owner(self):
+        code, out, err = self._run("reissue-login-id")
+        self.assertEqual(code, 1)
+        self.assertIn("no owner", err)
+
+    def test_reissue_ends_the_owner_sessions(self):
+        self._account("A1B2C3")
+        self._run("designate", "--tag", "A1B2C3")
+        account_id = migrate.fetch_one(
+            self.conn, "SELECT id FROM accounts WHERE tag = 'A1B2C3'"
+        )["id"]
+        migrate.execute(
+            self.conn,
+            "INSERT INTO sessions (account_id, token_hash, expires_at)"
+            " VALUES (%s, %s, now() + interval '1 hour')",
+            (account_id, b"y" * 32),
+        )
+        self.conn.commit()
+        self._run("reissue-login-id")
+        live = migrate.fetch_all(
+            self.conn,
+            "SELECT id FROM sessions WHERE account_id = %s AND revoked_at IS NULL",
+            (account_id,),
+        )
+        self.assertEqual(live, [])
+
+    def test_reissue_keeps_the_owner_role_and_the_same_account(self):
+        self._account("A1B2C3", username="renilson")
+        self._run("designate", "--tag", "A1B2C3")
+        self._run("reissue-login-id")
+        self.assertEqual(self._owners(), ["A1B2C3"])
+
 
 if __name__ == "__main__":
     unittest.main()
