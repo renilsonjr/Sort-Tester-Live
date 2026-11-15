@@ -400,6 +400,15 @@
   .lab-chart-row small { margin-top: 2px; font-size: 11px; }
   .lab-chart-row .lab-belt-chip { min-width: 75px; border-radius: 0; padding: 7px 8px; font-size: 11px; }
 
+  /* Account deletion (issue #10, slice 4) */
+  .delete-ack { display: flex; align-items: flex-start; gap: 11px; border: 1px solid var(--line); border-radius: 17px; background: var(--panel); padding: 14px; font-size: 14px; line-height: 1.45; cursor: pointer; }
+  .delete-ack input { width: 22px; height: 22px; flex: none; margin: 0; accent-color: var(--accent); }
+  .delete-warn { border: 1px solid #e8c5bf; border-radius: 17px; background: #fbefed; padding: 13px 15px; color: #7a2622; margin: 10px 0; }
+  .delete-warn h2 { margin: 0; font-size: 16px; font-weight: 900; letter-spacing: -.03em; text-transform: none; color: #7a2622; }
+  .delete-warn p { margin: 4px 0 0; font-size: 13px; line-height: 1.5; }
+  .delete-danger { background: var(--danger); color: #fffdf8; border-color: #7a2622; }
+  .delete-danger:disabled { background: #ebe2d4; color: #79634e; border-color: #cdbfae; cursor: not-allowed; }
+
   /* Profile (issue #10, slice 2). The badge art is the approved set from
      mockups/design-library/badges. */
   .profile-tabs { display: flex; flex-wrap: wrap; gap: 2px; border-bottom: 2px solid var(--line); margin: 14px 0 12px; }
@@ -525,7 +534,7 @@
 <div id="auth-panel" hidden></div>
 <main id="app"></main>
 <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js" integrity="sha384-EnyY0/GSHQGSxSgMwaIPzSESbqoOLSexfnSMN2AP+39Ckmn92stwABZynq1JyzdT" crossorigin="anonymous"></script>
-<script type="module" src="src/app.js?v=ranked-20261115"></script>
+<script type="module" src="src/app.js?v=deletion-20261115"></script>
 <script type="module" src="src/auth.js"></script>
 </body>
 </html>
