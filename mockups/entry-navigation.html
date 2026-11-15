@@ -95,6 +95,45 @@
     .launch p { margin-top: 3px; color: #54412f; font-size: 13px; }
     .launch b { font-weight: 900; }
 
+    /* Announced to screen readers, not drawn: the question number is already
+       visible in the header above. */
+    .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
+
+    /* Ranked quiz (issue #17, slice 1). Belt colours are BELT_STYLE from
+       src/belts.js: routing information, never restyled. */
+    .rq-top { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+    .rq-count { color: var(--muted); font-size: 12px; font-weight: 900; letter-spacing: .07em; text-transform: uppercase; }
+    .rq-clock { width: 46px; height: 46px; flex: none; border: 4px solid var(--accent); border-radius: 50%; display: grid; place-items: center; background: var(--panel); font-size: 19px; font-weight: 900; font-variant-numeric: tabular-nums; }
+    .rq-clock.urgent { border-color: var(--danger); color: var(--danger); }
+    .rq-clock.off { border-color: var(--line); color: var(--muted); font-size: 15px; }
+    /* Ranked costs points and Practice does not; the two screens otherwise
+       look alike, so this marker says which one the player is in. */
+    .rq-stake { display: inline-flex; align-items: center; gap: 7px; align-self: flex-start; padding: 5px 11px; border-radius: 99px; background: var(--soft); border: 1px solid var(--soft-line); color: var(--accent); font-size: 12px; font-weight: 900; }
+    .rq-prompt { text-align: center; }
+    .rq-service { color: var(--muted); font-size: 13px; font-weight: 900; letter-spacing: .1em; text-transform: uppercase; }
+    .rq-code { font-size: clamp(42px, 13vw, 58px); font-weight: 900; letter-spacing: -.05em; line-height: 1.04; }
+    .belts { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; }
+    .belts button { min-height: 84px; border-radius: 14px; font-size: 17px; font-weight: 900; letter-spacing: .05em; color: #fff; }
+    .belts button:disabled { opacity: .45; }
+    .belts button.picked { outline: 4px solid var(--accent); outline-offset: 2px; opacity: 1; }
+    .belts button.answer { outline: 4px solid var(--success); outline-offset: 2px; opacity: 1; }
+    .rq-verdict { font-size: 26px; font-weight: 900; letter-spacing: -.045em; line-height: 1.1; }
+    .rq-verdict.good { color: var(--success); }
+    .rq-verdict.bad { color: var(--danger); }
+    .rq-worth { font-size: 15px; font-weight: 900; }
+    .rq-worth.good { color: var(--success); }
+    .rq-worth.bad { color: var(--danger); }
+    .rq-cmp { border: 1px solid var(--line); border-radius: 15px; background: #f3ece0; padding: 12px; display: grid; gap: 7px; }
+    .rq-cmp div { display: flex; justify-content: space-between; align-items: center; gap: 9px; font-size: 13px; }
+    .chip { min-width: 92px; padding: 7px 10px; border-radius: 8px; text-align: center; font-size: 13px; font-weight: 900; color: #fff; }
+    .rq-why { border-left: 3px solid var(--accent); padding-left: 11px; color: #54412f; font-size: 14px; line-height: 1.5; }
+    .sum { border: 1px solid var(--line); border-radius: 17px; background: var(--panel); padding: 4px 14px; }
+    .sum div { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; padding: 10px 0; border-bottom: 1px solid #ebe2d4; font-size: 14px; }
+    .sum div:last-child { border: 0; }
+    .sum b { font-size: 17px; font-weight: 900; font-variant-numeric: tabular-nums; }
+    .sum .total b { font-size: 22px; }
+    .sum .lost { color: var(--danger); }
+
     /* Support tickets (issue #16, slice 4) */
     .tickets { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 9px; }
     .tickets li { border: 1px solid var(--line); border-radius: 17px; background: #fffdf8; padding: 13px 14px; }
@@ -285,7 +324,7 @@
           <p class="stat">Iron · 640 points</p>
           <p class="small" style="margin-top:6px">No start date has been announced for the official season.</p>
         </div>
-        <button class="primary" type="button" data-stub="The Ranked quiz screens are designed in issue #17.">Start Ranked quiz</button>
+        <button class="primary" type="button" data-go="rquiz">Start Ranked quiz</button>
         <button class="choice" type="button" data-go="leaderboard"><span class="choice-icon" aria-hidden="true">#</span><span><strong>Leaderboard</strong><small>See the standings.</small></span><span class="arrow" aria-hidden="true">→</span></button>
       </section>
 
@@ -512,6 +551,145 @@
         </div>
       </section>
 
+      <!-- Ranked quiz (issue #17, slice 1). Fifteen questions, ten seconds
+           each on the SERVER's clock, answers locked once accepted, feedback
+           held until Next, and the fifteenth settling on its own. -->
+      <section class="view" data-view="rquiz" hidden>
+        <div class="rq-top">
+          <span class="rq-count" id="rq-count">Question 4 of 15</span>
+          <span class="rq-clock" id="rq-clock">07</span>
+        </div>
+        <span class="rq-stake">◆ Ranked · this attempt counts for points</span>
+
+        <div class="view" data-rq="question">
+          <h1 tabindex="-1" class="sr-only">Question 4 of 15</h1>
+          <div class="rq-prompt">
+            <p class="rq-service">Ground · New York</p>
+            <p class="rq-code">148&ndash;149</p>
+          </div>
+          <p class="small">Where does this go?</p>
+          <div class="belts" role="group" aria-label="Choose a belt">
+            <button type="button" style="background:#5b2d8e" data-rq-go="locked">PURPLE</button>
+            <button type="button" style="background:#b34d06" data-rq-go="wrong">ORANGE</button>
+            <button type="button" style="background:#1e6b3a" data-rq-go="right">GREEN</button>
+            <button type="button" style="background:#f6d33c;color:#35271e" data-rq-go="timeout">YELLOW</button>
+          </div>
+          <button class="ghost" type="button" data-stub="Quitting is designed in slice 3 of issue #17.">Cancel this attempt</button>
+          <p class="note"><strong>Design mock.</strong> Each belt opens a different outcome so you can see them all: PURPLE shows the locked moment, ORANGE a wrong answer, GREEN a right one, YELLOW a timeout.</p>
+        </div>
+
+        <div class="view" data-rq="locked" hidden>
+          <h1 tabindex="-1" class="sr-only">Answer sent</h1>
+          <div class="rq-prompt">
+            <p class="rq-service">Ground · New York</p>
+            <p class="rq-code">148&ndash;149</p>
+          </div>
+          <p class="small">Your answer is in. You cannot change it or answer again.</p>
+          <div class="belts" role="group" aria-label="Your answer">
+            <button type="button" class="picked" style="background:#5b2d8e" disabled>PURPLE</button>
+            <button type="button" style="background:#b34d06" disabled>ORANGE</button>
+            <button type="button" style="background:#1e6b3a" disabled>GREEN</button>
+            <button type="button" style="background:#f6d33c;color:#35271e" disabled>YELLOW</button>
+          </div>
+          <p class="small" role="status">Checking with the server…</p>
+        </div>
+
+        <div class="view" data-rq="right" hidden>
+          <h1 tabindex="-1" class="rq-verdict good">Correct</h1>
+          <p class="rq-worth good">+20 points · Medium question</p>
+          <div class="rq-cmp"><div><span>Correct belt</span><span class="chip" style="background:#1e6b3a">GREEN</span></div></div>
+          <p class="rq-why">PA 179&ndash;189 goes to GREEN on the Twilight Ground chart.</p>
+          <button class="primary" type="button" data-rq-go="question">Next</button>
+          <p class="note">This stays until you press Next. The next question's ten seconds start only then.</p>
+        </div>
+
+        <div class="view" data-rq="wrong" hidden>
+          <h1 tabindex="-1" class="rq-verdict bad">Review this route</h1>
+          <p class="rq-worth bad">&minus;10 points · Medium question</p>
+          <div class="rq-cmp">
+            <div><span>Your choice</span><span class="chip" style="background:#b34d06">ORANGE</span></div>
+            <div><span>Correct belt</span><span class="chip" style="background:#1e6b3a">GREEN</span></div>
+          </div>
+          <p class="rq-why">PA 179&ndash;189 goes to GREEN on the Twilight Ground chart. Check the service and the range before choosing.</p>
+          <button class="primary" type="button" data-rq-go="question">Next</button>
+        </div>
+
+        <div class="view" data-rq="timeout" hidden>
+          <h1 tabindex="-1" class="rq-verdict bad">Time ran out</h1>
+          <p class="rq-worth bad">&minus;10 points · Medium question. A question that runs out counts as wrong.</p>
+          <div class="rq-cmp">
+            <div><span>Your choice</span><span class="small">none sent in time</span></div>
+            <div><span>Correct belt</span><span class="chip" style="background:#1e6b3a">GREEN</span></div>
+          </div>
+          <button class="primary" type="button" data-rq-go="question">Next</button>
+          <p class="note">The ten seconds belong to the server and start when it sends the question, so a slow connection can spend them before the question appears.</p>
+        </div>
+
+        <div class="view" data-rq="final" hidden>
+          <h1 tabindex="-1" class="rq-verdict good">Correct</h1>
+          <p class="rq-worth good">+30 points · Hard question</p>
+          <div class="rq-cmp"><div><span>Correct belt</span><span class="chip" style="background:#1f4e9c">BLUE</span></div></div>
+          <p class="rq-why">That was question 15 of 15, so the attempt is already finished. There is no Next on the last question.</p>
+          <button class="primary" type="button" data-rq-go="cap">See your result</button>
+        </div>
+
+        <div class="view" data-rq="cap" hidden>
+          <p class="eyebrow">Ranked · attempt finished</p>
+          <h1 tabindex="-1">13 of 15 correct</h1>
+          <div class="sum">
+            <div><span>Before this attempt</span><b>950</b></div>
+            <div><span>Earned this attempt</span><b>+300</b></div>
+            <div class="lost"><span>Did not fit in Iron</span><b>&minus;250</b></div>
+            <div class="total"><span>Your balance now</span><b>1,000</b></div>
+          </div>
+          <div class="notice-box">
+            <h2>Iron stops at 1,000</h2>
+            <p>Points above a cap are not saved for later. Reaching the cap is what makes promotion available.</p>
+          </div>
+          <button class="primary" type="button" data-stub="Promotion is designed in slice 2 of issue #17.">Start promotion</button>
+          <button class="ghost" type="button" data-go="ranked">Back to Ranked</button>
+        </div>
+
+        <div class="view" data-rq="plain" hidden>
+          <p class="eyebrow">Ranked · attempt finished</p>
+          <h1 tabindex="-1">11 of 15 correct</h1>
+          <div class="sum">
+            <div><span>Before this attempt</span><b>340</b></div>
+            <div><span>Earned this attempt</span><b>+145</b></div>
+            <div class="total"><span>Your balance now</span><b>485</b></div>
+          </div>
+          <p class="small">Iron · 515 points to the Iron cap (1,000). Nothing was discarded.</p>
+          <button class="ghost" type="button" data-go="ranked">Back to Ranked</button>
+        </div>
+
+        <div class="view" data-rq="negative" hidden>
+          <p class="eyebrow">Ranked · attempt finished</p>
+          <h1 tabindex="-1">4 of 15 correct</h1>
+          <div class="sum">
+            <div><span>Before this attempt</span><b>120</b></div>
+            <div class="lost"><span>Lost this attempt</span><b>&minus;95</b></div>
+            <div class="total"><span>Your balance now</span><b>25</b></div>
+          </div>
+          <p class="small">Still Iron. A hard question costs 5 when it is wrong and an easy one costs 15, so an attempt can end below where it started. Practice does not touch these points.</p>
+          <button class="ghost" type="button" data-go="ranked">Back to Ranked</button>
+        </div>
+
+        <div class="mock-controls">
+          <p>Mock controls · not part of the app</p>
+          <div class="row" role="group" aria-label="Ranked quiz screen">
+            <button type="button" data-rq-go="question" aria-pressed="true">Question</button>
+            <button type="button" data-rq-go="locked" aria-pressed="false">Locked</button>
+            <button type="button" data-rq-go="right" aria-pressed="false">Right</button>
+            <button type="button" data-rq-go="wrong" aria-pressed="false">Wrong</button>
+            <button type="button" data-rq-go="timeout" aria-pressed="false">Timed out</button>
+            <button type="button" data-rq-go="final" aria-pressed="false">Last question</button>
+            <button type="button" data-rq-go="cap" aria-pressed="false">Result at cap</button>
+            <button type="button" data-rq-go="plain" aria-pressed="false">Result below cap</button>
+            <button type="button" data-rq-go="negative" aria-pressed="false">Result negative</button>
+          </div>
+        </div>
+      </section>
+
       <!-- Account deletion (issue #16, slice 3). The server behaviour is
            already built in #47: the login ID typed here is the
            reauthentication, a wrong one changes nothing and does not say
@@ -589,8 +767,8 @@
       member: [['home', '⌂', 'Home'], ['practice', '≡', 'Practice'], ['ranked', '◆', 'Ranked'], ['profile', '●', 'Profile']],
     };
     // Screens that live inside a tab keep that tab marked as current.
-    const PARENT_TAB = { leaderboard: 'ranked', tickets: 'profile', delete: 'profile' };
-    const MEMBER_ONLY = ['ranked', 'leaderboard', 'profile', 'tickets', 'delete'];
+    const PARENT_TAB = { leaderboard: 'ranked', tickets: 'profile', delete: 'profile', rquiz: 'ranked' };
+    const MEMBER_ONLY = ['ranked', 'leaderboard', 'profile', 'tickets', 'delete', 'rquiz'];
     let mode = 'public';
     // The home callout appears only once a start is confirmed. During
     // Pre-Season there is no callout and no invented date.
@@ -620,6 +798,7 @@
       stub.hidden = true;
       if (name === 'delete') setDelete('step1');
       if (name === 'tickets') setTickets('list');
+      if (name === 'rquiz') setRanked('question');
       for (const view of document.querySelectorAll('[data-view]')) view.hidden = view.dataset.view !== name;
       for (const el of document.querySelectorAll('[data-member]')) el.hidden = mode !== 'member';
       for (const el of document.querySelectorAll('[data-guest]')) el.hidden = mode !== 'guest';
@@ -638,6 +817,34 @@
       window.scrollTo(0, 0);
       // The delete screen holds one h1 per step, so focus the visible one.
       const heading = [...document.querySelectorAll(`[data-view="${name}"] h1`)].find(h => h.offsetParent !== null);
+      if (heading) heading.focus({ preventScroll: true });
+    }
+
+    // Ranked quiz. The clock reads differently per state: a live question
+    // counts down, a settled one shows no time at all, because the clock
+    // belongs to the server and stops the moment it accepts an answer.
+    const RQ_CLOCK = {
+      question: { text: '07', cls: '' },
+      locked: { text: '—', cls: 'off' },
+      right: { text: '—', cls: 'off' },
+      wrong: { text: '—', cls: 'off' },
+      timeout: { text: '00', cls: 'urgent' },
+      final: { text: '—', cls: 'off' },
+    };
+    const RQ_COUNT = { final: 'Question 15 of 15', cap: '', plain: '', negative: '' };
+
+    function setRanked(state) {
+      for (const el of document.querySelectorAll('[data-rq]')) el.hidden = el.dataset.rq !== state;
+      for (const el of document.querySelectorAll('[data-rq-go]')) el.setAttribute('aria-pressed', String(el.dataset.rqGo === state));
+      const clock = document.getElementById('rq-clock');
+      const c = RQ_CLOCK[state];
+      clock.hidden = !c;
+      if (c) { clock.textContent = c.text; clock.className = 'rq-clock ' + c.cls; }
+      const count = document.getElementById('rq-count');
+      count.textContent = RQ_COUNT[state] !== undefined ? RQ_COUNT[state] : 'Question 4 of 15';
+      count.hidden = !count.textContent;
+      document.querySelector('.rq-stake').hidden = ['cap', 'plain', 'negative'].includes(state);
+      const heading = document.querySelector(`[data-rq="${state}"] h1`);
       if (heading) heading.focus({ preventScroll: true });
     }
 
@@ -796,6 +1003,7 @@
       if (button.dataset.lb) return setLeaderboard(button.dataset.lb);
       if (button.dataset.delGo) return setDelete(button.dataset.delGo);
       if (button.dataset.tkGo) return setTickets(button.dataset.tkGo);
+      if (button.dataset.rqGo) return setRanked(button.dataset.rqGo);
       if (button.dataset.season) {
         season = button.dataset.season;
         for (const el of document.querySelectorAll('[data-season]')) el.setAttribute('aria-pressed', String(el.dataset.season === season));
