@@ -199,7 +199,7 @@ function labPage(content, active = 'home', rerender = showStart) {
   view.querySelectorAll('[data-nav]').forEach((button) => button.addEventListener('click', () => {
     if (button.dataset.nav === active) return;
     if (button.dataset.nav === 'practice') showPractice();
-    else if (button.dataset.nav === 'ranked') showRankedPlaceholder();
+    else if (button.dataset.nav === 'ranked') showRanked();
     else if (button.dataset.nav === 'profile') showProfile();
     else showStart();
   }));
@@ -412,6 +412,81 @@ function showRankedPlaceholder() {
     t('Playing for points is not available yet. Practice is, and it never changes Ranked points.'),
     'ranked',
   );
+}
+
+// Ranked (#10, slice 3). The season display: what phase the season is in,
+// this account's balance, and the one entry the rules allow right now.
+// Opening this screen starts no attempt and no timer.
+const SEASON_LINE = {
+  pre_season: {
+    open: 'Pre-Season. No start date has been announced for the official season.',
+    finishing: 'Pre-Season is finishing.',
+    closed: 'Pre-Season is closed.',
+    frozen: 'Pre-Season is over.',
+  },
+  official: {
+    open: 'The official season is open.',
+    finishing: 'The season is closing. Attempts already started have five more minutes.',
+    closed: 'The season is closed. Standings are provisional while settlement and any tie-breaks finish.',
+    frozen: 'Final results for this season.',
+  },
+};
+
+function seasonLine(season) {
+  return (SEASON_LINE[season.phase] ?? {})[season.status] ?? '';
+}
+
+function showRanked() {
+  stopTick();
+  clock = null;
+  const view = labPage(`
+    <section class="lab-screen">
+      <p class="lab-eyebrow">${esc(t('Ranked'))}</p>
+      <h1 class="lab-title" id="ranked-title">\u2026</h1>
+      <div id="ranked-panel"><p class="lab-intro">${esc(t('Loading\u2026'))}</p></div>
+    </section>
+  `, 'ranked', showRanked);
+  fillRanked(view.querySelector('#ranked-panel'), view.querySelector('#ranked-title'));
+  return view;
+}
+
+async function fillRanked(panel, title) {
+  const [season, entry] = await Promise.all([api('/ranked/season'), api('/ranked/entry')]);
+  if (!season || !entry) {
+    title.textContent = t('Ranked');
+    panel.innerHTML = `<p class="notice">${esc(t('Could not load the season. Your points are safe.'))}</p>`;
+    return;
+  }
+  title.textContent = season.phase === 'pre_season' ? t('Pre-Season') : season.label;
+  const closes = season.closes_at ? new Date(season.closes_at).toLocaleString() : null;
+  const atCap = entry.mode === 'promotion';
+  panel.innerHTML = `
+    <p class="lab-intro">${esc(t(seasonLine(season)))}</p>
+    <div class="profile-balance">
+      <img class="profile-badge" src="${badgeArt(entry.badge)}" alt="">
+      <div>
+        <p class="lab-study-meta">${esc(t('Your balance'))}</p>
+        <p class="profile-points">${entry.points.toLocaleString()} ${esc(t('points'))}</p>
+        <p class="lab-study-meta">${esc(balanceLine(entry))}</p>
+      </div>
+    </div>
+    ${closes ? `<p class="lab-intro">${esc(t('Closes'))}: ${esc(closes)}</p>` : ''}
+    ${atCap ? `
+    <div class="profile-promo">
+      <h2>${esc(t('Promotion available'))}</h2>
+      <p>${esc(t('You are at the cap, so promotion is the only Ranked quiz available. It needs a perfect 15 out of 15. Practice is available as usual and never changes these points.'))}</p>
+    </div>` : ''}
+    <button id="ranked-start" class="lab-choice lab-choice-quiz" type="button">
+      <span class="lab-choice-icon">\u25c6</span>
+      <span><strong>${esc(atCap ? t('Start promotion') : t('Start Ranked quiz'))}</strong><small>${esc(t('15 questions, ten seconds each.'))}</small></span>
+      <span class="lab-arrow" aria-hidden="true">\u2192</span>
+    </button>
+    <p class="lab-intro" id="ranked-note">${esc(t('Playing a Ranked quiz is being built. Nothing has started.'))}</p>
+  `;
+  panel.querySelector('#ranked-start').addEventListener('click', () => {
+    panel.querySelector('#ranked-note').textContent =
+      t('Playing a Ranked quiz is being built. Nothing has started.');
+  });
 }
 
 function showProfilePlaceholder() {
