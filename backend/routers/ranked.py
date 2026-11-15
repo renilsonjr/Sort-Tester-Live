@@ -19,6 +19,7 @@ from backend.auth.service import get_account_by_session
 from backend.db import migrate, settings
 from backend.ranked import capability, engine, launch, season_close, seasons, settlement
 from backend.ranked import standings as ranked_standings
+from backend.ranked import tiebreaks as ranked_tiebreaks
 from backend.ranked import history as ranked_history
 from backend.ranked import flags as ranked_flags
 from backend.support import retention as support_retention
@@ -58,6 +59,9 @@ def get_db():
         # window is over (end unfinished attempts, settle, freeze). When
         # nothing is due this is a single read.
         season_close.finish_due_seasons(conn, clock=_CLOCK)
+        # and a tie-break round closes at its own deadline the same way:
+        # score it, place its players, open the next round if one is due
+        ranked_tiebreaks.close_due_rounds(conn, clock=_CLOCK, bank=_reviewed_bank())
         # same idea for retention: a closed ticket's description goes fifteen
         # days after its own closure, and an attempt's shared connection log
         # goes fifteen days after the last case on it closes (#26)
@@ -322,12 +326,15 @@ def result(attempt_id: str, account: dict = Depends(_current_account), conn=Depe
     settlement would not."""
     _require_own_attempt(conn, attempt_id, account["id"])
     if engine.is_tiebreak_attempt(conn, attempt_id):
-        # scores, correctness and answers stay hidden for everyone until the
-        # round's deadline (settled Q4); the round's own result comes later
-        raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT,
-            detail="Tie-break results are shown when the round closes.",
-        )
+        # scores stay hidden for everyone until the round closes (settled
+        # Q4); once it has, the player sees their own score and standing
+        revealed = ranked_tiebreaks.revealed_result(conn, attempt_id)
+        if revealed is None:
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail="Tie-break results are shown when the round closes.",
+            )
+        return revealed
     # an attempt nobody is calling may have ended by the clock already
     engine.expire_stale_attempts(conn, clock=_CLOCK, account_id=account["id"])
     try:

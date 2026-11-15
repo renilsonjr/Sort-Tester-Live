@@ -217,21 +217,25 @@ def start_tiebreak_attempt(
     if round_ is None:
         conn.commit()
         raise TiebreakEntryError("There is no such tie-break round.")
+    # the round's own players, not the whole group: a later round is played
+    # only by those still tied after the one before it
     member = migrate.fetch_one(
         conn,
-        "SELECT 1 AS m FROM tiebreak_group_members WHERE group_id = %s AND account_id = %s",
-        (round_["group_id"], account_id),
+        "SELECT 1 AS m FROM tiebreak_round_players WHERE round_id = %s AND account_id = %s",
+        (round_id, account_id),
     )
     if member is None:
         # a non-member learns nothing about the round's state
         conn.commit()
         raise TiebreakEntryError("There is no such tie-break round.")
+    # A round past its deadline is usually closed already -- every request
+    # closes due rounds first -- so both cases get the same, plain answer.
+    if round_["status"] == "closed" or now >= round_["deadline_at"]:
+        conn.commit()
+        raise TiebreakEntryError("This round has closed.")
     if round_["status"] != "open" or round_["group_status"] != "open":
         conn.commit()
         raise TiebreakEntryError("This round is no longer open.")
-    if now >= round_["deadline_at"]:
-        conn.commit()
-        raise TiebreakEntryError("This round has closed.")
     already = migrate.fetch_one(
         conn,
         "SELECT attempt_id FROM tiebreak_attempts WHERE round_id = %s AND account_id = %s",

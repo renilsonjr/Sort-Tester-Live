@@ -105,11 +105,17 @@ class TiebreakPlayTests(unittest.TestCase):
             )
         round_id = migrate.fetch_one(
             self.conn,
-            "INSERT INTO tiebreak_rounds (group_id, round_number, opened_at, deadline_at)"
-            " VALUES (%s, %s, %s, %s) RETURNING id",
+            "INSERT INTO tiebreak_rounds (group_id, round_number, opened_at, deadline_at, hats)"
+            " VALUES (%s, %s, %s, %s, 1) RETURNING id",
             (group, round_number, self.clock.now(),
              self.clock.now() + timedelta(hours=deadline_hours)),
         )["id"]
+        for member in members:
+            migrate.execute(
+                self.conn,
+                "INSERT INTO tiebreak_round_players (round_id, account_id) VALUES (%s, %s)",
+                (round_id, member),
+            )
         tiebreaks.assign_round_questions(
             self.conn, round_id, self.season, BANK, rng=random.Random(round_number)
         )
