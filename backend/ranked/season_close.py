@@ -13,7 +13,7 @@ on when it runs.
 from datetime import timedelta
 
 from backend.db import migrate
-from backend.ranked import engine, seasons, settlement
+from backend.ranked import engine, seasons, settlement, tiebreaks
 
 
 class SeasonCloseError(Exception):
@@ -64,6 +64,9 @@ def finish_season(conn, season_id, *, clock) -> bool:
     migrate.execute(
         conn, "UPDATE seasons SET frozen_at = %s WHERE id = %s", (now, season_id)
     )
+    # Points are final now, so a tie for the hats is final too. Opened in
+    # the same transaction as the freeze: both are written or neither is.
+    tiebreaks.open_prize_tiebreaks(conn, season_id, clock=clock)
     conn.commit()
     return True
 
