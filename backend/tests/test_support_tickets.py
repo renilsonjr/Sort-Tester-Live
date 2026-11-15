@@ -5,7 +5,7 @@ import unittest
 
 from backend.db import migrate, settings
 from backend.ranked import engine, settlement
-from backend.support import tickets
+from backend.support import retention, tickets
 from backend.tests.ranked_helpers import make_unconstrained_bank
 from backend.tests.test_ranked_clock import FakeClock
 
@@ -406,3 +406,244 @@ class ReviewTests(TicketTestCase):
         self.conn.commit()
         self.assertEqual([r["id"] for r in tickets.tickets_for(self.conn, mine)], [my_ticket])
         self.assertIsNone(tickets.ticket_for(self.conn, mine, their_ticket))
+
+
+@unittest.skipUnless(
+    settings.environment_has_test_url(),
+    "SORT_TESTER_TEST_DATABASE_URL not set; database tests skipped",
+)
+class RetentionTests(TicketTestCase):
+    """A ticket and a flag about one attempt share one connection log."""
+
+    DAY = 86400
+
+    def _owner(self):
+        account = self._account()
+        migrate.execute(
+            self.conn, "UPDATE accounts SET is_owner = true WHERE id = %s", (account,)
+        )
+        self.conn.commit()
+        return account
+
+    def _flapping_attempt(self, account):
+        """An ended attempt that earned a connection flag, with its events."""
+        attempt_id = engine.start_attempt(
+            self.conn, account, clock=self.clock, bank=self.bank
+        )
+        for _ in range(4):
+            self.clock.advance(4)
+            engine.heartbeat(self.conn, attempt_id, clock=self.clock)
+        engine.quit_attempt(self.conn, attempt_id, clock=self.clock)
+        settlement.settle_attempt(self.conn, attempt_id, clock=self.clock)
+        self.conn.commit()
+        return attempt_id
+
+    def _events(self, attempt_id):
+        row = migrate.fetch_one(
+            self.conn,
+            "SELECT COUNT(*) AS n FROM attempt_connection_events WHERE attempt_id = %s",
+            (attempt_id,),
+        )
+        self.conn.commit()
+        return row["n"]
+
+    def _flag_rows(self, attempt_id):
+        row = migrate.fetch_one(
+            self.conn,
+            "SELECT COUNT(*) AS n FROM connection_flags WHERE attempt_id = %s",
+            (attempt_id,),
+        )
+        self.conn.commit()
+        return row["n"]
+
+    def _sweep(self):
+        result = retention.purge_due_cases(self.conn, clock=self.clock)
+        self.conn.commit()
+        return result
+
+    def test_a_closed_ticket_keeps_its_description_for_fourteen_days(self):
+        owner = self._owner()
+        account = self._account()
+        ticket = tickets.open_ticket(
+            self.conn, account, self._ended_attempt(account), description="It cut out."
+        )
+        tickets.close_ticket(
+            self.conn, owner, ticket, "network_instability", clock=self.clock
+        )
+        self.conn.commit()
+        self.clock.advance(15 * self.DAY - 1)
+        self.assertEqual(self._sweep()["descriptions"], 0)
+        self.assertEqual(
+            tickets.ticket_for(self.conn, account, ticket)["description"], "It cut out."
+        )
+
+    def test_a_closed_ticket_loses_its_description_after_fifteen_days(self):
+        owner = self._owner()
+        account = self._account()
+        ticket = tickets.open_ticket(
+            self.conn, account, self._ended_attempt(account), description="It cut out."
+        )
+        tickets.close_ticket(
+            self.conn, owner, ticket, "network_instability", clock=self.clock
+        )
+        self.conn.commit()
+        self.clock.advance(15 * self.DAY)
+        self.assertEqual(self._sweep()["descriptions"], 1)
+        stored = tickets.ticket_for(self.conn, account, ticket)
+        self.assertIsNone(stored["description"])
+        # the ticket itself stays: the player still sees that they asked and
+        # what the outcome was
+        self.assertEqual(stored["closed_outcome"], "network_instability")
+
+    def test_an_open_ticket_keeps_its_description_forever(self):
+        account = self._account()
+        ticket = tickets.open_ticket(
+            self.conn, account, self._ended_attempt(account), description="Still open."
+        )
+        self.conn.commit()
+        self.clock.advance(60 * self.DAY)
+        self._sweep()
+        self.assertEqual(
+            tickets.ticket_for(self.conn, account, ticket)["description"], "Still open."
+        )
+
+    def test_an_open_ticket_holds_the_log_of_a_long_closed_flag(self):
+        """The bug this slice exists to prevent."""
+        owner = self._owner()
+        account = self._account()
+        attempt = self._flapping_attempt(account)
+        ticket = tickets.open_ticket(self.conn, account, attempt)
+        self.conn.commit()
+        from backend.ranked import flags
+
+        flags.close_flag(self.conn, attempt, "network_instability", clock=self.clock)
+        self.conn.commit()
+        self.clock.advance(60 * self.DAY)
+        self.assertEqual(self._sweep()["logs"], 0)
+        self.assertGreater(self._events(attempt), 0)
+        self.assertEqual(self._flag_rows(attempt), 1)
+        self.assertIsNone(retention.shared_log_deletion_date(self.conn, attempt))
+
+    def test_the_log_goes_fifteen_days_after_the_last_case_closes(self):
+        owner = self._owner()
+        account = self._account()
+        attempt = self._flapping_attempt(account)
+        ticket = tickets.open_ticket(self.conn, account, attempt)
+        self.conn.commit()
+        from backend.ranked import flags
+
+        flags.close_flag(self.conn, attempt, "network_instability", clock=self.clock)
+        self.conn.commit()
+        self.clock.advance(30 * self.DAY)
+        tickets.close_ticket(
+            self.conn, owner, ticket, "insufficient_evidence", clock=self.clock
+        )
+        self.conn.commit()
+        last_closure = self.clock.now()
+        self.assertEqual(
+            retention.shared_log_deletion_date(self.conn, attempt),
+            last_closure + timedelta(days=15),
+        )
+        self.clock.advance(15 * self.DAY - 1)
+        self.assertEqual(self._sweep()["logs"], 0)
+        self.assertGreater(self._events(attempt), 0)
+        self.clock.advance(1)
+        self.assertEqual(self._sweep()["logs"], 1)
+        self.assertEqual(self._events(attempt), 0)
+        self.assertEqual(self._flag_rows(attempt), 0)
+
+    def test_reopening_a_ticket_stops_the_log_clock(self):
+        owner = self._owner()
+        account = self._account()
+        attempt = self._flapping_attempt(account)
+        ticket = tickets.open_ticket(self.conn, account, attempt)
+        self.conn.commit()
+        from backend.ranked import flags
+
+        flags.close_flag(self.conn, attempt, "network_instability", clock=self.clock)
+        tickets.close_ticket(
+            self.conn, owner, ticket, "network_instability", clock=self.clock
+        )
+        self.conn.commit()
+        self.clock.advance(14 * self.DAY)
+        tickets.reopen_ticket(self.conn, owner, ticket)
+        self.conn.commit()
+        self.clock.advance(60 * self.DAY)
+        self.assertEqual(self._sweep()["logs"], 0)
+        self.assertGreater(self._events(attempt), 0)
+        self.assertIsNone(retention.shared_log_deletion_date(self.conn, attempt))
+
+    def test_one_players_due_log_does_not_take_anothers(self):
+        owner = self._owner()
+        due_account, held_account = self._account(), self._account()
+        due = self._flapping_attempt(due_account)
+        held = self._flapping_attempt(held_account)
+        from backend.ranked import flags
+
+        flags.close_flag(self.conn, due, "network_instability", clock=self.clock)
+        self.conn.commit()
+        tickets.open_ticket(self.conn, held_account, held)
+        self.conn.commit()
+        self.clock.advance(60 * self.DAY)
+        self.assertEqual(self._sweep()["logs"], 1)
+        self.assertEqual(self._events(due), 0)
+        self.assertGreater(self._events(held), 0)
+
+    def test_an_attempt_with_no_case_keeps_its_events(self):
+        account = self._account()
+        attempt = engine.start_attempt(
+            self.conn, account, clock=self.clock, bank=self.bank
+        )
+        self.clock.advance(4)
+        engine.heartbeat(self.conn, attempt, clock=self.clock)
+        engine.quit_attempt(self.conn, attempt, clock=self.clock)
+        settlement.settle_attempt(self.conn, attempt, clock=self.clock)
+        self.conn.commit()
+        before = self._events(attempt)
+        self.clock.advance(60 * self.DAY)
+        self._sweep()
+        self.assertEqual(self._events(attempt), before)
+
+    def test_scores_and_history_survive_the_sweep(self):
+        owner = self._owner()
+        account = self._account()
+        attempt = self._flapping_attempt(account)
+        ticket = tickets.open_ticket(self.conn, account, attempt)
+        from backend.ranked import flags
+
+        flags.close_flag(self.conn, attempt, "network_instability", clock=self.clock)
+        tickets.close_ticket(
+            self.conn, owner, ticket, "network_instability", clock=self.clock
+        )
+        self.conn.commit()
+        self.clock.advance(20 * self.DAY)
+        self._sweep()
+        kept = migrate.fetch_one(
+            self.conn,
+            "SELECT (SELECT COUNT(*) FROM attempts WHERE id = %(a)s) AS attempts,"
+            " (SELECT COUNT(*) FROM attempt_answers WHERE attempt_id = %(a)s) AS answers,"
+            " (SELECT COUNT(*) FROM settlements WHERE attempt_id = %(a)s) AS settlements",
+            {"a": attempt},
+        )
+        self.conn.commit()
+        self.assertEqual(
+            (kept["attempts"], kept["answers"], kept["settlements"]), (1, 1, 1)
+        )
+        # and the ticket row itself, so the player still sees the case existed
+        self.assertIsNotNone(tickets.ticket_for(self.conn, account, ticket))
+
+    def test_a_repeat_sweep_finds_nothing(self):
+        owner = self._owner()
+        account = self._account()
+        attempt = self._flapping_attempt(account)
+        ticket = tickets.open_ticket(self.conn, account, attempt, description="x")
+        from backend.ranked import flags
+
+        flags.close_flag(self.conn, attempt, "network_instability", clock=self.clock)
+        tickets.close_ticket(
+            self.conn, owner, ticket, "network_instability", clock=self.clock
+        )
+        self.conn.commit()
+        self.clock.advance(20 * self.DAY)
+        self.assertEqual(self._sweep(), {"descriptions": 1, "logs": 1})
+        self.assertEqual(self._sweep(), {"descriptions": 0, "logs": 0})
