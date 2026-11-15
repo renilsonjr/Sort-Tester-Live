@@ -15,12 +15,19 @@ async function api(method, path, body) {
   if (body !== undefined) {
     options.body = JSON.stringify(body);
   }
-  const response = await fetch(`${API_BASE}${path}`, options);
+  let response;
+  try {
+    response = await fetch(`${API_BASE}${path}`, options);
+  } catch {
+    // No answer came back at all. Status 0 says so, and every caller here
+    // already checks `ok` before reading `data`.
+    return { ok: false, status: 0, data: null };
+  }
   if (response.status === 204) {
     return null;
   }
   const data = response.headers.get('content-type')?.includes('application/json')
-    ? await response.json()
+    ? await response.json().catch(() => null)
     : null;
   return { ok: response.ok, status: response.status, data };
 }
@@ -94,6 +101,8 @@ export function createAuthPanel(container, onContinueAsGuest, onLoggedIn) {
         showMessage(`Welcome, ${result.data.username}#${result.data.tag}`);
         form.hidden = true;
         if (onLoggedIn) onLoggedIn(result.data);
+      } else if (result.status === 0) {
+        showMessage('Could not reach the server. Your login ID is fine; try again in a moment.', true);
       } else {
         showMessage('Invalid login ID. Please try again.', true);
       }
@@ -130,6 +139,8 @@ export function createAuthPanel(container, onContinueAsGuest, onLoggedIn) {
         const done = form.querySelector('#register-done');
         check.addEventListener('change', () => { done.disabled = !check.checked; });
         done.addEventListener('click', () => { form.hidden = true; });
+      } else if (result.status === 0) {
+        showMessage('Could not reach the server. Nothing was created; try again in a moment.', true);
       } else {
         showMessage('Could not create account. Username may be taken or invalid.', true);
       }
@@ -167,6 +178,28 @@ export function initAuthPanel(doc = document) {
     if (app) app.hidden = false;
     doc.defaultView?.setSortLabSession?.(account);
   };
+  // Leaving the app is the same swap the other way round. app.js owns the
+  // reasons to leave (the Log out button, and the idle timer), so it calls
+  // this; the panel only knows how to show itself again, with one line
+  // saying why the visitor is looking at it.
+  const view = doc.defaultView;
+  if (view) {
+    view.showSortLabEntry = (notice = '') => {
+      if (app) app.hidden = true;
+      panel.hidden = false;
+      const form = panel.querySelector('#auth-form');
+      if (form) {
+        form.hidden = true;
+        form.innerHTML = '';
+      }
+      const message = panel.querySelector('#auth-message');
+      if (message) {
+        message.textContent = notice;
+        message.className = 'warn';
+      }
+      panel.querySelector('#auth-login-btn')?.focus();
+    };
+  }
   return createAuthPanel(panel, () => enterApp(null), (account) => enterApp(account));
 }
 
