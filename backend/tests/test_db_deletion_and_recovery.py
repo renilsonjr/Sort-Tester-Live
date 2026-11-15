@@ -16,10 +16,10 @@ from backend.db import migrate, settings
 
 
 PROJECT_TABLES = (
-    "accounts", "emails", "participant_links", "season_markers",
+    "accounts", "participant_links", "season_markers",
     "question_versions", "assignments", "assignment_questions",
     "attempts", "attempt_answers", "seasons", "settlements",
-    "balances", "balance_history", "outbox", "login_credentials", "sessions",
+    "balances", "balance_history", "login_credentials", "sessions",
     "attempt_connection_events", "confirmed_outages", "connection_flags",
 )
 
@@ -175,16 +175,6 @@ class _SeedMixin:
         )
         self.setup.commit()
 
-    def _make_email(self, account_id):
-        addr = f"{uuid.uuid4().hex}@example.test"
-        migrate.execute(
-            self.setup,
-            "INSERT INTO emails (account_id, address, address_normalized, state)"
-            " VALUES (%s, %s, %s, 'pending')",
-            (account_id, addr, addr.lower()),
-        )
-        self.setup.commit()
-
     def _make_participant_link(self, account_id, roster_ref):
         migrate.execute(
             self.setup,
@@ -230,7 +220,6 @@ class _SeedMixin:
         attempt_id = self._make_attempt(account_id, assignment_id, season_id, qv_id)
         settlement_id = self._make_settlement(attempt_id, season_id)
         self._make_balance_and_history(account_id, settlement_id)
-        self._make_email(account_id)
         self._make_participant_link(account_id, roster_ref)
         self._make_login_and_session(account_id)
         self._make_season_marker(roster_ref)
@@ -276,7 +265,6 @@ class DeletionCascadeTests(_SeedMixin, unittest.TestCase):
 
         # every account-owned table is empty for this account
         self.assertEqual(self._count("SELECT COUNT(*) AS n FROM accounts WHERE id=%s", (acc,)), 0)
-        self.assertEqual(self._count("SELECT COUNT(*) AS n FROM emails WHERE account_id=%s", (acc,)), 0)
         self.assertEqual(self._count("SELECT COUNT(*) AS n FROM participant_links WHERE account_id=%s", (acc,)), 0)
         self.assertEqual(self._count("SELECT COUNT(*) AS n FROM login_credentials WHERE account_id=%s", (acc,)), 0)
         self.assertEqual(self._count("SELECT COUNT(*) AS n FROM sessions WHERE account_id=%s", (acc,)), 0)
@@ -319,7 +307,7 @@ class DeletionCascadeTests(_SeedMixin, unittest.TestCase):
         self.setup.commit()
         # no owned table keeps a shadow row keyed to the gone account
         for table, col in (
-            ("accounts", "id"), ("emails", "account_id"), ("balances", "account_id"),
+            ("accounts", "id"), ("balances", "account_id"),
             ("balance_history", "account_id"), ("assignments", "account_id"),
             ("attempts", "account_id"), ("sessions", "account_id"),
             ("login_credentials", "account_id"), ("participant_links", "account_id"),

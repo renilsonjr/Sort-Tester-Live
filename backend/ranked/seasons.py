@@ -119,9 +119,9 @@ class LaunchFact:
 def official_launch(conn) -> LaunchFact | None:
     """The durable, exactly-once fact that the official season was launched.
 
-    ``None`` before launch. Launch reminders (#27) read this to create their
-    own per-recipient messages; launch itself writes no outbox row, because
-    those rows need the verified email and consent that #27 owns.
+    ``None`` before launch. The season start is announced inside the app, on
+    the home page: the owner withdrew email from the app on 2026-11-14, so
+    #27 is closed and there are no messages to send or queue.
     """
     row = migrate.fetch_one(
         conn,

@@ -116,7 +116,7 @@ def purge_deleted_accounts(conn) -> int:
     """Delete every account pending deletion; return how many.
 
     The database cascades remove everything the account owns: credentials,
-    sessions, emails, participant link, balance, attempts and their answers,
+    sessions, participant link, balance, attempts and their answers,
     settlements, balance history, connection events and flags. Season markers
     have no account key and stay; shared question versions and other players'
     records are untouched. When nothing is pending this is a single statement.
