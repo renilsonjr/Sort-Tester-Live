@@ -77,6 +77,17 @@ class QuestionView:
     deadline_at: datetime
     prompt_en: str
     prompt_es: str
+    # What the question is actually about. The prompt alone is "Which belt
+    # does this go to?", so a screen needs the service, the state and the
+    # code to ask anything at all. None of this reveals the answer.
+    service: str = ""
+    mode: str = ""
+    routing_code: str = ""
+    region_label: str = ""
+    named_destination: str | None = None
+    # The four belts offered, for a tie-break; None where the screen offers
+    # every belt or has not been built yet.
+    options: list | None = None
 
 
 @dataclass(frozen=True)
@@ -310,12 +321,23 @@ def current_question(conn, attempt_id, *, clock, bank) -> QuestionView | None:
         conn.commit()  # releases the attempt lock
         return None
     question = _question_for_version(conn, bank, row["vid"])
+    options = None
+    if _is_tiebreak(conn, attempt_id):
+        from backend.ranked import tiebreaks
+
+        options = tiebreaks.options_for(conn, attempt_id, row["seq"], bank)
     conn.commit()  # releases the attempt lock
     return QuestionView(
         seq=row["seq"],
         deadline_at=row["deadline_at"],
         prompt_en=question.text.en.prompt,
         prompt_es=question.text.es.prompt,
+        service=question.context.service,
+        mode=question.context.mode,
+        routing_code=question.presentation.routing_code,
+        region_label=question.presentation.region_label,
+        named_destination=question.presentation.named_destination,
+        options=options,
     )
 
 

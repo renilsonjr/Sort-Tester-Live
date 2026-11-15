@@ -80,22 +80,70 @@ def assign_round_questions(conn, round_id, season_id, bank, *, rng=None) -> list
     pool = fresh_questions(conn, season_id, bank)
     if len(pool) < QUESTIONS_PER_ROUND:
         raise NoFreshSet()
-    chosen = (rng or _SYSTEM_RANDOM).sample(pool, QUESTIONS_PER_ROUND)
+    random_ = rng or _SYSTEM_RANDOM
+    chosen = random_.sample(pool, QUESTIONS_PER_ROUND)
+    belts = all_belts(bank)
     for seq, question in enumerate(chosen, start=1):
         migrate.execute(
             conn,
             "INSERT INTO tiebreak_round_questions"
-            " (round_id, seq, question_version_id, season_id, bank_key)"
-            " VALUES (%s, %s, %s, %s, %s)",
+            " (round_id, seq, question_version_id, season_id, bank_key, options)"
+            " VALUES (%s, %s, %s, %s, %s, %s)",
             (
                 round_id,
                 seq,
                 materialize_question_version(conn, question),
                 season_id,
                 question.canonical_id,
+                draw_options(question.correct_belt, belts, random_),
             ),
         )
     return chosen
+
+
+OPTIONS_PER_QUESTION = 4
+
+
+def all_belts(bank) -> list:
+    """Every belt the bank routes to, in a fixed order."""
+    return sorted({q.correct_belt for q in bank.questions})
+
+
+def draw_options(correct, belts, random_) -> list:
+    """The right belt and three others drawn at random, in random order
+    (owner decision 2026-11-15). Drawn with the server's randomness and
+    stored, never derived: see migration 0033 for why a formula would leak
+    the answer."""
+    others = [b for b in belts if b != correct]
+    options = random_.sample(others, OPTIONS_PER_QUESTION - 1) + [correct]
+    random_.shuffle(options)
+    return options
+
+
+def options_for(conn, attempt_id, seq, bank) -> list | None:
+    """The four belts a tie-break question offers, the same for every
+    player in the round, or ``None`` for an attempt that is not a
+    tie-break. A row written before options existed gets them drawn and
+    stored now, once, under a lock, so every player still sees the same."""
+    row = migrate.fetch_one(
+        conn,
+        "SELECT q.round_id, q.options, q.bank_key FROM tiebreak_attempts t"
+        " JOIN tiebreak_round_questions q ON q.round_id = t.round_id AND q.seq = %s"
+        " WHERE t.attempt_id = %s FOR UPDATE OF q",
+        (seq, attempt_id),
+    )
+    if row is None:
+        return None
+    if row["options"] is not None:
+        return list(row["options"])
+    correct = next(q.correct_belt for q in bank.questions if q.canonical_id == row["bank_key"])
+    options = draw_options(correct, all_belts(bank), _SYSTEM_RANDOM)
+    migrate.execute(
+        conn,
+        "UPDATE tiebreak_round_questions SET options = %s WHERE round_id = %s AND seq = %s",
+        (options, row["round_id"], seq),
+    )
+    return options
 
 
 def fresh_sets_left(conn, season_id, bank) -> int:
@@ -674,3 +722,74 @@ def record_selection(conn, owner_account_id, group_id, chosen_ids, *, clock) -> 
         (owner_account_id, clock.now(), group_id),
     )
     conn.commit()
+
+
+# --- what a player is told about their own tie (slice 7) ------------------
+
+def my_tiebreak(conn, account_id) -> dict | None:
+    """This player's tie-break, for their own screens, or ``None``.
+
+    Their own state only: the round they may play, whether they have
+    played it, and -- once a round has closed -- their own score and where
+    they stand. Never another player's score, and never the other players'
+    names: the tie is between them, but the screen does not need to say
+    with whom.
+    """
+    group = migrate.fetch_one(
+        conn,
+        "SELECT g.id, g.status, g.tied_points, g.hats_available"
+        " FROM tiebreak_group_members m"
+        " JOIN tiebreak_groups g ON g.id = m.group_id"
+        " JOIN seasons s ON s.id = g.season_id"
+        " WHERE m.account_id = %s"
+        " ORDER BY s.opened_at DESC, g.opened_at DESC LIMIT 1",
+        (account_id,),
+    )
+    if group is None:
+        conn.commit()
+        return None
+    placement = migrate.fetch_one(
+        conn,
+        "SELECT status FROM tiebreak_placements WHERE group_id = %s AND account_id = %s",
+        (group["id"], account_id),
+    )
+    open_round = migrate.fetch_one(
+        conn,
+        "SELECT r.id, r.round_number, r.deadline_at, r.hats, t.attempt_id"
+        " FROM tiebreak_rounds r"
+        " JOIN tiebreak_round_players p ON p.round_id = r.id AND p.account_id = %s"
+        " LEFT JOIN tiebreak_attempts t ON t.round_id = r.id AND t.account_id = %s"
+        " WHERE r.group_id = %s AND r.status = 'open'",
+        (account_id, account_id, group["id"]),
+    )
+    last = migrate.fetch_one(
+        conn,
+        "SELECT r.round_number, res.outcome, res.score FROM tiebreak_round_results res"
+        " JOIN tiebreak_rounds r ON r.id = res.round_id"
+        " WHERE r.group_id = %s AND res.account_id = %s AND r.status = 'closed'"
+        " ORDER BY r.round_number DESC LIMIT 1",
+        (group["id"], account_id),
+    )
+    conn.commit()
+    from backend.ranked import modes, ranks
+
+    out = {
+        "tied_points": group["tied_points"],
+        "challenger": ranks.badge_for(group["tied_points"]) == ranks.TOP_BADGE,
+        "placement": None if placement is None else placement["status"],
+        "last_result": None if last is None else {
+            "round": last["round_number"], "outcome": last["outcome"], "score": last["score"],
+        },
+        "round": None,
+    }
+    if open_round is not None:
+        out["round"] = {
+            "id": open_round["id"],
+            "number": open_round["round_number"],
+            "deadline_at": open_round["deadline_at"],
+            "hats": open_round["hats"],
+            "seconds": modes.TIEBREAK_SECONDS[open_round["round_number"]],
+            "played": open_round["attempt_id"] is not None,
+            "attempt_id": open_round["attempt_id"],
+        }
+    return out

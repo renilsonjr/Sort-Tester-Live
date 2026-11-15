@@ -210,6 +210,25 @@ def start(
     return {"attempt_id": str(attempt_id), "capability": token, "mode": mode}
 
 
+@router.get("/tiebreak/mine")
+def my_tiebreak(account: dict = Depends(_current_account), conn=Depends(get_db)):
+    """This player's own tie-break state, or ``{"tie": null}``. Their own
+    round, whether they played it, and once a round has closed their own
+    score and standing -- never anybody else's."""
+    mine = ranked_tiebreaks.my_tiebreak(conn, account["id"])
+    if mine is None:
+        return {"tie": None}
+    round_ = mine["round"]
+    if round_ is not None:
+        round_ = {
+            **round_,
+            "id": str(round_["id"]),
+            "deadline_at": _utc(round_["deadline_at"]),
+            "attempt_id": None if round_["attempt_id"] is None else str(round_["attempt_id"]),
+        }
+    return {"tie": {**mine, "round": round_}}
+
+
 @router.post("/tiebreak/rounds/{round_id}/attempts", status_code=status.HTTP_201_CREATED)
 def start_tiebreak(
     round_id: str,
@@ -258,6 +277,12 @@ def current(request: Request, attempt_id: str, account: dict = Depends(_current_
         "deadline_at": view.deadline_at.isoformat(),
         "prompt_en": view.prompt_en,
         "prompt_es": view.prompt_es,
+        "service": view.service,
+        "mode": view.mode,
+        "routing_code": view.routing_code,
+        "region_label": view.region_label,
+        "named_destination": view.named_destination,
+        "options": view.options,
     }
 
 

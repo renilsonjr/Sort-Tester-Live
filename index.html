@@ -369,6 +369,18 @@
   .reauth-dialog { position: fixed; inset: 0; z-index: 40; display: grid; place-items: center; padding: 16px; background: #35271e66; }
   .reauth-card { width: min(100%, 380px); display: flex; flex-direction: column; gap: 10px; padding: 18px; border-radius: 19px; background: var(--panel); box-shadow: 0 18px 50px #35271e40; }
   .reauth-card h2 { font-size: 18px; }
+  /* Prize tie-break, player side (#24). The question looks like an
+     ordinary Ranked one: service and code, then four belt buttons. */
+  .tb-top { display: flex; justify-content: space-between; align-items: baseline; }
+  .tb-bar { height: 8px; border-radius: 99px; background: #ede3d2; overflow: hidden; margin: 8px 0 14px; }
+  .tb-bar i { display: block; height: 100%; width: 100%; background: var(--danger); border-radius: 99px; transition: width .2s linear; }
+  .rq-prompt { text-align: center; margin: 6px 0; }
+  .rq-service { color: var(--muted); font-size: 12px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; }
+  .rq-code { font: 900 clamp(34px, 7dvh, 52px)/1 "Space Grotesk", sans-serif; letter-spacing: -.02em; margin-top: 4px; }
+  .belts { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 10px 0; }
+  .belts .belt { min-height: clamp(76px, 12dvh, 104px); border-radius: 14px; font-weight: 900; font-size: clamp(18px, 2.6dvh, 24px); border: 0; }
+  .belts .belt:disabled { opacity: .5; }
+  .lab-rules { margin: 4px 0 10px 0; padding-left: 20px; color: var(--ink); font-size: 14px; line-height: 1.5; display: flex; flex-direction: column; gap: 6px; }
   /* Prize selection (#24): the tied players with their tie-break history. */
   .sel-list { list-style: none; margin: 4px 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
   .sel-list li { border: 1px solid var(--line); border-radius: 14px; padding: 10px 12px; }
@@ -625,7 +637,7 @@
 <div id="auth-panel" hidden></div>
 <main id="app"></main>
 <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js" integrity="sha384-EnyY0/GSHQGSxSgMwaIPzSESbqoOLSexfnSMN2AP+39Ckmn92stwABZynq1JyzdT" crossorigin="anonymous"></script>
-<script type="module" src="src/app.js?v=selection-20261115b"></script>
+<script type="module" src="src/app.js?v=tiebreak-20261115"></script>
 <script type="module" src="src/auth.js"></script>
 </body>
 </html>

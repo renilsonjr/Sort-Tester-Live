@@ -12,6 +12,7 @@ import { createLanguage } from './i18n.js?v=chart-destination-20261108-r2';
 import * as support from './support.js';
 import { logout } from './auth.js';
 import { idleVerdict } from './idle.js';
+import { createAttemptClient } from './attemptClient.js';
 
 const app = document.getElementById('app');
 const log = createShiftLog(typeof localStorage === 'undefined' ? null : localStorage);
@@ -901,6 +902,139 @@ function confirmWithdraw(accountId, username) {
   return view;
 }
 
+// The tie-break invite: what the round is, before anything starts.
+function showTiebreakInvite(tie) {
+  stopTick();
+  clock = null;
+  const round = tie.round;
+  const closes = new Date(round.deadline_at).toLocaleString();
+  const view = labPage(`
+    <section class="lab-screen">
+      <p class="lab-eyebrow">${esc(t('Prize tie-break'))} · ${esc(t('round'))} ${round.number}</p>
+      <h1 class="lab-title">${esc(t('You are tied for a hat'))}</h1>
+      <p class="lab-intro">${esc(t('You have the same points as another sorter. A separate quiz decides who takes the hat.'))}</p>
+      <ol class="lab-rules">
+        <li>${esc(t('Five Hard route questions, the same five for everyone in this round.'))}</li>
+        <li>${esc(round.seconds)} ${esc(t('seconds each. Questions move on by themselves — there is no Next.'))}</li>
+        <li>${esc(t('Play once, at any time before the round closes.'))}</li>
+        <li>${esc(t('Nothing is shown until the round closes, for anyone.'))}</li>
+      </ol>
+      <div class="board-notice"><h2>${esc(t('This changes no points and no badge'))}</h2>
+        <p>${esc(t('It decides the hat only. Your season points, your badge and your history stay exactly as they are, whatever happens here.'))}</p></div>
+      <p class="lab-intro">${esc(t('Round closes'))}: ${esc(closes)}. ${esc(t('Nothing has started yet.'))}</p>
+      <button id="tb-start" class="primary">${esc(t('Start round'))}</button>
+      <button id="tb-not-yet" class="ghost">${esc(t('Not yet'))}</button>
+    </section>
+  `, 'ranked', () => showTiebreakInvite(tie));
+  view.querySelector('#tb-not-yet').addEventListener('click', showRanked);
+  view.querySelector('#tb-start').addEventListener('click', () => playTiebreak(round));
+  return view;
+}
+
+// Playing the round. The server owns the clock and which question is live;
+// this drives the exchange and shows a countdown to the server's deadline.
+async function playTiebreak(round) {
+  stopTick();
+  clock = null;
+  const attempt = createAttemptClient();
+  const started = await attempt.start(`/ranked/tiebreak/rounds/${round.id}/attempts`);
+  if (!started.ok) {
+    showRanked();
+    return;
+  }
+  attempt.startHeartbeat();
+  const view = labPage(`
+    <section class="lab-screen" id="tb-play">
+      <div class="tb-top">
+        <span class="lab-eyebrow" id="tb-count"></span>
+        <span class="lab-eyebrow" id="tb-time"></span>
+      </div>
+      <div class="tb-bar"><i id="tb-bar-fill"></i></div>
+      <div id="tb-question"></div>
+    </section>
+  `, 'ranked', () => showRanked());
+  let timer = null;
+  const stopTimer = () => { if (timer) clearInterval(timer); timer = null; };
+
+  async function render() {
+    const current = await attempt.current();
+    if (current.status === 410 || current.status === 204 || !current.data) {
+      stopTimer();
+      attempt.stop();
+      showTiebreakSubmitted(round);
+      return;
+    }
+    const q = current.data;
+    view.querySelector('#tb-count').textContent =
+      `${t('Question')} ${q.seq} ${t('of')} 5 · ${t('round')} ${round.number}`;
+    const where = destinationLine(q);
+    view.querySelector('#tb-question').innerHTML = `
+      <div class="rq-prompt">
+        <p class="rq-service">${esc(where.service)}</p>
+        <p class="rq-code">${esc(where.code)}</p>
+      </div>
+      <p class="lab-study-meta">${esc(t('Where does this go?'))}</p>
+      <div class="belts" role="group" aria-label="${esc(t('Choose a belt'))}">
+        ${(q.options || []).map((belt) => beltButton(belt)).join('')}
+      </div>
+      <p class="lab-study-meta">${esc(t('No feedback: whether you were right stays hidden until the round closes.'))}</p>
+    `;
+    view.querySelectorAll('.belt').forEach((button) => button.addEventListener('click', async () => {
+      view.querySelectorAll('.belt').forEach((b) => { b.disabled = true; });
+      stopTimer();
+      await attempt.answer(q.seq, button.dataset.belt);
+      render();
+    }));
+    startCountdown(new Date(q.deadline_at).getTime());
+  }
+
+  function startCountdown(deadlineMs) {
+    stopTimer();
+    const total = round.seconds * 1000;
+    const paint = () => {
+      const left = deadlineMs - Date.now();
+      view.querySelector('#tb-time').textContent =
+        `${Math.max(0, Math.ceil(left / 1000))} ${t('seconds')}`;
+      const fill = view.querySelector('#tb-bar-fill');
+      if (fill) fill.style.width = `${Math.max(0, Math.min(100, (left / total) * 100))}%`;
+      if (left <= 0) { stopTimer(); render(); }
+    };
+    paint();
+    timer = setInterval(paint, 200);
+  }
+
+  render();
+  return view;
+}
+
+function showTiebreakSubmitted(round) {
+  stopTick();
+  const view = labPage(`
+    <section class="lab-screen">
+      <p class="lab-eyebrow">${esc(t('Prize tie-break'))} · ${esc(t('round'))} ${round.number}</p>
+      <h1 class="lab-title">${esc(t('Attempt submitted'))}</h1>
+      <p class="lab-intro">${esc(t('All five are in. Nothing else is needed from you.'))}</p>
+      <div class="board-notice"><h2>${esc(t('Why you see nothing yet'))}</h2>
+        <p>${esc(t('Everyone in this round answers the same five questions, at different times. Showing a score now would tell a later player what to expect. Scores stay hidden for everyone until the round closes.'))}</p></div>
+      <button id="tb-back" class="ghost">${esc(t('Back to Ranked'))}</button>
+    </section>
+  `, 'ranked', () => showTiebreakSubmitted(round));
+  view.querySelector('#tb-back').addEventListener('click', showRanked);
+  return view;
+}
+
+function destinationLine(q) {
+  const service = [SERVICE_LABEL[q.service] || q.service, q.mode && q.mode !== 'base' ? q.mode : '', q.region_label]
+    .filter(Boolean).join(' · ');
+  const code = q.named_destination || q.routing_code || '';
+  return { service: `${service} · ${t('Hard')}`, code };
+}
+
+function beltButton(belt) {
+  const style = BELT_STYLE[belt] || { bg: '#333', fg: '#fff' };
+  return `<button type="button" class="belt" data-belt="${esc(belt)}" style="background:${style.bg};color:${style.fg}">${esc(belt)}</button>`;
+}
+
 // Prize selection (#24, slice 6), built to the screen approved on
 // 2026-11-15. Where every "wait for the owner" lands: still tied after the
 // last round, no fresh question set left, or several players who did not
@@ -1401,6 +1535,7 @@ async function fillRanked(panel, title) {
       <h2>${esc(t('Promotion available'))}</h2>
       <p>${esc(t('You are at the cap, so promotion is the only Ranked quiz available. It needs a perfect 15 out of 15. Practice is available as usual and never changes these points.'))}</p>
     </div>` : ''}
+    <div id="tiebreak-callout" hidden></div>
     <button id="ranked-start" class="lab-choice lab-choice-quiz" type="button">
       <span class="lab-choice-icon">\u25c6</span>
       <span><strong>${esc(atCap ? t('Start promotion') : t('Start Ranked quiz'))}</strong><small>${esc(t('15 questions, ten seconds each.'))}</small></span>
@@ -1413,11 +1548,59 @@ async function fillRanked(panel, title) {
     </button>
     <p class="lab-intro" id="ranked-note">${esc(t('Playing a Ranked quiz is being built. Nothing has started.'))}</p>
   `;
+  fillTiebreakCallout(panel.querySelector('#tiebreak-callout'));
   panel.querySelector('#ranked-board').addEventListener('click', showLeaderboard);
   panel.querySelector('#ranked-start').addEventListener('click', () => {
     panel.querySelector('#ranked-note').textContent =
       t('Playing a Ranked quiz is being built. Nothing has started.');
   });
+}
+
+// Prize tie-break, the player's side (#24, slice 7). A tie-break only
+// exists for the handful of players tied for a hat, so it is not a tab of
+// its own: it shows up as a callout on the Ranked screen when there is a
+// round to play or a result to read, and is silent for everyone else.
+async function fillTiebreakCallout(box) {
+  if (!box) return;
+  const body = await api('/ranked/tiebreak/mine');
+  const tie = body?.tie;
+  if (!tie) return;
+  const round = tie.round;
+  if (round && !round.played) {
+    box.innerHTML = `
+      <button id="tiebreak-go" class="lab-choice lab-choice-quiz" type="button">
+        <span class="lab-choice-icon">◇</span>
+        <span><strong>${esc(t('You are in a prize tie-break'))}</strong><small>${esc(t('A quiz decides the hat. Play once before the round closes.'))}</small></span>
+        <span class="lab-arrow" aria-hidden="true">→</span>
+      </button>`;
+    box.querySelector('#tiebreak-go').addEventListener('click', () => showTiebreakInvite(tie));
+    box.hidden = false;
+    return;
+  }
+  if (round && round.played) {
+    box.innerHTML = `<div class="board-notice"><h2>${esc(t('Your tie-break answers are in'))}</h2><p>${esc(t('Scores are hidden for everyone until the round closes. Come back then for the result.'))}</p></div>`;
+    box.hidden = false;
+    return;
+  }
+  // no open round: a result to read, or a place already settled
+  const standing = tiebreakStanding(tie);
+  if (standing) {
+    box.innerHTML = `<div class="board-notice"><h2>${esc(standing.title)}</h2><p>${esc(standing.text)}</p></div>`;
+    box.hidden = false;
+  }
+}
+
+function tiebreakStanding(tie) {
+  if (tie.placement === 'hat') {
+    return { title: t('You won a hat'), text: t('The tie-break decided it in your favour. The leaderboard shows it once every prize place is settled.') };
+  }
+  if (tie.placement === 'no_hat' || tie.placement === 'excluded') {
+    return { title: t('The tie-break is settled'), text: t('You did not take a hat this season. Your points, badge and history are unchanged.') };
+  }
+  if (tie.placement === 'owner_selection') {
+    return { title: t('Waiting on the owner'), text: t('This tie could not be settled by a quiz, so the owner decides who takes the hat.') };
+  }
+  return null;
 }
 
 function showProfilePlaceholder() {
