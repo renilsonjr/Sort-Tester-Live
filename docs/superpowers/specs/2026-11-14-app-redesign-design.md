@@ -83,6 +83,41 @@ therefore always means a belt and never a button.
 This leaves two primary-button treatments in one app on purpose. The rule in
 `index.html` carries a comment saying so, so nobody "fixes" it back to gold.
 
+## Slice 3 — the mascot
+
+The four photos (`parcel-buddy.jpg` and the three `quiz-*.jpg`) are replaced
+by the approved Blender avatar: idle on home, thinking on the question,
+correct and incorrect on feedback. The old files are deleted, and the
+backend static-file test now names one that exists.
+
+### Re-rendered on a warm backdrop
+
+The library's studio renders are nearly black at the top — the world
+background is dark grey — which put a heavy dark block in a cream page. The
+owner chose to fix it at the source rather than crop it or accept it.
+
+`mockups/design-library/blender-avatar/render_app_poses.py` opens the
+approved `.blend` read-only, sets only the world background to the app's warm
+surface, and writes the four poses elsewhere. **It never saves the `.blend`
+or the `.glb`**, so the approved model and the library's own renders are
+untouched. Re-running it reproduces the app's artwork.
+
+Note for anyone changing it: `scene.world.color` alone does nothing when the
+world uses nodes; the background node's colour has to be set too.
+
+### Weight
+
+8–9 KB per pose at 600 px, against 296–329 KB for the four photos they
+replace. The quiz loads about a megabyte less than before.
+
+### Animation
+
+Still none in the app. The owner settled that the avatar animates in the
+quiz only, and the quiz question screen re-renders once per question, so an
+iframe-mounted model would reload 2 MB every question. Doing it properly
+means mounting the viewer once outside the re-rendered node and sending it
+the state. That is its own piece of work and is not in this slice.
+
 ## Checks
 
 - `node --test 'tests/*.test.mjs'`: 395 passing before and after.
@@ -91,3 +126,5 @@ This leaves two primary-button treatments in one app on purpose. The rule in
 - A whole quiz played through in a browser at 375 px: question card, timer,
   belt answers, feedback for a wrong answer and the Continue action. No
   sideways scroll and no JavaScript error.
+- `backend.tests.test_static_frontend`: 5 passing after the asset rename.
+- Home and the question screen checked with the new renders loaded.
