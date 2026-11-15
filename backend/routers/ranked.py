@@ -697,6 +697,67 @@ def hand_over_recovery(
     }
 
 
+# Prize selection (#24, slice 6). Where every "wait for the owner" lands.
+# Recording a choice is a prize action, so it needs the login ID
+# re-entered on this device within five minutes, like approvals.
+class SelectionRequest(BaseModel):
+    account_ids: list[str]
+
+
+@router.get("/owner/selections")
+def list_selections(account: dict = Depends(_current_account), conn=Depends(get_db)):
+    try:
+        cases = ranked_tiebreaks.selection_cases(conn, account["id"])
+    except ranked_tiebreaks.SelectionError as error:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=error.reason) from None
+    return {
+        "cases": [
+            {
+                "group_id": str(case["group_id"]),
+                "tied_points": case["tied_points"],
+                "hats": case["hats"],
+                "players": [
+                    {
+                        "account_id": str(p["id"]),
+                        "username": p["username"],
+                        "tag": p["tag"],
+                        "history": [
+                            {"round": h["round_number"], "outcome": h["outcome"], "score": h["score"]}
+                            for h in p["history"]
+                        ],
+                    }
+                    for p in case["players"]
+                ],
+            }
+            for case in cases
+        ]
+    }
+
+
+@router.post("/owner/selections/{group_id}")
+def record_selection(
+    request: Request,
+    group_id: str,
+    payload: SelectionRequest,
+    account: dict = Depends(_current_account),
+    conn=Depends(get_db),
+):
+    _require_owner(account)
+    _require_recent_reauth(request, conn)
+    try:
+        chosen = [UUID(a) for a in payload.account_ids]
+        UUID(group_id)
+    except ValueError:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Not found") from None
+    try:
+        ranked_tiebreaks.record_selection(conn, account["id"], group_id, chosen, clock=_CLOCK)
+    except ranked_tiebreaks.SelectionError as error:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=error.reason
+        ) from None
+    return {"group_id": group_id, "recorded": True}
+
+
 class CloseFlagRequest(BaseModel):
     outcome: Literal["network_instability", "insufficient_evidence"]
 

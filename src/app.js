@@ -767,6 +767,11 @@ function showOwnerTools() {
         <span><strong>${esc(t('Access recovery'))}</strong><small>${esc(t('In person, for a sorter who lost their login ID.'))}</small></span>
         <span class="lab-arrow" aria-hidden="true">→</span>
       </button>
+      <button id="owner-select" class="lab-choice" type="button">
+        <span class="lab-choice-icon">\u265b</span>
+        <span><strong>${esc(t('Prize selection'))}</strong><small id="owner-select-count">${esc(t('Ties the rules send to you.'))}</small></span>
+        <span class="lab-arrow" aria-hidden="true">\u2192</span>
+      </button>
       <button id="owner-cases" class="lab-choice" type="button">
         <span class="lab-choice-icon">?</span>
         <span><strong>${esc(t('Case review'))}</strong><small>${esc(t('Tickets players opened, and connection flags.'))}</small></span>
@@ -778,6 +783,16 @@ function showOwnerTools() {
   view.querySelector('#owner-eligibility').addEventListener('click', () => showOwnerEligibility());
   view.querySelector('#owner-recovery').addEventListener('click', () => showRecovery());
   view.querySelector('#owner-cases').addEventListener('click', () => showCases());
+  view.querySelector('#owner-select').addEventListener('click', () => showSelection());
+  // the row says when something is waiting, so the owner does not have to
+  // open the screen to find out
+  api('/ranked/owner/selections').then((body) => {
+    const n = body?.cases?.length ?? 0;
+    if (n > 0) {
+      view.querySelector('#owner-select-count').textContent =
+        n === 1 ? t('1 tie waiting for you.') : `${n} ${t('ties waiting for you.')}`;
+    }
+  });
   view.querySelector('#owner-back').addEventListener('click', () => showProfile('settings'));
   return view;
 }
@@ -882,6 +897,101 @@ function confirmWithdraw(accountId, username) {
       result.ok ? `${t('Withdrawn')}: ${username}.` : (result.reason || t('That did not work. Nothing has been changed.')),
       !result.ok,
     );
+  });
+  return view;
+}
+
+// Prize selection (#24, slice 6), built to the screen approved on
+// 2026-11-15. Where every "wait for the owner" lands: still tied after the
+// last round, no fresh question set left, or several players who did not
+// finish competing for fewer hats.
+//
+// The owner sees each player's tie-break history (decided 2026-11-15), so
+// the choice is made with the information the quiz had. No points appear,
+// because none can change here. The choice is final; nothing in the app
+// takes a hat back.
+function outcomeLine(h) {
+  if (h.outcome === 'completed') return `${t('Round')} ${h.round}: ${h.score}/5`;
+  if (h.outcome === 'no_show') return `${t('Round')} ${h.round}: ${t('did not play')}`;
+  return `${t('Round')} ${h.round}: ${t('did not finish')}`;
+}
+
+function showSelection(message = null) {
+  stopTick();
+  clock = null;
+  const view = labPage(`
+    <section class="lab-screen">
+      <p class="lab-eyebrow">${esc(t('Owner'))}</p>
+      <h1 class="lab-title">${esc(t('Prize selection'))}</h1>
+      ${message ? `<div class="board-notice" role="status"><p>${esc(message)}</p></div>` : ''}
+      <div id="sel-panel"><p class="lab-intro" role="status">${esc(t('Loading\u2026'))}</p></div>
+      <button id="sel-back" class="ghost">${esc(t('Back to Owner tools'))}</button>
+    </section>
+  `, 'profile', () => showSelection(message));
+  view.querySelector('#sel-back').addEventListener('click', showOwnerTools);
+  fillSelection(view.querySelector('#sel-panel'));
+  return view;
+}
+
+async function fillSelection(panel) {
+  const body = await api('/ranked/owner/selections');
+  if (!body) {
+    panel.innerHTML = `<p class="notice">${esc(t('Could not load the ties. Nothing has been changed.'))}</p>`;
+    return;
+  }
+  if (body.cases.length === 0) {
+    panel.innerHTML = `<div class="owner-form"><h2>${esc(t('Nothing waiting'))}</h2>
+      <p class="lab-study-meta">${esc(t('A tie comes here only when the rules say so: still tied after the last round, no fresh questions left, or several players who did not finish competing for fewer hats.'))}</p></div>`;
+    return;
+  }
+  panel.innerHTML = `
+    <aside class="lab-disclaimer">${esc(t('These ties could not be settled by a quiz, so the rules send them to you. Choose who takes the hats. Your choice is final, and it changes nobody\u2019s points, badge or tie-break results.'))}</aside>
+    ${body.cases.map((c) => `
+      <div class="owner-form sel-case" data-group="${esc(c.group_id)}" data-hats="${c.hats}">
+        <p class="lab-eyebrow">${c.hats} ${esc(c.hats === 1 ? t('hat') : t('hats'))} \u00b7 ${c.tied_points.toLocaleString()} ${esc(t('points each'))}</p>
+        <ul class="sel-list">${c.players.map((p) => `
+          <li><label><input type="checkbox" value="${esc(p.account_id)}" data-name="${esc(p.username)}">
+            <b>${esc(p.username)}</b> <small>#${esc(p.tag)}</small></label>
+            <small class="sel-hist">${p.history.map((h) => esc(outcomeLine(h))).join(' \u00b7 ') || esc(t('No round was played.'))}</small></li>`).join('')}
+        </ul>
+        <button class="primary sel-go" type="button" disabled>${esc(t('Choose'))} ${c.hats} ${esc(t('to continue'))}</button>
+      </div>`).join('')}
+  `;
+  panel.querySelectorAll('.sel-case').forEach((box) => {
+    const hats = Number(box.dataset.hats);
+    const go = box.querySelector('.sel-go');
+    box.querySelectorAll('input[type=checkbox]').forEach((input) => input.addEventListener('change', () => {
+      go.disabled = box.querySelectorAll('input:checked').length !== hats;
+    }));
+    go.addEventListener('click', () => {
+      const picked = [...box.querySelectorAll('input:checked')];
+      const left = [...box.querySelectorAll('input:not(:checked)')].map((i) => i.dataset.name);
+      confirmSelection(box.dataset.group, picked.map((i) => i.value), picked.map((i) => i.dataset.name), left);
+    });
+  });
+}
+
+// Final, so it asks first, says plainly who does not take a hat, and makes
+// going back the easy answer.
+function confirmSelection(groupId, ids, names, others) {
+  const view = labPage(`
+    <section class="lab-screen">
+      <p class="lab-eyebrow">${esc(t('Owner'))}</p>
+      <h1 class="lab-title">${esc(t('Give the hat to'))} ${esc(names.join(', '))}?</h1>
+      <p class="lab-intro">${esc(others.length
+        ? `${others.join(', ')} ${t('does not take a hat this season.')}`
+        : '')} ${esc(t('This cannot be undone from the app. Nobody\u2019s points, badge or tie-break results change.'))}</p>
+      <button id="sel-back-to" class="primary">${esc(t('Go back'))}</button>
+      <button id="sel-record" class="ghost owner-danger">${esc(t('Record my choice'))}</button>
+    </section>
+  `, 'profile', () => confirmSelection(groupId, ids, names, others));
+  view.querySelector('#sel-back-to').addEventListener('click', () => showSelection());
+  view.querySelector('#sel-record').addEventListener('click', async () => {
+    view.querySelector('#sel-record').disabled = true;
+    const result = await apiSendOwner('POST', `/ranked/owner/selections/${groupId}`, { account_ids: ids });
+    showSelection(result.ok
+      ? `${t('Recorded')}: ${names.join(', ')}.`
+      : (result.reason || t('That did not work. Nothing has been changed.')));
   });
   return view;
 }

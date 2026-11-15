@@ -207,6 +207,11 @@
     .notice-box p { margin-top: 4px; color: #54412f; font-size: 13px; }
     /* The approved list is not a ranking, so it is not the board grid:
        a name, the roster reference under it, and the way to withdraw. */
+    .sel-list { list-style: none; margin: 10px 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+    .sel-list li { border: 1px solid var(--line); border-radius: 14px; padding: 10px 12px; }
+    .sel-list label { display: flex; align-items: center; justify-content: flex-start; gap: 8px; font-size: 15px; }
+    .sel-list label input { width: auto; flex: none; }
+    .sel-hist { display: block; margin-top: 4px; color: var(--muted); font-size: 12px; }
     .cases { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 12px; }
     .cases li { border: 1px solid var(--line); border-radius: 17px; background: #fffdf8; padding: 14px; display: flex; flex-direction: column; gap: 8px; }
     .cases blockquote { margin: 0; padding-left: 11px; border-left: 3px solid var(--soft-line); color: #54412f; font-size: 14px; }
@@ -520,7 +525,30 @@
         </div>
         <button class="choice" type="button" data-go="owner-eligibility"><span class="choice-icon" aria-hidden="true">✓</span><span><strong>Prize eligibility</strong><small>Who may win a hat this season.</small></span><span class="arrow" aria-hidden="true">→</span></button>
         <button class="choice" type="button" data-go="owner-recovery"><span class="choice-icon" aria-hidden="true">↺</span><span><strong>Access recovery</strong><small>In person, for a sorter who lost their login ID.</small></span><span class="arrow" aria-hidden="true">→</span></button>
+        <button class="choice" type="button" data-go="owner-select"><span class="choice-icon" aria-hidden="true">♛</span><span><strong>Prize selection</strong><small>1 tie waiting for you.</small></span><span class="arrow" aria-hidden="true">→</span></button>
         <button class="choice" type="button" data-go="owner-cases"><span class="choice-icon" aria-hidden="true">?</span><span><strong>Case review</strong><small>Tickets players opened, and connection flags.</small></span><span class="arrow" aria-hidden="true">→</span></button>
+      </section>
+
+      <!-- Prize selection (issue #24, slice 6). Where every "wait for the
+           owner" lands: still tied after the last round, no fresh question
+           set left, or several incomplete players for fewer hats. The owner
+           chooses among the players the rules sent here and nobody else,
+           and changes no points and no result. -->
+      <section class="view" data-view="owner-select" hidden>
+        <button class="link" type="button" data-go="owner">← Back to Owner tools</button>
+        <p class="eyebrow">Owner</p>
+        <h1 tabindex="-1">Prize selection</h1>
+        <div class="notice-box" id="sel-notice" hidden></div>
+        <div id="sel-body"></div>
+        <div class="mock-controls">
+          <p>Mock controls · not part of the app</p>
+          <div class="row" role="group" aria-label="Selection state">
+            <button type="button" data-sel="waiting" aria-pressed="true">A tie waiting</button>
+            <button type="button" data-sel="confirm" aria-pressed="false">Confirming</button>
+            <button type="button" data-sel="done" aria-pressed="false">Recorded</button>
+            <button type="button" data-sel="none" aria-pressed="false">Nothing waiting</button>
+          </div>
+        </div>
       </section>
 
       <!-- Case review (issue #11, boxes 3 and 6). Two kinds of case, kept
@@ -1347,8 +1375,8 @@
       member: [['home', '⌂', 'Home'], ['practice', '≡', 'Practice'], ['ranked', '◆', 'Ranked'], ['profile', '●', 'Profile']],
     };
     // Screens that live inside a tab keep that tab marked as current.
-    const PARENT_TAB = { leaderboard: 'ranked', tickets: 'profile', delete: 'profile', rquiz: 'ranked', promo: 'ranked', qc: 'ranked', tb: 'ranked', owner: 'profile', 'owner-eligibility': 'profile', 'owner-recovery': 'profile', 'owner-cases': 'profile' };
-    const MEMBER_ONLY = ['ranked', 'leaderboard', 'profile', 'tickets', 'delete', 'rquiz', 'promo', 'qc', 'tb', 'owner', 'owner-eligibility', 'owner-recovery', 'owner-cases'];
+    const PARENT_TAB = { leaderboard: 'ranked', tickets: 'profile', delete: 'profile', rquiz: 'ranked', promo: 'ranked', qc: 'ranked', tb: 'ranked', owner: 'profile', 'owner-eligibility': 'profile', 'owner-recovery': 'profile', 'owner-cases': 'profile', 'owner-select': 'profile' };
+    const MEMBER_ONLY = ['ranked', 'leaderboard', 'profile', 'tickets', 'delete', 'rquiz', 'promo', 'qc', 'tb', 'owner', 'owner-eligibility', 'owner-recovery', 'owner-cases', 'owner-select'];
     let mode = 'public';
     // Whether this signed-in account is the owner. One account in the whole
     // app is, so the Owner tools row is absent for everybody else.
@@ -1824,6 +1852,55 @@
 
     setCases('tickets');
 
+    // Prize selection. Each player's tie-break history is shown so the
+    // owner can see why the case came to them; nothing else about the
+    // players is, and no points appear because none can be changed here.
+    const SELECTION = {
+      waiting: { body: `
+        <div class="panel">
+          <p class="small">These ties could not be settled by a quiz, so the rules send them to you. Choose who takes the hats. Your choice is final, and it changes nobody's points, badge or tie-break results.</p>
+        </div>
+        <div class="panel">
+          <p class="eyebrow">Third place · 1 hat · 700 points each</p>
+          <h2>Still tied after round 5</h2>
+          <ul class="sel-list">
+            <li><label><input type="checkbox"> <b>tape_gull</b> <small>#G8H9JK</small></label>
+              <small class="sel-hist">Round 1: 3/5 · Round 2: 4/5 · Round 3: 2/5 · Round 4: 5/5 · Round 5: 3/5</small></li>
+            <li><label><input type="checkbox"> <b>chute_hare</b> <small>#L2M3NP</small></label>
+              <small class="sel-hist">Round 1: 3/5 · Round 2: 4/5 · Round 3: 2/5 · Round 4: 5/5 · Round 5: 3/5</small></li>
+          </ul>
+          <p class="small">Choose exactly 1.</p>
+          <button class="primary" type="button" disabled>Choose 1 to continue</button>
+        </div>` },
+      confirm: { body: `
+        <div class="notice-box">
+          <h2>Give the third hat to tape_gull?</h2>
+          <p>chute_hare does not take a hat this season. This cannot be undone from the app. Nobody's points, badge or tie-break results change.</p>
+          <div class="row" style="margin-top:10px">
+            <button class="ghost danger-btn" type="button">Record my choice</button>
+            <button class="primary" type="button">Go back</button>
+          </div>
+        </div>` },
+      done: { notice: { title: 'Recorded', text: 'tape_gull takes the third hat. The leaderboard shows it once every prize place is settled.' },
+        body: '<p class="small">Nothing else is waiting.</p>' },
+      none: { body: `
+        <div class="panel">
+          <h2>Nothing waiting</h2>
+          <p class="small">A tie comes here only when the rules say so: still tied after the last round, no fresh questions left, or several players who did not finish competing for fewer hats.</p>
+        </div>` },
+    };
+
+    function setSelection(state) {
+      const s = SELECTION[state];
+      const notice = document.getElementById('sel-notice');
+      notice.hidden = !s.notice;
+      if (s.notice) notice.innerHTML = `<h2>${s.notice.title}</h2><p>${s.notice.text}</p>`;
+      document.getElementById('sel-body').innerHTML = s.body;
+      for (const el of document.querySelectorAll('[data-sel]')) el.setAttribute('aria-pressed', String(el.dataset.sel === state));
+    }
+
+    setSelection('waiting');
+
     document.addEventListener('click', event => {
       const button = event.target.closest('button');
       if (!button) return;
@@ -1835,6 +1912,7 @@
       if (button.dataset.el) return setEligibility(button.dataset.el);
       if (button.dataset.rec) return setRecovery(button.dataset.rec);
       if (button.dataset.cs) return setCases(button.dataset.cs);
+      if (button.dataset.sel) return setSelection(button.dataset.sel);
       if (button.dataset.case) return setCases(button.dataset.case);
       if (button.dataset.owner) {
         owner = button.dataset.owner === 'yes';
