@@ -484,14 +484,20 @@ def void_attempts_for_outage(conn, *, outage_start, outage_end) -> int:
 
     The caller is responsible for the outage being confirmed from trusted
     evidence (#13); this function only applies the rule to a given window.
+
+    Tie-break attempts are left out on purpose. They are never settled, so
+    ``terminal_pending`` would hold the account's one-unfinished-attempt
+    lock for good; and an outage restarts a tie-break's whole round, not one
+    attempt (``tiebreaks.void_rounds_for_outage``).
     """
     rows = migrate.fetch_all(
         conn,
         "UPDATE attempts SET state = 'terminal_pending', final_outcome = 'outage_void'"
-        " WHERE (state IN ('active', 'grace') AND started_at <= %s)"
-        " OR (state = 'terminal_pending' AND final_outcome = 'disconnect'"
-        "     AND COALESCE(last_heartbeat_at, started_at) <= %s"
-        "     AND grace_deadline_at >= %s)"
+        " WHERE mode <> 'tiebreak' AND ("
+        "  (state IN ('active', 'grace') AND started_at <= %s)"
+        "  OR (state = 'terminal_pending' AND final_outcome = 'disconnect'"
+        "      AND COALESCE(last_heartbeat_at, started_at) <= %s"
+        "      AND grace_deadline_at >= %s))"
         " RETURNING id",
         (outage_end, outage_end, outage_start),
     )

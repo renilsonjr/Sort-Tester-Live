@@ -445,3 +445,108 @@ def revealed_result(conn, attempt_id) -> dict | None:
         # None means a later round is still deciding this player's place
         "placement": row["placement"],
     }
+
+
+# --- confirmed outages (slice 5) -----------------------------------------
+
+def void_rounds_for_outage(conn, *, outage_start, outage_end, clock, bank=None,
+                           rng=None) -> int:
+    """Restart every open round a confirmed outage interrupted; return how many.
+
+    Settled Decisions 9-10: a confirmed server outage interrupting an
+    attempt restarts the **whole current round** for all its players,
+    including those who had already finished, with fresh questions and a
+    new 24-hour window. Earlier valid rounds stand. The restart keeps the
+    round's number, so it uses the same seconds per question and does not
+    count towards the three- or five-round limit.
+
+    A round is interrupted when one of its attempts was running during the
+    outage. A round nobody was playing at the time is not restarted: the
+    outage took nothing from it. Rounds already closed are left as they
+    are; this applies to the round still being played.
+
+    The voided round's questions stay used for the season, because its
+    players saw them, and its results are never revealed.
+    """
+    rounds = migrate.fetch_all(
+        conn,
+        "SELECT DISTINCT r.id FROM tiebreak_rounds r"
+        " JOIN tiebreak_attempts t ON t.round_id = r.id"
+        " JOIN attempts a ON a.id = t.attempt_id"
+        " WHERE r.status = 'open'"
+        " AND a.started_at <= %s"
+        " AND COALESCE(a.settled_at, 'infinity'::timestamptz) >= %s",
+        (outage_end, outage_start),
+    )
+    conn.commit()
+    if not rounds:
+        return 0
+    if bank is None:
+        from backend.ranked_bank.catalog import load_reviewed_bank
+
+        bank = load_reviewed_bank()
+    restarted = 0
+    for row in rounds:
+        if _restart_round(conn, row["id"], clock=clock, bank=bank, rng=rng):
+            restarted += 1
+    return restarted
+
+
+def _restart_round(conn, round_id, *, clock, bank, rng) -> bool:
+    now = clock.now()
+    round_ = migrate.fetch_one(
+        conn,
+        "SELECT r.id, r.round_number, r.hats, r.status, g.id AS group_id, g.season_id"
+        " FROM tiebreak_rounds r JOIN tiebreak_groups g ON g.id = r.group_id"
+        " WHERE r.id = %s FOR UPDATE OF r",
+        (round_id,),
+    )
+    if round_ is None or round_["status"] != "open":
+        conn.commit()
+        return False
+    # every attempt of the round ends, finished ones included: the whole
+    # round is played again, so none of its scores will ever count
+    migrate.execute(
+        conn,
+        "UPDATE attempts SET state = 'finalized', final_outcome = 'outage_void',"
+        " settled_at = COALESCE(settled_at, %s)"
+        " WHERE id IN (SELECT attempt_id FROM tiebreak_attempts WHERE round_id = %s)"
+        " AND state IN ('active', 'grace')",
+        (now, round_id),
+    )
+    migrate.execute(
+        conn, "UPDATE tiebreak_rounds SET status = 'void' WHERE id = %s", (round_id,)
+    )
+    players = [
+        row["account_id"]
+        for row in migrate.fetch_all(
+            conn,
+            "SELECT account_id FROM tiebreak_round_players WHERE round_id = %s",
+            (round_id,),
+        )
+    ]
+    try:
+        _open_round(
+            conn, round_["group_id"], round_["season_id"], round_["round_number"],
+            players, round_["hats"],
+            opened_at=now, deadline_at=now + ROUND_WINDOW, bank=bank, rng=rng,
+        )
+    except NoFreshSet:
+        # no fresh questions for the restart: the places wait for the owner,
+        # as for any round that cannot be given a fresh set
+        for account_id in players:
+            migrate.execute(
+                conn,
+                "INSERT INTO tiebreak_placements"
+                " (group_id, account_id, status, decided_in_round)"
+                " VALUES (%s, %s, 'owner_selection', %s)"
+                " ON CONFLICT (group_id, account_id) DO NOTHING",
+                (round_["group_id"], account_id, round_["round_number"]),
+            )
+        migrate.execute(
+            conn,
+            "UPDATE tiebreak_groups SET status = 'owner_selection' WHERE id = %s",
+            (round_["group_id"],),
+        )
+    conn.commit()
+    return True
