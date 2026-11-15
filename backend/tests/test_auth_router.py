@@ -62,7 +62,7 @@ class AuthRouterTests(unittest.TestCase):
         me = self.client.get("/api/auth/me")
         self.assertEqual(me.status_code, 401)
 
-    def test_admin_regenerate_endpoint(self):
+    def test_the_unchecked_regenerate_endpoint_is_withdrawn(self):
         # Set up owner in a committed connection so the router can see it.
         setup_conn = migrate.connect(self.conninfo)
         owner_id = migrate.fetch_one(
@@ -84,9 +84,13 @@ class AuthRouterTests(unittest.TestCase):
         session_conn.close()
         self.client.cookies["sort_tester_session"] = owner_token
 
+        # Withdrawn: this route reset a login ID on the owner's say-so
+        # alone, which the settled recovery policy does not allow. It now
+        # says where recovery lives instead of quietly serving one.
         response = self.client.post("/api/auth/admin/regenerate", json={"account_id": target_id})
-        self.assertEqual(response.status_code, 200)
-        self.assertIn("login_id", response.json())
+        self.assertEqual(response.status_code, 410)
+        self.assertIn("Access recovery", response.json()["detail"])
+        self.assertNotIn("login_id", response.text)
 
 
 if __name__ == "__main__":

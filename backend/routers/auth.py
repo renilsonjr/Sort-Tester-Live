@@ -184,14 +184,28 @@ def admin_regenerate(
     payload: AdminRegenerateRequest,
     account: dict = Depends(_current_account),
 ):
+    """Withdrawn: this route reset a login ID on the owner's say-so alone.
+
+    The settled recovery policy requires in-person verification against a
+    trusted participant link established **before** the request, and says
+    plainly that without such a link there is no reset by this route.
+    Being the owner is the authority to act, not evidence about who is
+    asking, so this endpoint was short of the rule it was meant to carry.
+
+    Recovery now goes through ``/api/ranked/owner/recoveries``, which
+    records the request, refuses when no older link exists, and shows the
+    new login ID once. A caller that still reaches here is told where to
+    go rather than quietly being served.
+    """
     if not account["is_owner"]:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden")
-    with _db_connection() as conn:
-        new_login_id = admin_regenerate_login_id(conn, account["id"], UUID(payload.account_id))
-        conn.commit()
-    if new_login_id is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Not found")
-    return {"login_id": new_login_id}
+    raise HTTPException(
+        status_code=status.HTTP_410_GONE,
+        detail=(
+            "Access recovery moved to the owner's Access recovery screen,"
+            " which checks the in-person roster link this route never did."
+        ),
+    )
 
 
 class DeleteAccountRequest(BaseModel):
