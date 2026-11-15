@@ -269,3 +269,64 @@ class SupportRouterTests(unittest.TestCase):
             json={"outcome": "insufficient_evidence"},
         )
         self.assertEqual(other.get("/api/ranked/season").json(), before)
+
+
+@unittest.skipUnless(
+    settings.environment_has_test_url(),
+    "SORT_TESTER_TEST_DATABASE_URL not set; database tests skipped",
+)
+class SeasonNoticeTests(unittest.TestCase):
+    """The home page's season-start callout, which guests see too."""
+
+    @classmethod
+    def setUpClass(cls):
+        try:
+            cls.conninfo = settings.test_database_url()
+            cls.admin = settings.admin_url()
+        except settings.DatabaseConfigError as exc:
+            raise unittest.SkipTest(str(exc)) from None
+
+    def setUp(self):
+        migrate.recreate_scratch_database(self.admin, settings.SCRATCH_DB_NAME)
+        migrate.upgrade_to_head(self.conninfo)
+        self.client = TestClient(create_app(), headers=BROWSER)
+
+    def _season(self, phase, label, closes=None):
+        conn = migrate.connect(self.conninfo)
+        migrate.execute(
+            conn,
+            "INSERT INTO seasons (phase, label, closes_at) VALUES (%s, %s, %s)",
+            (phase, label, closes),
+        )
+        conn.commit()
+        conn.close()
+
+    def test_a_signed_out_visitor_can_read_it(self):
+        self._season("official", "Season 1")
+        response = self.client.get("/api/ranked/season/notice")
+        self.assertEqual(response.status_code, 200, response.text)
+        self.assertTrue(response.json()["started"])
+
+    def test_pre_season_reports_no_start_and_no_date(self):
+        self._season("pre_season", "Pre")
+        body = self.client.get("/api/ranked/season/notice").json()
+        self.assertFalse(body["started"])
+        self.assertIsNone(body["started_at"])
+        self.assertIsNone(body["closes_at"])
+        self.assertIsNone(body["label"])
+
+    def test_no_season_at_all_reports_no_start(self):
+        body = self.client.get("/api/ranked/season/notice").json()
+        self.assertFalse(body["started"])
+        self.assertIsNone(body["started_at"])
+
+    def test_it_carries_the_start_date_once_started(self):
+        self._season("official", "Season 1")
+        body = self.client.get("/api/ranked/season/notice").json()
+        self.assertEqual(body["label"], "Season 1")
+        self.assertIsNotNone(body["started_at"])
+
+    def test_it_carries_nothing_about_any_player(self):
+        self._season("official", "Season 1")
+        body = self.client.get("/api/ranked/season/notice").json()
+        self.assertEqual(set(body), {"started", "label", "started_at", "closes_at"})

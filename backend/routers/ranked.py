@@ -400,6 +400,33 @@ def _utc(moment) -> str:
     return moment.astimezone(timezone.utc).isoformat()
 
 
+@router.get("/season/notice")
+def season_notice(conn=Depends(get_db)):
+    """The season-start notice, for anyone — signed in or not.
+
+    The approved home page shows a small callout once the official season
+    has started, carrying its start date, and **guests see it too**
+    (Decision 15, placement settled 2026-11-15). The authenticated
+    ``/season`` endpoint cannot serve that, so this one exists.
+
+    It carries nothing about any player and nothing that is not already
+    public once the season opens: whether it has started, its label, and
+    when it started and ends. Before the official launch it answers
+    ``started: false`` and no dates, because inventing one is forbidden.
+    """
+    fact = seasons.official_launch(conn)
+    if fact is None:
+        return {"started": False, "label": None, "started_at": None, "closes_at": None}
+    current = seasons.current_season_status(conn, _CLOCK.now())
+    closes_at = current.closes_at if current else None
+    return {
+        "started": True,
+        "label": fact.label,
+        "started_at": _utc(fact.launched_at),
+        "closes_at": None if closes_at is None else _utc(closes_at),
+    }
+
+
 @router.get("/flags")
 def list_flags(account: dict = Depends(_current_account), conn=Depends(get_db)):
     """Open connection review flags, for the owner only. A flag is an
