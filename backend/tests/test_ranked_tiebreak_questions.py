@@ -75,8 +75,8 @@ class TiebreakQuestionTests(unittest.TestCase):
         group = group or getattr(self, "_current_group", self.group)
         return migrate.fetch_one(
             self.conn,
-            "INSERT INTO tiebreak_rounds (group_id, round_number, opened_at, deadline_at, status)"
-            " VALUES (%s, %s, %s, %s, %s) RETURNING id",
+            "INSERT INTO tiebreak_rounds (group_id, round_number, opened_at, deadline_at, status, hats)"
+            " VALUES (%s, %s, %s, %s, %s, 1) RETURNING id",
             (group, number, T0, T0 + timedelta(hours=24), status),
         )["id"]
 
@@ -222,8 +222,8 @@ class TiebreakQuestionTests(unittest.TestCase):
         for number in range(1, 11):
             rid = migrate.fetch_one(
                 self.conn,
-                "INSERT INTO tiebreak_rounds (group_id, round_number, opened_at, deadline_at, status)"
-                " VALUES (%s, %s, %s, %s, 'void') RETURNING id",
+                "INSERT INTO tiebreak_rounds (group_id, round_number, opened_at, deadline_at, status, hats)"
+                " VALUES (%s, %s, %s, %s, 'void', 1) RETURNING id",
                 (exhausted_group, min(number, 5), T0, T0 + timedelta(hours=24)),
             )["id"]
             tiebreaks.assign_round_questions(self.conn, rid, season, BANK, rng=self.rng)
