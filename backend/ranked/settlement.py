@@ -44,7 +44,10 @@ def settle_pending(conn, *, clock, account_id=None) -> int:
     transaction, so one failure does not undo the others. An attempt another
     caller settles first is not counted: its points were applied there.
     """
-    sql = "SELECT id FROM attempts WHERE state = 'terminal_pending'"
+    # A tie-break never reaches settlement (the engine finalizes it at
+    # once), and this keeps it that way even if something upstream changes:
+    # a tie-break must not move seasonal points.
+    sql = "SELECT id FROM attempts WHERE state = 'terminal_pending' AND mode <> 'tiebreak'"
     params = ()
     if account_id is not None:
         sql += " AND account_id = %s"
@@ -71,6 +74,9 @@ def _settle(conn, attempt_id, clock) -> tuple[scoring.Settlement, bool]:
     )
     if attempt is None:
         raise SettlementError("unknown attempt")
+    if attempt["mode"] == "tiebreak":
+        conn.commit()  # release the attempt lock
+        raise SettlementError("a tie-break attempt changes no seasonal points")
     if attempt["state"] == "finalized":
         stored = _stored_result(conn, attempt_id)
         conn.commit()  # nothing written: release the attempt lock

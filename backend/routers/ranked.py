@@ -121,7 +121,18 @@ def _settle(conn, attempt_id) -> dict:
     The engine ends an attempt; settlement, a separate transaction, applies
     it. If the process stops between the two, the next call here, the next
     start by the account or the sweep settles it: never lost, never twice.
+
+    A tie-break is never settled -- it changes no seasonal points -- and
+    reveals nothing about its score until its round closes (settled Q4).
+    Every path that ends an attempt comes through here, Quit and a found-
+    ended attempt included, so this is the one place that guarantees it.
     """
+    if engine.is_tiebreak_attempt(conn, attempt_id):
+        row = migrate.fetch_one(
+            conn, "SELECT final_outcome FROM attempts WHERE id = %s", (attempt_id,)
+        )
+        conn.commit()
+        return {"final_outcome": row["final_outcome"], "hidden_until_round_closes": True}
     result = settlement.settle_attempt(conn, attempt_id, clock=_CLOCK)
     row = migrate.fetch_one(
         conn, "SELECT final_outcome FROM attempts WHERE id = %s", (attempt_id,)
@@ -195,6 +206,40 @@ def start(
     return {"attempt_id": str(attempt_id), "capability": token, "mode": mode}
 
 
+@router.post("/tiebreak/rounds/{round_id}/attempts", status_code=status.HTTP_201_CREATED)
+def start_tiebreak(
+    round_id: str,
+    account: dict = Depends(_current_account),
+    conn=Depends(get_db),
+):
+    """Start this player's one attempt in a prize tie-break round.
+
+    Plays through the same attempt endpoints as any quiz, with the page
+    capability issued here. A refusal says why in words; a player who is not
+    in the round is told only that there is no such round."""
+    try:
+        UUID(round_id)
+    except ValueError:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Not found") from None
+    token = capability.new_token()
+    try:
+        attempt_id = engine.start_tiebreak_attempt(
+            conn, account["id"], round_id, clock=_CLOCK, page_capability=token
+        )
+    except engine.TiebreakEntryError as error:
+        code = (
+            status.HTTP_404_NOT_FOUND
+            if str(error) == "There is no such tie-break round."
+            else status.HTTP_409_CONFLICT
+        )
+        raise HTTPException(status_code=code, detail=str(error)) from None
+    except engine.ActiveAttemptExistsError:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT, detail="Active attempt exists"
+        ) from None
+    return {"attempt_id": str(attempt_id), "capability": token, "mode": "tiebreak"}
+
+
 @router.get("/attempts/{attempt_id}/current")
 def current(request: Request, attempt_id: str, account: dict = Depends(_current_account), conn=Depends(get_db)):
     _require_owned_attempt(conn, attempt_id, account["id"], request)
@@ -235,8 +280,10 @@ def answer(
         "outcome": result.outcome,
         "finished": result.finished,
     }
-    if result.finished:
-        # the final answer ended the attempt: apply and report its points now
+    if result.finished and not engine.is_tiebreak_attempt(conn, attempt_id):
+        # the final answer ended the attempt: apply and report its points now.
+        # A tie-break has no points to apply and reveals nothing until its
+        # round closes (settled Q4), so it gets the bare acknowledgement.
         body["result"] = _settle(conn, attempt_id)
     return body
 
@@ -274,6 +321,13 @@ def result(attempt_id: str, account: dict = Depends(_current_account), conn=Depe
     ownership but not the page capability, and it changes nothing a later
     settlement would not."""
     _require_own_attempt(conn, attempt_id, account["id"])
+    if engine.is_tiebreak_attempt(conn, attempt_id):
+        # scores, correctness and answers stay hidden for everyone until the
+        # round's deadline (settled Q4); the round's own result comes later
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Tie-break results are shown when the round closes.",
+        )
     # an attempt nobody is calling may have ended by the clock already
     engine.expire_stale_attempts(conn, clock=_CLOCK, account_id=account["id"])
     try:

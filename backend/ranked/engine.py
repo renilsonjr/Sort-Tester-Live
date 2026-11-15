@@ -185,13 +185,117 @@ def start_attempt(
     return attempt_id
 
 
+class TiebreakEntryError(EngineError):
+    """This account may not start an attempt in this tie-break round. The
+    message says why in words a player can be shown."""
+
+
+def start_tiebreak_attempt(
+    conn, account_id, round_id, *, clock, page_capability=None
+) -> str:
+    """Open this player's one attempt in a tie-break round and send question 1.
+
+    Only a member of the round's group, only while the round is open and
+    before its deadline, and only once per round (settled Decisions 9-10). A
+    late start does not move the deadline. The five questions are the
+    round's shared set, copied into the attempt's own assignment so the
+    rest of the engine plays them like any other attempt.
+    """
+    capability_hash = (
+        hash_token(page_capability) if page_capability is not None else None
+    )
+    expire_stale_attempts(conn, clock=clock, account_id=account_id)
+    now = clock.now()
+    round_ = migrate.fetch_one(
+        conn,
+        "SELECT r.id, r.round_number, r.status, r.deadline_at,"
+        " g.id AS group_id, g.status AS group_status, g.season_id"
+        " FROM tiebreak_rounds r JOIN tiebreak_groups g ON g.id = r.group_id"
+        " WHERE r.id = %s FOR UPDATE OF r",
+        (round_id,),
+    )
+    if round_ is None:
+        conn.commit()
+        raise TiebreakEntryError("There is no such tie-break round.")
+    member = migrate.fetch_one(
+        conn,
+        "SELECT 1 AS m FROM tiebreak_group_members WHERE group_id = %s AND account_id = %s",
+        (round_["group_id"], account_id),
+    )
+    if member is None:
+        # a non-member learns nothing about the round's state
+        conn.commit()
+        raise TiebreakEntryError("There is no such tie-break round.")
+    if round_["status"] != "open" or round_["group_status"] != "open":
+        conn.commit()
+        raise TiebreakEntryError("This round is no longer open.")
+    if now >= round_["deadline_at"]:
+        conn.commit()
+        raise TiebreakEntryError("This round has closed.")
+    already = migrate.fetch_one(
+        conn,
+        "SELECT attempt_id FROM tiebreak_attempts WHERE round_id = %s AND account_id = %s",
+        (round_id, account_id),
+    )
+    if already is not None:
+        conn.commit()
+        raise TiebreakEntryError(
+            "You have already played this round. Each round is played once."
+        )
+    questions = migrate.fetch_all(
+        conn,
+        "SELECT seq, question_version_id FROM tiebreak_round_questions"
+        " WHERE round_id = %s ORDER BY seq",
+        (round_id,),
+    )
+    if len(questions) != modes.TIEBREAK_QUESTIONS:
+        conn.rollback()
+        raise EngineError("the round does not have its five questions")
+    assignment_id = migrate.fetch_one(
+        conn,
+        "INSERT INTO assignments (account_id, mode, season_id)"
+        " VALUES (%s, 'tiebreak', %s) RETURNING id",
+        (account_id, round_["season_id"]),
+    )["id"]
+    try:
+        attempt_id = migrate.fetch_one(
+            conn,
+            "INSERT INTO attempts (account_id, assignment_id, mode, tiebreak_round,"
+            " state, season_id, started_at, last_heartbeat_at, page_capability_sha256)"
+            " VALUES (%s, %s, 'tiebreak', %s, 'active', %s, %s, %s, %s) RETURNING id",
+            (account_id, assignment_id, round_["round_number"], round_["season_id"],
+             now, now, capability_hash),
+        )["id"]
+    except migrate.IntegrityError:
+        conn.rollback()
+        raise ActiveAttemptExistsError("account already has an unfinished attempt") from None
+    for row in questions:
+        migrate.execute(
+            conn,
+            "INSERT INTO assignment_questions (assignment_id, seq, question_version_id)"
+            " VALUES (%s, %s, %s)",
+            (assignment_id, row["seq"], row["question_version_id"]),
+        )
+    migrate.execute(
+        conn,
+        "INSERT INTO tiebreak_attempts (round_id, account_id, attempt_id) VALUES (%s, %s, %s)",
+        (round_id, account_id, attempt_id),
+    )
+    _send_question(conn, attempt_id, 1, clock)
+    conn.commit()
+    return attempt_id
+
+
 def current_question(conn, attempt_id, *, clock, bank) -> QuestionView | None:
     """Return the single live question (the one awaiting an answer), or None.
 
     Reading does not count as activity: it checks the connection clock but
     does not reset it.
     """
-    _sync_connection(conn, attempt_id, clock.now(), touch=False)
+    now = clock.now()
+    _sync_connection(conn, attempt_id, now, touch=False)
+    if _is_tiebreak(conn, attempt_id):
+        _advance_timed_out_tiebreak(conn, attempt_id, now, clock)
     row = migrate.fetch_one(
         conn,
         "SELECT seq, question_version_id AS vid, deadline_at FROM attempt_answers"
@@ -230,7 +334,10 @@ def submit_answer(conn, attempt_id, seq, choice, *, clock, bank) -> AnswerResult
         raise AnswerRejectedError(f"question {seq} has not been sent")
     if row["answer"] is not None:
         # already resolved: report the stored result, write nothing more
+        tiebreak = _is_tiebreak(conn, attempt_id)
         conn.commit()
+        if tiebreak:
+            return _hidden_result(seq)
         return _answer_result(seq, row["answer"])
     if now > row["deadline_at"]:
         # too late: the question timed out and the submitted choice is discarded
@@ -241,8 +348,15 @@ def submit_answer(conn, attempt_id, seq, choice, *, clock, bank) -> AnswerResult
     _record_answer(conn, attempt_id, seq, graded, now)
     finished = seq == _settings(conn, attempt_id).question_count
     if finished:
-        _complete(conn, attempt_id)
+        _complete(conn, attempt_id, now)
+    tiebreak = _is_tiebreak(conn, attempt_id)
+    if tiebreak and not finished:
+        # no Next in a tie-break: the next question opens with its own clock
+        # the moment this answer is accepted (settled Q8)
+        _send_question(conn, attempt_id, seq + 1, clock)
     conn.commit()
+    if tiebreak:
+        return _hidden_result(seq, finished=finished)
     return _answer_result(seq, graded, finished=finished)
 
 
@@ -255,6 +369,9 @@ def advance(conn, attempt_id, *, clock) -> AdvanceResult:
     here; one still inside its deadline cannot be skipped.
     """
     now = clock.now()
+    if _is_tiebreak(conn, attempt_id):
+        conn.commit()
+        raise NotAnsweredError("a tie-break has no Next: questions advance by themselves")
     _sync_connection(conn, attempt_id, now, touch=True)
     row = migrate.fetch_one(
         conn,
@@ -482,6 +599,19 @@ def _record_event(conn, attempt_id, kind, occurred_at) -> None:
     )
 
 
+def _finalize_tiebreak(conn, attempt_id, now) -> None:
+    """A tie-break attempt never waits for settlement: it changes no
+    seasonal points (settled Decisions 9-10), so there is nothing to
+    settle. It goes straight to ``finalized``. Ordinary attempts are left
+    untouched by the ``mode`` condition."""
+    migrate.execute(
+        conn,
+        "UPDATE attempts SET state = 'finalized', settled_at = %s"
+        " WHERE id = %s AND mode = 'tiebreak' AND state = 'terminal_pending'",
+        (now, attempt_id),
+    )
+
+
 def _finalize_disconnect(conn, attempt_id, deadline, now) -> None:
     _record_event(conn, attempt_id, "expiry", deadline)
     # the sent-but-unanswered question times out; unsent questions get no row
@@ -498,6 +628,7 @@ def _finalize_disconnect(conn, attempt_id, deadline, now) -> None:
         " WHERE id = %s AND state IN ('active', 'grace')",
         (deadline, attempt_id),
     )
+    _finalize_tiebreak(conn, attempt_id, now)
 
 
 def _end_early(conn, attempt_id, final_outcome, now) -> None:
@@ -516,6 +647,15 @@ def _end_early(conn, attempt_id, final_outcome, now) -> None:
         " WHERE id = %s AND state IN ('active', 'grace')",
         (final_outcome, attempt_id),
     )
+    _finalize_tiebreak(conn, attempt_id, now)
+
+
+def _hidden_result(seq, *, finished=False) -> AnswerResult:
+    """What a tie-break answer reveals before the round closes: that it was
+    received, and nothing about whether it was right (settled Q4). Not even
+    a timeout is distinguished, since that too says something about the
+    player's score."""
+    return AnswerResult(seq=seq, correct=None, outcome="submitted", finished=finished)
 
 
 def _answer_result(seq, answer, *, finished=False) -> AnswerResult:
@@ -524,13 +664,14 @@ def _answer_result(seq, answer, *, finished=False) -> AnswerResult:
     )
 
 
-def _complete(conn, attempt_id) -> None:
+def _complete(conn, attempt_id, now) -> None:
     migrate.execute(
         conn,
         "UPDATE attempts SET state = 'terminal_pending', final_outcome = 'completed'"
         " WHERE id = %s AND state IN ('active', 'grace')",
         (attempt_id,),
     )
+    _finalize_tiebreak(conn, attempt_id, now)
 
 
 def _complete_if_final_question_timed_out(conn, attempt_id, now) -> bool:
@@ -549,8 +690,29 @@ def _complete_if_final_question_timed_out(conn, attempt_id, now) -> bool:
     if row is None or row["answer"] is not None or now <= row["deadline_at"]:
         return False
     _record_answer(conn, attempt_id, final_seq, "timeout", now)
-    _complete(conn, attempt_id)
+    _complete(conn, attempt_id, now)
     return True
+
+
+def _advance_timed_out_tiebreak(conn, attempt_id, now, clock) -> None:
+    """A tie-break question that ran out is a timeout, and the next one
+    opens by itself (settled Q8). There is no background timer, so this
+    happens on the page's next request -- which also means no next question
+    is sent while the page is away, as the record requires. After the fifth
+    question the attempt completes; there is no sixth."""
+    live = migrate.fetch_one(
+        conn,
+        "SELECT seq, deadline_at FROM attempt_answers"
+        " WHERE attempt_id = %s AND answer IS NULL ORDER BY seq LIMIT 1",
+        (attempt_id,),
+    )
+    if live is None or now <= live["deadline_at"]:
+        return
+    _record_answer(conn, attempt_id, live["seq"], "timeout", now)
+    if live["seq"] >= _settings(conn, attempt_id).question_count:
+        _complete(conn, attempt_id, now)
+    else:
+        _send_question(conn, attempt_id, live["seq"] + 1, clock)
 
 
 def _record_answer(conn, attempt_id, seq, answer, now) -> None:
@@ -566,9 +728,22 @@ def _record_answer(conn, attempt_id, seq, answer, now) -> None:
 def _settings(conn, attempt_id) -> modes.ModeSettings:
     """The quiz shape (question count and seconds) of this attempt's mode."""
     row = migrate.fetch_one(
+        conn, "SELECT mode, tiebreak_round FROM attempts WHERE id = %s", (attempt_id,)
+    )
+    return modes.settings_for(row["mode"], row["tiebreak_round"])
+
+
+def is_tiebreak_attempt(conn, attempt_id) -> bool:
+    """Whether this attempt is a prize tie-break, for callers outside the
+    engine that must treat one differently (no settlement, hidden result)."""
+    return _is_tiebreak(conn, attempt_id)
+
+
+def _is_tiebreak(conn, attempt_id) -> bool:
+    row = migrate.fetch_one(
         conn, "SELECT mode FROM attempts WHERE id = %s", (attempt_id,)
     )
-    return modes.settings_for(row["mode"])
+    return row is not None and row["mode"] == "tiebreak"
 
 
 def _open_season(conn, now) -> str:
