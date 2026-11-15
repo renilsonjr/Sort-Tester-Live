@@ -1,89 +1,101 @@
 # Peak Season — incremental development roadmap
 
-**Status:** Updated November 7, 2026. Backend health and browser/API foundations are complete; competition features remain planned.
+**Status:** Updated November 15, 2026 against GitHub issue states and the merged `codex/ranked-mode` source at `65c080d` (PR #143). A closed issue records its accepted scope; it does not by itself prove deployment or end-to-end play.
 
-**Related:** [[2026-11-07-ranked-decision-record]], [[2026-11-06-ranked-pilot-design]].
+**Related:** [[2026-11-07-ranked-decision-record]], [[2026-11-07-ranked-security-operations-design]], [[2026-11-06-ranked-pilot-design]].
 
 ## Start here
 
-Use parent roadmap [#1](https://github.com/renilsonjr/Sort-Tester-Live/issues/1), then the current decision record. This is the live application repository. Shared `codex/ranked-mode` keeps reviewed development away from main; separate runtime configuration/data is still required. Main publishes static files via Pages, not the API.
+Parent roadmap [#1](https://github.com/renilsonjr/Sort-Tester-Live/issues/1) tracks the current work. The decision record controls product rules. Earlier proposals in historical plans remain historical wherever those rules supersede them.
 
-Closed foundations #2/#3 include health/CORS, local Windows startup/LAN/browser checks and 10 backend/23 Node tests. They do not prove accounts, PostgreSQL persistence or Ranked rules are implemented. Do not reopen them for this planning expansion.
+The application is a modular monolith: FastAPI serves the frontend and `/api` from one origin, with PostgreSQL. Development targets `codex/ranked-mode` and Azure Container Apps. GitHub Pages serves `main`; changes to the monolith branch do not publish the Pages application. A merge is not evidence that the hosted image or database has been updated.
 
-Issue #4 remains open for its executable rule examples and reviewed protocol acceptance. Owner competition decisions are in [[2026-11-07-ranked-decision-record]]; reviewable technical defaults and per-issue verification gates are in [[2026-11-07-ranked-security-operations-design]]. Candidate counts and the unresolved content conflict are in [[2026-11-07-ranked-question-bank-review]]. Do not turn proposed defaults, candidate content, unprovisioned services or future test targets into completion claims.
+## Completed issues
 
-No new issue is needed for this wrap-up. Existing issues cover authentication/recovery/deletion (#7), question approval (#5), connection/delivery (#8/#25), email (#27), and hosting/backup/load (#13). **Auth direction updated (2026-11-11):** #7/Q10 use a system-generated **login ID** shown once at creation (single-field login, no passwords), with **admin-granted/regenerated access** for lost login IDs; PostgreSQL and server-side sessions remain. See `docs/superpowers/plans/2026-11-11-login-id-auth-plan.md` (supersedes password-based proposals). All remaining implementation stays open; closed foundations remain closed. Mockups still need owner review before screen work. Keep the official start date intentionally undecided.
+These issues are closed as completed. Keep their verification history in their own issues and PRs rather than reopening them for unrelated work.
 
-## Issues and native blockers
+| Issue | Completed scope |
+| --- | --- |
+| [#2](https://github.com/renilsonjr/Sort-Tester-Live/issues/2) | Backend health and local startup checks. |
+| [#3](https://github.com/renilsonjr/Sort-Tester-Live/issues/3) | Development browser/API bridge and Practice regression checks. |
+| [#4](https://github.com/renilsonjr/Sort-Tester-Live/issues/4) | Reviewed Ranked rules and protocol examples; a requirements milestone. |
+| [#5](https://github.com/renilsonjr/Sort-Tester-Live/issues/5) | Reviewed, versioned route question bank. |
+| [#6](https://github.com/renilsonjr/Sort-Tester-Live/issues/6) | PostgreSQL foundations and migrations. |
+| [#7](https://github.com/renilsonjr/Sort-Tester-Live/issues/7) | Login-ID authentication and server-side sessions. |
+| [#8](https://github.com/renilsonjr/Sort-Tester-Live/issues/8) | Server-authoritative normal/promotion attempt engine. |
+| [#9](https://github.com/renilsonjr/Sort-Tester-Live/issues/9) | Scoring, caps and exactly-once settlement. |
+| [#10](https://github.com/renilsonjr/Sort-Tester-Live/issues/10) | Entry, modes, profile, history, deletion, Support and session screens. Ranked play is still a follow-up; see the gap below. |
+| [#11](https://github.com/renilsonjr/Sort-Tester-Live/issues/11) | Owner eligibility, in-person recovery, private case review and recent login-ID reauthentication. |
+| [#15](https://github.com/renilsonjr/Sort-Tester-Live/issues/15) | Entry/navigation design. |
+| [#16](https://github.com/renilsonjr/Sort-Tester-Live/issues/16) | Profile, leaderboard, deletion and Support design. |
+| [#17](https://github.com/renilsonjr/Sort-Tester-Live/issues/17) | Ranked, promotion, connection and tie-break design. |
+| [#23](https://github.com/renilsonjr/Sort-Tester-Live/issues/23) | Season lifecycle, launch/reset, close and settlement. |
+| [#25](https://github.com/renilsonjr/Sort-Tester-Live/issues/25) | Connection events and non-punitive review flags. |
+| [#26](https://github.com/renilsonjr/Sort-Tester-Live/issues/26) | Private Support tickets and shared-evidence retention. |
+| [#47](https://github.com/renilsonjr/Sort-Tester-Live/issues/47) | Authentication follow-ups, including owner bootstrap and deletion. |
+| [#75](https://github.com/renilsonjr/Sort-Tester-Live/issues/75) | Production migration command. |
+| [#76](https://github.com/renilsonjr/Sort-Tester-Live/issues/76) | Production image. |
+| [#77](https://github.com/renilsonjr/Sort-Tester-Live/issues/77) | Same-origin write protection. |
+| [#78](https://github.com/renilsonjr/Sort-Tester-Live/issues/78) | Client-address handling behind ingress. |
+| [#97](https://github.com/renilsonjr/Sort-Tester-Live/issues/97) | Email-storage cleanup, including the emails and outbox tables (migration 0021). |
 
-This table records issue-completion dependencies. Work can be developed in smaller verified increments inside each issue. In particular, basic leaderboard and account work need not implement reminder delivery or Support first; final feature completion must satisfy its listed scope.
+## Withdrawn work
 
-| Issue | State | Blocked by |
+- **#27 — email launch reminder: closed as not planned.** The owner withdrew email collection and delivery on November 14. There is no email verification, consent, queued-mail cancellation or sending feature to build. #97 completed the storage cleanup. The replacement is the in-app season-start callout, shown only after a start is confirmed. Recovery uses in-person verification with the owner and a new login ID.
+- **#55 — separate work-methods question bank: closed as not planned.** The November 15 decision in PR #136 uses the **53 approved Hard route questions** from #5 for tie-breaks. #24 owns fresh shared five-question sets, non-reuse and the owner fallback when no fresh set remains. There is no separate bank blocking it.
+
+These withdrawals are not implemented features and must not be presented as completed email or work-methods delivery.
+
+## Open work and remaining dependencies
+
+| Work | Current state | Remaining prerequisite or next step |
 | --- | --- | --- |
-| [#2](https://github.com/renilsonjr/Sort-Tester-Live/issues/2) · 01 · Establish the backend workspace and first health endpoint | Complete | None |
-| [#3](https://github.com/renilsonjr/Sort-Tester-Live/issues/3) · 02 · Connect a development browser page to the API | Complete | None |
-| [#4](https://github.com/renilsonjr/Sort-Tester-Live/issues/4) · 03 · Resolve ranked attempt and promotion edge cases | Open / planned | None |
-| [#5](https://github.com/renilsonjr/Sort-Tester-Live/issues/5) · 04 · Review and version the ranked question bank | Open / planned | [#4](https://github.com/renilsonjr/Sort-Tester-Live/issues/4) |
-| [#6](https://github.com/renilsonjr/Sort-Tester-Live/issues/6) · 05 · Persist users, question assignments, attempts, and ranking history | Open / planned | [#2](https://github.com/renilsonjr/Sort-Tester-Live/issues/2), [#4](https://github.com/renilsonjr/Sort-Tester-Live/issues/4), [#5](https://github.com/renilsonjr/Sort-Tester-Live/issues/5) |
-| [#7](https://github.com/renilsonjr/Sort-Tester-Live/issues/7) · 06 · Add employee registration, sessions, and account access controls | Open / planned | [#6](https://github.com/renilsonjr/Sort-Tester-Live/issues/6) |
-| [#8](https://github.com/renilsonjr/Sort-Tester-Live/issues/8) · 07 · Implement the server-authoritative ranked attempt engine | Open / planned | [#3](https://github.com/renilsonjr/Sort-Tester-Live/issues/3), [#4](https://github.com/renilsonjr/Sort-Tester-Live/issues/4), [#5](https://github.com/renilsonjr/Sort-Tester-Live/issues/5), [#6](https://github.com/renilsonjr/Sort-Tester-Live/issues/6), [#7](https://github.com/renilsonjr/Sort-Tester-Live/issues/7) |
-| [#9](https://github.com/renilsonjr/Sort-Tester-Live/issues/9) · 08 · Apply ranked scores, caps, promotions, and demotions exactly once | Open / planned | [#4](https://github.com/renilsonjr/Sort-Tester-Live/issues/4), [#8](https://github.com/renilsonjr/Sort-Tester-Live/issues/8) |
-| [#10](https://github.com/renilsonjr/Sort-Tester-Live/issues/10) · 09 · Build public entry, separate modes, and the employee profile | Open / planned | [#3](https://github.com/renilsonjr/Sort-Tester-Live/issues/3), [#7](https://github.com/renilsonjr/Sort-Tester-Live/issues/7), [#9](https://github.com/renilsonjr/Sort-Tester-Live/issues/9), [#15](https://github.com/renilsonjr/Sort-Tester-Live/issues/15), [#16](https://github.com/renilsonjr/Sort-Tester-Live/issues/16), [#17](https://github.com/renilsonjr/Sort-Tester-Live/issues/17), [#23](https://github.com/renilsonjr/Sort-Tester-Live/issues/23), [#26](https://github.com/renilsonjr/Sort-Tester-Live/issues/26) |
-| [#11](https://github.com/renilsonjr/Sort-Tester-Live/issues/11) · 10 · Add administrator account management and performance review | Open / planned | [#7](https://github.com/renilsonjr/Sort-Tester-Live/issues/7), [#9](https://github.com/renilsonjr/Sort-Tester-Live/issues/9), [#25](https://github.com/renilsonjr/Sort-Tester-Live/issues/25), [#26](https://github.com/renilsonjr/Sort-Tester-Live/issues/26) |
-| [#12](https://github.com/renilsonjr/Sort-Tester-Live/issues/12) · 11 · Display leaderboard totals and current rank badges | Open / planned | [#9](https://github.com/renilsonjr/Sort-Tester-Live/issues/9), [#10](https://github.com/renilsonjr/Sort-Tester-Live/issues/10), [#16](https://github.com/renilsonjr/Sort-Tester-Live/issues/16), [#23](https://github.com/renilsonjr/Sort-Tester-Live/issues/23), [#24](https://github.com/renilsonjr/Sort-Tester-Live/issues/24) |
-| [#13](https://github.com/renilsonjr/Sort-Tester-Live/issues/13) · 12 · Validate the Windows server and prepare the 30-player pilot | Open / planned | [#10](https://github.com/renilsonjr/Sort-Tester-Live/issues/10), [#11](https://github.com/renilsonjr/Sort-Tester-Live/issues/11), [#12](https://github.com/renilsonjr/Sort-Tester-Live/issues/12), [#23](https://github.com/renilsonjr/Sort-Tester-Live/issues/23), [#24](https://github.com/renilsonjr/Sort-Tester-Live/issues/24), [#25](https://github.com/renilsonjr/Sort-Tester-Live/issues/25), [#26](https://github.com/renilsonjr/Sort-Tester-Live/issues/26), [#27](https://github.com/renilsonjr/Sort-Tester-Live/issues/27) |
-| [#15](https://github.com/renilsonjr/Sort-Tester-Live/issues/15) · Design · Mock public entry, mode navigation, and shared visual style | Open / planned | None |
-| [#16](https://github.com/renilsonjr/Sort-Tester-Live/issues/16) · Design · Mock employee profile and leaderboard views | Open / planned | [#15](https://github.com/renilsonjr/Sort-Tester-Live/issues/15), [#4](https://github.com/renilsonjr/Sort-Tester-Live/issues/4) |
-| [#17](https://github.com/renilsonjr/Sort-Tester-Live/issues/17) · Design · Mock Ranked questions, promotion, feedback, and results | Open / planned | [#15](https://github.com/renilsonjr/Sort-Tester-Live/issues/15), [#4](https://github.com/renilsonjr/Sort-Tester-Live/issues/4) |
-| [#23](https://github.com/renilsonjr/Sort-Tester-Live/issues/23) · Season launch, reset, closing and final settlement | Open / planned | [#4](https://github.com/renilsonjr/Sort-Tester-Live/issues/4), [#6](https://github.com/renilsonjr/Sort-Tester-Live/issues/6), [#8](https://github.com/renilsonjr/Sort-Tester-Live/issues/8), [#9](https://github.com/renilsonjr/Sort-Tester-Live/issues/9) |
-| [#24](https://github.com/renilsonjr/Sort-Tester-Live/issues/24) · Prize tie-break quizzes and 24-hour rounds | Open / planned | [#4](https://github.com/renilsonjr/Sort-Tester-Live/issues/4), [#5](https://github.com/renilsonjr/Sort-Tester-Live/issues/5), [#6](https://github.com/renilsonjr/Sort-Tester-Live/issues/6), [#7](https://github.com/renilsonjr/Sort-Tester-Live/issues/7), [#8](https://github.com/renilsonjr/Sort-Tester-Live/issues/8), [#9](https://github.com/renilsonjr/Sort-Tester-Live/issues/9), [#17](https://github.com/renilsonjr/Sort-Tester-Live/issues/17), [#23](https://github.com/renilsonjr/Sort-Tester-Live/issues/23) |
-| [#25](https://github.com/renilsonjr/Sort-Tester-Live/issues/25) · Server connection events and non-punitive flags | Open / planned | [#4](https://github.com/renilsonjr/Sort-Tester-Live/issues/4), [#6](https://github.com/renilsonjr/Sort-Tester-Live/issues/6), [#8](https://github.com/renilsonjr/Sort-Tester-Live/issues/8) |
-| [#26](https://github.com/renilsonjr/Sort-Tester-Live/issues/26) · Player Support tickets and 15-day closed retention | Open / planned | [#6](https://github.com/renilsonjr/Sort-Tester-Live/issues/6), [#7](https://github.com/renilsonjr/Sort-Tester-Live/issues/7), [#25](https://github.com/renilsonjr/Sort-Tester-Live/issues/25), [#15](https://github.com/renilsonjr/Sort-Tester-Live/issues/15), [#16](https://github.com/renilsonjr/Sort-Tester-Live/issues/16) |
-| [#27](https://github.com/renilsonjr/Sort-Tester-Live/issues/27) · Verified opt-in launch reminder delivery and retries | Open / planned | [#7](https://github.com/renilsonjr/Sort-Tester-Live/issues/7), [#10](https://github.com/renilsonjr/Sort-Tester-Live/issues/10), [#23](https://github.com/renilsonjr/Sort-Tester-Live/issues/23) |
+| #24 · Prize tie-breaks | Open; backend slices 1–6 merged in PRs #137, #138, #140–#143 | Its listed prerequisite issues are closed. Finish the player screens and verify the remaining acceptance criteria; merged slices do not close the whole issue. |
+| Ranked/promotion browser play | Integration gap after closed #10 | The merged `src/app.js` start button still displays “Playing a Ranked quiz is being built. Nothing has started.” Track and finish the browser attempt lifecycle before claiming playable Ranked or a complete end-to-end pilot. Reuse the server engine from #8/#9. |
+| #12 · Final leaderboard and prizes | Open; basic endpoint and screen merged in #125/#126 | #24 remains open. Integrate relative tie order, removal/backfill, replacement rounds and fewer-winner outcomes. |
+| #41 · Azure hosting evidence | Open | Reconcile the older API-spike checklist with the chosen Container Apps monolith; verify deployment and actual cost evidence. |
+| #84 · Managed identity for PostgreSQL | Open | Needs the hosted app from #41; should land before employee data under #13. |
+| #13 · Azure host and 30-player pilot | Open | Remaining native blockers: #12, #24, #41 and #84. Complete Ranked play, hosting/security, monitoring, deletion-safe backups/restore and measured load evidence. #27 is withdrawn and is no longer a prerequisite. |
+| #95 · Promotion celebration | Open; optional enhancement | Depends on authenticated playable promotion and its canonical result. Closed #10 does not remove the integration gap. This is not a pilot or hosting release gate. |
+| Quiz-only avatar animation | Pending implementation | The app uses still renders. Keep this separate from the already merged visual refresh; connect motion to the actual quiz lifecycle and respect reduced motion. |
 
-## Build sequence
+The checked/unchecked state of each acceptance criterion stays in its owning issue. An open issue with merged slices remains open until every required part has evidence.
 
-1. Record settled rules and resolve required open cases in #4; review question labels/versions and Hard work-methods content in #5. Shared navigation design #15 can proceed with fictional data.
-2. Implement/test core persistence #6, account/security/email verification contracts #7, attempt engine #8 and scoring #9. Feature-specific migrations follow their own issues; do not put all future features into the first migration.
-3. Add season orchestration #23 and connection events/flags #25 using core contracts. Finalize profile/Ranked/tie-break designs #16/#17 from approved policy.
-4. Integrate reviewed entry/profile/season UI #10; player Support #26 and administrative account/incident tools #11 are separately verified increments.
-5. Implement prize tie-break rounds #24 and final leaderboard integration #12. Basic standings can be tested earlier, but final prizes need both lifecycle and tie-break outcomes.
-6. Deliver launch reminders #27 using verified-email/consent and season contracts. Use the proposed provider/outbox contracts; prove actual idempotency and deletion behavior before real mail. Any launch-scope deferral needs owner approval.
-7. Complete hosting/recovery/backup/access and 30-player validation in #13 before employee rollout; public publication is a separate reviewed step.
+## Next work sequence
 
-## Dependency boundaries
+1. Finish #24's player flow and acceptance checks. Local uncommitted work is not a delivered slice.
+2. Complete normal Ranked/promotion browser play using the existing server engine. Give the #10 follow-up an explicit tracking home before implementation; include the original-page capability, heartbeat/grace, locked answers, server deadlines, Quit and canonical results.
+3. Finish #12's prize standings against #24's outcomes, including deletion, exclusion, backfill and replacement ties.
+4. In parallel with feature work, reconcile #41 and implement #84 before real employee data. The target is the Azure monolith; Windows development checks are not the hosting plan.
+5. Complete #13's monitoring, backup/restore, failure, privacy and 30-player load checks. Review rollout and rollback evidence and obtain separate public rollout authorization.
+6. Schedule #95 and quiz-only avatar animation alongside or after the required integration. Do not silently turn optional visual work into a new pilot gate.
+
+## Dependency overview
 
 ```mermaid
 flowchart TD
-  R[4: Rule decisions] --> Q[5: Question banks]
-  Q --> D[6: Core database]
-  D --> A[7: Accounts and verification]
-  A --> E[8: Ranked attempt engine]
-  E --> S[9: Scoring]
-  S --> L[23: Season lifecycle]
-  E --> C[25: Connection events]
-  C --> T[26: Player Support]
-  T --> M[11: Admin incident review]
-  L --> U[10: Reviewed entry/profile/season UI]
-  L --> B[24: Prize tie-breaks]
-  Q --> B
-  B --> K[12: Final standings]
-  U --> K
-  U --> N[27: Launch reminders]
-  L --> N
-  K --> P[13: Pilot validation]
-  M --> P
-  N --> P
+  F[Completed foundations: 4-9, 23, 25, 26] --> T[24: finish prize tie-breaks]
+  D[Completed designs: 15-17] --> T
+  F --> R[Follow-up: playable Ranked and promotion]
+  D --> R
+  T --> L[12: final standings and prizes]
+  R --> P[13: end-to-end pilot validation]
+  L --> P
+  H[41: Azure deployment evidence] --> I[84: managed identity]
+  H --> P
+  I --> P
+  R --> C[95: optional promotion celebration]
 ```
 
-The table/native relationships are the complete dependency list; the diagram is a simplified overview. Later orchestration consumes core contracts and must not become a prerequisite of those same core contracts.
+This diagram shows the remaining sequence, not a claim that every edge is a native GitHub blocker. Closed prerequisite issues remain historical evidence; #27 and #55 do not block new work.
 
 ## Work and verification rules
 
-- Explain the next small change before editing existing files. Keep the owner's learning pace and use one focused decision question at a time.
-- Use [[2026-11-07-ranked-decision-record]] as the settled source; preserve its Q1–Q14 register and explicit superseded proposals.
-- Preserve current guest Practice, timing, local results and export. No routine administrator point editing, hidden MMR, extra achievements or separate points balance.
-- Use reviewed fictional-data mockups in #15/#16/#17; do not implement visual assumptions as if approved.
-- Test meaningful normal/failure/race/boundary cases and record exactly what ran on Mac, Windows, browser and hosted CI. Do not call a future rule implemented because foundation tests pass.
-- Close only issues whose acceptance checks pass. Keep raw quiz performance and applied rank adjustments auditable, protect private contacts/Support data, and enforce authorization server-side.
-- Official launch date is unknown; close is December 31, 2026 at 11:59 p.m. America/New_York. No January start is authorized. The Windows 11/16 GB server is a candidate, not a 30-player capacity guarantee.
+- Explain changes to existing files before editing, preserve the owner's work in progress, and review small increments.
+- Use [[2026-11-07-ranked-decision-record]] for settled rules and explicitly superseded proposals.
+- Preserve guest Practice, its timing, local results and export. No routine owner point editing, hidden MMR or separate points balance.
+- Use the reviewed mockups in #15/#16/#17. UI prototypes, merged code, deployed images and verified pilot behavior are distinct milestones.
+- Record what actually ran: local unit tests, database-backed integration tests, hosted CI, browser walkthroughs and deployment checks. Skipped database tests do not establish PostgreSQL integration.
+- Mark acceptance boxes only when every part is complete and merged. Preserve raw performance and applied score adjustments and enforce account/privacy boundaries on the server.
+- No email collection or delivery remains in scope. Keep historical migrations and superseded policy text identifiable as history.
+- The first official launch date remains undecided. Scheduled close is December 31, 2026 at 11:59 p.m. America/New_York. Load and recovery targets need measured evidence before rollout.
