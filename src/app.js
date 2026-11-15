@@ -705,9 +705,10 @@ function showOwnerTools() {
         <span><strong>${esc(t('Prize eligibility'))}</strong><small>${esc(t('Who may win a hat this season.'))}</small></span>
         <span class="lab-arrow" aria-hidden="true">→</span>
       </button>
-      <button class="lab-choice" type="button" disabled>
+      <button id="owner-recovery" class="lab-choice" type="button">
         <span class="lab-choice-icon">↺</span>
-        <span><strong>${esc(t('Access recovery'))}</strong><small>${esc(t('In person only. Not built yet.'))}</small></span>
+        <span><strong>${esc(t('Access recovery'))}</strong><small>${esc(t('In person, for a sorter who lost their login ID.'))}</small></span>
+        <span class="lab-arrow" aria-hidden="true">→</span>
       </button>
       <button class="lab-choice" type="button" disabled>
         <span class="lab-choice-icon">?</span>
@@ -717,6 +718,7 @@ function showOwnerTools() {
     </section>
   `, 'profile', showOwnerTools);
   view.querySelector('#owner-eligibility').addEventListener('click', () => showOwnerEligibility());
+  view.querySelector('#owner-recovery').addEventListener('click', () => showRecovery());
   view.querySelector('#owner-back').addEventListener('click', () => showProfile('settings'));
   return view;
 }
@@ -822,6 +824,130 @@ function confirmWithdraw(accountId, username) {
       !result.ok,
     );
   });
+  return view;
+}
+
+// Access recovery (#11, box 2), built to the screen approved on
+// 2026-11-15. Two steps on purpose: finding the account asserts nothing,
+// and the login ID is issued only after the owner says they have checked
+// the person in front of them.
+//
+// The screen cannot verify the thing that matters most — that this is
+// really that sorter — so it says so plainly rather than implying the
+// check has been done by showing a confident-looking form.
+function showRecovery(message = null, bad = false) {
+  stopTick();
+  clock = null;
+  const view = labPage(`
+    <section class="lab-screen">
+      <p class="lab-eyebrow">${esc(t('Owner'))}</p>
+      <h1 class="lab-title">${esc(t('Access recovery'))}</h1>
+      ${message ? `<div class="board-notice${bad ? ' board-notice-bad' : ''}" role="status"><p>${esc(message)}</p></div>` : ''}
+      <div class="owner-form">
+        <h2>${esc(t('Who is in front of you?'))}</h2>
+        <label class="field"><span>${esc(t('Player tag'))}</span>
+          <input id="rec-tag" type="text" autocomplete="off" autocapitalize="characters" placeholder="#K7Q2MX"></label>
+        <p class="lab-study-meta">${esc(t('The tag is on their profile. It is how you find the account, not proof of who they are.'))}</p>
+        <button id="rec-find" class="primary">${esc(t('Find the account'))}</button>
+      </div>
+      <h2 class="owner-count">${esc(t('Recent recoveries'))}</h2>
+      <div id="rec-list"><p class="lab-intro" role="status">${esc(t('Loading…'))}</p></div>
+      <button id="rec-back" class="ghost">${esc(t('Back to Owner tools'))}</button>
+    </section>
+  `, 'profile', () => showRecovery(message, bad));
+  view.querySelector('#rec-back').addEventListener('click', showOwnerTools);
+  view.querySelector('#rec-find').addEventListener('click', () => findForRecovery(view));
+  fillRecoveries(view.querySelector('#rec-list'));
+  return view;
+}
+
+async function fillRecoveries(panel) {
+  const body = await api('/ranked/owner/recoveries');
+  if (!body) {
+    panel.innerHTML = `<p class="notice">${esc(t('Could not load the recent recoveries. Nothing has been changed.'))}</p>`;
+    return;
+  }
+  const rows = body.recoveries ?? [];
+  if (rows.length === 0) {
+    panel.innerHTML = `<p class="lab-intro">${esc(t('No recoveries yet.'))}</p>`;
+    return;
+  }
+  panel.innerHTML = `<ul class="approved">${rows.map((row) => `
+    <li>
+      <span class="approved-who">
+        <b>${esc(row.username)}</b>
+        <small>#${esc(row.tag)} · ${esc(row.completed_at
+          ? `${t('handed over')} ${new Date(row.completed_at).toLocaleDateString()}`
+          : `${t('opened')} ${new Date(row.opened_at).toLocaleDateString()}, ${t('not completed')}`)}</small>
+      </span>
+    </li>`).join('')}</ul>`;
+}
+
+async function findForRecovery(view) {
+  const button = view.querySelector('#rec-find');
+  button.disabled = true;
+  const result = await apiSend('POST', '/ranked/owner/recoveries', {
+    tag: view.querySelector('#rec-tag').value,
+  });
+  if (result.ok) {
+    showRecoveryCheck(result.data);
+    return;
+  }
+  button.disabled = false;
+  const note = view.querySelector('.owner-note') ?? document.createElement('p');
+  note.className = 'owner-note notice';
+  note.setAttribute('role', 'status');
+  note.textContent = result.reason || t('That did not work. Nothing has been changed.');
+  button.after(note);
+}
+
+// The step that exists to be read, not clicked through. The button says
+// what pressing it asserts, rather than "Confirm".
+function showRecoveryCheck(request) {
+  const view = labPage(`
+    <section class="lab-screen">
+      <p class="lab-eyebrow">${esc(t('Owner'))}</p>
+      <h1 class="lab-title">${esc(request.username)} · #${esc(request.tag)}</h1>
+      <aside class="lab-disclaimer">
+        <strong>${esc(t('Check in person first.'))}</strong>
+        ${esc(t('Nothing on this screen proves who is standing in front of you. Their username and tag are public, so neither is evidence.'))}
+      </aside>
+      <p class="lab-intro">${esc(t('Handing over a login ID signs them out everywhere and ends their old one. Their points, badge and history do not change, and this approves nothing for prizes.'))}</p>
+      <button id="rec-hand" class="primary">${esc(t('I have checked them in person · show the login ID'))}</button>
+      <button id="rec-cancel" class="ghost">${esc(t('Cancel'))}</button>
+    </section>
+  `, 'profile', () => showRecoveryCheck(request));
+  view.querySelector('#rec-cancel').addEventListener('click', () => showRecovery());
+  view.querySelector('#rec-hand').addEventListener('click', async () => {
+    const button = view.querySelector('#rec-hand');
+    button.disabled = true;
+    const result = await apiSend('POST', `/ranked/owner/recoveries/${request.id}/handover`);
+    if (result.ok) {
+      showHandover(result.data);
+      return;
+    }
+    showRecovery(result.reason || t('That did not work. Nothing has been changed.'), true);
+  });
+  return view;
+}
+
+// Shown once. The server keeps only a hash, so leaving this screen is the
+// end of it; the copy here is never stored and never fetched again.
+function showHandover(handover) {
+  const view = labPage(`
+    <section class="lab-screen">
+      <p class="lab-eyebrow">${esc(t('Owner'))}</p>
+      <h1 class="lab-title">${esc(t('Hand this over now'))}</h1>
+      <p class="lab-intro">${esc(t('It is shown once and cannot be shown again. Their old login ID and every signed-in device stopped working just now.'))}</p>
+      <div class="owner-form">
+        <p class="lab-study-meta">${esc(t('New login ID for'))} <b>${esc(handover.username)}</b> · #${esc(handover.tag)}</p>
+        <p class="handover-id">${esc(handover.login_id)}</p>
+      </div>
+      <aside class="lab-disclaimer">${esc(t('Their points, badge and history are unchanged. This did not approve them for prizes and did not restore anything deleted.'))}</aside>
+      <button id="rec-done" class="primary">${esc(t('Done'))}</button>
+    </section>
+  `, 'profile', () => showHandover(handover));
+  view.querySelector('#rec-done').addEventListener('click', () => showRecovery());
   return view;
 }
 

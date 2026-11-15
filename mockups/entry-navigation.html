@@ -515,8 +515,32 @@
           <p class="small">These are the only administrator powers this app has. Approving does not change anybody's points, badge or history, and gives you no access to a player's record.</p>
         </div>
         <button class="choice" type="button" data-go="owner-eligibility"><span class="choice-icon" aria-hidden="true">✓</span><span><strong>Prize eligibility</strong><small>Who may win a hat this season.</small></span><span class="arrow" aria-hidden="true">→</span></button>
-        <button class="choice" type="button"><span class="choice-icon" aria-hidden="true">↺</span><span><strong>Access recovery</strong><small>In person only. Not built yet.</small></span><span class="arrow" aria-hidden="true">→</span></button>
+        <button class="choice" type="button" data-go="owner-recovery"><span class="choice-icon" aria-hidden="true">↺</span><span><strong>Access recovery</strong><small>In person, for a sorter who lost their login ID.</small></span><span class="arrow" aria-hidden="true">→</span></button>
         <button class="choice" type="button"><span class="choice-icon" aria-hidden="true">?</span><span><strong>Case review</strong><small>Tickets and connection flags. Not built yet.</small></span><span class="arrow" aria-hidden="true">→</span></button>
+      </section>
+
+      <!-- Access recovery (issue #11, box 2). In person, at work. The
+           screen cannot check the part that matters most -- that the
+           person in front of the owner is who they say they are -- so it
+           says that out loud instead of pretending otherwise. -->
+      <section class="view" data-view="owner-recovery" hidden>
+        <button class="link" type="button" data-go="owner">← Back to Owner tools</button>
+        <p class="eyebrow">Owner</p>
+        <h1 tabindex="-1">Access recovery</h1>
+        <div class="notice-box" id="rec-notice" hidden></div>
+        <div id="rec-body"></div>
+
+        <div class="mock-controls">
+          <p>Mock controls · not part of the app</p>
+          <div class="row" role="group" aria-label="Recovery state">
+            <button type="button" data-rec="start" aria-pressed="true">Start</button>
+            <button type="button" data-rec="confirm" aria-pressed="false">Check in person</button>
+            <button type="button" data-rec="shown" aria-pressed="false">Login ID shown</button>
+            <button type="button" data-rec="nolink" aria-pressed="false">No prior link</button>
+            <button type="button" data-rec="done" aria-pressed="false">Already handed over</button>
+            <button type="button" data-rec="unknown" aria-pressed="false">Unknown tag</button>
+          </div>
+        </div>
       </section>
 
       <!-- Prize eligibility (issue #11, slice 2). One sorter, one account,
@@ -1289,8 +1313,8 @@
       member: [['home', '⌂', 'Home'], ['practice', '≡', 'Practice'], ['ranked', '◆', 'Ranked'], ['profile', '●', 'Profile']],
     };
     // Screens that live inside a tab keep that tab marked as current.
-    const PARENT_TAB = { leaderboard: 'ranked', tickets: 'profile', delete: 'profile', rquiz: 'ranked', promo: 'ranked', qc: 'ranked', tb: 'ranked', owner: 'profile', 'owner-eligibility': 'profile' };
-    const MEMBER_ONLY = ['ranked', 'leaderboard', 'profile', 'tickets', 'delete', 'rquiz', 'promo', 'qc', 'tb', 'owner', 'owner-eligibility'];
+    const PARENT_TAB = { leaderboard: 'ranked', tickets: 'profile', delete: 'profile', rquiz: 'ranked', promo: 'ranked', qc: 'ranked', tb: 'ranked', owner: 'profile', 'owner-eligibility': 'profile', 'owner-recovery': 'profile' };
+    const MEMBER_ONLY = ['ranked', 'leaderboard', 'profile', 'tickets', 'delete', 'rquiz', 'promo', 'qc', 'tb', 'owner', 'owner-eligibility', 'owner-recovery'];
     let mode = 'public';
     // Whether this signed-in account is the owner. One account in the whole
     // app is, so the Owner tools row is absent for everybody else.
@@ -1622,10 +1646,79 @@
       for (const el of document.querySelectorAll('[data-el]')) el.setAttribute('aria-pressed', String(el.dataset.el === state));
     }
 
+    // Access recovery. Two steps on purpose: opening one asserts nothing,
+    // and the login ID is only issued after the owner says they have
+    // checked the person in front of them. No step asks for a password,
+    // because the app has none to ask for.
+    const RECOVERY = {
+      start: {
+        body: `<div class="panel">
+            <h2>Who is in front of you?</h2>
+            <label class="field"><span>Player tag</span><input type="text" placeholder="#K7Q2MX"></label>
+            <p class="small">The tag is on their profile. It is how you find the account, not proof of who they are.</p>
+            <button class="primary" type="button">Find the account</button>
+          </div>
+          <h2>Recent recoveries</h2>
+          <ul class="approved">
+            <li><span class="who"><b>belt_runner</b><small>#D4E5F6 · handed over example date 4</small></span></li>
+            <li><span class="who"><b>tape_gull</b><small>#G8H9JK · opened example date 2, not completed</small></span></li>
+          </ul>`,
+      },
+      confirm: {
+        body: `<div class="panel">
+            <h2>dock_owl · #A1B2C3</h2>
+            <p class="small">This account has a roster link you recorded on example date 1, before this request. That link is what allows a recovery here.</p>
+            <p class="small"><b>Check in person first.</b> Nothing on this screen proves who is standing in front of you. Their username and tag are public, so neither is evidence.</p>
+            <button class="primary" type="button">I have checked them in person · show the login ID</button>
+            <button class="ghost" type="button">Cancel</button>
+          </div>`,
+      },
+      shown: {
+        notice: {
+          title: 'Hand this over now',
+          text: 'It is shown once and cannot be shown again. Their old login ID and every signed-in device stopped working just now.',
+        },
+        body: `<div class="panel">
+            <p class="small">New login ID for <b>dock_owl</b> · #A1B2C3</p>
+            <p class="stat" style="letter-spacing:.06em">K7Q2-MX4D-9FTR-2BHN</p>
+            <p class="small">Their points, badge and history are unchanged. This did not approve them for prizes and did not restore anything deleted.</p>
+            <button class="primary" type="button">Done</button>
+          </div>`,
+      },
+      nolink: {
+        notice: {
+          title: 'No recovery by this route',
+          text: 'This account has no roster link recorded before the request. Approving them now would be you saying twice that this is the right person, so it would not be evidence. Record the approval, then recover on a later day if that is right.',
+        },
+        body: '<button class="ghost" type="button">Back to start</button>',
+      },
+      done: {
+        notice: {
+          title: 'That recovery is already done',
+          text: 'Its login ID was shown once and cannot be shown again. If it was lost before they wrote it down, start a new recovery.',
+        },
+        body: '<button class="ghost" type="button">Start a new recovery</button>',
+      },
+      unknown: {
+        notice: { title: 'No account with that tag', text: 'Check the tag on their profile.' },
+        body: '<button class="ghost" type="button">Back to start</button>',
+      },
+    };
+
+    function setRecovery(state) {
+      const s = RECOVERY[state];
+      const notice = document.getElementById('rec-notice');
+      notice.hidden = !s.notice;
+      if (s.notice) notice.innerHTML = `<h2>${s.notice.title}</h2><p>${s.notice.text}</p>`;
+      document.getElementById('rec-body').innerHTML = s.body;
+      for (const el of document.querySelectorAll('[data-rec]')) el.setAttribute('aria-pressed', String(el.dataset.rec === state));
+    }
+
     setBalance('640');
     setHistory('pre');
     setLeaderboard('during');
     setEligibility('list');
+    setRecovery('start');
 
     document.addEventListener('click', event => {
       const button = event.target.closest('button');
@@ -1636,6 +1729,7 @@
       if (button.dataset.filter) return setFilter(button.dataset.filter);
       if (button.dataset.lb) return setLeaderboard(button.dataset.lb);
       if (button.dataset.el) return setEligibility(button.dataset.el);
+      if (button.dataset.rec) return setRecovery(button.dataset.rec);
       if (button.dataset.owner) {
         owner = button.dataset.owner === 'yes';
         document.getElementById('owner-row').hidden = !owner;

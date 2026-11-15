@@ -13,7 +13,7 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
 from pydantic import BaseModel
 
-from backend.auth import eligibility
+from backend.auth import eligibility, recovery
 from backend.auth.deletion import purge_deleted_accounts
 from backend.auth.service import get_account_by_session
 from backend.db import migrate, settings
@@ -518,6 +518,92 @@ def withdraw_approval(
         raise HTTPException(status_code=code, detail=error.reason) from None
     conn.commit()
     return None
+
+
+# Access recovery (#11, box 2). The rule lives in backend/auth/recovery.py:
+# these only carry it over HTTP. Opening a recovery grants nothing, and
+# handing one over is refused unless a roster link older than the request
+# exists, so the two steps are separate calls rather than one.
+class RecoveryOpenRequest(BaseModel):
+    tag: str
+
+
+@router.get("/owner/recoveries")
+def list_recoveries(account: dict = Depends(_current_account), conn=Depends(get_db)):
+    try:
+        rows = recovery.recent_requests(conn, account["id"])
+    except recovery.RecoveryError as error:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN, detail=error.reason
+        ) from None
+    return {
+        "recoveries": [
+            {
+                "id": str(row["id"]),
+                "username": row["username"],
+                "tag": row["tag"],
+                "opened_at": _utc(row["opened_at"]),
+                "completed_at": None if row["completed_at"] is None
+                else _utc(row["completed_at"]),
+            }
+            for row in rows
+        ]
+    }
+
+
+@router.post("/owner/recoveries", status_code=status.HTTP_201_CREATED)
+def open_recovery(
+    payload: RecoveryOpenRequest,
+    account: dict = Depends(_current_account),
+    conn=Depends(get_db),
+):
+    try:
+        request = recovery.open_request(conn, account["id"], payload.tag, clock=_CLOCK)
+    except recovery.RecoveryError as error:
+        code = (
+            status.HTTP_403_FORBIDDEN
+            if error.reason.startswith("Only the owner")
+            else status.HTTP_422_UNPROCESSABLE_ENTITY
+        )
+        raise HTTPException(status_code=code, detail=error.reason) from None
+    conn.commit()
+    return {
+        "id": str(request.id),
+        "username": request.username,
+        "tag": request.tag,
+        "opened_at": _utc(request.opened_at),
+    }
+
+
+@router.post("/owner/recoveries/{request_id}/handover")
+def hand_over_recovery(
+    request_id: str,
+    account: dict = Depends(_current_account),
+    conn=Depends(get_db),
+):
+    """Issue the new login ID. The response carries it once; the server
+    keeps only its hash, so nothing can read it back afterwards."""
+    try:
+        handover = recovery.hand_over(
+            conn, account["id"], UUID(request_id), clock=_CLOCK
+        )
+    except ValueError:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Not found"
+        ) from None
+    except recovery.RecoveryError as error:
+        code = (
+            status.HTTP_403_FORBIDDEN
+            if error.reason.startswith("Only the owner")
+            else status.HTTP_422_UNPROCESSABLE_ENTITY
+        )
+        raise HTTPException(status_code=code, detail=error.reason) from None
+    conn.commit()
+    return {
+        "login_id": handover.login_id,
+        "username": handover.username,
+        "tag": handover.tag,
+    }
 
 
 class CloseFlagRequest(BaseModel):
