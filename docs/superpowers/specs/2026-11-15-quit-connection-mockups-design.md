@@ -119,6 +119,44 @@ switch between the states.
 2. Post one comment on #17 listing the approved states and the choices.
 3. Boxes 3 and 4 are this slice's; tick them only once merged.
 
+## Review record (2026-11-15)
+
+The owner reviewed the states in a browser at 375 px, in two groups, and
+approved them unchanged:
+
+1. The quit confirmation and both quit results.
+2. The five connection states: contact lost, back in time, grace expired,
+   server outage, page reloaded.
+
+Nine states were built rather than eight: a "back in the quiz" screen was
+added so Continue quiz leads somewhere.
+
+Wording settled while building:
+
+- **The quit-near-cap screen shows both steps** — the 10 coming off, then
+  the overflow discarded — under the heading "The 10 points came off, even
+  though your balance went up". Without it, a player who quits at 990
+  watches the balance rise to 1,000 and concludes the penalty was never
+  charged, or that the app lied.
+- **The outage screen says "a confirmed server problem"**, because a failed
+  request alone does not prove an outage, and states that there is **no mark
+  against the account** — the natural suspicion when a scored attempt is
+  voided.
+- **Grace expiry carries a "No extra penalty" block** saying in as many
+  words that losing contact is not quitting.
+- **Reconnecting says a question that ran out while contact was lost still
+  counts as wrong**, because it does, and a player would not guess it.
+
+### No route to Support from these screens
+
+Deliberate, and confirmed on review. None of these outcomes changes points,
+and a support button on the screen where a player feels robbed invites
+tickets that can only be answered with "nothing can be changed". Opening a
+ticket stays available on the Support screen in Profile.
+
+Checked at 320 px and 375 px: all nine states render, no sideways scroll, no
+JavaScript error.
+
 ## Delivery
 
 Branch `codex/quit-connection-mockups` from `codex/ranked-mode`, opened as a
