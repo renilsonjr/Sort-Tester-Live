@@ -109,6 +109,19 @@
       background: var(--accent); color: var(--accent-ink); border-color: var(--accent);
     }
 
+    /* Prize tie-breaks (issue #17, slice 4). The timer is a bar, not a
+       number: at three seconds, looking away to read a digit costs the
+       answer. */
+    .tb-bar { height: 8px; border-radius: 99px; background: #ede3d2; overflow: hidden; }
+    .tb-bar i { display: block; height: 100%; width: 42%; background: var(--danger); }
+    .tb-ask { font-size: 22px; font-weight: 900; letter-spacing: -.03em; line-height: 1.2; }
+    .tb-opts { display: grid; gap: 8px; }
+    .tb-opts button { min-height: 56px; padding: 12px 14px; border: 1px solid var(--line); border-radius: 14px; background: var(--panel); color: var(--ink); font-size: 15px; font-weight: 700; text-align: left; }
+    .tb-recap { list-style: none; margin: 0; padding: 0 14px; border: 1px solid var(--line); border-radius: 17px; background: var(--panel); }
+    .tb-recap li { display: flex; justify-content: space-between; gap: 10px; padding: 11px 0; border-bottom: 1px solid #ebe2d4; font-size: 14px; }
+    .tb-recap li:last-child { border: 0; }
+    .tb-state { color: var(--muted); font-weight: 700; }
+
     /* Quitting and lost connection (issue #17, slice 3) */
     .qc-clock { display: flex; align-items: center; gap: 10px; border: 1px solid var(--soft-line); border-radius: 14px; background: var(--soft); padding: 10px 12px; font-size: 13px; color: #54412f; }
     .qc-clock i { display: grid; place-items: center; width: 36px; height: 36px; flex: none; border: 4px solid var(--danger); border-radius: 50%; font-style: normal; font-size: 14px; font-weight: 900; color: var(--danger); }
@@ -350,6 +363,7 @@
           <p class="small" style="margin-top:6px">No start date has been announced for the official season.</p>
         </div>
         <button class="primary" type="button" data-go="rquiz">Start Ranked quiz</button>
+        <button class="choice alt" type="button" data-go="tb"><span class="choice-icon" aria-hidden="true">=</span><span><strong>Prize tie-break</strong><small>You are tied for third place.</small></span><span class="arrow" aria-hidden="true">→</span></button>
         <button class="choice" type="button" data-go="leaderboard"><span class="choice-icon" aria-hidden="true">#</span><span><strong>Leaderboard</strong><small>See the standings.</small></span><span class="arrow" aria-hidden="true">→</span></button>
       </section>
 
@@ -970,6 +984,165 @@
         </div>
       </section>
 
+      <!-- Prize tie-breaks (issue #17, slice 4). Five shared Hard questions,
+           no Next button, shortening timers, and NOTHING revealed until the
+           round's 24-hour window closes. No seasonal points change. -->
+      <section class="view" data-view="tb" hidden>
+        <button class="link" type="button" data-go="ranked">← Back to Ranked</button>
+
+        <div class="view" data-tb="invite">
+          <p class="eyebrow">Prize tie-break · round 1</p>
+          <h1 tabindex="-1">You are tied for third place</h1>
+          <p class="lead">One more player has the same points as you. A separate quiz decides which of you takes the third hat.</p>
+          <ol class="rules">
+            <li>Five Hard work-methods questions, the same five for everyone in this round.</li>
+            <li>Five seconds each. Questions move on by themselves — there is no Next.</li>
+            <li>Play once, at any time before the round closes.</li>
+            <li>Nothing is shown until the round closes, for anyone.</li>
+          </ol>
+          <div class="notice-box">
+            <h2>This changes no points and no badge</h2>
+            <p>It decides the prize place only. Your season points, your badge and your history stay exactly as they are, whatever happens here.</p>
+          </div>
+          <p class="small"><b>Round closes in 19 hours.</b> Nothing has started yet.</p>
+          <button class="primary" type="button" data-tb-go="question">Start round</button>
+          <button class="ghost" type="button" data-go="ranked">Not yet</button>
+        </div>
+
+        <div class="view" data-tb="question" hidden>
+          <div class="rq-top">
+            <span class="rq-count">Question 4 of 5 · round 5</span>
+            <span class="rq-count">3 seconds</span>
+          </div>
+          <div class="tb-bar"><i></i></div>
+          <h1 tabindex="-1" class="sr-only">Tie-break question 4 of 5</h1>
+          <p class="rq-service">Work methods · Hard</p>
+          <p class="tb-ask">Which load is scanned first?</p>
+          <div class="tb-opts" role="group" aria-label="Choose an answer">
+            <button type="button" data-tb-go="submitted">The one nearest the belt</button>
+            <button type="button" data-tb-go="submitted">The one with the earliest commit time</button>
+            <button type="button" data-tb-go="submitted">The heaviest one</button>
+            <button type="button" data-tb-go="submitted">Whichever is already open</button>
+          </div>
+          <p class="note">There is no Next button. The next question opens by itself when the time runs out, whether or not you answered.</p>
+        </div>
+
+        <div class="view" data-tb="submitted" hidden>
+          <p class="eyebrow">Prize tie-break · round 1</p>
+          <h1 tabindex="-1">Attempt submitted</h1>
+          <p class="lead">All five are in. Nothing else is needed from you.</p>
+          <ul class="tb-recap">
+            <li><span>Question 1</span><span class="tb-state">answered</span></li>
+            <li><span>Question 2</span><span class="tb-state">answered</span></li>
+            <li><span>Question 3</span><span class="tb-state">ran out of time</span></li>
+            <li><span>Question 4</span><span class="tb-state">answered</span></li>
+            <li><span>Question 5</span><span class="tb-state">answered</span></li>
+          </ul>
+          <div class="notice-box">
+            <h2>Why you see nothing yet</h2>
+            <p>Everyone in this round answers the same five questions, at different times. Showing a score now would tell a later player what to expect. Scores and correct answers are hidden for everyone until the round closes.</p>
+          </div>
+          <p class="small"><b>Round closes in 19 hours.</b> Come back then for the result.</p>
+          <button class="ghost" type="button" data-go="ranked">Back to Ranked</button>
+        </div>
+
+        <div class="view" data-tb="result" hidden>
+          <p class="eyebrow">Prize tie-break · round 1 closed</p>
+          <h1 tabindex="-1">Third place is settled</h1>
+          <ul class="board">
+            <li class="winner"><span class="pos">1</span><span class="who"><b>parcel_fox</b><small>#K7Q2MX · your place</small></span><b>4 of 5</b><span class="marker">Takes the third hat</span></li>
+            <li><span class="pos">2</span><span class="who"><b>tape_gull</b><small>#G8H9JK</small></span><b>2 of 5</b></li>
+          </ul>
+          <p class="small">Season points and badges are unchanged. This decided the prize place only.</p>
+          <button class="ghost" type="button" data-go="leaderboard">See the leaderboard</button>
+        </div>
+
+        <div class="view" data-tb="tied" hidden>
+          <p class="eyebrow">Prize tie-break · round 1 closed</p>
+          <h1 tabindex="-1">Still tied — round 2 opens</h1>
+          <ul class="board">
+            <li><span class="pos">=</span><span class="who"><b>parcel_fox</b><small>#K7Q2MX · your place</small></span><b>3 of 5</b></li>
+            <li><span class="pos">=</span><span class="who"><b>tape_gull</b><small>#G8H9JK</small></span><b>3 of 5</b></li>
+          </ul>
+          <div class="notice-box">
+            <h2>A fresh round, with new questions</h2>
+            <p>Round 2 uses five questions neither of you has seen, and its own 24-hour window from the moment it opens. Round 1 still counts as played.</p>
+          </div>
+          <p class="small"><b>Round 2 closes in 24 hours.</b></p>
+          <button class="primary" type="button" data-tb-go="invite">Open round 2</button>
+        </div>
+
+        <div class="view" data-tb="missed" hidden>
+          <p class="eyebrow">Prize tie-break · round 1 closed</p>
+          <h1 tabindex="-1">You did not play this round</h1>
+          <div class="notice-box">
+            <h2>Out of the top three for this season</h2>
+            <p>The round closed with no attempt from you. A completed attempt outranks one that was not played, so the prize place goes to the player who finished.</p>
+          </div>
+          <div class="sum">
+            <div><span>Your season points</span><b>1,420</b></div>
+            <div><span>Your badge</span><b>Bronze</b></div>
+            <div><span>Your history</span><b>unchanged</b></div>
+          </div>
+          <p class="small">Only the prize placement changed. Nothing was deducted, and nothing was removed from your account.</p>
+          <button class="ghost" type="button" data-go="ranked">Back to Ranked</button>
+        </div>
+
+        <div class="view" data-tb="exhausted" hidden>
+          <p class="eyebrow">Prize tie-break · rounds finished</p>
+          <h1 tabindex="-1">Still tied after 5 rounds</h1>
+          <div class="notice-box">
+            <h2>The owner decides this place</h2>
+            <p>Five rounds is the agreed limit for this badge, and the tie survived all of them. The rule set before the season says the owner then chooses between the players still tied. No extra round is run, and nobody is ordered by who answered first.</p>
+          </div>
+          <div class="sum">
+            <div><span>Your season points</span><b>1,420</b></div>
+            <div><span>Your badge</span><b>Bronze</b></div>
+            <div><span>Earlier rounds</span><b>kept</b></div>
+          </div>
+          <p class="small">Points, badge, history and the order already earned in valid rounds all stand.</p>
+          <button class="ghost" type="button" data-go="ranked">Back to Ranked</button>
+        </div>
+
+        <div class="view" data-tb="noquestions" hidden>
+          <p class="eyebrow">Prize tie-break · round not run</p>
+          <h1 tabindex="-1">This round cannot be played</h1>
+          <div class="notice-box">
+            <h2>The owner decides this place</h2>
+            <p>A round needs five approved Hard questions that nobody in it has seen. There is no fresh set, and questions are never reused — a repeated question would favour whoever saw it first. The rule set before the season says the owner then chooses between the players still tied.</p>
+          </div>
+          <p class="small">Your points, badge and history are unchanged, and the results of any earlier rounds still stand.</p>
+          <button class="ghost" type="button" data-go="ranked">Back to Ranked</button>
+        </div>
+
+        <div class="view" data-tb="outage" hidden>
+          <p class="eyebrow">Prize tie-break · round restarted</p>
+          <h1 tabindex="-1">This round starts again</h1>
+          <div class="notice-box">
+            <h2>A confirmed server problem</h2>
+            <p>The round restarts for everyone in it, including players who had already finished. It uses five new questions and a new 24-hour window, and it does not count against the number of rounds this tie is allowed.</p>
+          </div>
+          <p class="small">Anything you answered in the interrupted round is discarded for everyone equally. No points changed and there is no mark against your account.</p>
+          <p class="small"><b>The restarted round closes in 24 hours.</b></p>
+          <button class="primary" type="button" data-tb-go="invite">Open the restarted round</button>
+        </div>
+
+        <div class="mock-controls">
+          <p>Mock controls · not part of the app</p>
+          <div class="row" role="group" aria-label="Tie-break screen">
+            <button type="button" data-tb-go="invite" aria-pressed="true">Invitation</button>
+            <button type="button" data-tb-go="question" aria-pressed="false">Question</button>
+            <button type="button" data-tb-go="submitted" aria-pressed="false">Submitted</button>
+            <button type="button" data-tb-go="result" aria-pressed="false">Settled</button>
+            <button type="button" data-tb-go="tied" aria-pressed="false">Still tied</button>
+            <button type="button" data-tb-go="missed" aria-pressed="false">Did not play</button>
+            <button type="button" data-tb-go="exhausted" aria-pressed="false">Rounds finished</button>
+            <button type="button" data-tb-go="noquestions" aria-pressed="false">No questions</button>
+            <button type="button" data-tb-go="outage" aria-pressed="false">Outage restart</button>
+          </div>
+        </div>
+      </section>
+
       <!-- Account deletion (issue #16, slice 3). The server behaviour is
            already built in #47: the login ID typed here is the
            reauthentication, a wrong one changes nothing and does not say
@@ -1047,8 +1220,8 @@
       member: [['home', '⌂', 'Home'], ['practice', '≡', 'Practice'], ['ranked', '◆', 'Ranked'], ['profile', '●', 'Profile']],
     };
     // Screens that live inside a tab keep that tab marked as current.
-    const PARENT_TAB = { leaderboard: 'ranked', tickets: 'profile', delete: 'profile', rquiz: 'ranked', promo: 'ranked', qc: 'ranked' };
-    const MEMBER_ONLY = ['ranked', 'leaderboard', 'profile', 'tickets', 'delete', 'rquiz', 'promo', 'qc'];
+    const PARENT_TAB = { leaderboard: 'ranked', tickets: 'profile', delete: 'profile', rquiz: 'ranked', promo: 'ranked', qc: 'ranked', tb: 'ranked' };
+    const MEMBER_ONLY = ['ranked', 'leaderboard', 'profile', 'tickets', 'delete', 'rquiz', 'promo', 'qc', 'tb'];
     let mode = 'public';
     // The home callout appears only once a start is confirmed. During
     // Pre-Season there is no callout and no invented date.
@@ -1081,6 +1254,7 @@
       if (name === 'rquiz') setRanked('question');
       if (name === 'promo') setPromotion('offer');
       if (name === 'qc') setQc('confirm');
+      if (name === 'tb') setTb('invite');
       for (const view of document.querySelectorAll('[data-view]')) view.hidden = view.dataset.view !== name;
       for (const el of document.querySelectorAll('[data-member]')) el.hidden = mode !== 'member';
       for (const el of document.querySelectorAll('[data-guest]')) el.hidden = mode !== 'guest';
@@ -1099,6 +1273,15 @@
       window.scrollTo(0, 0);
       // The delete screen holds one h1 per step, so focus the visible one.
       const heading = [...document.querySelectorAll(`[data-view="${name}"] h1`)].find(h => h.offsetParent !== null);
+      if (heading) heading.focus({ preventScroll: true });
+    }
+
+    // Prize tie-breaks. Opening lands on the invitation: nothing starts
+    // until the explicit action, and no state ever reveals a score early.
+    function setTb(state) {
+      for (const el of document.querySelectorAll('[data-tb]')) el.hidden = el.dataset.tb !== state;
+      for (const el of document.querySelectorAll('[data-tb-go]')) el.setAttribute('aria-pressed', String(el.dataset.tbGo === state));
+      const heading = document.querySelector(`[data-tb="${state}"] h1`);
       if (heading) heading.focus({ preventScroll: true });
     }
 
@@ -1305,6 +1488,7 @@
       if (button.dataset.rqGo) return setRanked(button.dataset.rqGo);
       if (button.dataset.prGo) return setPromotion(button.dataset.prGo);
       if (button.dataset.qcGo) return setQc(button.dataset.qcGo);
+      if (button.dataset.tbGo) return setTb(button.dataset.tbGo);
       if (button.dataset.season) {
         season = button.dataset.season;
         for (const el of document.querySelectorAll('[data-season]')) el.setAttribute('aria-pressed', String(el.dataset.season === season));
