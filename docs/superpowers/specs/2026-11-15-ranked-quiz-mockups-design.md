@@ -107,6 +107,38 @@ counts while believing it is practice.
    promotion half waits for slice 2. Box 1 is promotion entry, slice 2. Box
    7 waits for the last slice. Nothing is ticked until the work is merged.
 
+## Review record (2026-11-15)
+
+The owner reviewed the states in a browser at 375 px, in two groups, and
+approved them unchanged:
+
+1. The question screen and the three feedback states (right, wrong, timed
+   out).
+2. The three results: at a cap, below a cap, and negative.
+
+Decisions made while building, and accepted on review:
+
+- **The clock reads as a dash once an answer is accepted.** A clock still
+  counting during feedback would misrepresent a server clock that has
+  already stopped.
+- **The timeout screen says the ten seconds start when the server sends the
+  question**, so a slow connection can spend them before the question
+  appears. Unwelcome, but true, and better said than discovered.
+- **The negative result explains why** — a wrong Hard question costs 5 while
+  a wrong Easy one costs 15 — and points at Practice, which touches no
+  Ranked points. It does not console or scold.
+- **The result below a cap says "Nothing was discarded"**, so the sum always
+  has the same shape and a discard stands out when it happens.
+
+Not done, and accepted: no result shows the raw total separately from the
+applied one. The cap result demonstrates the difference through its
+arithmetic, and history is where the raw figure is kept.
+
+Checked at 320 px and 375 px: all nine states render, no sideways scroll, no
+button under 44 px, and no JavaScript error. A missing `.sr-only` rule was
+found and added — the question number was being drawn twice, once for screen
+readers and once in the header.
+
 ## Delivery
 
 Branch `codex/ranked-quiz-mockups` from `codex/ranked-mode`, opened as a
