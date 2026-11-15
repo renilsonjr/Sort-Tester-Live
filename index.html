@@ -321,6 +321,23 @@
   .lab-log-link span:last-child { margin-left: auto; font-size: 20px; }
   .lab-disclaimer { border: 1px solid #ded4c5; background: #f3ece0; padding: 13px 14px; border-radius: 15px; color: #6e5c4d; font-size: 12px; line-height: 1.5; }
   .lab-disclaimer strong { color: var(--ink); }
+  /* Leaderboard (#12, built to the screen approved in #16). No timestamps:
+     the first-reached-score rule was superseded by tie-break quizzes. */
+  .board { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+  .board li { display: grid; grid-template-columns: 34px 1fr auto; align-items: center; gap: 10px; border: 1px solid var(--line); border-radius: 17px; background: var(--panel); padding: 12px 14px; }
+  .board li.board-you { border: 2px solid var(--accent); }
+  .board li.board-tied { border-color: #c79a2c; background: #fdf6e4; }
+  .board b { font-weight: 900; }
+  .board small { display: block; color: var(--muted); font-size: 12px; }
+  .board-place { font-weight: 900; font-variant-numeric: tabular-nums; }
+  /* A long username must not push the points off the row. */
+  .board-who { min-width: 0; }
+  .board-who b { display: block; overflow-wrap: anywhere; }
+  .board-marker { grid-column: 1 / -1; margin-top: 4px; color: #7a5200; font-size: 12px; font-weight: 800; }
+  .board-notice { margin-top: 12px; border: 1px solid #e4d3a8; border-radius: 17px; background: #fbf3e1; padding: 13px 15px; }
+  .board-notice h2 { font-size: 16px; }
+  .board-notice p { margin-top: 4px; color: #54412f; font-size: 13px; }
+
   /* The inactivity warning. It sits above the navigation, not over the
      question, so a player reading a card is never covered by it. */
   .idle-warning { position: fixed; z-index: 30; left: 50%; transform: translateX(-50%); bottom: calc(68px + env(safe-area-inset-bottom)); width: min(100% - 28px, 402px); display: flex; align-items: center; gap: 11px; padding: 12px 14px; border: 1px solid var(--soft-line); border-radius: 15px; background: var(--soft); color: var(--ink); box-shadow: 0 10px 30px #35271e26; }
@@ -561,7 +578,7 @@
 <div id="auth-panel" hidden></div>
 <main id="app"></main>
 <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js" integrity="sha384-EnyY0/GSHQGSxSgMwaIPzSESbqoOLSexfnSMN2AP+39Ckmn92stwABZynq1JyzdT" crossorigin="anonymous"></script>
-<script type="module" src="src/app.js?v=logout-20261115"></script>
+<script type="module" src="src/app.js?v=board-20261115b"></script>
 <script type="module" src="src/auth.js"></script>
 </body>
 </html>

@@ -642,6 +642,73 @@ function fillSettings(panel) {
   panel.querySelector('#profile-delete').addEventListener('click', showDeleteAccount);
 }
 
+// The leaderboard (#12, slice 2), built to the screen approved in #16.
+//
+// No timestamps anywhere: the first-reached-score rule was superseded by
+// tie-break quizzes, and showing a time here would revive it. Tied players
+// share a place number, because which of them is ahead is a question only a
+// tie-break quiz answers.
+function showLeaderboard() {
+  stopTick();
+  clock = null;
+  const view = labPage(`
+    <section class="lab-screen">
+      <p class="lab-eyebrow">${esc(t('Ranked'))}</p>
+      <h1 class="lab-title">${esc(t('Leaderboard'))}</h1>
+      <div id="board-panel"><p class="lab-intro" role="status">${esc(t('Loading the standings…'))}</p></div>
+      <button id="board-back" class="ghost">${esc(t('Back to Ranked'))}</button>
+    </section>
+  `, 'ranked', showLeaderboard);
+  view.querySelector('#board-back').addEventListener('click', showRanked);
+  fillLeaderboard(view.querySelector('#board-panel'));
+  return view;
+}
+
+function boardNotice(title, text) {
+  return `<div class="board-notice"><h2>${esc(title)}</h2><p>${esc(text)}</p></div>`;
+}
+
+async function fillLeaderboard(panel) {
+  const board = await api('/ranked/leaderboard');
+  if (!board) {
+    panel.innerHTML = boardNotice(
+      t('Could not load the standings'),
+      t('Your points are safe. Try again in a moment.'),
+    );
+    return;
+  }
+  if (board.rows.length === 0) {
+    panel.innerHTML = boardNotice(
+      t('No standings yet'),
+      board.season_label
+        ? t('Nobody has completed a Ranked quiz in this season yet, so there is nothing to rank.')
+        : t('The official season has not started, so there is nothing to rank yet.'),
+    );
+    return;
+  }
+  const rows = board.rows.map((row) => `
+    <li class="${row.you ? 'board-you' : ''}${row.tied ? ' board-tied' : ''}">
+      <span class="board-place">${row.place}</span>
+      <span class="board-who">
+        <b>${esc(row.username)}</b>
+        <small>#${esc(row.tag)} · ${esc(row.badge)}${row.you ? ` · ${esc(t('your place'))}` : ''}</small>
+      </span>
+      <b class="board-points">${row.points.toLocaleString()}</b>
+      ${row.tied ? `<span class="board-marker">${esc(t('Tied on points'))}</span>` : ''}
+    </li>
+  `).join('');
+  panel.innerHTML = `
+    <p class="lab-intro">${esc(board.points_final
+      ? t('Points are final for this season. Prize places stay provisional until any tie-break quizzes are played.')
+      : t('Standings update after each settled Ranked quiz, not once a day.'))}</p>
+    <ol class="board">${rows}</ol>
+    ${board.eligible ? '' : boardNotice(
+      t('You are not in the standings'),
+      t('Your points and badge count as usual and are on your profile. The competition is for Primary Sort on the Twilight shift, approved by the owner. Ask the owner if that should be you.'),
+    )}
+  `;
+}
+
 function showRankedPlaceholder() {
   comingSoon(
     t('Ranked'),
@@ -691,7 +758,19 @@ async function fillRanked(panel, title) {
   const [season, entry] = await Promise.all([api('/ranked/season'), api('/ranked/entry')]);
   if (!season || !entry) {
     title.textContent = t('Ranked');
-    panel.innerHTML = `<p class="notice">${esc(t('Could not load the season. Your points are safe.'))}</p>`;
+    // The way to the leaderboard stays on the screen. The season and the
+    // standings are separate requests, so one can fail while the other
+    // answers; and when both are down, the board says so itself and
+    // invites another try, rather than this screen being a dead end.
+    panel.innerHTML = `
+      <p class="notice">${esc(t('Could not load the season. Your points are safe.'))}</p>
+      <button id="ranked-board" class="lab-choice" type="button">
+        <span class="lab-choice-icon">#</span>
+        <span><strong>${esc(t('Leaderboard'))}</strong><small>${esc(t('See the standings.'))}</small></span>
+        <span class="lab-arrow" aria-hidden="true">→</span>
+      </button>
+    `;
+    panel.querySelector('#ranked-board').addEventListener('click', showLeaderboard);
     return;
   }
   title.textContent = season.phase === 'pre_season' ? t('Pre-Season') : season.label;
@@ -718,8 +797,14 @@ async function fillRanked(panel, title) {
       <span><strong>${esc(atCap ? t('Start promotion') : t('Start Ranked quiz'))}</strong><small>${esc(t('15 questions, ten seconds each.'))}</small></span>
       <span class="lab-arrow" aria-hidden="true">\u2192</span>
     </button>
+    <button id="ranked-board" class="lab-choice" type="button">
+      <span class="lab-choice-icon">#</span>
+      <span><strong>${esc(t('Leaderboard'))}</strong><small>${esc(t('See the standings.'))}</small></span>
+      <span class="lab-arrow" aria-hidden="true">→</span>
+    </button>
     <p class="lab-intro" id="ranked-note">${esc(t('Playing a Ranked quiz is being built. Nothing has started.'))}</p>
   `;
+  panel.querySelector('#ranked-board').addEventListener('click', showLeaderboard);
   panel.querySelector('#ranked-start').addEventListener('click', () => {
     panel.querySelector('#ranked-note').textContent =
       t('Playing a Ranked quiz is being built. Nothing has started.');

@@ -17,6 +17,7 @@ from backend.auth.deletion import purge_deleted_accounts
 from backend.auth.service import get_account_by_session
 from backend.db import migrate, settings
 from backend.ranked import capability, engine, launch, season_close, seasons, settlement
+from backend.ranked import standings as ranked_standings
 from backend.ranked import history as ranked_history
 from backend.ranked import flags as ranked_flags
 from backend.support import retention as support_retention
@@ -384,6 +385,53 @@ def season(account: dict = Depends(_current_account), conn=Depends(get_db)):
         else closes_at.astimezone(timezone.utc).isoformat(),
         "points_final": current.status == "frozen",
         "approvals_open": current.approvals_open,
+    }
+
+
+@router.get("/leaderboard")
+def leaderboard(account: dict = Depends(_current_account), conn=Depends(get_db)):
+    """The official standings. Login is required to see them (settled Q5).
+
+    Read-only, and it carries only what the approved screen shows: place,
+    username, tag, points and badge. ``your_place`` is null for a player
+    the competition does not include, which is the "no position" state the
+    mockup draws; their own points and badge are unaffected and stay on
+    their profile.
+
+    During Pre-Season there is no official season to rank, so the board is
+    empty rather than invented. ``points_final`` repeats what /season says:
+    once the season is frozen the points no longer move, while prize
+    places stay provisional until the tie-breaks in #24 resolve them.
+    """
+    launch_fact = seasons.official_launch(conn)
+    if launch_fact is None:
+        return {
+            "season_label": None,
+            "points_final": False,
+            "rows": [],
+            "your_place": None,
+            "eligible": False,
+        }
+    rows = ranked_standings.standings(conn, launch_fact.season_id)
+    current = seasons.current_season_status(conn, _CLOCK.now())
+    place = ranked_standings.place_of(rows, account["id"])
+    return {
+        "season_label": launch_fact.label,
+        "points_final": current is not None and current.status == "frozen",
+        "rows": [
+            {
+                "place": row.place,
+                "username": row.username,
+                "tag": row.tag,
+                "points": row.points,
+                "badge": row.badge,
+                "tied": row.tied,
+                "you": row.account_id == account["id"],
+            }
+            for row in rows
+        ],
+        "your_place": place,
+        "eligible": place is not None,
     }
 
 
