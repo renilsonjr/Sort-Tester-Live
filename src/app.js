@@ -153,6 +153,30 @@ function wireLanguageButtons(view, rerender) {
   }));
 }
 
+// Who is using the app: null until the auth panel says. A guest gets Home
+// and Practice; a signed-in player also gets Ranked and Profile (#10, from
+// the navigation approved in #15).
+let session = null;
+
+function signedIn() {
+  return session !== null;
+}
+
+// The bottom navigation, which changes shape with the session. Study and
+// Quiz became one Practice tab in the approved navigation: both are ways of
+// practising, and the separate Ranked tab is what costs points.
+function navTabs() {
+  const tabs = [
+    ['home', '\u2302', t('Home')],
+    ['practice', '\u2261', t('Practice')],
+  ];
+  if (signedIn()) {
+    tabs.push(['ranked', '\u25c6', t('Ranked')]);
+    tabs.push(['profile', '\u25cf', t('Profile')]);
+  }
+  return tabs;
+}
+
 function labPage(content, active = 'home', rerender = showStart) {
   const view = el(`
     <div class="lab-shell">
@@ -164,10 +188,9 @@ function labPage(content, active = 'home', rerender = showStart) {
         <div class="lab-site">UPS Saddle Brook <span aria-hidden="true">·</span> Twilight</div>
       </header>
       <main class="lab-main">${content}</main>
-      <nav class="lab-nav" aria-label="${esc(t('Main navigation'))}">
-        <button type="button" data-nav="home" ${active === 'home' ? 'aria-current="page"' : ''}><i aria-hidden="true">⌂</i>${esc(t('Home'))}</button>
-        <button type="button" data-nav="study" ${active === 'study' ? 'aria-current="page"' : ''}><i aria-hidden="true">≡</i>${esc(t('Study'))}</button>
-        <button type="button" data-nav="quiz" ${active === 'quiz' ? 'aria-current="page"' : ''}><i aria-hidden="true">◉</i>${esc(t('Quiz'))}</button>
+      <nav class="lab-nav" style="grid-template-columns: repeat(${navTabs().length}, 1fr)" aria-label="${esc(t('Main navigation'))}">
+        ${navTabs().map(([id, icon, label]) => `
+        <button type="button" data-nav="${id}" ${active === id ? 'aria-current="page"' : ''}><i aria-hidden="true">${icon}</i>${esc(label)}</button>`).join('')}
       </nav>
     </div>
   `);
@@ -175,8 +198,9 @@ function labPage(content, active = 'home', rerender = showStart) {
   wireLanguageButtons(view, rerender);
   view.querySelectorAll('[data-nav]').forEach((button) => button.addEventListener('click', () => {
     if (button.dataset.nav === active) return;
-    if (button.dataset.nav === 'study') showStudy();
-    else if (button.dataset.nav === 'quiz') showNameEntry();
+    if (button.dataset.nav === 'practice') showPractice();
+    else if (button.dataset.nav === 'ranked') showRankedPlaceholder();
+    else if (button.dataset.nav === 'profile') showProfilePlaceholder();
     else showStart();
   }));
   return view;
@@ -190,6 +214,63 @@ function stopTick() {
 function beltChip(belt, className) {
   const style = BELT_STYLE[belt];
   return `<div class="${className}" style="background:${style.bg};color:${style.fg}">${belt}</div>`;
+}
+
+// Practice: the two ways of practising, together under one tab. Neither
+// changes Ranked points, and the screen says so.
+function showPractice() {
+  stopTick();
+  clock = null;
+  const view = labPage(`
+    <section class="lab-screen">
+      <p class="lab-eyebrow">${esc(t('Practice'))}</p>
+      <h1 class="lab-title">${esc(t('Study and practice'))}</h1>
+      <p class="lab-intro">${esc(t('Practice never changes Ranked points.'))}</p>
+      <button id="study" class="lab-choice" type="button">
+        <span class="lab-choice-icon">01</span>
+        <span><strong>${esc(t('Know the chart'))}</strong><small>${esc(t('Browse every service by state and ZIP range.'))}</small></span>
+        <span class="lab-arrow" aria-hidden="true">→</span>
+      </button>
+      <button id="quiz" class="lab-choice lab-choice-quiz" type="button">
+        <span class="lab-choice-icon">02</span>
+        <span><strong>${esc(t('Take a quiz'))}</strong><small>${esc(t('Start with Ground, then build up to the full chart.'))}</small></span>
+        <span class="lab-arrow" aria-hidden="true">→</span>
+      </button>
+    </section>
+  `, 'practice', showPractice);
+  view.querySelector('#study').addEventListener('click', showStudy);
+  view.querySelector('#quiz').addEventListener('click', () => showNameEntry());
+}
+
+// Ranked and Profile exist as tabs for signed-in players from this slice on;
+// their screens are the next slices of #10. A placeholder that says so is
+// better than a tab that does nothing when pressed.
+function comingSoon(eyebrow, title, note, active) {
+  labPage(`
+    <section class="lab-screen">
+      <p class="lab-eyebrow">${esc(eyebrow)}</p>
+      <h1 class="lab-title">${esc(title)}</h1>
+      <p class="lab-intro">${esc(note)}</p>
+    </section>
+  `, active, () => comingSoon(eyebrow, title, note, active));
+}
+
+function showRankedPlaceholder() {
+  comingSoon(
+    t('Ranked'),
+    t('Ranked is being built'),
+    t('Playing for points is not available yet. Practice is, and it never changes Ranked points.'),
+    'ranked',
+  );
+}
+
+function showProfilePlaceholder() {
+  comingSoon(
+    t('Profile'),
+    t('Your profile is being built'),
+    t('Your points, badge and history will appear here.'),
+    'profile',
+  );
 }
 
 function showStart() {
@@ -242,6 +323,16 @@ function showStart() {
   view.querySelector('#viewlog').addEventListener('click', showLog);
 }
 
+// The auth panel calls this when the visitor enters the app, with the
+// account for a signed-in player or null for a guest. Re-rendering is what
+// makes the navigation change shape.
+function setSession(account) {
+  session = account;
+  showStart();
+}
+
+if (typeof window !== 'undefined') window.setSortLabSession = setSession;
+
 function showNameEntry(previousName = '') {
   const view = labPage(`
     <section class="lab-screen">
@@ -253,7 +344,7 @@ function showNameEntry(previousName = '') {
       <button id="begin" class="primary">${esc(t('Pick a test'))}</button>
       <button id="back" class="ghost">${esc(t('Back to home'))}</button>
     </section>
-  `, 'quiz', () => showNameEntry(view.querySelector('#name').value));
+  `, 'practice', () => showNameEntry(view.querySelector('#name').value));
 
   const nameInput = view.querySelector('#name');
   nameInput.focus();
@@ -294,7 +385,7 @@ function showStudy() {
       <div id="chart-rows"></div>
       <aside class="lab-disclaimer"><strong>${esc(t('Made by RJ.'))}</strong> ${esc(t('This study guide does not replace your current worksite chart or UPS training.'))}</aside>
     </section>
-  `, 'study', showStudy);
+  `, 'practice', showStudy);
 
   const search = view.querySelector('#chart-search');
   const renderRows = () => {
@@ -352,7 +443,7 @@ function showDeckPicker(name) {
       <button id="main-page" class="ghost">${esc(t('Main page'))}</button>
       ${entries.length ? `<button id="viewlog" class="ghost">${esc(t('Shift log'))} (${entries.length})</button>` : ''}
     </section>
-  `, 'quiz', () => showDeckPicker(name));
+  `, 'practice', () => showDeckPicker(name));
 
   view.querySelectorAll('.deckbtn[data-deck]').forEach((button) => {
     button.addEventListener('click', () => {

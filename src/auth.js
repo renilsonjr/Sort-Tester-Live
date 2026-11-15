@@ -160,11 +160,14 @@ export function initAuthPanel(doc = document) {
   if (app) app.hidden = true;
   // app.js has already rendered the start screen inside #app; entering the
   // app (as a guest or after logging in) only swaps which one is visible.
-  const enterApp = () => {
+  // The app needs to know which way in was taken: a guest gets Home and
+  // Practice, a signed-in player also gets Ranked and Profile (#10).
+  const enterApp = (account = null) => {
     panel.hidden = true;
     if (app) app.hidden = false;
+    doc.defaultView?.setSortLabSession?.(account);
   };
-  return createAuthPanel(panel, enterApp, enterApp);
+  return createAuthPanel(panel, () => enterApp(null), (account) => enterApp(account));
 }
 
 // Is the FastAPI backend serving this page? On GitHub Pages /health does not
