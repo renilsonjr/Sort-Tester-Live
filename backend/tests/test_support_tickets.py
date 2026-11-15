@@ -839,3 +839,87 @@ class AccountDeletionTests(TicketTestCase):
             )
         self.conn.rollback()
         self.assertIn("support_tickets_attempt_same_account", str(caught.exception))
+
+    def test_automatic_handling_runs_with_no_reviewer(self):
+        """#26 box 6: admins offline.
+
+        Nothing waits for a reviewer. An open ticket stays open for ever
+        without one, and the retention sweep keeps working around it.
+        """
+        account = self._account()
+        attempt = self._flapping_attempt(account)
+        ticket = tickets.open_ticket(self.conn, account, attempt, description="note")
+        self.conn.commit()
+        # no owner exists at all, so no review is possible
+        self.assertEqual(
+            self._count("SELECT COUNT(*) AS n FROM accounts WHERE is_owner", ()), 0
+        )
+        self.clock.advance(365 * 86400)
+        result = retention.purge_due_cases(self.conn, clock=self.clock)
+        self.conn.commit()
+        self.assertEqual(result, {"descriptions": 0, "logs": 0})
+        still = tickets.ticket_for(self.conn, account, ticket)
+        self.assertIsNone(still["closed_at"])
+        self.assertEqual(still["description"], "note")
+        self.assertGreater(
+            self._count(
+                "SELECT COUNT(*) AS n FROM attempt_connection_events WHERE attempt_id=%s",
+                (attempt,),
+            ),
+            0,
+        )
+
+    def test_a_wipe_during_the_retention_window_takes_the_case_with_it(self):
+        """#26 box 6: a deletion racing the retention clock.
+
+        A case closed but not yet purged, and the account deleted before the
+        fifteen days are up. The wipe wins: nothing of that account is left
+        for the sweep to find, and the sweep still runs cleanly afterwards.
+        """
+        owner = self._owner()
+        going, staying = self._account(), self._account()
+        going_attempt = self._flapping_attempt(going)
+        staying_attempt = self._flapping_attempt(staying)
+        going_ticket = tickets.open_ticket(self.conn, going, going_attempt, description="x")
+        staying_ticket = tickets.open_ticket(self.conn, staying, staying_attempt, description="y")
+        from backend.ranked import flags
+
+        for attempt in (going_attempt, staying_attempt):
+            flags.close_flag(self.conn, attempt, "network_instability", clock=self.clock)
+        for ticket in (going_ticket, staying_ticket):
+            tickets.close_ticket(
+                self.conn, owner, ticket, "network_instability", clock=self.clock
+            )
+        self.conn.commit()
+
+        self.clock.advance(7 * 86400)  # halfway through the window
+        self._delete_and_purge(going)
+
+        # nothing of the deleted account survives, window or not
+        for table, column in (
+            ("support_tickets", "account_id"),
+            ("attempts", "account_id"),
+        ):
+            self.assertEqual(
+                self._count(
+                    f"SELECT COUNT(*) AS n FROM {table} WHERE {column}=%s", (going,)
+                ),
+                0,
+                table,
+            )
+        self.assertEqual(
+            self._count(
+                "SELECT COUNT(*) AS n FROM attempt_connection_events WHERE attempt_id=%s",
+                (going_attempt,),
+            ),
+            0,
+        )
+
+        # and the other player's case is still on its own clock
+        self.clock.advance(8 * 86400)
+        result = retention.purge_due_cases(self.conn, clock=self.clock)
+        self.conn.commit()
+        self.assertEqual(result, {"descriptions": 1, "logs": 1})
+        self.assertIsNone(
+            tickets.ticket_for(self.conn, staying, staying_ticket)["description"]
+        )
