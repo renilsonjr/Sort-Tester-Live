@@ -25,14 +25,82 @@ opens at the freeze, because that is when every eligible attempt has
 settled and the tied score is final.
 """
 
+import secrets
 from dataclasses import dataclass
 from datetime import timedelta
 
 from backend.db import migrate
 from backend.ranked import standings
+from backend.ranked.versions import materialize_question_version
 
 HATS = 3
 ROUND_WINDOW = timedelta(hours=24)
+QUESTIONS_PER_ROUND = 5
+
+# Unpredictable rather than reproducible: a player who could work out the
+# next round's questions from the last one would have them before the
+# round opened. Tests pass their own generator.
+_SYSTEM_RANDOM = secrets.SystemRandom()
+
+
+class NoFreshSet(Exception):
+    """Fewer than five unused Hard questions remain this season.
+
+    Settled Decisions 9-10: the affected prize places then wait for the
+    owner's selection. Questions are never reused and content is never
+    approved on the fly to fill the gap.
+    """
+
+
+def _hard_questions(bank):
+    return [q for q in bank.questions if q.difficulty.lower() == "hard"]
+
+
+def fresh_questions(conn, season_id, bank) -> list:
+    """The Hard questions no tie-break round of this season has used yet,
+    valid or voided alike, since every one of them was seen by players."""
+    used = {
+        row["bank_key"]
+        for row in migrate.fetch_all(
+            conn,
+            "SELECT bank_key FROM tiebreak_round_questions WHERE season_id = %s",
+            (season_id,),
+        )
+    }
+    return [q for q in _hard_questions(bank) if q.canonical_id not in used]
+
+
+def assign_round_questions(conn, round_id, season_id, bank, *, rng=None) -> list:
+    """Give a round its five shared questions, or raise ``NoFreshSet``.
+
+    Does not commit. The schema refuses a reused question even if this code
+    were wrong, so a race between two rounds fails loudly instead of
+    quietly handing both the same question.
+    """
+    pool = fresh_questions(conn, season_id, bank)
+    if len(pool) < QUESTIONS_PER_ROUND:
+        raise NoFreshSet()
+    chosen = (rng or _SYSTEM_RANDOM).sample(pool, QUESTIONS_PER_ROUND)
+    for seq, question in enumerate(chosen, start=1):
+        migrate.execute(
+            conn,
+            "INSERT INTO tiebreak_round_questions"
+            " (round_id, seq, question_version_id, season_id, bank_key)"
+            " VALUES (%s, %s, %s, %s, %s)",
+            (
+                round_id,
+                seq,
+                materialize_question_version(conn, question),
+                season_id,
+                question.canonical_id,
+            ),
+        )
+    return chosen
+
+
+def fresh_sets_left(conn, season_id, bank) -> int:
+    """How many more rounds this season can still be given fresh questions."""
+    return len(fresh_questions(conn, season_id, bank)) // QUESTIONS_PER_ROUND
 
 
 @dataclass(frozen=True)
@@ -59,7 +127,7 @@ def prize_tie(rows) -> PrizeTie | None:
     return PrizeTie(tied_points=cut, hats_available=HATS - above, account_ids=tied)
 
 
-def open_prize_tiebreaks(conn, season_id, *, clock):
+def open_prize_tiebreaks(conn, season_id, *, clock, bank=None, rng=None):
     """Open the season-close tie group and its round 1, when one is needed.
 
     Called inside the freeze's transaction, so the freeze and the group
@@ -107,10 +175,24 @@ def open_prize_tiebreaks(conn, season_id, *, clock):
         # it is not stretched; but a round must be playable, so it gets the
         # full window from now. Recorded on the round, not hidden.
         deadline = now + ROUND_WINDOW
-    migrate.execute(
+    if bank is None:
+        from backend.ranked_bank.catalog import load_reviewed_bank
+
+        bank = load_reviewed_bank()
+    if fresh_sets_left(conn, season_id, bank) == 0:
+        # No round can be played, so none is opened: the places wait for
+        # the owner, which is the settled fallback, not a failure.
+        migrate.execute(
+            conn,
+            "UPDATE tiebreak_groups SET status = 'owner_selection' WHERE id = %s",
+            (group_id,),
+        )
+        return group_id
+    round_id = migrate.fetch_one(
         conn,
         "INSERT INTO tiebreak_rounds (group_id, round_number, opened_at, deadline_at)"
-        " VALUES (%s, 1, %s, %s)",
+        " VALUES (%s, 1, %s, %s) RETURNING id",
         (group_id, now, deadline),
-    )
+    )["id"]
+    assign_round_questions(conn, round_id, season_id, bank, rng=rng)
     return group_id
