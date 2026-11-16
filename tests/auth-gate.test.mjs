@@ -16,6 +16,8 @@ function fakeElement() {
     textContent: '',
     className: '',
     disabled: false,
+    focused: false,
+    focus() { this.focused = true; },
     set innerHTML(_markup) { children.clear(); },
     get innerHTML() { return ''; },
     querySelector(selector) {
@@ -138,4 +140,33 @@ test('an existing session skips the login screen', async () => {
   await withGlobalFetch(fetchFn, () => auth.startAuthGate({ doc, fetchFn }));
   assert.equal(panel.hidden, true);
   assert.equal(app.hidden, false);
+});
+
+for (const kind of ['login', 'register']) {
+  test(`${kind} replaces the entry choices and Cancel restores them`, async () => {
+    const { doc, panel } = fakePage();
+    auth.initAuthPanel(doc);
+    const trigger = panel.querySelector(`#auth-${kind}-btn`);
+    await trigger.fire('click');
+    const form = panel.querySelector('#auth-form');
+    assert.equal(panel.querySelector('#auth-choices').hidden, true);
+    assert.equal(form.hidden, false);
+    const inputId = kind === 'login' ? '#login-id-input' : '#register-username-input';
+    assert.equal(form.querySelector(inputId).focused, true);
+    await form.querySelector(`#${kind}-cancel`).fire('click');
+    assert.equal(form.hidden, true);
+    assert.equal(panel.querySelector('#auth-choices').hidden, false);
+    assert.equal(trigger.focused, true);
+  });
+}
+
+test('returning to entry restores choices after an open form', async () => {
+  const { doc, panel } = fakePage();
+  doc.defaultView = {};
+  auth.initAuthPanel(doc);
+  await panel.querySelector('#auth-login-btn').fire('click');
+  doc.defaultView.showSortLabEntry('Session ended');
+  assert.equal(panel.querySelector('#auth-choices').hidden, false);
+  assert.equal(panel.querySelector('#auth-form').hidden, true);
+  assert.equal(panel.querySelector('#auth-message').textContent, 'Session ended');
 });
