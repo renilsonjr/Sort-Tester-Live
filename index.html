@@ -376,9 +376,33 @@
   .rq-service { color: var(--muted); font-size: 12px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; }
   .rq-code { font: 900 clamp(34px, 7dvh, 52px)/1 "Space Grotesk", sans-serif; letter-spacing: -.02em; margin-top: 4px; }
   .belts { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 10px 0; }
-  .belts .belt { min-height: clamp(76px, 12dvh, 104px); border-radius: 14px; font-weight: 900; font-size: clamp(18px, 2.6dvh, 24px); border: 0; }
+  .belts .belt { min-height: clamp(76px, 12dvh, 104px); border-radius: 14px; font-weight: 900; font-size: clamp(18px, 2.6dvh, 24px); border: 0; transition: transform 0.15s ease, box-shadow 0.2s ease, filter 0.15s ease; }
   .belts .belt:disabled { opacity: .5; }
   .belts .belt.picked { opacity: 1; outline: 3px solid var(--ink); outline-offset: 2px; }
+
+  /* Interactive quiz feedback: correct green glow & incorrect red shake */
+  .belt.belt-correct {
+    opacity: 1 !important;
+    animation: correctGlow 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+    z-index: 2;
+  }
+  .belt.belt-incorrect {
+    opacity: 1 !important;
+    animation: incorrectShake 0.5s ease-in-out forwards;
+    z-index: 2;
+  }
+
+  @keyframes correctGlow {
+    0% { box-shadow: 0 0 0 0 rgba(34, 100, 66, 0.9); transform: scale(1); }
+    40% { box-shadow: 0 0 0 6px rgba(34, 100, 66, 0.4), 0 0 26px 8px var(--good); transform: scale(1.04); filter: brightness(1.15); }
+    100% { box-shadow: 0 0 0 4px rgba(34, 100, 66, 0.7), 0 0 16px 3px var(--good); transform: scale(1.02); }
+  }
+
+  @keyframes incorrectShake {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(161, 45, 45, 0.8); transform: translateX(0); }
+    20%, 60% { box-shadow: 0 0 0 5px rgba(161, 45, 45, 0.4), 0 0 20px 4px var(--bad); transform: translateX(-5px); filter: brightness(1.15); }
+    40%, 80% { box-shadow: 0 0 0 5px rgba(161, 45, 45, 0.4), 0 0 20px 4px var(--bad); transform: translateX(5px); filter: brightness(1.15); }
+  }
   .lab-rules { margin: 4px 0 10px 0; padding-left: 20px; color: var(--ink); font-size: 14px; line-height: 1.5; display: flex; flex-direction: column; gap: 6px; }
 
   /* Ranked and promotion feedback/result (built to the screens approved
