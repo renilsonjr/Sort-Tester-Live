@@ -219,15 +219,15 @@ no-op upgrade-at-head test; no test migration was applied to staging.
 ### Task 5: Registry pull via ACR + managed identity (H-5) — `OPS`
 
 **Files:**
-- Modify: `infra/azure/container-apps-app.bicep` (add system-assigned identity + ACR registry entry; delete `registryUsername`/`registryPassword` params and the `registry-password` secret)
+- Modify: `infra/azure/container-apps-app.bicep` (add the dedicated user-assigned identity + ACR registry entry; delete `registryUsername`/`registryPassword` params and the `registry-password` secret)
 - Modify: `.github/workflows/app-image-publish.yml` (also push the digest to ACR) and `container-apps-app.md` §2/§3
 - Test: `backend/tests/test_azure_container_app.py` (update: no registry password param; identity present)
 
 - [x] **Step 1: Create the registry** — `az acr create -g rg-sort-tester-staging -n <name> --sku Standard` (uses the verified student free allowance; recheck its quota and expiry first) (name is not a secret; track it in the private inventory, not the runbook).
 - [ ] **Step 2: Publish path** — extend the publish workflow to push the same digest to ACR (repo settings: add an `ACR` environment or use the existing publish gate from Task 8; authenticate with a short-lived token via `az acr login` in the job, not a stored PAT). Manual interim: `az acr import --source ghcr.io/renilsonjr/sort-tester-live-app@sha256:<digest> ...`.
-- [ ] **Step 3: Bicep changes** — on the container app: `identity: { type: 'SystemAssigned' }`; `registries: [{ server: '<name>.azurecr.io', identity: 'system' }]`; remove both registry params and the secret entry.
-- [ ] **Step 4: Grant pull** — after first what-if (the identity must exist), `az role assignment create --assignee <principalId> --role AcrPull --scope <acr-id>`; redeploy.
-- [ ] **Step 5: Move the database secret into Key Vault (audit §3 P0-1, same identity)** — `az keyvault create -g rg-sort-tester-staging -n <name>`; `az keyvault secret set --vault-name <name> --name database-url --value "<sort_app DSN>"`; grant the app identity `Key Vault Secrets User` on the vault; in bicep replace the `database-url` secret's `value: databaseUrl` with `keyVaultUrl: 'https://<name>.vault.azure.net/secrets/database-url'`, and delete the `databaseUrl` param and its `@secure()` block. Rotation becomes a vault operation and every read is audited.
+- [ ] **Step 3: Bicep changes** — after the identity bootstrap is approved: attach the dedicated user-assigned runtime identity to the container app and use its resource ID in the registry entry; remove both registry params and the secret entry.
+- [ ] **Step 4: Bootstrap runtime read access** — after explicit approval of the identity and both scopes, register the ManagedIdentity provider if needed and deploy `runtime-identity.bicep`. Its resource-scoped AcrPull and Key Vault Secrets User assignments reference the new identity principal. Verify the resolved principal and exact direct assignments before later app association. No publisher or subscription-wide role belongs to the runtime.
+- [ ] **Step 5: Move the database secret into Key Vault (audit §3 P0-1)** — the dedicated vault already exists. Prepare a separately reviewed operator write path and transfer the limited-role DSN through an in-memory or protected-file method, never a command argument. The identity bootstrap grants read access only; it does not grant an operator secret-write access. Verify its existing vault read binding rather than adding a duplicate. In the app Bicep, replace the inline secret value with the Key Vault URI and runtime identity reference, then remove the `databaseUrl` parameter only after the tested transition/rollback path is ready.
 - [ ] **Step 6: Verify:** app pulls and boots; `az containerapp show` config contains no registry password and no inline DB secret; GHCR PAT is **revoked**.
 - [ ] **Step 7: Update tests + runbook; commit** — `security: ACR + managed identity + Key Vault; PAT and inline DB secret retired (audit H-5, §3 P0-1)`
 
@@ -243,6 +243,16 @@ unchanged app configuration and spending protection. See
 Only Step 1 is complete; the vault-creation portion of Step 5 is complete, but
 identity grants, publishing, secret transfer, app switch and PAT retirement
 remain pending. No overall Task 5 completion or rollout approval is claimed.
+
+Task 5 identity preparation — 2026-11-16: [[../../../infra/azure/runtime-identity]]
+and its Bicep prepare one user-assigned identity plus AcrPull on the dedicated
+registry and Key Vault Secrets User on the dedicated vault. This refines the
+original system-assigned example so grants can precede app changes, following
+Azure's image-pull recommendation. Compiled scope/principal checks and negative
+mutations passed; Azure what-if showed three Creates and no existing-resource
+changes. Microsoft.ManagedIdentity is NotRegistered. Provider registration,
+identity/grant creation and app association are not authorized or executed by
+this preparation. Separate owner approval of these exact accesses is required.
 
 ### Task 6: Network isolation — VNet-injected environment + private endpoint (H-4) — `OPS` *(biggest change: plan a deployment window)*
 

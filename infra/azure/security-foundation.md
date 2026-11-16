@@ -160,3 +160,6 @@ read permission was added for this check. The foundation was created without
 secret resources. Task 5 is still incomplete until the later access/publisher/
 secret/pull/rollback steps are verified. Check actual billed usage after Azure
 posts it; free-allowance verification is not a final invoice.
+
+The next prepared slice is [[runtime-identity]]; it remains unexecuted and needs
+separate approval of identity creation and the two resource-scoped read grants.
