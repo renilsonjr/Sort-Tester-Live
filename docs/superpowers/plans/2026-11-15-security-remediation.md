@@ -159,17 +159,29 @@ If `request_deletion` does not commit internally, add the same `conn.commit()` t
 - Modify: `infra/azure/container-apps-app.md` (§5b note + §1 runbook step for the #78 check)
 - Test: `backend/tests/test_azure_container_app.py` (extend: assert the param is required or default `'1'`)
 
-- [ ] **Step 1: Verify the ACA ingress appends the real client address** (runbook issue #78 check — one request with a spoofed `X-Forwarded-For` while the app logs the computed client key; with `SORT_TEST_TRUST_PROXY=1` the spoofed first entry must be ignored). Record the result in the runbook.
-- [ ] **Step 2: Make the safe value explicit** — change the param so the template cannot deploy with the unsafe default:
+- [x] **Step 1: Verify the ACA ingress appends the real client address** (runbook issue #78 check — one request with a spoofed `X-Forwarded-For` while the app logs the computed client key; with `SORT_TEST_TRUST_PROXY=1` the spoofed first entry must be ignored). Record the result in the runbook.
+- [x] **Step 2: Make the safe value explicit** — change the param so the template cannot deploy with the unsafe default:
 
 ```bicep
 @allowed(['1'])   // one trusted proxy: the ACA ingress
-param trustedProxies string
+param trustedProxies string = '1'
 ```
 
-- [ ] **Step 3: Update `test_azure_container_app.py`** to pin the new param contract; run `backend/.venv/bin/python -m unittest backend.tests.test_azure_container_app -v` → PASS.
-- [ ] **Step 4: `az bicep build --file infra/azure/container-apps-app.bicep --stdout >/dev/null`** → exits 0.
-- [ ] **Step 5: Commit** — `security: require trustedProxies=1 now that ingress XFF is verified (audit H-2)`
+- [x] **Step 3: Update `test_azure_container_app.py`** to pin the new param contract; run `backend/.venv/bin/python -m unittest backend.tests.test_azure_container_app -v` → PASS.
+- [x] **Step 4: `az bicep build --file infra/azure/container-apps-app.bicep --stdout >/dev/null`** → exits 0.
+- [x] **Step 5: Commit** — `security: require trustedProxies=1 now that ingress XFF is verified (audit H-2)`
+
+Implementation note — 2026-11-16: Step 1 uses the staging evidence recorded
+in `container-apps-app.md` on 2026-11-14, not a new cloud verification. The
+parameter retains a default of `1` for existing deployment commands and allows
+only `1`; explicit empty/`2` overrides are rejected. Runtime deployment is
+separate from this repository change.
+
+Verification: 18 template/rate-limit tests passed with local scratch PostgreSQL;
+Bicep CLI 0.49.2 compiled the template and the emitted JSON was checked for
+`allowedValues: ['1']`, `defaultValue: '1'` and app environment wiring. No Azure
+deployment or new live ingress probe ran. Task 3 repository work is ready for
+PR review; deployment evidence remains with #41/#13.
 
 ### Task 4: Least-privilege database role (H-3) — `OPS`
 

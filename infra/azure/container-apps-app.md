@@ -281,12 +281,15 @@ above must still pass afterwards.
 
 ### 6a. Decide whether to trust the ingress for client addresses (issue #78)
 
-Without this the app sees every request as coming from the ingress, so ALL
-players share one login-attempt counter: ten wrong logins by anyone lock
-everyone out for five minutes. `trustedProxies=1` makes the app count each
-request under the last `X-Forwarded-For` entry, the one the ingress wrote.
-Prove that entry is the real client before relying on it. Redeploy with
-`trustedProxies=1` added to the step 5b parameters, then, with `URL` set:
+The template defaults `trustedProxies` to `1` and accepts only `1`.
+This setting trusts the single Container Apps ingress hop, verified on staging
+below. Empty trust would group clients behind the ingress; trusting two hops
+could include a client-supplied address. Local development and other hosts
+keep their own configuration; this template applies only to Container Apps.
+
+The check below verifies that the rightmost address is supplied by the ingress,
+not the client. Repeat it after a change to the proxy topology, using fictional
+login IDs and two different networks, with `URL` set to the staging URL:
 
 ```sh
 # A. From one machine: a different forged address on every request.
@@ -305,10 +308,15 @@ client sent, so one trusted proxy is the right setting there.
 
 - A must print ten `401` then `429`: forging the header does not evade the limit.
 - B must print `401`: another network has its own counter.
-- If A never reaches `429`, the counted entry is client-controlled: set
-  `trustedProxies` back to empty and stop.
-- If B prints `429`, the counted entry is a shared internal address: try
-  `trustedProxies=2`, repeat both, and if that fails too, leave it empty.
+If either check fails, stop the rollout and investigate the actual proxy
+chain. Do not increase the trust count or disable the limiter to make the
+check pass; that requires a separately reviewed topology/configuration change.
+
+**Template hardening — 2026-11-16:** the allowed-value constraint now prevents
+an omitted parameter or an explicit empty/`2` override from changing the
+verified setting. Local tests and Bicep compilation check the emitted default,
+allowed values and runtime environment variable. This repository change does
+not redeploy or re-verify the running Azure revision.
 
 ## 7. Read the real cost
 
