@@ -24,7 +24,7 @@ The audit was delivered on 2026-11-15. The following snapshot was captured befor
 2. **"Existing defenses to keep" #2 needs rewording, not restoring.** `correct_belt` now leaves the server in one place on purpose: the answer response, *after* the answer is graded and recorded (PR #148, issue #95 prerequisite). The invariant that still holds is **"the right belt is never readable before the answer is accepted"** — `current_question` returns only the four offered belts, and a tie-break reveals nothing until the round closes. Do not "fix" the feedback screen back out of existence.
 3. **New stored state to keep in scope.** `assignment_questions.options` (migration 0035) stores the four belts each question offers. The belts are drawn with `secrets.SystemRandom` and stored precisely so they are not derivable from anything a player can see; Task 19's FK sweep should cover this table too.
 
-One correction to Task 6, Step 2: the private DNS zone is `privatelink.postgres.database.azure.com` (the plan text reads `privelink`, which would silently fail to resolve).
+One correction to Task 6, Step 2, now applied to its text: the private DNS zone is `privatelink.postgres.database.azure.com`. The plan originally read `privelink`, which resolves to nothing — the app would keep reaching the database over the public internet and look perfectly healthy doing it.
 
 ## Getting started (read once before any task)
 
@@ -275,8 +275,10 @@ functional image-pull/secret-read or whole Task 5 completion is claimed.
 - Create: VNet/subnet + private DNS zone resources (in this template or a sibling `network.bicep`)
 - Modify: `container-apps-app.md` (new §5a replacing the 0.0.0.0 rule; teardown §8 updated)
 
-- [ ] **Step 1: Owner decisions (blocking):** subnet CIDR for the ACA environment, whether the spike/staging apps retire first (recommended — they're disposable), downtime window (environment recreate).
-- [ ] **Step 2: Create network:** VNet + delegated subnet (`Microsoft.App/environments`), private DNS zone `privelink.postgres.database.azure.com` linked to the VNet, private endpoint on the Flexible Server targeting its `postgresqlServer` group ID.
+- [x] **Step 1: Owner decisions (blocking):** subnet CIDR for the ACA environment, whether the spike/staging apps retire first (recommended — they're disposable), downtime window (environment recreate).
+
+  **Answered 2026-11-16.** `10.20.0.0/16` for the network, `10.20.1.0/27` for the environment and `10.20.2.0/28` for the endpoint — there is no other virtual network to collide with. The spike and staging apps retire first. The environment is recreated and **the app's address changes**, with 15–30 minutes of downtime accepted: nobody outside the project uses the app yet.
+- [ ] **Step 2: Create network:** VNet + delegated subnet (`Microsoft.App/environments`), private DNS zone `privatelink.postgres.database.azure.com` linked to the VNet, private endpoint on the Flexible Server targeting its `postgresqlServer` group ID.
 - [ ] **Step 3: Update the bicep** — `appEnvironment.properties.vnetConfiguration` with the subnet resourceId; the DB URL host stays the server FQDN (resolved privately inside the VNet).
 - [ ] **Step 4: Redeploy per runbook (parameters via `@file`); what-if clean.**
 - [ ] **Step 5: Acceptance checks:**

@@ -219,25 +219,111 @@ touched, or if the output is cut off.
 
 ## 5. Deploy
 
-### 5a. Let the app reach the database
+### 5a. Give the database a private address (audit H-4)
 
-The app runs inside Azure, not on your machine, so the rule from step 1c does
-nothing for it. A Consumption Container App has no fixed outbound IP, so the
-only rule that fits is the Azure-services one — the all-zero range is how
-Azure spells "any Azure resource", not "the whole internet":
+Until this is done the app reaches the database over the public internet
+through an `allow-azure-services` rule, and the all-zero range is how Azure
+spells "any Azure resource" — including other people's. The password is then
+the only barrier. This section replaces that rule with a private network.
+
+**Read this before starting.** A Container Apps environment cannot be moved
+into a network after it is created. Switching it on **recreates the
+environment and the app, and the app's address changes**. Budget 15–30
+minutes of downtime, and expect a new `appUrl` at the end. The owner accepted
+both on 2026-11-16, no one outside the project using the app yet.
+
+Retire the disposable spike and staging apps first (owner decision, same
+date): each is another way into the database, and removing them makes the
+switch smaller and cheaper. See `container-apps-staging.md` §8 and
+`CONTAINER-APPS-SPIKE.md`.
+
+**Step 1 — build the network.** It creates nothing that touches the app and
+changes nothing on the server:
 
 ```sh
-az postgres flexible-server firewall-rule create -g rg-sort-tester-staging \
-  --server-name <server> --name allow-azure-services \
-  --start-ip-address 0.0.0.0 --end-ip-address 0.0.0.0
+az deployment group create \
+  --name sort-tester-network \
+  --resource-group rg-sort-tester-staging \
+  --template-file infra/azure/network.bicep \
+  --parameters expiresOn=YYYY-MM-DD postgresServerName=<server> \
+  --confirm-with-what-if
 ```
 
-Be clear about what this gives away: at the network layer, any Azure resource,
-including other people's, can reach the server. The password is then the only
-barrier. That is the price of the Consumption plan's dynamic egress, and it is
-a large part of why #84 (managed identity) matters before employee data. Add
-this rule at deployment time, not earlier, and remove it when the app is
-removed in step 8.
+Record the returned `appSubnetId`. The what-if must show creates only: a
+virtual network, a private DNS zone and its link, a private endpoint and its
+DNS group. Nothing modified, nothing deleted.
+
+**Step 2 — check the name now answers privately.** From a machine inside the
+network this is what the app will see; from Cloud Shell, which is outside it,
+the public address still answers. Both are expected:
+
+```sh
+az network private-endpoint-connection list --id <privateEndpointId> -o table
+```
+
+The connection status must be `Approved`. The endpoint belongs to the same
+subscription as the server, so Azure approves it without asking.
+
+**Step 3 — recreate the environment inside the network.** Delete the old app
+and environment first; a redeploy cannot do this in place:
+
+```sh
+az containerapp delete -g rg-sort-tester-staging -n ca-sort-app-stg --yes
+az containerapp env delete -g rg-sort-tester-staging -n cae-sort-app-stg --yes
+```
+
+Then deploy §5b with `appSubnetId=<the id from step 1>` added to its
+parameters. The database URL does not change: inside the network the server's
+own name resolves to its private address.
+
+**Step 4 — prove the app works privately, before closing anything.** Run §6
+against the new `appUrl`: `/health`, a login, one ranked attempt. If the app
+cannot reach the database, the DNS zone link or the endpoint's group id is
+wrong — fix that before going on, because the next step removes the way back.
+
+**Step 5 — remove the public rule.**
+
+```sh
+az postgres flexible-server firewall-rule delete -g rg-sort-tester-staging \
+  --name <server> --rule-name allow-azure-services --yes
+```
+
+Run §6 again. The app must still work: it is now reaching the database
+through the private endpoint and nothing else.
+
+**Step 6 — close public access entirely.** This is the end state the audit
+asks for, and it has a cost worth knowing before you type it: with public
+access disabled, firewall rules stop applying altogether, so **migrations
+from Cloud Shell no longer connect**. Running one then means re-opening
+public access for the length of the migration:
+
+```sh
+# the strong end state
+az postgres flexible-server update -g rg-sort-tester-staging \
+  --name <server> --public-access Disabled
+
+# and, only when a migration has to run, the two commands around it
+az postgres flexible-server update -g rg-sort-tester-staging \
+  --name <server> --public-access Enabled
+#   ... §1c to open your own address, §1d to migrate, §1e to close it ...
+az postgres flexible-server update -g rg-sort-tester-staging \
+  --name <server> --public-access Disabled
+```
+
+If you would rather not carry that dance, stopping after step 5 already
+closes the finding: with public access enabled but **no firewall rules at
+all**, no public client can connect either. Step 6 is the stronger version,
+not the only acceptable one. Whichever you choose, write down which, because
+the next person to run a migration needs to know.
+
+**Step 7 — confirm from outside.** From your own machine, not Cloud Shell:
+
+```sh
+PGCONNECT_TIMEOUT=15 psql "host=<server>.postgres.database.azure.com port=5432 dbname=sort_tester_app user=<user> sslmode=verify-full" -c 'select 1'
+```
+
+A timeout is the answer you want. A password prompt means the server is still
+reachable from the internet.
 
 ### 5b. Create the app
 
@@ -248,7 +334,7 @@ az deployment group create \
   --template-file infra/azure/container-apps-app.bicep \
   --parameters expiresOn=YYYY-MM-DD imageSha256=<digest> \
                registryUsername=<username> registryPassword=<token> \
-               databaseUrl=<url> \
+               databaseUrl=<url> appSubnetId=<appSubnetId from 5a> \
   --confirm-with-what-if
 ```
 
@@ -345,12 +431,23 @@ database keeps costing until it is deleted or stopped separately.
 ```sh
 az containerapp delete --name ca-sort-app-stg --resource-group rg-sort-tester-staging
 az containerapp env delete --name cae-sort-app-stg --resource-group rg-sort-tester-staging
-az postgres flexible-server firewall-rule delete -g rg-sort-tester-staging \
-  --server-name <server> --name allow-azure-services --yes
 ```
 
-Remove the firewall rule from step 5a too: with no app, nothing should be able
-to reach the database.
+Then the network from §5a, in this order — the endpoint before the network it
+sits in, or the delete fails:
+
+```sh
+az network private-endpoint delete -g rg-sort-tester-staging --name pe-sort-postgres
+az network vnet delete -g rg-sort-tester-staging --name vnet-sort-stg
+az network private-dns link vnet delete -g rg-sort-tester-staging \
+  --zone-name privatelink.postgres.database.azure.com --name link-vnet-sort-stg --yes
+az network private-dns zone delete -g rg-sort-tester-staging \
+  --name privatelink.postgres.database.azure.com --yes
+```
+
+If you left public access disabled in §5a step 6, the database is now
+reachable from nowhere at all. That is safe to leave, but say so in the
+record, because the next person to open it will not guess it.
 
 Confirm both are gone and that **every pre-existing resource ID from step 0 is
 still there**. Do not delete the resource group. Record any cleanup failure
