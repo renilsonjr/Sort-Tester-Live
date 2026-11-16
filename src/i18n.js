@@ -4,6 +4,10 @@ const KEY = 'sortTest.language.v1';
 
 const ES = {
   'Independent practice': 'Práctica independiente',
+  // The home poster's own words, for the people who hear the page instead
+  // of seeing it. The image itself is not translated.
+  'Sort Tester Live. Play for points. Reach the top 3. Win a UPS hat. Practice. Compete. Climb the leaderboard. A brown UPS cap above a gold winners’ podium.':
+    'Sort Tester Live. Juega por puntos. Llega al top 3. Gana una gorra de UPS. Practica. Compite. Sube en la clasificación. Una gorra marrón de UPS sobre un podio dorado de ganadores.',
   'Main navigation': 'Navegación principal',
   'Home': 'Inicio',
   'Study': 'Estudiar',
