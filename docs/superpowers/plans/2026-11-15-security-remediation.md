@@ -226,7 +226,7 @@ no-op upgrade-at-head test; no test migration was applied to staging.
 - [x] **Step 1: Create the registry** — `az acr create -g rg-sort-tester-staging -n <name> --sku Standard` (uses the verified student free allowance; recheck its quota and expiry first) (name is not a secret; track it in the private inventory, not the runbook).
 - [ ] **Step 2: Publish path** — extend the publish workflow to push the same digest to ACR (repo settings: add an `ACR` environment or use the existing publish gate from Task 8; authenticate with a short-lived token via `az acr login` in the job, not a stored PAT). Manual interim: `az acr import --source ghcr.io/renilsonjr/sort-tester-live-app@sha256:<digest> ...`.
 - [ ] **Step 3: Bicep changes** — after the identity bootstrap is approved: attach the dedicated user-assigned runtime identity to the container app and use its resource ID in the registry entry; remove both registry params and the secret entry.
-- [ ] **Step 4: Bootstrap runtime read access** — after explicit approval of the identity and both scopes, register the ManagedIdentity provider if needed and deploy `runtime-identity.bicep`. Its resource-scoped AcrPull and Key Vault Secrets User assignments reference the new identity principal. Verify the resolved principal and exact direct assignments before later app association. No publisher or subscription-wide role belongs to the runtime.
+- [x] **Step 4: Bootstrap runtime read access** — after explicit approval of the identity and both scopes, register the ManagedIdentity provider if needed and deploy `runtime-identity.bicep`. Its resource-scoped AcrPull and Key Vault Secrets User assignments reference the new identity principal. Verify the resolved principal and exact direct assignments before later app association. No publisher or subscription-wide role belongs to the runtime.
 - [ ] **Step 5: Move the database secret into Key Vault (audit §3 P0-1)** — the dedicated vault already exists. Prepare a separately reviewed operator write path and transfer the limited-role DSN through an in-memory or protected-file method, never a command argument. The identity bootstrap grants read access only; it does not grant an operator secret-write access. Verify its existing vault read binding rather than adding a duplicate. In the app Bicep, replace the inline secret value with the Key Vault URI and runtime identity reference, then remove the `databaseUrl` parameter only after the tested transition/rollback path is ready.
 - [ ] **Step 6: Verify:** app pulls and boots; `az containerapp show` config contains no registry password and no inline DB secret; GHCR PAT is **revoked**.
 - [ ] **Step 7: Update tests + runbook; commit** — `security: ACR + managed identity + Key Vault; PAT and inline DB secret retired (audit H-5, §3 P0-1)`
@@ -240,9 +240,11 @@ omits it, and the remaining-vault-only deployment succeeded. Postchecks verified
 registry auth flags/zero repositories, vault settings/no direct role assignments,
 unchanged app configuration and spending protection. See
 [[../../../infra/azure/security-foundation]] for exact evidence and API limits.
-Only Step 1 is complete; the vault-creation portion of Step 5 is complete, but
-identity grants, publishing, secret transfer, app switch and PAT retirement
-remain pending. No overall Task 5 completion or rollout approval is claimed.
+At the foundation checkpoint only Step 1 was complete; the vault-creation
+portion of Step 5 was complete, but
+publishing, secret transfer, app switch and PAT retirement remain pending;
+the later approved identity bootstrap is recorded below. No overall Task 5
+completion or rollout approval is claimed.
 
 Task 5 identity preparation — 2026-11-16: [[../../../infra/azure/runtime-identity]]
 and its Bicep prepare one user-assigned identity plus AcrPull on the dedicated
@@ -250,9 +252,21 @@ registry and Key Vault Secrets User on the dedicated vault. This refines the
 original system-assigned example so grants can precede app changes, following
 Azure's image-pull recommendation. Compiled scope/principal checks and negative
 mutations passed; Azure what-if showed three Creates and no existing-resource
-changes. Microsoft.ManagedIdentity is NotRegistered. Provider registration,
-identity/grant creation and app association are not authorized or executed by
-this preparation. Separate owner approval of these exact accesses is required.
+changes. At preparation time Microsoft.ManagedIdentity was NotRegistered.
+This preparation itself neither authorized nor executed provider registration,
+identity/grant creation or app association. Separate owner approval of these
+exact accesses was required before execution.
+
+Task 5 identity bootstrap applied — 2026-11-16: after explicit owner approval
+and PR #159 merge `5bb7194`, the merged JSON matched the reviewed hash. Student
+subscription/spending protection and absent identity were rechecked; provider
+registration reached Registered. Fresh what-if showed only the same three
+Creates. Deployment `sort-runtime-identity-5bb7194` succeeded. Actual identity
+and subscription assignment inventory verified the expected principal and
+exactly the two resource-scoped roles; details are in [[../../../infra/azure/runtime-identity]].
+Full app resource remained equal to its snapshot, no identity is attached,
+health was HTTP 200, spendingLimit On. Only Step 4 is newly complete; no
+functional image-pull/secret-read or whole Task 5 completion is claimed.
 
 ### Task 6: Network isolation — VNet-injected environment + private endpoint (H-4) — `OPS` *(biggest change: plan a deployment window)*
 

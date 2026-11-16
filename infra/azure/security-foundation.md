@@ -161,5 +161,6 @@ secret resources. Task 5 is still incomplete until the later access/publisher/
 secret/pull/rollback steps are verified. Check actual billed usage after Azure
 posts it; free-allowance verification is not a final invoice.
 
-The next prepared slice is [[runtime-identity]]; it remains unexecuted and needs
-separate approval of identity creation and the two resource-scoped read grants.
+The separately approved [[runtime-identity]] bootstrap is now applied and its
+identity/bindings were read back. The app still has no identity attached;
+publishing, secret transfer and runtime migration remain pending.
