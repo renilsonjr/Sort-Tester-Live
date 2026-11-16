@@ -4,6 +4,14 @@ const KEY = 'sortTest.language.v1';
 
 const ES = {
   'Independent practice': 'Práctica independiente',
+  // The promotion celebration (#95)
+  'Skip animation': 'Saltar la animación',
+  'That was the last one.': 'Esa fue la última.',
+  'Promoted to': 'Ascendido a',
+  'Fifteen out of fifteen. The new badge is yours.': 'Quince de quince. La nueva insignia es tuya.',
+  'You are': 'Eres',
+  'Promotion': 'Ascenso',
+  'passed': 'superado',
   // The home poster's own words, for the people who hear the page instead
   // of seeing it. The image itself is not translated.
   'Sort Tester Live. Play for points. Reach the top 3. Win a UPS hat. Practice. Compete. Climb the leaderboard. A brown UPS cap above a gold winners’ podium.':

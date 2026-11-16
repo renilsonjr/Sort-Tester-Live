@@ -1597,7 +1597,7 @@ async function playRankedAttempt(attempt, mode, tally) {
   if (current.status === 410 || current.status === 204 || !current.data) {
     attempt.stop();
     const result = await attempt.result();
-    showRankedResult(mode, result.data, tally);
+    showRankedResult(mode, result.data, tally, { attemptId: attempt.attemptId });
     return;
   }
   const q = current.data;
@@ -1671,7 +1671,7 @@ function showRankedFeedback(attempt, mode, q, chosen, response, tally) {
       <h1 class="lab-title rq-verdict ${right ? 'good' : 'bad'}">${esc(verdict)}</h1>
       ${mode === 'promotion'
         ? (promoCorrect
-          ? `<p class="rq-worth">${esc(tally.correctCount)} ${esc(t('of'))} ${esc(tally.correctCount)} ${esc(t('right.'))} ${esc(15 - q.seq)} ${esc(t('questions to go.'))}</p>`
+          ? `<p class="rq-worth">${esc(tally.correctCount)} ${esc(t('of'))} ${esc(tally.correctCount)} ${esc(t('right.'))} ${q.seq < 15 ? `${esc(15 - q.seq)} ${esc(t('questions to go.'))}` : esc(t('That was the last one.'))}</p>`
           : `<p class="rq-worth bad">${response.worth} ${esc(t('points'))} · ${esc(t(response.difficulty === 'easy' ? 'Easy question' : response.difficulty === 'hard' ? 'Hard question' : 'Medium question'))}</p>`)
         : `<p class="rq-worth ${right ? 'good' : 'bad'}">${response.worth > 0 ? '+' : ''}${response.worth} ${esc(t('points'))} · ${esc(t(response.difficulty === 'easy' ? 'Easy question' : response.difficulty === 'hard' ? 'Hard question' : 'Medium question'))}</p>`}
       <div class="rq-prompt"><p class="rq-service">${esc(where.service)}</p><p class="rq-code">${esc(where.code)}</p></div>
@@ -1696,7 +1696,7 @@ function showRankedFeedback(attempt, mode, q, chosen, response, tally) {
     view.querySelector('#rq-next').disabled = true;
     if (response.finished) {
       attempt.stop();
-      showRankedResult(mode, response.result, tally);
+      showRankedResult(mode, response.result, tally, { attemptId: attempt.attemptId });
       return;
     }
     await attempt.advance();
@@ -1746,7 +1746,7 @@ function showQuitConfirm(attempt, mode, seq, tally) {
     view.querySelector('#qc-quit').disabled = true;
     const quit = await attempt.quit();
     attempt.stop();
-    showRankedResult(mode, quit.data?.result, tally, { quit: true });
+    showRankedResult(mode, quit.data?.result, tally, { quit: true, attemptId: attempt.attemptId });
   });
   return view;
 }
@@ -1754,7 +1754,7 @@ function showQuitConfirm(attempt, mode, seq, tally) {
 // The canonical result (built to the screens approved in #17): raw and
 // applied scores, the balance before/after, and -- only for promotion --
 // passed or failed. Preserved in full; nothing here is cosmetic-only.
-function showRankedResult(mode, result, tally, { quit = false } = {}) {
+function showRankedResult(mode, result, tally, { quit = false, attemptId = null } = {}) {
   stopTick();
   clock = null;
   if (!result) {
@@ -1762,7 +1762,7 @@ function showRankedResult(mode, result, tally, { quit = false } = {}) {
     return;
   }
   if (mode === 'promotion') {
-    showPromotionResult(result, tally, { quit });
+    showPromotionResult(result, tally, { quit, attemptId });
     return;
   }
   const droppedBadge = result.badge_after !== result.badge_before
@@ -1778,14 +1778,85 @@ function showRankedResult(mode, result, tally, { quit = false } = {}) {
         ) : ''}
       <button id="rq-done" class="ghost">${esc(t('Back to Ranked'))}</button>
     </section>
-  `, 'ranked', () => showRankedResult(mode, result, tally, { quit }));
+  `, 'ranked', () => showRankedResult(mode, result, tally, { quit, attemptId }));
   view.querySelector('#rq-done').addEventListener('click', showRanked);
   return view;
 }
 
-function showPromotionResult(result, tally, { quit = false } = {}) {
+// The promotion celebration (#95). It plays once per attempt, and only on
+// a promotion the server has already settled: nothing here decides that a
+// player was promoted, it only shows the badge the result already carries.
+const CELEBRATED_KEY = 'sortLab.promotionCelebrated';
+const celebrated = new Set();
+
+function celebrationSeen(attemptId) {
+  if (celebrated.has(attemptId)) return true;  // a re-render, not a new pass
+  try {
+    return localStorage.getItem(CELEBRATED_KEY) === attemptId;
+  } catch {
+    return false;  // a phone that saves nothing still gets its celebration
+  }
+}
+
+function markCelebrated(attemptId) {
+  celebrated.add(attemptId);
+  try {
+    localStorage.setItem(CELEBRATED_KEY, attemptId);
+  } catch {
+    // nothing to do: the in-memory mark still stops a replay in this view,
+    // and a result must never fail to show because storage is full
+  }
+}
+
+// Every piece starts invisible or small and ends where it belongs, so with
+// animations switched off -- reduced motion, or Skip -- what is left on the
+// screen is exactly the finished state: the badge and the new rank.
+const CHEER_SPARKS = 10;
+
+function sparkMarkup() {
+  return Array.from({ length: CHEER_SPARKS }, (_, i) => {
+    const angle = (360 / CHEER_SPARKS) * i;
+    const distance = 78 + (i % 3) * 16;
+    return `<span class="cheer-spark" aria-hidden="true" style="--a:${angle}deg;--d:${distance}px;--delay:${(i % 5) * 40}ms"></span>`;
+  }).join('');
+}
+
+function showPromotionCelebration(result, tally, attemptId) {
+  markCelebrated(attemptId);
+  const badge = result.badge_after;
+  const view = labPage(`
+    <section class="lab-screen promo-cheer" id="promo-cheer">
+      <p class="lab-eyebrow">${esc(t('Promotion'))} · ${esc(t('passed'))}</p>
+      <div class="cheer-stage">
+        <i class="cheer-glow" aria-hidden="true"></i>
+        ${sparkMarkup()}
+        <img class="cheer-badge" src="${badgeArt(badge)}" alt="">
+      </div>
+      <h1 class="lab-title cheer-name">${esc(t('You are'))} ${esc(badge)}.</h1>
+      <p class="lab-intro">${esc(t('Fifteen out of fifteen. The new badge is yours.'))}</p>
+      <p class="sr-only" role="status">${esc(t('Promoted to'))} ${esc(badge)}.</p>
+      <button id="cheer-continue" class="primary" type="button">${esc(t('Continue'))}</button>
+      <button id="cheer-skip" class="ghost" type="button">${esc(t('Skip animation'))}</button>
+    </section>
+  `, 'ranked', () => showPromotionCelebration(result, tally, attemptId));
+  const skip = view.querySelector('#cheer-skip');
+  skip.addEventListener('click', () => {
+    view.querySelector('#promo-cheer').classList.add('skipped');
+    skip.hidden = true;
+    view.querySelector('#cheer-continue').focus();
+  });
+  view.querySelector('#cheer-continue').addEventListener('click', () => {
+    showPromotionResult(result, tally, { attemptId });
+  });
+  return view;
+}
+
+function showPromotionResult(result, tally, { quit = false, attemptId = null } = {}) {
   const passed = !quit && result.badge_after !== result.badge_before
     && result.points_after > result.points_before;
+  if (passed && !celebrationSeen(attemptId)) {
+    return showPromotionCelebration(result, tally, attemptId);
+  }
   if (passed) {
     const view = labPage(`
       <section class="lab-screen">
@@ -1802,7 +1873,7 @@ function showPromotionResult(result, tally, { quit = false } = {}) {
         <p class="lab-intro">${esc(t('Passing sets the new badge’s first point total. Ordinary Ranked quizzes are available again until you reach the next cap.'))}</p>
         <button id="rq-done" class="ghost">${esc(t('Back to Ranked'))}</button>
       </section>
-    `, 'ranked', () => showPromotionResult(result, tally, { quit }));
+    `, 'ranked', () => showPromotionResult(result, tally, { quit, attemptId }));
     view.querySelector('#rq-done').addEventListener('click', showRanked);
     return view;
   }
@@ -1827,7 +1898,7 @@ function showPromotionResult(result, tally, { quit = false } = {}) {
         )}
       <button id="rq-done" class="ghost">${esc(t('Back to Ranked'))}</button>
     </section>
-  `, 'ranked', () => showPromotionResult(result, tally, { quit }));
+  `, 'ranked', () => showPromotionResult(result, tally, { quit, attemptId }));
   view.querySelector('#rq-done').addEventListener('click', showRanked);
   return view;
 }

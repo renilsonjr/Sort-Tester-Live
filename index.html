@@ -652,6 +652,29 @@
     .lab-choice:hover, .lab-main .deckbtn:hover { transform: translateY(-2px); box-shadow: 0 12px 30px #38261b12; }
   }
 
+  /* Promotion celebration (#95). Every piece starts invisible or small and
+     ends where it belongs, so when the animations are switched off -- the
+     reduced-motion rule below, or the Skip button -- what stays on screen
+     is the finished state: the badge and the new rank, nothing missing. */
+  .promo-cheer .cheer-stage { position: relative; display: grid; place-items: center; height: 212px; margin: 4px 0; }
+  .cheer-badge { width: 136px; height: 136px; object-fit: contain; animation: cheer-badge-in .62s cubic-bezier(.18,.9,.32,1.25) both; }
+  .cheer-glow { position: absolute; width: 196px; height: 196px; border-radius: 50%; opacity: 0;
+    background: radial-gradient(circle, #f4bd3866 0%, #f4bd3800 70%); animation: cheer-glow 1.05s ease-out .12s both; }
+  .cheer-spark { position: absolute; width: 9px; height: 9px; border-radius: 2px; background: #f4bd38; opacity: 0;
+    animation: cheer-spark .78s ease-out both; animation-delay: calc(260ms + var(--delay)); }
+  .cheer-name { margin-top: 2px; }
+  /* Skip lands on the same finished state the reduced-motion rule gives. */
+  .promo-cheer.skipped .cheer-badge,
+  .promo-cheer.skipped .cheer-glow,
+  .promo-cheer.skipped .cheer-spark { animation: none; }
+  @keyframes cheer-badge-in { from { opacity: 0; transform: scale(.42); } to { opacity: 1; transform: none; } }
+  @keyframes cheer-glow { 0% { opacity: 0; transform: scale(.55); } 45% { opacity: 1; } 100% { opacity: 0; transform: scale(1.3); } }
+  @keyframes cheer-spark {
+    0% { opacity: 0; transform: rotate(var(--a)) translateY(0); }
+    18% { opacity: 1; }
+    100% { opacity: 0; transform: rotate(var(--a)) translateY(calc(var(--d) * -1)); }
+  }
+
   @media (prefers-reduced-motion: reduce) {
     * { animation: none !important; transition: none !important; }
   }
@@ -662,7 +685,7 @@
 <div id="auth-panel" hidden></div>
 <main id="app"></main>
 <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js" integrity="sha384-EnyY0/GSHQGSxSgMwaIPzSESbqoOLSexfnSMN2AP+39Ckmn92stwABZynq1JyzdT" crossorigin="anonymous"></script>
-<script type="module" src="src/app.js?v=rankedplay-20261115"></script>
+<script type="module" src="src/app.js?v=promocheer-20261116"></script>
 <script type="module" src="src/auth.js"></script>
 </body>
 </html>

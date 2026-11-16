@@ -91,7 +91,9 @@ test('a timeout says no choice was sent, instead of inventing one', () => {
 test('the final answer goes to the result the server settled, never a guess', () => {
   const feedback = fn('function showRankedFeedback');
   assert.match(feedback, /response\.finished/);
-  assert.match(feedback, /showRankedResult\(mode, response\.result, tally\)/);
+  // the attempt id rides along so the #95 celebration plays once per
+  // attempt; the result itself is still the server's, never a guess
+  assert.match(feedback, /showRankedResult\(mode, response\.result, tally, \{ attemptId: attempt\.attemptId \}\)/);
 });
 
 test('the result keeps the raw and applied numbers from #17', () => {
