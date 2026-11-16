@@ -1,6 +1,6 @@
-// Current Twilight photo plus the explicit owner corrections from November 8.
+// Current Twilight photo plus owner corrections through the November 16 SORT CHANGE.
 // Reference provenance is not approval of Ranked difficulty or work methods.
-export const ROUTE_REFERENCE_VERSION = 'twilight-2026-11-08-r2';
+export const ROUTE_REFERENCE_VERSION = 'twilight-2026-11-16-r1';
     const rows = text => text.trim().split('\n').map(line => line.split('|').map(value => value.trim()));
     // Shared photo rows. Keep service-specific owner corrections out of this table.
     const sharedEast = rows(`
@@ -19,7 +19,7 @@ export const ROUTE_REFERENCE_VERSION = 'twilight-2026-11-08-r2';
       NY|120–121|GOLD|Sort change
       NY|122–127|ORANGE
       NY|128–139|GOLD
-      NY|140–147|ORANGE
+      NY|140–147|GOLD|Sort change
       NY|148–149|ORANGE|148 1 is GOLD
       PA|150–167|GREEN
       PA|168–178|GREEN
@@ -31,8 +31,7 @@ export const ROUTE_REFERENCE_VERSION = 'twilight-2026-11-08-r2';
       VA, WV|239–269|YELLOW
       NC, SC|270–299|YELLOW
     `);
-    const groundMain = [...sharedEast.map(row => row[0] === 'NY' && row[1] === '140–147'
-      ? ['NY', '140–147', 'GOLD', 'Ground-only owner correction'] : row), ...rows(`
+    const groundMain = [...sharedEast, ...rows(`
       GA|300–319|BLUE
       FL|320–349|PINK
       AL|350–369|BLUE
@@ -54,7 +53,8 @@ export const ROUTE_REFERENCE_VERSION = 'twilight-2026-11-08-r2';
       LA, AR|700–729|BLUE
       OK|730–734|ORANGE
       OK|735–749|ORANGE
-      TX|750–779|BLUE
+      TX|750–769|BLACK|Sort change
+      TX|770–779|BLACK|Sort change
       TX|780–784|BLUE
       TX|785–799|ORANGE
       CO, WY|800–831|ORANGE
@@ -94,7 +94,8 @@ export const ROUTE_REFERENCE_VERSION = 'twilight-2026-11-08-r2';
       OK|735–749|ORANGE
       TX|750–768|BLUE
       TX|769 0|PURPLE
-      TX|770–784|BLUE
+      TX|770–779|BLACK|Sort change
+      TX|780–784|BLUE
       TX|785–799|PURPLE
       CO|800–810|ORANGE
       *|811–999|PURPLE
@@ -112,8 +113,8 @@ export const ROUTE_REFERENCE_VERSION = 'twilight-2026-11-08-r2';
       IN|460–479|ORANGE
       MI|480–497|ORANGE
       *|498–599|PURPLE
-      IL|600–608|YELLOW
-      IL|609–629|ORANGE
+      IL|600–619|PURPLE|Sort change
+      IL|620–629|ORANGE
       MO|630–639|BLUE
       *|640–729|PURPLE
       OK|730–740|PURPLE

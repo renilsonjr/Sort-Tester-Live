@@ -1,6 +1,6 @@
-import { ROUTE_REFERENCE_VERSION } from './chart.js?v=chart-destination-20261108-r2';
-import { COMMON_CORE, NJ_TWILIGHT } from './questions.js?v=chart-destination-20261108-r2';
-import { LEVEL_DECKS } from './levels.js?v=chart-destination-20261108-r2';
+import { ROUTE_REFERENCE_VERSION } from './chart.js?v=sort-change-20261116-r1';
+import { COMMON_CORE, NJ_TWILIGHT } from './questions.js?v=sort-change-20261116-r1';
+import { LEVEL_DECKS } from './levels.js?v=sort-change-20261116-r1';
 
 // Manual Practice cards checked against the current Twilight reference.
 // A verified Practice deck does not establish Ranked difficulty approval.
@@ -51,7 +51,7 @@ const NEW_YORK = [
     svc: 'GND', state: 'NY', code: '140-147',
     belt: 'GOLD',
     confusions: ['ORANGE', 'PURPLE', 'PINK'],
-    why: 'The owner correction sends 140-147 to GOLD on Ground. On 2 Day Air and 3 Day Select this range is ORANGE. The next block, 148-149, is ORANGE except 148 1.',
+    why: 'The sort change sends 140-147 to GOLD on Ground, 2 Day Air and 3 Day Select. The next block, 148-149, is ORANGE except 148 1.',
     tags: ['sort-change', 'boundary'],
   },
   {
@@ -59,7 +59,7 @@ const NEW_YORK = [
     svc: 'GND', state: 'NY', code: '148-149',
     belt: 'ORANGE',
     confusions: ['GOLD', 'PURPLE', 'PINK'],
-    why: 'ORANGE on Ground, 2 Day Air and 3 Day Select. The preceding 140-147 block is GOLD on Ground and ORANGE on 2 Day Air and 3 Day Select. The single code 148 1 is GOLD on all three.',
+    why: 'ORANGE on Ground, 2 Day Air and 3 Day Select. The preceding 140-147 block is GOLD on Ground, 2 Day Air and 3 Day Select. The single code 148 1 is GOLD on all three.',
     tags: ['boundary'],
   },
   {
@@ -67,7 +67,7 @@ const NEW_YORK = [
     svc: 'GND', state: 'NY', code: '148 1',
     belt: 'GOLD',
     confusions: ['ORANGE', 'PURPLE', 'PINK'],
-    why: 'This single code remains GOLD inside the ORANGE 148-149 block. The preceding 140-147 block is GOLD on Ground and ORANGE on 2 Day Air and 3 Day Select.',
+    why: 'This single code remains GOLD inside the ORANGE 148-149 block. The preceding 140-147 block is GOLD on Ground, 2 Day Air and 3 Day Select.',
     tags: ['sort-change', 'exception'],
   },
   {
@@ -83,7 +83,7 @@ const NEW_YORK = [
     svc: 'NDA', state: 'NY', code: '140-149',
     belt: 'PURPLE',
     confusions: ['ORANGE', 'GOLD', 'PINK'],
-    why: 'Next Day Air keeps the whole 140-149 range PURPLE. Ground sends 140-147 to GOLD; 2 Day Air and 3 Day Select send it to ORANGE. On those three services, 148-149 is ORANGE except 148 1 GOLD.',
+    why: 'Next Day Air keeps the whole 140-149 range PURPLE. Ground, 2 Day Air and 3 Day Select send 140-147 to GOLD. On those three services, 148-149 is ORANGE except 148 1 GOLD.',
     tags: ['service-split'],
   },
 ];
@@ -225,15 +225,15 @@ const TWO_DAY_AIR = [
     svc: '2DA', state: 'MO', code: '630-639',
     belt: 'BLUE',
     confusions: ['PURPLE', 'ORANGE', 'YELLOW'],
-    why: 'BLUE, with ORANGE below it at 609-629 and PURPLE above it from 640 up.',
+    why: 'BLUE, with ORANGE below it at 620-629 and PURPLE above it from 640 up.',
     tags: ['boundary'],
   },
   {
     id: '2da-il-600-608',
     svc: '2DA', state: 'IL', code: '600-608',
-    belt: 'YELLOW',
-    confusions: ['PURPLE', 'ORANGE', 'BLUE'],
-    why: 'Illinois 600-608 is YELLOW on Ground, 2 Day Air and 3 Day Select. The next range, 609-629, is ORANGE.',
+    belt: 'PURPLE',
+    confusions: ['YELLOW', 'ORANGE', 'BLUE'],
+    why: 'Illinois 600-619 is PURPLE on 2 Day Air. Ground and 3 Day Select keep 600-608 YELLOW and 609-619 ORANGE. 620-629 stays ORANGE on all three.',
     tags: ['boundary', 'service-split'],
   },
   {
@@ -260,7 +260,7 @@ const THREE_DAY_SELECT = [
     svc: '3DS', state: 'TX', code: '769 0',
     belt: 'PURPLE',
     confusions: ['BLUE', 'ORANGE', 'BROWN'],
-    why: '750-768 and 770-784 are both BLUE. This one code is PURPLE.',
+    why: 'On 3 Day Select, 750-768 stays BLUE and 769 0 stays PURPLE. The sort change sends 770-779 to BLACK; 780-784 stays BLUE.',
     tags: ['exception', 'boundary'],
   },
   {
@@ -316,7 +316,7 @@ const THREE_DAY_SELECT = [
     svc: '3DS', state: 'TX', code: '785-799',
     belt: 'PURPLE',
     confusions: ['BLUE', 'ORANGE', 'BROWN'],
-    why: '770-784 just below it is BLUE. Texas splits again at 785.',
+    why: '780-784 just below it stays BLUE; 770-779 is now BLACK. Texas splits again at 785, with the listed single-code exceptions still applying.',
     tags: ['boundary'],
   },
   {
@@ -351,18 +351,18 @@ const MIXED_MISSORTS = [
     'Ohio 430-459 is ORANGE on 2 Day Air, as is the neighboring Indiana 460-479 range.'),
   mixed('mi-2da', '2DA', 'MI', '480-497', 'ORANGE', ['PURPLE', 'YELLOW', 'BROWN'],
     'Michigan 480-497 is ORANGE on 2 Day Air, as is Indiana 460-479 immediately before it.'),
-  mixed('il-600-608-2da', '2DA', 'IL', '600-608', 'YELLOW', ['PURPLE', 'ORANGE', 'BLUE'],
-    'Illinois 600-608 is YELLOW on 2 Day Air. The next range, 609-629, is ORANGE.'),
-  mixed('il-609-619-2da', '2DA', 'IL', '609-619', 'ORANGE', ['PURPLE', 'YELLOW', 'BLUE'],
-    'Illinois 609-619 is ORANGE on 2 Day Air, continuing through 629.'),
+  mixed('il-600-608-2da', '2DA', 'IL', '600-608', 'PURPLE', ['YELLOW', 'ORANGE', 'BLUE'],
+    'Illinois 600-619 is PURPLE on 2 Day Air. The next range, 620-629, stays ORANGE.'),
+  mixed('il-609-619-2da', '2DA', 'IL', '609-619', 'PURPLE', ['ORANGE', 'YELLOW', 'BLUE'],
+    'Illinois 609-619 is now PURPLE on 2 Day Air, together with 600-608. ORANGE begins at 620.'),
   mixed('il-620-629-2da', '2DA', 'IL', '620-629', 'ORANGE', ['PURPLE', 'YELLOW', 'BLUE'],
-    'Illinois 620-629 continues the ORANGE range that starts at 609 on 2 Day Air.'),
+    'Illinois 620-629 stays ORANGE on 2 Day Air. The preceding 600-619 range is now PURPLE.'),
   mixed('ny-128-139-gnd', 'GND', 'NY', '128-139', 'GOLD', ['ORANGE', 'PURPLE', 'PINK'],
     'NY 128-139 is GOLD on Ground. Next Day Air has a single-code PURPLE exception at 136.'),
   mixed('ny-136-nda', 'NDA', 'NY', '136', 'PURPLE', ['GOLD', 'ORANGE', 'PINK'],
     'NY 136 stays PURPLE on Next Day Air inside the surrounding GOLD range.'),
   mixed('ny-140-147-gnd', 'GND', 'NY', '140-147', 'GOLD', ['ORANGE', 'PURPLE', 'PINK'],
-    'NY 140-147 is GOLD on Ground. The same range is ORANGE on 2 Day Air and 3 Day Select, and PURPLE on Next Day Air.'),
+    'NY 140-147 is GOLD on Ground, 2 Day Air and 3 Day Select, and PURPLE on Next Day Air.'),
   mixed('ny-140-147-nda', 'NDA', 'NY', '140-147', 'PURPLE', ['GOLD', 'ORANGE', 'PINK'],
     'Next Day Air keeps NY 140-149 PURPLE, including 140-147.'),
   mixed('ma-025-gnd', 'GND', 'MA', '025', 'BLUE', ['GOLD', 'PURPLE', 'GREEN'],

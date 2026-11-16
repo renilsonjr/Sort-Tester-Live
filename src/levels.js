@@ -1,5 +1,5 @@
-import { BELTS } from './belts.js';
-import { CHART, ROUTE_REFERENCE_VERSION } from './chart.js?v=chart-destination-20261108-r2';
+import { BELTS } from './belts.js?v=sort-change-20261116-r1';
+import { CHART, ROUTE_REFERENCE_VERSION } from './chart.js?v=sort-change-20261116-r1';
 
 const SERVICE_CODES = {
   Ground: 'GND',

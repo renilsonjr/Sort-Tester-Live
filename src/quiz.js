@@ -1,4 +1,4 @@
-import { BELTS } from './belts.js';
+import { BELTS } from './belts.js?v=sort-change-20261116-r1';
 
 export const CARD_SECONDS = 15;
 

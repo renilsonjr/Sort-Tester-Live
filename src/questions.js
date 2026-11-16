@@ -1,4 +1,4 @@
-import { ROUTE_REFERENCE_VERSION } from './chart.js?v=chart-destination-20261108-r2';
+import { ROUTE_REFERENCE_VERSION } from './chart.js?v=sort-change-20261116-r1';
 
 // Current Twilight cards use only reviewed ranges and listed preload codes.
 
@@ -31,7 +31,7 @@ export const COMMON_CORE = [
     svc: 'GND', state: 'NY', code: '148 1',
     belt: 'GOLD',
     confusions: ['ORANGE', 'PURPLE', 'PINK'],
-    why: '148 1 stays GOLD inside the ORANGE 148-149 block on Ground, 2 Day Air and 3 Day Select. The preceding 140-147 block is GOLD on Ground and ORANGE on 2 Day Air and 3 Day Select.',
+    why: '148 1 stays GOLD inside the ORANGE 148-149 block on Ground, 2 Day Air and 3 Day Select. The preceding 140-147 block is GOLD on Ground, 2 Day Air and 3 Day Select.',
     tags: ['sort-change', 'exception'],
   },
   {
@@ -39,7 +39,7 @@ export const COMMON_CORE = [
     svc: 'NDA', state: 'NY', code: '140-149',
     belt: 'PURPLE',
     confusions: ['ORANGE', 'GOLD', 'PINK'],
-    why: 'Next Day Air keeps all of 140-149 PURPLE. Ground sends 140-147 to GOLD; 2 Day Air and 3 Day Select send it to ORANGE. On those three services, 148-149 is ORANGE except 148 1 GOLD.',
+    why: 'Next Day Air keeps all of 140-149 PURPLE. Ground, 2 Day Air and 3 Day Select send 140-147 to GOLD. On those three services, 148-149 is ORANGE except 148 1 GOLD.',
     tags: ['service-split'],
   },
   {
