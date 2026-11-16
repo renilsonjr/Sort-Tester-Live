@@ -85,6 +85,7 @@ def _current_account(request: Request):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized")
     with _db_connection() as conn:
         account = get_account_by_session(conn, raw_token)
+        conn.commit()  # same write as auth._current_account (audit H-1)
     if account is None:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized")
     return account
