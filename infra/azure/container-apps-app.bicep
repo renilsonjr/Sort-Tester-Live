@@ -24,18 +24,14 @@ param expiresOn string
 @maxLength(64)
 param imageSha256 string
 
-@description('Private registry host holding the image.')
-param registryServer string = 'ghcr.io'
+@description('Private registry host holding the image, such as <name>.azurecr.io.')
+param registryServer string
 
 @description('Repository path of the image inside that registry.')
 param imageRepository string = 'renilsonjr/sort-tester-live-app'
 
-@description('Username for the private registry.')
-param registryUsername string
-
-@description('Read-only token for the private registry.')
-@secure()
-param registryPassword string
+@description('Resource id of the user-assigned identity that pulls the image, from runtime-identity.bicep. It holds AcrPull on that registry and nothing wider (audit H-5).')
+param runtimeIdentityId string
 
 @description('postgresql:// URL of the application database, already migrated.')
 @secure()
@@ -89,6 +85,17 @@ resource app 'Microsoft.App/containerApps@2025-01-01' = {
   name: 'ca-sort-app-stg'
   location: location
   tags: appTags
+  // The app pulls as itself. Before this it used an account-scoped GHCR
+  // token, which could read every private package the account can see --
+  // and the token had to be typed into a deployment to get there (audit
+  // H-5). The identity's AcrPull is on one registry and expires with
+  // nothing to leak.
+  identity: {
+    type: 'UserAssigned'
+    userAssignedIdentities: {
+      '${runtimeIdentityId}': {}
+    }
+  }
   properties: {
     managedEnvironmentId: appEnvironment.id
     workloadProfileName: 'Consumption'
@@ -102,10 +109,6 @@ resource app 'Microsoft.App/containerApps@2025-01-01' = {
       }
       secrets: [
         {
-          name: 'registry-password'
-          value: registryPassword
-        }
-        {
           name: 'database-url'
           value: databaseUrl
         }
@@ -113,8 +116,7 @@ resource app 'Microsoft.App/containerApps@2025-01-01' = {
       registries: [
         {
           server: registryServer
-          username: registryUsername
-          passwordSecretRef: 'registry-password'
+          identity: runtimeIdentityId
         }
       ]
     }

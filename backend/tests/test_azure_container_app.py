@@ -87,12 +87,25 @@ class SingleOriginAppTemplateTests(unittest.TestCase):
         self.assertNotRegex(self.code, r"image:\s*'[^']*:latest'")
 
     def test_secrets_are_secure_parameters_never_literals(self):
-        for name in ("registryPassword", "databaseUrl"):
-            self.assertRegex(self.code, rf"@secure\(\)\s*\nparam {name} string")
+        self.assertRegex(self.code, r"@secure\(\)\s*\nparam databaseUrl string")
         # Secrets reach the container by reference, not as plain values.
         self.assertIn("secretRef: 'database-url'", self.code)
-        self.assertIn("passwordSecretRef: 'registry-password'", self.code)
         self.assertNotIn("postgresql://", self.code)
+
+    def test_the_image_is_pulled_by_identity_and_not_by_a_token(self):
+        # audit H-5: the old GHCR token was account-scoped, so it could read
+        # every private package the account can see, and it had to be typed
+        # into a deployment to get there
+        self.assertIn("identity: runtimeIdentityId", self.code)
+        self.assertIn("type: 'UserAssigned'", self.code)
+        for gone in ("registryUsername", "registryPassword", "registry-password"):
+            self.assertNotIn(gone, self.code)
+
+    def test_the_registry_host_must_be_given_not_defaulted(self):
+        # a default would let a deployment keep pointing at the old public
+        # registry without anyone choosing to
+        self.assertRegex(self.code, r"param registryServer string\s*$|param registryServer string\n")
+        self.assertNotRegex(self.code, r"param registryServer string\s*=")
 
     def test_the_session_cookie_is_marked_secure(self):
         self.assertIn("SORT_TESTER_COOKIE_SECURE", self.code)
