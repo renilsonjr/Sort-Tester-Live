@@ -1,6 +1,6 @@
 # Runtime identity and read access — Task 5 preparation
 
-Status: **prepared for review, not applied**. Related: [[security-foundation]],
+Status: **identity and scoped grants applied and read back on 2026-11-16; no app association**. Related: [[security-foundation]],
 [[container-apps-app]], [[../../docs/superpowers/plans/2026-11-15-security-remediation]].
 
 ## Scope and actor
@@ -41,7 +41,7 @@ attach it to other apps/jobs. Later association should configure Container Apps
 token endpoint unavailable to container code while image pull/secret references
 use it. That configuration is not applied in this slice.
 
-## Read-only preflight — 2026-11-16
+## Read-only preflight before approval — 2026-11-16
 
 Verified against the existing staging resources:
 
@@ -68,7 +68,8 @@ current identity inventory, student subscription and spending protection.
 
 Approval must name the new identity, both roles and their exact scopes. The
 previous approval for two empty services did not authorize these grants.
-Provider registration and this deployment remain pending explicit approval.
+Provider registration and deployment required separate approval; that approval
+and the completed execution are recorded below.
 After approval and PR merge:
 
 ```sh
@@ -104,3 +105,35 @@ check for current consumers before retiring the identity. Role propagation and
 token caches can delay effective revocation. Do not delete the registry or
 vault to roll back these grants. App connection and publish rollback belong to
 the later integration slice.
+
+
+## Approved execution and read-back — 2026-11-16
+
+The owner explicitly authorized provider registration, this identity and both
+named grants after PR #159 merge and a fresh matching preview. PR #159 merged
+as `5bb7194b7049354f751374ed5ee3ced74ba43be8`. The merged Bicep compiled to the
+same reviewed JSON (SHA-256
+`4180c803ad255e4e23e7b8363800205a096bb2e4143da702bc9796b49051ed57`).
+
+Prechecks confirmed the selected student subscription, spending limit On and
+no existing user-assigned identity in the staging group. After provider state
+became Registered, fresh what-if again showed exactly three Creates with no
+existing-resource modifications/deletions. Incremental deployment
+`sort-runtime-identity-5bb7194`, with `expiresOn=2027-10-09` (review reminder,
+not automatic expiry), exited 0 and reported Succeeded.
+
+Independent post-deployment reads verified:
+
+- `id-sort-app-stg` principal `1e5f852f-61dc-409f-a4ba-03309452430b`.
+- The subscription assignment inventory contained exactly two assignments for
+  this principal, both ServicePrincipal type and with the expected role IDs and
+  exact dedicated resource scopes from the table above.
+- AcrPull assignment `986c61b4-7330-5d49-88ec-9148721aee58` and Key Vault
+  Secrets User assignment `6e35c424-a69c-5ec9-b0a3-b5729effebe9`.
+- The full Container App resource equaled its pre-deployment snapshot; it still
+  has no managed identity attached. Health returned HTTP 200 and the student
+  subscription spending limit remained On.
+
+No secrets were transferred. These reads verify identity/bindings, not a
+functional image pull or secret read. Publisher access, image availability,
+secret transfer, app association and credential retirement remain pending.
