@@ -103,9 +103,13 @@ class SingleOriginAppTemplateTests(unittest.TestCase):
         self.assertIn("param appOrigin string = ''", self.code)
         self.assertIn("output appOriginToConfigure string", self.code)
 
-    def test_proxy_trust_is_off_unless_explicitly_set(self):
-        self.assertIn("SORT_TEST_TRUST_PROXY", self.code)
-        self.assertIn("param trustedProxies string = ''", self.code)
+    def test_azure_ingress_trust_cannot_be_disabled_or_overcounted(self):
+        # This Azure-only template has one verified ingress hop (#78).
+        # An empty default groups unrelated clients; 2 trusts client input.
+        self.assertRegex(
+            self.code,
+            r"@allowed\(\[\s*'1'\s*\]\)\s*param trustedProxies string = '1'",
+        )
         self.assertRegex(self.code, r"'SORT_TEST_TRUST_PROXY'\s*\n\s*value: trustedProxies")
 
 

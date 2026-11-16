@@ -44,13 +44,11 @@ param databaseUrl string
 @description('Public origin, such as https://example.com, once it is known. Empty is correct on the first deployment: writes are then checked against the app own ingress host.')
 param appOrigin string = ''
 
-@description('Number of trusted proxies in front of the app, for reading the client address from X-Forwarded-For. Empty trusts none. Set to 1 only after the check in the runbook shows the ingress appends the real client address (issue #78).')
+@description('One trusted Container Apps ingress hop, verified in the staging runbook (issue #78). Other values are rejected so deploys cannot group clients or trust a forged client address.')
 @allowed([
-  ''
   '1'
-  '2'
 ])
-param trustedProxies string = ''
+param trustedProxies string = '1'
 
 var appTags = {
   project: 'sort-tester-live'
