@@ -1,4 +1,4 @@
-import { CHART, STATE_NAMES_ES } from './chart.js?v=chart-destination-20261108-r2';
+import { CHART, STATE_NAMES_ES } from './chart.js?v=sort-change-20261116-r1';
 
 const KEY = 'sortTest.language.v1';
 
@@ -13,7 +13,7 @@ const ES = {
   'the chart.': 'la tabla.',
   'Learn the belt. Then test your recall.': 'Aprende el color. Luego comprueba lo que recuerdas.',
   'Recent sort changes': 'Cambios recientes de clasificación',
-  'For NY 140–147, 2 Day Air and 3 Day Select stay ORANGE; Next Day Air stays PURPLE. NY 148–149 stays ORANGE on Ground, 2 Day Air and 3 Day Select, except 148 1 goes GOLD.': 'Para NY 140–147, Aéreo 2 días y Select 3 días siguen en ORANGE; Aéreo 1 día sigue en PURPLE. NY 148–149 sigue en ORANGE en Terrestre, Aéreo 2 días y Select 3 días, excepto 148 1, que va a GOLD.',
+  'Next Day Air keeps NY 140–149 PURPLE. NY 148–149 stays ORANGE on Ground, 2 Day Air and 3 Day Select, except 148 1 goes GOLD.': 'Aéreo 1 día mantiene NY 140–149 en PURPLE. NY 148–149 sigue en ORANGE en Terrestre, Aéreo 2 días y Select 3 días, excepto 148 1, que va a GOLD.',
   'Where do you want to start?': '¿Por dónde quieres empezar?',
   'Know the chart': 'Conoce la tabla',
   'Browse every service by state and ZIP range.': 'Consulta cada servicio por estado y rango de ZIP.',

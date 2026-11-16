@@ -1,14 +1,14 @@
-import { BELT_STYLE } from './belts.js';
-import { formatDestinationLabel } from './destination.js?v=chart-destination-20261108-r2';
-import { SERVICE_LABEL } from './questions.js?v=chart-destination-20261108-r2';
-import { DECKS, deckById, deckLabel } from './decks.js?v=chart-destination-20261108-r2';
-import { CARD_SECONDS, createRun, currentCard, answerCard, timeoutCard, summarize } from './quiz.js?v=chart-destination-20261108-r2';
+import { BELT_STYLE } from './belts.js?v=sort-change-20261116-r1';
+import { formatDestinationLabel } from './destination.js?v=sort-change-20261116-r1';
+import { SERVICE_LABEL } from './questions.js?v=sort-change-20261116-r1';
+import { DECKS, deckById, deckLabel } from './decks.js?v=sort-change-20261116-r1';
+import { CARD_SECONDS, createRun, currentCard, answerCard, timeoutCard, summarize } from './quiz.js?v=sort-change-20261116-r1';
 import { createClock } from './clock.js';
 import { createShiftLog } from './shiftLog.js';
 import { saveWorkbook } from './exportFile.js';
-import { CHART, searchChart } from './study.js?v=chart-destination-20261108-r2';
-import { selectLevelCards } from './levels.js?v=chart-destination-20261108-r2';
-import { createLanguage } from './i18n.js?v=chart-destination-20261108-r2';
+import { CHART, searchChart } from './study.js?v=sort-change-20261116-r1';
+import { selectLevelCards } from './levels.js?v=sort-change-20261116-r1';
+import { createLanguage } from './i18n.js?v=sort-change-20261116-r1';
 
 const app = document.getElementById('app');
 const log = createShiftLog(typeof localStorage === 'undefined' ? null : localStorage);
@@ -209,15 +209,19 @@ function showStart() {
         <img class="lab-mascot" src="assets/parcel-buddy.jpg" alt="${language.code === 'es' ? 'Personaje azul sonriente con una caja de cartón' : 'Smiling blue character holding a cardboard package'}">
       </div>
       <section class="lab-change" aria-labelledby="sort-change-title">
-        <p class="lab-change-kicker">${esc(t('Recent sort changes'))}</p>
-        <div class="lab-change-row">
-          <div>
-            <h2 id="sort-change-title">NY 140–147</h2>
-            <p>${esc(language.service('Ground'))}</p>
+        <h2 id="sort-change-title" class="lab-change-kicker">${esc(t('Recent sort changes'))}</h2>
+        ${[
+          ['TX 750–769', ['Ground'], 'BLACK'],
+          ['TX 770–779', ['Ground', '3 Day Select'], 'BLACK'],
+          ['IL 600–619', ['2 Day Air'], 'PURPLE'],
+          ['NY 140–147', ['Ground', '3 Day Select', '2 Day Air'], 'GOLD'],
+        ].map(([range, services, belt]) => `
+          <div class="lab-change-row">
+            <div><h3>${range}</h3><p>${esc(services.map(service => language.service(service)).join(' / '))}</p></div>
+            ${beltChip(belt, 'lab-belt-chip')}
           </div>
-          ${beltChip('GOLD', 'lab-belt-chip')}
-        </div>
-        <p class="lab-change-note">${esc(t('For NY 140–147, 2 Day Air and 3 Day Select stay ORANGE; Next Day Air stays PURPLE. NY 148–149 stays ORANGE on Ground, 2 Day Air and 3 Day Select, except 148 1 goes GOLD.'))}</p>
+        `).join('')}
+        <p class="lab-change-note">${esc(t('Next Day Air keeps NY 140–149 PURPLE. NY 148–149 stays ORANGE on Ground, 2 Day Air and 3 Day Select, except 148 1 goes GOLD.'))}</p>
       </section>
       <h2 class="lab-section-heading">${esc(t('Where do you want to start?'))}</h2>
       <button id="study" class="lab-choice" type="button">
