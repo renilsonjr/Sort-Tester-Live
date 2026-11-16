@@ -15,6 +15,44 @@ class DatabaseConfigError(Exception):
     """Raised when the test database connection setting is unset or malformed."""
 
 
+# libpq's own default is "prefer", which falls back to an unencrypted
+# connection without saying so. Only the modes that actually keep TLS are
+# accepted; "require" encrypts but does not check who answered, so it is
+# the floor rather than the goal (audit M-4).
+VERIFYING_SSLMODES = ("require", "verify-ca", "verify-full")
+LOOPBACK_HOSTS = ("localhost", "127.0.0.1", "::1")
+
+
+def _is_loopback(parameters) -> bool:
+    """Whether this DSN reaches a database on this same machine.
+
+    A loopback connection never crosses a network, so there is nothing on
+    the wire to read and no certificate anyone could present. Requiring
+    one would only mean the app could not be run locally at all.
+    """
+    host = (parameters.get("host") or "").strip().strip("[]")
+    return host in LOOPBACK_HOSTS
+
+
+def _require_verified_tls(url: str, env_var: str) -> None:
+    """Refuse a DSN that would reach a remote database without verified TLS."""
+    try:
+        parameters = conninfo_to_dict(url)
+    except (psycopg.Error, ValueError):
+        return  # malformed: the caller's own validation reports it
+    if _is_loopback(parameters):
+        return
+    sslmode = (parameters.get("sslmode") or "").strip()
+    if sslmode in VERIFYING_SSLMODES:
+        return
+    raise DatabaseConfigError(
+        f"{env_var} must set sslmode to one of "
+        f"{', '.join(VERIFYING_SSLMODES)} (verify-full is the one that also "
+        "checks the server's certificate). Without it libpq defaults to "
+        "'prefer' and will quietly connect without encryption."
+    )
+
+
 def test_database_url() -> str:
     """Return a validated test database URL from the environment.
 
@@ -51,6 +89,7 @@ def test_database_url() -> str:
             f"{ENV_VAR} must resolve to the {SCRATCH_DB_NAME} database so "
             "tooling cannot migrate another database."
         )
+    _require_verified_tls(url, ENV_VAR)
     return url
 
 
@@ -74,11 +113,12 @@ def app_database_url() -> str:
         # In test environments the app may run against the scratch database.
         return test_database_url()
     url = raw
-    if url.startswith("postgresql://"):
-        return url
-    raise DatabaseConfigError(
-        f"{APP_ENV_VAR} must be a valid postgresql:// URL when set."
-    )
+    if not url.startswith("postgresql://"):
+        raise DatabaseConfigError(
+            f"{APP_ENV_VAR} must be a valid postgresql:// URL when set."
+        )
+    _require_verified_tls(url, APP_ENV_VAR)
+    return url
 
 
 def admin_url() -> str:

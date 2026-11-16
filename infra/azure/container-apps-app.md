@@ -94,7 +94,7 @@ one proves the network, TLS and the user are fine:
 
 ```sh
 PGCONNECT_TIMEOUT=15 PGPASSWORD='wrong-on-purpose' psql \
-  "host=<server>.postgres.database.azure.com port=5432 dbname=sort_tester_app user=<admin> sslmode=require" -c 'select 1'
+  "host=<server>.postgres.database.azure.com port=5432 dbname=sort_tester_app user=<admin> sslmode=verify-full" -c 'select 1'
 ```
 
 `FATAL: password authentication failed` is the answer you want. A timeout
@@ -108,10 +108,24 @@ an older branch will not have it), one line at a time:
 ```sh
 read -rsp "Paste the password and press Enter: " PGPW; echo
 echo "length: ${#PGPW}"     # must match the password you generated
-export SORT_TESTER_DATABASE_URL="postgresql://<admin>:$PGPW@<server>.postgres.database.azure.com:5432/sort_tester_app?sslmode=require"
+export SORT_TESTER_DATABASE_URL="postgresql://<admin>:$PGPW@<server>.postgres.database.azure.com:5432/sort_tester_app?sslmode=verify-full&sslrootcert=/etc/ssl/certs/ca-certificates.crt"
 backend/.venv/bin/python -m backend.db.upgrade_app                      # shows the target only
 backend/.venv/bin/python -m backend.db.upgrade_app --confirm sort_tester_app
 ```
+
+`sslmode=verify-full` is now required by the app itself: a DSN without a
+verifying `sslmode` is refused at startup rather than connecting in the clear
+(audit M-4, `backend/db/settings.py`). It needs a CA bundle to check the
+server's certificate against. `/etc/ssl/certs/ca-certificates.crt` is the
+Debian/Alpine path, which is what Cloud Shell and the app image use; on macOS
+point `sslrootcert` at your own bundle instead. Azure PostgreSQL's certificate
+chains to a public root, so no certificate has to be copied anywhere — if a
+future image turns out to ship no bundle, check with
+`docker run --rm <image> ls -l /etc/ssl/certs/ca-certificates.crt` before
+deploying, and bake the root in only if that file is missing.
+
+A loopback database (`localhost`, `127.0.0.1`, `::1`) is exempt: nothing
+crosses a network there, and local development would otherwise be impossible.
 
 `read -rsp` prints a prompt, hides what you type, and keeps the password out of
 shell history. Run it **alone**: pasted together with the next command, `read`
