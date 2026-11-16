@@ -101,7 +101,7 @@ Tasks 1–3 are code fixes (fast, independent). Tasks 4–7 are Azure changes (c
 - Consumes: existing `get_account_by_session(conn, raw_token)`, `_db_connection()`.
 - Produces: unchanged public behavior; both `_current_account` helpers commit before the connection closes. No other task depends on new names.
 
-- [ ] **Step 1: Write the failing regression tests** (through the HTTP layer, against the scratch DB, in the existing test style)
+- [x] **Step 1: Write the failing regression tests** (through the HTTP layer, against the scratch DB, in the existing test style)
 
 ```python
 def test_last_seen_at_advances_across_authenticated_requests(self):
@@ -116,8 +116,8 @@ def test_idle_revocation_persists_after_refusal(self):
     # re-read row: assert revoked_at IS NOT NULL   <- fails today (rollback)
 ```
 
-- [ ] **Step 2: Run them and verify they fail** — `backend/.venv/bin/python -m unittest backend.tests.test_auth_sessions -v` → both FAIL.
-- [ ] **Step 3: Fix both helpers identically**
+- [x] **Step 2: Run them and verify they fail** — `backend/.venv/bin/python -m unittest backend.tests.test_auth_sessions -v` → both FAIL.
+- [x] **Step 3: Fix both helpers identically**
 
 ```python
 with _db_connection() as conn:
@@ -127,9 +127,11 @@ with _db_connection() as conn:
 
 If `request_deletion` does not commit internally, add the same `conn.commit()` to `delete_account` and extend its test to assert the row landed.
 
-- [ ] **Step 4: Sweep the bug class:** `grep -n "_db_connection" backend/ -r` — every `with` block that writes through `migrate.execute` must commit (login `auth.py:144`, logout `:167`, reauth `:250` already do). Fix any others found; one test each.
-- [ ] **Step 5: Full suites pass** — backend unittest + `node --test tests/*.test.mjs`.
-- [ ] **Step 6: Commit** — `security: commit session idle-refresh and revocation writes (audit H-1)`
+- [x] **Step 4: Sweep the bug class:** `grep -n "_db_connection" backend/ -r` — every `with` block that writes through `migrate.execute` must commit (login `auth.py:144`, logout `:167`, reauth `:250` already do). Fix any others found; one test each.
+- [x] **Step 5: Full suites pass** — backend unittest + `node --test tests/*.test.mjs`.
+- [x] **Step 6: Commit** — `security: commit session idle-refresh and revocation writes (audit H-1)`
+
+**Done 2026-11-16, PR #150.** The Step 4 sweep found no other instance: every other `_db_connection` site commits itself or calls a helper that commits internally. Verified in the running app as well — `last_seen_at` advances, a session idle for 14 minutes survives and its clock restarts, one idle for 16 minutes is refused with `revoked_at` written.
 
 ### Task 2: Rate-limiter hardening — key by client+target, stop resetting on success (H-2, code half) — `TDD`
 
@@ -142,15 +144,17 @@ If `request_deletion` does not commit internally, add the same `conn.commit()` t
 **Interfaces:**
 - Produces: `_login_rate_key(request, login_id) -> str` — `f"{_client_key(request)}|{target}"` where `target` is `derive_lookup_key(login_id)` on valid input, the literal `"invalid"` when `derive_lookup_key` raises `ValueError`. Registration limiter keeps plain `_client_key` (its global 200/day cap is by design).
 
-- [ ] **Step 1: Failing tests:**
+- [x] **Step 1: Failing tests:**
   1. 10 failures against login ID A from one client → 11th attempt for A gets 429, while a login for ID B from the same client is still allowed.
   2. Interleave 10 failures on A with 10 **successes** on the attacker's own ID → the counter for A is NOT reset; next A attempt gets 429.
   3. Malformed login ID → key falls back to `"invalid"`, no 500.
 
-- [ ] **Step 2: Run → FAIL.**
-- [ ] **Step 3: Implement.** `record_success` zeroes the bucket instead of deleting it (`bucket.failures = 0`); login/reauth/delete use `_login_rate_key`.
-- [ ] **Step 4: Suite passes (includes the existing X-Forwarded-For trust A/B tests — they must stay green).**
-- [ ] **Step 5: Commit** — `security: key login limiter by client+credential, expire buckets instead of resetting (audit H-2)`
+- [x] **Step 2: Run → FAIL.**
+- [x] **Step 3: Implement.** `record_success` zeroes the bucket instead of deleting it (`bucket.failures = 0`); login/reauth/delete use `_login_rate_key`.
+- [x] **Step 4: Suite passes (includes the existing X-Forwarded-For trust A/B tests — they must stay green).**
+- [x] **Step 5: Commit** — `security: key login limiter by client+credential, expire buckets instead of resetting (audit H-2)`
+
+**Done 2026-11-16, PR #151.** Verified in the running app: ten wrong guesses lock that one login ID out while a real login from the same address still gets in.
 
 ### Task 3: Deployment default trusts the ingress for client addresses (H-2, config half) — `OPS`
 
@@ -296,17 +300,21 @@ functional image-pull/secret-read or whole Task 5 completion is claimed.
 **Interfaces:**
 - Produces: `app_database_url()` raises `DatabaseConfigError` unless the effective `sslmode` (after libpq defaults) is `verify-full`, `verify-ca`, or `require`; absent `sslmode` is **rejected** (libpq would default to `prefer`). `test_database_url()` applies the same rule **except** when the resolved host is loopback (`127.0.0.1`, `::1`, `localhost`) — local dev Postgres without SSL stays usable. Error messages name the required values.
 
-- [ ] **Step 1: Failing tests:** DSN without `sslmode` → `DatabaseConfigError`; `sslmode=disable`/`allow`/`prefer` → rejected; `require`/`verify-full` → accepted (parse with `conninfo_to_dict`, mirroring the existing validation style).
-- [ ] **Step 2: Run → FAIL. Implement in `settings.py` (both functions).**
+- [x] **Step 1: Failing tests:** DSN without `sslmode` → `DatabaseConfigError`; `sslmode=disable`/`allow`/`prefer` → rejected; `require`/`verify-full` → accepted (parse with `conninfo_to_dict`, mirroring the existing validation style).
+- [x] **Step 2: Run → FAIL. Implement in `settings.py` (both functions).**
 - [ ] **Step 3: Bake the CA + update the deploy DSN** as above; `docker build` locally and confirm the file is present (`docker run --rm <img> ls -l /app/postgres-ca.pem`).
 - [ ] **Step 4: Redeploy; verify** the app connects (verify-full succeeds only with the right CA) and the DSN validation refuses a tampered `sslmode` at startup.
-- [ ] **Step 5: Suites pass; commit** — `security: fail closed on DSNs without verified TLS (audit M-4/L1)`
+- [x] **Step 5: Suites pass; commit** — `security: fail closed on DSNs without verified TLS (audit M-4/L1)`
 
 **Phase 0 exit gate (real-data bar):** Tasks 1–7 done; full backend + node suites green; Trivy gate green; `what-if` clean; staging smoke (register/login/attempt/owner flow) passes; owner signs off — only then may the `fictional-only` tag change.
 
 ---
 
 ## Phase 1 — Pipeline integrity (independent of Phase 0 code tasks)
+
+**Code done 2026-11-16, PR #152; Steps 3 and 4 still open.** The loopback exemption was widened to `app_database_url` as well, because the development server uses the app DSN on `localhost`.
+
+Step 3 took a different route than written: no CA is baked into the image. Azure PostgreSQL chains to a public root, so the runbook points `sslrootcert` at the distro bundle (`/etc/ssl/certs/ca-certificates.crt`) and carries the one-line check to run before deploying. **Still to do:** build the image and confirm that bundle is there, then Step 4 — redeploy with the new DSN and confirm the app connects with `verify-full` against the real server.
 
 ### Task 8: Publish environment gate (M-7) — `OPS`
 
