@@ -207,6 +207,65 @@ class PromotionEdgeTests(unittest.TestCase):
                 self.assertEqual(result.adjustment, 0)
 
 
+class PointsBoundsTests(unittest.TestCase):
+    """A total that cannot be stored brings the account to a halt (audit M-3).
+
+    The balance columns are smallint, so they hold -32768..32767. Challenger
+    is deliberately uncapped and a perfect quiz is worth +300, so a dedicated
+    player passes 32767 inside a season -- and from then on every settlement
+    raises and the account can never finish another attempt.
+
+    Owner decision 2026-11-16: keep the columns and clamp the result at
+    +/-30000 instead of widening them. The ceiling is therefore a real game
+    rule, not just a storage detail.
+    """
+
+    def test_a_win_cannot_push_the_total_past_the_ceiling(self):
+        result = scoring.settle(
+            scoring.POINTS_CEILING - 100, ranks.NORMAL, "completed", PERFECT
+        )
+        self.assertEqual(result.points_after, scoring.POINTS_CEILING)
+        # and the result stays self-consistent: what was applied is the
+        # difference the balance actually moved, not what the answers scored
+        self.assertEqual(
+            result.adjustment, result.points_after - result.points_before
+        )
+        self.assertGreater(result.raw_score, result.adjustment)
+
+    def test_at_the_ceiling_a_quit_still_takes_its_penalty(self):
+        result = scoring.settle(
+            scoring.POINTS_CEILING, ranks.NORMAL, "quit", []
+        )
+        self.assertEqual(result.points_after, scoring.POINTS_CEILING - 10)
+
+    def test_losses_cannot_push_the_total_below_the_floor(self):
+        result = scoring.settle(
+            scoring.POINTS_FLOOR + 5, ranks.NORMAL, "quit", answers(easy_wrong=15)
+        )
+        self.assertEqual(result.points_after, scoring.POINTS_FLOOR)
+
+    def test_a_promotion_is_bounded_too(self):
+        result = scoring.settle(
+            scoring.POINTS_FLOOR + 5, ranks.PROMOTION, "quit", answers(easy_wrong=15)
+        )
+        self.assertEqual(result.points_after, scoring.POINTS_FLOOR)
+
+    def test_a_void_outcome_leaves_an_out_of_range_total_alone(self):
+        # a void changes nothing by definition; clamping here would turn a
+        # "nothing happened" into a silent correction of someone's balance
+        result = scoring.settle(
+            scoring.POINTS_CEILING + 500, ranks.NORMAL, "outage_void", PERFECT
+        )
+        self.assertEqual(result.points_after, scoring.POINTS_CEILING + 500)
+        self.assertEqual(result.adjustment, 0)
+
+    def test_the_bounds_fit_the_columns_that_hold_them(self):
+        # smallint is -32768..32767, and the ledger also stores the
+        # difference between two bounded totals
+        self.assertLess(scoring.POINTS_CEILING, 32767)
+        self.assertGreater(scoring.POINTS_FLOOR, -32768)
+
+
 class InvalidInputTests(unittest.TestCase):
     def test_unknown_mode_or_outcome_is_refused(self):
         with self.assertRaises(ValueError):
