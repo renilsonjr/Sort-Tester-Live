@@ -16,6 +16,27 @@ from backend.ranked import ranks
 POINTS = {"easy": (10, -15), "medium": (20, -10), "hard": (30, -5)}
 QUIT_PENALTY = -10
 
+# How far a balance may travel in either direction (audit M-3). The columns
+# holding it are smallint, which stops at 32767 -- and Challenger is
+# deliberately uncapped, so a perfect quiz's +300 carries a dedicated player
+# past that inside one season. Every settlement after that raises, and the
+# account can never finish another attempt.
+#
+# Owner decision 2026-11-16: clamp here rather than widen the columns. So
+# this is a real rule of the game, not only a storage limit -- a Challenger
+# at the ceiling stops gaining, the way a capped badge does. The result
+# screen already names that case: the overflow shows as "did not fit in
+# Challenger", because a clamp and a badge cap produce the same shape.
+#
+# Negative totals are a legitimate state: wrong answers deduct, and
+# ranks.badge_for reads a negative total as Iron.
+POINTS_CEILING = 30000
+POINTS_FLOOR = -30000
+
+
+def _within_bounds(points: int) -> int:
+    return max(min(points, POINTS_CEILING), POINTS_FLOOR)
+
 _PARTIAL_OUTCOMES = ("completed", "quit", "disconnect", "season_close")
 _VOID_OUTCOMES = ("outage_void", "launch_reset")
 
@@ -62,15 +83,20 @@ def settle(points_before: int, mode: str, final_outcome: str, answers) -> Settle
     cap = ranks.cap_for(badge_before)
 
     if final_outcome in _VOID_OUTCOMES:
+        # a void changes nothing, so it does not even correct a total that is
+        # already out of range: that would be a silent edit of a balance
         points_after = points_before
     elif mode == ranks.PROMOTION:
-        points_after = _promotion_result(points_before, cap, final_outcome, answers)
+        points_after = _within_bounds(
+            _promotion_result(points_before, cap, final_outcome, answers)
+        )
     else:
         penalty = QUIT_PENALTY if final_outcome == "quit" else 0
         points_after = points_before + raw + penalty
         if cap is not None:
             # one cap on the whole result; overflow is discarded, never banked
             points_after = min(points_after, cap)
+        points_after = _within_bounds(points_after)
 
     return Settlement(
         raw_score=raw,
