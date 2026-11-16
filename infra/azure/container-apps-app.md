@@ -103,7 +103,18 @@ means the firewall rule is wrong.
 ### 1d. Migrate
 
 From a checkout that **has** `backend/db/upgrade_app.py` (it landed in #79, so
-an older branch will not have it), one line at a time:
+an older branch will not have it), one line at a time.
+
+Cloud Shell keeps your home directory but not a virtualenv, so a session that
+has not built one yet needs this first (the runtime list carries alembic and
+psycopg, which is all a migration uses):
+
+```sh
+python3 -m venv backend/.venv
+backend/.venv/bin/python -m pip install -q -r backend/requirements-runtime.txt
+```
+
+Then:
 
 ```sh
 read -rsp "Paste the password and press Enter: " PGPW; echo
@@ -126,6 +137,10 @@ deploying, and bake the root in only if that file is missing.
 
 A loopback database (`localhost`, `127.0.0.1`, `::1`) is exempt: nothing
 crosses a network there, and local development would otherwise be impossible.
+
+`upgrade_app` refuses until you name the database on the command line, printing
+the server and database it resolved — read that line before confirming; it is
+the last check that you are migrating what you think you are.
 
 `read -rsp` prints a prompt, hides what you type, and keeps the password out of
 shell history. Run it **alone**: pasted together with the next command, `read`
@@ -153,6 +168,13 @@ verify a separate runtime role using [[db-runtime-role]]. The application
 secret must use the runtime role; `upgrade_app` continues using the migration
 owner. The new script/runbook are preparation, not evidence that Azure has
 switched roles. Do not deploy the migration-owner URL as the runtime secret.
+
+> **Applied 2026-11-16 — migration 0036.** The first migration since the
+> database went private, and the procedure above is what ran: a rule for the
+> Cloud Shell address alone, `upgrade_app --confirm` taking it 0035 → 0036,
+> then §1e. No `--public-access` change, and the rule list was empty again
+> afterwards. The app answered `/api/ranked/season/notice` after it, so it
+> still reads the database.
 
 ### 1e. Close the firewall again
 
