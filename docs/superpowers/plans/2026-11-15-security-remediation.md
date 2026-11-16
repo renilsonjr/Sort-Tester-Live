@@ -195,6 +195,15 @@ ALTER DEFAULT PRIVILEGES IN SCHEMA public
 - [ ] **Step 3: Verify the app works with reduced rights:** `/health` 200; register; login; start + answer + quit an attempt (exercises INSERT/UPDATE on accounts, sessions, attempts, answers, settlements, balance_history); owner path if reachable. Then confirm a **migration** with the runtime DSN fails loudly (expected `permission denied`) — proving separation — while `upgrade_app` with the admin DSN succeeds.
 - [ ] **Step 4: Commit the SQL + runbook update** — `security: dedicated sort_app DML role for the runtime, admin reserved for migrations (audit H-3)`
 
+Task 4 preparation — 2026-11-16: `infra/azure/db-role.sql` and
+[[../../../infra/azure/db-runtime-role]] prepare the least-privilege change.
+The script creates NOLOGIN first and excludes migration metadata/tooling from
+runtime grants, a narrower grant than the illustrative SQL above. Local
+PostgreSQL verifies permissions and authentication routes under SET ROLE.
+Full local backend suite: 902 tests passed with scratch PostgreSQL.
+Azure provisioning, password authentication, runtime secret/deploy and full
+staging attempt/owner checks have not run; Task 4 remains incomplete.
+
 ### Task 5: Registry pull via ACR + managed identity (H-5) — `OPS`
 
 **Files:**
