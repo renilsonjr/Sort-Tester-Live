@@ -272,14 +272,62 @@ az containerapp delete -g rg-sort-tester-staging -n ca-sort-app-stg --yes
 az containerapp env delete -g rg-sort-tester-staging -n cae-sort-app-stg --yes
 ```
 
+**Wait for the deletion to actually finish before deploying.** The delete
+command returns while Azure is still tearing the environment down, and
+creating a new one under the same name during that window fails with nothing
+more useful than `Operation failed with general exception`, leaving the new
+environment stuck in `Waiting`. This cost a cycle on 2026-11-16. Watch until
+both the environment and its infrastructure resource group are gone:
+
+```sh
+for i in $(seq 1 30); do
+  e=$(az containerapp env show -g rg-sort-tester-staging -n cae-sort-app-stg \
+        --query properties.provisioningState -o tsv 2>/dev/null || echo gone)
+  m=$(az group exists -n ME_cae-sort-app-stg_rg-sort-tester-staging_northcentralus -o tsv)
+  echo "$(date +%H:%M:%S) env=$e managed-rg=$m"
+  [ "$e" = gone ] && [ "$m" = false ] && break
+  sleep 30
+done
+```
+
+It passes through `ScheduledForDelete` and takes several minutes. If an
+environment is already stuck in `Waiting`, delete it and wait the same way
+before trying again.
+
 Then deploy §5b with `appSubnetId=<the id from step 1>` added to its
 parameters. The database URL does not change: inside the network the server's
 own name resolves to its private address.
 
+**Check the registry token before deploying, not after.** The image pull is
+the other thing that failed here, and its error arrives only once the
+deployment is half done: `DENIED: denied` on the image field. GHCR needs a
+**classic** personal access token with `read:packages` — a fine-grained token
+is refused. A 403 from this check means the token is real but not allowed to
+read that package, which is the usual shape of the problem:
+
+```sh
+read -rsp "GHCR token: " GHTOK; echo
+BT=$(curl -s -u "<user>:$GHTOK" \
+  "https://ghcr.io/token?scope=repository:<user>/sort-tester-live-app:pull&service=ghcr.io" \
+  | python3 -c "import sys,json;print(json.load(sys.stdin).get('token',''))")
+curl -s -o /dev/null -w "manifest: %{http_code}\n" -H "Authorization: Bearer $BT" \
+  -H "Accept: application/vnd.oci.image.index.v1+json" \
+  "https://ghcr.io/v2/<user>/sort-tester-live-app/manifests/sha256:<digest>"
+```
+
+`200` means the deployment can pull. Anything else means fix the token first.
+
 **Step 4 — prove the app works privately, before closing anything.** Run §6
-against the new `appUrl`: `/health`, a login, one ranked attempt. If the app
-cannot reach the database, the DNS zone link or the endpoint's group id is
-wrong — fix that before going on, because the next step removes the way back.
+against the new `appUrl`: `/health`, a login, one ranked attempt. `/health`
+alone is not enough — it answers without touching the database. Use something
+that reads: `/api/ranked/season/notice` returns real JSON only if the database
+answered, and a 500 there means it did not. If the app cannot reach the
+database, the DNS zone link or the endpoint's group id is wrong — fix that
+before going on, because the next step removes the way back.
+
+The app's address changes with the environment, so record the new `appUrl` and
+redeploy once more with `appOrigin` set to it (§5b, no downtime: it only makes
+a new revision).
 
 **Step 5 — remove the public rule.**
 
@@ -316,7 +364,21 @@ all**, no public client can connect either. Step 6 is the stronger version,
 not the only acceptable one. Whichever you choose, write down which, because
 the next person to run a migration needs to know.
 
-**Step 7 — confirm from outside.** From your own machine, not Cloud Shell:
+> **What is in force — 2026-11-16.** Step 6 was deliberately **not** taken.
+> Public access stays `Enabled` with **zero firewall rules**, which is what
+> actually refuses every public client today. The owner chose this because
+> migrations still run often while the app is changing, and the extra
+> protection did not justify the two-command dance around each one. Revisit
+> it after #84, when the app signs in with a managed identity and no password
+> has to cross anything.
+>
+> **So, to migrate:** §1c to add a rule for your own address, §1d, then §1e
+> to remove it. No `--public-access` change is needed, and none should be
+> made without updating this note.
+
+**Step 7 — confirm from outside.** Cloud Shell counts as outside: it sits in
+Azure but not in this network, which is exactly the case the removed rule used
+to cover.
 
 ```sh
 PGCONNECT_TIMEOUT=15 psql "host=<server>.postgres.database.azure.com port=5432 dbname=sort_tester_app user=<user> sslmode=verify-full" -c 'select 1'
@@ -324,6 +386,32 @@ PGCONNECT_TIMEOUT=15 psql "host=<server>.postgres.database.azure.com port=5432 d
 
 A timeout is the answer you want. A password prompt means the server is still
 reachable from the internet.
+
+### 5a applied — 2026-11-16
+
+Done, in this order, with the evidence:
+
+1. `sort-tester-network` deployed: 5 created, 9 ignored, nothing modified.
+2. Private endpoint `Approved` (auto, same subscription), and the private DNS
+   zone gained an A record for the server, written by the endpoint.
+3. The first environment create failed and hung in `Waiting` — the name was
+   reused too soon after the delete. Deleted it, waited for `ScheduledForDelete`
+   to finish, and the second create succeeded.
+4. The app create then failed on `DENIED: denied` from GHCR. The token was a
+   real 40-character one but got 403 for that package; a classic token with
+   `read:packages` returned 200 from the manifest check and the deployment
+   went through.
+5. New environment domain `braveground-…`, so the app has a new address; the
+   old one no longer exists. `appOrigin` redeployed to match.
+6. `/health` 200 and `/api/ranked/season/notice` 200 with real JSON — the app
+   reads the database.
+7. `allow-azure-services` deleted, and the notice still answered 200. The app
+   is reaching the database through the private endpoint and nothing else.
+8. From Cloud Shell, `psql` to the server's public name: **timeout expired**.
+   Before this change the same command reached it and answered.
+
+H-4 is closed. Step 6 was not taken — see the note under it for what is in
+force and what that means for the next migration.
 
 ### 5b. Create the app
 

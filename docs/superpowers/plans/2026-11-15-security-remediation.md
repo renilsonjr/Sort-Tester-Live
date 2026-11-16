@@ -282,14 +282,34 @@ functional image-pull/secret-read or whole Task 5 completion is claimed.
 - [x] **Step 1: Owner decisions (blocking):** subnet CIDR for the ACA environment, whether the spike/staging apps retire first (recommended — they're disposable), downtime window (environment recreate).
 
   **Answered 2026-11-16.** `10.20.0.0/16` for the network, `10.20.1.0/27` for the environment and `10.20.2.0/28` for the endpoint — there is no other virtual network to collide with. The spike and staging apps retire first. The environment is recreated and **the app's address changes**, with 15–30 minutes of downtime accepted: nobody outside the project uses the app yet.
-- [ ] **Step 2: Create network:** VNet + delegated subnet (`Microsoft.App/environments`), private DNS zone `privatelink.postgres.database.azure.com` linked to the VNet, private endpoint on the Flexible Server targeting its `postgresqlServer` group ID.
-- [ ] **Step 3: Update the bicep** — `appEnvironment.properties.vnetConfiguration` with the subnet resourceId; the DB URL host stays the server FQDN (resolved privately inside the VNet).
-- [ ] **Step 4: Redeploy per runbook (parameters via `@file`); what-if clean.**
-- [ ] **Step 5: Acceptance checks:**
+- [x] **Step 2: Create network:** VNet + delegated subnet (`Microsoft.App/environments`), private DNS zone `privatelink.postgres.database.azure.com` linked to the VNet, private endpoint on the Flexible Server targeting its `postgresqlServer` group ID.
+- [x] **Step 3: Update the bicep** — `appEnvironment.properties.vnetConfiguration` with the subnet resourceId; the DB URL host stays the server FQDN (resolved privately inside the VNet).
+- [x] **Step 4: Redeploy per runbook (parameters via `@file`); what-if clean.**
+- [x] **Step 5: Acceptance checks:**
   - App boots, `/health` 200, login + one attempt flow works (DB reachable privately).
   - **Delete the `allow-azure-services` rule** (`az postgres flexible-server firewall-rule delete … --name allow-azure-services`) and confirm the app still works.
   - From outside Azure: `psql` to the server FQDN times out (public access disabled); only the migration firewall rule opens temporarily per runbook §1.
-- [ ] **Step 6: Commit + runbook** — `security: VNet-injected environment + DB private endpoint, public firewall rule removed (audit H-4)`
+- [x] **Step 6: Commit + runbook** — `security: VNet-injected environment + DB private endpoint, public firewall rule removed (audit H-4)`
+
+**Done 2026-11-16 (PRs #163, #164).** Applied with the owner at the console;
+the evidence is in `infra/azure/container-apps-app.md` §5a applied.
+
+Step 5's three acceptance checks all passed: the app boots and reads the
+database over the private endpoint, `allow-azure-services` was deleted and the
+app kept working, and `psql` from outside the network now times out where it
+used to answer.
+
+One deviation to be precise about: that third check is worded "(public access
+disabled)", and public access is **not** disabled — it is `Enabled` with zero
+firewall rules, which is what refuses every public client today. The owner
+chose to stop there because migrations still run often and disabling it makes
+each one a two-command dance. Revisit after #84. The runbook carries the note.
+
+Two traps cost a cycle each and are now written into the runbook so the next
+person does not pay them again: an environment name reused before the delete
+finishes fails with a bare "Operation failed with general exception" and hangs
+in `Waiting`; and GHCR needs a **classic** token with `read:packages`, whose
+failure only surfaces halfway through the deployment as `DENIED: denied`.
 
 ### Task 7: Enforce TLS on every DSN, verify the server certificate (M-4 + audit L1) — `TDD`
 
@@ -357,11 +377,13 @@ Step 3 took a different route than written: no CA is baked into the image. Azure
 **Interfaces:**
 - Produces: `get_readonly_db` — plain connection dependency for read-only public routes.
 
-- [ ] **Step 1: Failing test:** `/api/ranked/season/notice` returns correct data while **no sweep function runs** (monkeypatch `finish_due_seasons`/`close_due_rounds`/`purge_due_cases`/`purge_deleted_accounts` to raise; endpoint must still answer — currently fails because `get_db` calls them).
-- [ ] **Step 2: Implement:** `season_notice` takes `conn=Depends(get_readonly_db)`.
-- [ ] **Step 3: Sweeps still run on authenticated routes** — assert one authenticated ranked call invokes the sweep chain (existing tests largely cover this; add one explicit assertion).
-- [ ] **Step 4 (optional, only if load tests show need):** in-process sweep throttle behind `SORT_TESTER_SWEEP_INTERVAL_SECONDS` (default `0` = current behavior) — never changes semantics, only frequency.
-- [ ] **Step 5: Suites pass; commit** — `security: read-only dependency for public season notice, sweeps off the anonymous path (audit M-1)`
+- [x] **Step 1: Failing test:** `/api/ranked/season/notice` returns correct data while **no sweep function runs** (monkeypatch `finish_due_seasons`/`close_due_rounds`/`purge_due_cases`/`purge_deleted_accounts` to raise; endpoint must still answer — currently fails because `get_db` calls them).
+- [x] **Step 2: Implement:** `season_notice` takes `conn=Depends(get_readonly_db)`.
+- [x] **Step 3: Sweeps still run on authenticated routes** — assert one authenticated ranked call invokes the sweep chain (existing tests largely cover this; add one explicit assertion).
+- [x] **Step 4 (optional, only if load tests show need):** in-process sweep throttle behind `SORT_TESTER_SWEEP_INTERVAL_SECONDS` (default `0` = current behavior) — never changes semantics, only frequency.
+- [x] **Step 5: Suites pass; commit** — `security: read-only dependency for public season notice, sweeps off the anonymous path (audit M-1)`
+
+**Done 2026-11-16, PR #165.** Step 4's optional throttle was not built: the sweeps now run only behind an account, which was the whole finding. Checked in the running app — the notice answers in single-digit milliseconds and a burst of ten concurrent calls all return.
 
 ### Task 12: Lock-free early return in `finalize_prizes` (M-2) — `TDD`
 
