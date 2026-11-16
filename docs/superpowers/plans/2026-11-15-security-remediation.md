@@ -16,9 +16,9 @@
 
 ---
 
-## Status note — 2026-11-16 (checked into the repo)
+## Historical planning note — 2026-11-16, before PRs #151–#156
 
-The audit was delivered on 2026-11-15 and is recorded here unchanged. Three things have moved since, verified against `codex/ranked-mode` today:
+The audit was delivered on 2026-11-15. The following snapshot was captured before the fixes in PRs #151–#156; it is historical, not a claim that these bugs still reproduce on the deployed source. Current Task 4 evidence is recorded in its task section and [[../../../infra/azure/db-runtime-role]]. At planning time:
 
 1. **H-1 still reproduces.** `backend/routers/auth.py:88-93` and `backend/routers/ranked.py:83-88` open a connection, call `get_account_by_session` (which UPDATEs `last_seen_at`, and revokes on idle) and close it without `conn.commit()` — psycopg rolls both back. `_purge_pending_deletions` (`auth.py:75-80`) is the same bug class: accepted deletions are never actually purged. `test_auth_sessions.py` passes because it holds one connection open across the call, so the uncommitted write is still visible inside that transaction — which is why Task 1 asks for a **router-level** regression test.
 2. **"Existing defenses to keep" #2 needs rewording, not restoring.** `correct_belt` now leaves the server in one place on purpose: the answer response, *after* the answer is graded and recorded (PR #148, issue #95 prerequisite). The invariant that still holds is **"the right belt is never readable before the answer is accepted"** — `current_question` returns only the four offered belts, and a tie-break reveals nothing until the round closes. Do not "fix" the feedback screen back out of existence.
@@ -189,7 +189,7 @@ PR review; deployment evidence remains with #41/#13.
 - Create: `infra/azure/db-role.sql` (tracked — it contains no secrets)
 - Modify: `infra/azure/container-apps-app.md` (§1: app DSN now uses `sort_app`; migrations keep the admin DSN; add the rotation note)
 
-- [ ] **Step 1: Create the role as the admin, against `sort_tester_app`:**
+- [x] **Step 1: Create the role as the admin, against `sort_tester_app`:**
 
 ```sql
 CREATE ROLE sort_app LOGIN PASSWORD '<generated in password manager>';
@@ -203,18 +203,18 @@ ALTER DEFAULT PRIVILEGES IN SCHEMA public
   GRANT USAGE ON SEQUENCES TO sort_app;
 ```
 
-- [ ] **Step 2: Redeploy the app secret** with the `sort_app` DSN (runbook §4/§5, parameters via the new `@file` method from Task 15). `az deployment group what-if` → exactly the expected `2 to modify`, zero Delete/Replace.
-- [ ] **Step 3: Verify the app works with reduced rights:** `/health` 200; register; login; start + answer + quit an attempt (exercises INSERT/UPDATE on accounts, sessions, attempts, answers, settlements, balance_history); owner path if reachable. Then confirm a **migration** with the runtime DSN fails loudly (expected `permission denied`) — proving separation — while `upgrade_app` with the admin DSN succeeds.
-- [ ] **Step 4: Commit the SQL + runbook update** — `security: dedicated sort_app DML role for the runtime, admin reserved for migrations (audit H-3)`
+- [x] **Step 2: Redeploy the app secret** with the `sort_app` DSN (runbook §4/§5, parameters via the new `@file` method from Task 15). `az deployment group what-if` → exactly the expected `2 to modify`, zero Delete/Replace.
+- [x] **Step 3: Verify the app works with reduced rights:** `/health` 200; register; login; start + answer + quit an attempt (exercises INSERT/UPDATE on accounts, sessions, attempts, answers, settlements, balance_history); owner path if reachable. Then confirm a **migration** with the runtime DSN fails loudly (expected `permission denied`) — proving separation — while `upgrade_app` with the admin DSN succeeds.
+- [x] **Step 4: Commit the SQL + runbook update** — `security: dedicated sort_app DML role for the runtime, admin reserved for migrations (audit H-3)`
 
-Task 4 preparation — 2026-11-16: `infra/azure/db-role.sql` and
-[[../../../infra/azure/db-runtime-role]] prepare the least-privilege change.
-The script creates NOLOGIN first and excludes migration metadata/tooling from
-runtime grants, a narrower grant than the illustrative SQL above. Local
-PostgreSQL verifies permissions and authentication routes under SET ROLE.
-Full local backend suite: 902 tests passed with scratch PostgreSQL.
-Azure provisioning, password authentication, runtime secret/deploy and full
-staging attempt/owner checks have not run; Task 4 remains incomplete.
+Task 4 verified — 2026-11-16: PR #155 SQL and runbook were merged;
+Azure migrations reached 0035 under the migration identity, and the deployed
+app now authenticates as `sort_app` with verifying TLS. Health, registration,
+login, normal start/answer/quit/result and complete promotion HTTP checks passed.
+The owner confirmed access to Owner tools. Runtime CREATE/ALTER and migration
+metadata UPDATE were denied. See [[../../../infra/azure/db-runtime-role]] for
+source/digest and evidence limits. The DDL/metadata checks replace a misleading
+no-op upgrade-at-head test; no test migration was applied to staging.
 
 ### Task 5: Registry pull via ACR + managed identity (H-5) — `OPS`
 
@@ -223,13 +223,24 @@ staging attempt/owner checks have not run; Task 4 remains incomplete.
 - Modify: `.github/workflows/app-image-publish.yml` (also push the digest to ACR) and `container-apps-app.md` §2/§3
 - Test: `backend/tests/test_azure_container_app.py` (update: no registry password param; identity present)
 
-- [ ] **Step 1: Create the registry** — `az acr create -g rg-sort-tester-staging -n <name> --sku Basic` (name is not a secret; track it in the private inventory, not the runbook).
+- [ ] **Step 1: Create the registry** — `az acr create -g rg-sort-tester-staging -n <name> --sku Standard` (uses the verified student free allowance; recheck its quota and expiry first) (name is not a secret; track it in the private inventory, not the runbook).
 - [ ] **Step 2: Publish path** — extend the publish workflow to push the same digest to ACR (repo settings: add an `ACR` environment or use the existing publish gate from Task 8; authenticate with a short-lived token via `az acr login` in the job, not a stored PAT). Manual interim: `az acr import --source ghcr.io/renilsonjr/sort-tester-live-app@sha256:<digest> ...`.
 - [ ] **Step 3: Bicep changes** — on the container app: `identity: { type: 'SystemAssigned' }`; `registries: [{ server: '<name>.azurecr.io', identity: 'system' }]`; remove both registry params and the secret entry.
 - [ ] **Step 4: Grant pull** — after first what-if (the identity must exist), `az role assignment create --assignee <principalId> --role AcrPull --scope <acr-id>`; redeploy.
 - [ ] **Step 5: Move the database secret into Key Vault (audit §3 P0-1, same identity)** — `az keyvault create -g rg-sort-tester-staging -n <name>`; `az keyvault secret set --vault-name <name> --name database-url --value "<sort_app DSN>"`; grant the app identity `Key Vault Secrets User` on the vault; in bicep replace the `database-url` secret's `value: databaseUrl` with `keyVaultUrl: 'https://<name>.vault.azure.net/secrets/database-url'`, and delete the `databaseUrl` param and its `@secure()` block. Rotation becomes a vault operation and every read is audited.
 - [ ] **Step 6: Verify:** app pulls and boots; `az containerapp show` config contains no registry password and no inline DB secret; GHCR PAT is **revoked**.
 - [ ] **Step 7: Update tests + runbook; commit** — `security: ACR + managed identity + Key Vault; PAT and inline DB secret retired (audit H-5, §3 P0-1)`
+
+Task 5 preparation — 2026-11-16: [[../../../infra/azure/security-foundation]]
+contains a create-only registry/vault foundation and cost/credit evidence.
+The proposal now selects Standard to use the verified student free allowance;
+its updated compilation and Azure what-if passed with exactly two Creates.
+Education Hub credit and subscription spending protection were verified;
+the owner permits only credit/free-allowance-covered usage. Azure what-if showed exactly two Creates and no existing-resource
+changes; both names are available. No resources, identities, grants or secrets
+were created. All Task 5 execution/acceptance steps remain incomplete pending
+PR merge, the credit-only authorization checks, and the later
+identity/publisher/runtime slices.
 
 ### Task 6: Network isolation — VNet-injected environment + private endpoint (H-4) — `OPS` *(biggest change: plan a deployment window)*
 

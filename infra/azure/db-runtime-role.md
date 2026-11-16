@@ -1,6 +1,6 @@
 # Runtime database role — audit H-3 / Task 4
 
-Status: prepared for review and tested locally; **not applied to Azure**.
+Status: applied to fictional-data Azure staging on 2026-11-16; runtime and owner checks verified.
 Related: [[container-apps-app]], [[../../docs/superpowers/plans/2026-11-15-security-remediation]].
 
 ## Separate two jobs
@@ -61,7 +61,7 @@ ALTER ROLE sort_app LOGIN;
 Exit psql and `unset PGPASSWORD` when the owner connection is no longer needed.
 Keep the migration identity separate; never grant its membership to `sort_app`.
 
-## Deploy and verify — still pending
+## Deployment procedure
 
 1. Prepare the runtime URL using `sort_app` and verified TLS. Supply secrets
    through a restricted, untracked parameter file or the reviewed secret store,
@@ -88,3 +88,40 @@ login → me → logout flow under SET ROLE, and confirm DDL/metadata access is
 refused. Future table/sequence grants and refusal to alter an existing role
 are also checked. SET ROLE verifies SQL permissions; it does not prove Azure
 password authentication, networking, TLS or deployment.
+
+## Azure verification — 2026-11-16
+
+Applied the reviewed role SQL from PR #155 after explicit owner approval.
+Migrations 0021–0035 ran under the migration identity; schema 0035 was verified.
+The owner entered the runtime password directly at hidden Cloud Shell prompts,
+then approved enabling LOGIN. No password or login ID is recorded here.
+
+The actual app secret authenticates as `sort_app` with `sslmode=verify-full`
+and the system CA bundle. TLS was confirmed active. CREATE TABLE, ALTER TABLE,
+and UPDATE of `alembic_version` were refused with insufficient privileges;
+test transactions were rolled back. This tests the DDL/metadata operations a
+migration needs: running a no-op upgrade at head would not prove separation.
+
+The initial deployment succeeded. A later image-only update serves merged
+PR #156, source `e1b644b8a8a84ba48573f0760c98e26c7a0da084`, digest
+`sha256:b60d5a8e6c1bd4eda985d33fffa2891a01ce118c75b2cb30f3731df60e0a2cde`.
+The update preserved the full app configuration. Published HTML, auth module
+and home image match source; health is 200 and anonymous session access 401.
+
+Hosted HTTP smoke passed registration, login, session lookup, normal Ranked
+start → heartbeat → question → answer → quit → result, and logout. A separate
+fictional promotion fixture was seeded at the Iron cap, then answered all 15
+questions through HTTP: Iron 1000 → Bronze 1001. Repeated result and quit
+calls returned the same settlement; the database contained exactly one
+settlement for that attempt. The fixture remains test data, not player progress.
+The normal attempt, promotion, and DDL checks used the actual runtime role.
+
+The owner confirmed successful login and access to Owner tools in the published
+interface. Database verification found exactly one owner, matching the approved
+account. This verifies access, not every privileged action. Only Pre-Season
+exists; no official season was launched. Hosted promotion was tested over HTTP,
+not as a complete mobile browser journey. Load, restore, network isolation and
+employee rollout remain separate checks under #13 and [[security-foundation]].
+
+Removed agent-created secret parameter/deployment-result files from Cloud Shell.
+[Image publication evidence](https://github.com/renilsonjr/Sort-Tester-Live/actions/runs/43831986133).
