@@ -905,6 +905,16 @@ def _prize_levels(conn, season_id):
     return [members for _points, members in levels], rows
 
 
+def _nothing_to_finalize(season) -> bool:
+    """Whether this season's hats are settled, or not ready to be."""
+    return (
+        season is None
+        or season["phase"] != "official"
+        or season["frozen_at"] is None
+        or season["prizes_final_at"] is not None
+    )
+
+
 def finalize_prizes(conn, season_id, *, clock, bank=None, rng=None) -> str:
     """Resolve the season's hats, opening a replacement round if a backfill
     tie needs one, and writing the final winners when nothing is pending.
@@ -912,14 +922,23 @@ def finalize_prizes(conn, season_id, *, clock, bank=None, rng=None) -> str:
     Returns 'final', 'pending' or 'opened_round'. Only acts on a frozen
     official season whose prizes are not already final. Commits.
     """
-    season = migrate.fetch_one(
-        conn,
+    columns = (
         "SELECT phase, frozen_at, prizes_final_at, closes_at, closed_at"
-        " FROM seasons WHERE id = %s FOR UPDATE",
-        (season_id,),
+        " FROM seasons WHERE id = %s"
     )
-    if (season is None or season["phase"] != "official"
-            or season["frozen_at"] is None or season["prizes_final_at"] is not None):
+    # Look before locking. Every ranked request comes through here, and a
+    # season whose prizes are final stays that way forever -- taking
+    # FOR UPDATE first meant every one of those requests queued on this one
+    # row with nothing to do (audit M-2).
+    season = migrate.fetch_one(conn, columns, (season_id,))
+    if _nothing_to_finalize(season):
+        conn.commit()
+        return "final" if season and season["prizes_final_at"] else "pending"
+    # There is work, so take the lock and read again: the row can have
+    # changed between the two reads, and whoever won that race has already
+    # done the work.
+    season = migrate.fetch_one(conn, f"{columns} FOR UPDATE", (season_id,))
+    if _nothing_to_finalize(season):
         conn.commit()
         return "final" if season and season["prizes_final_at"] else "pending"
     levels, rows = _prize_levels(conn, season_id)
