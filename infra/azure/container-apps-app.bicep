@@ -44,6 +44,9 @@ param databaseUrl string
 @description('Public origin, such as https://example.com, once it is known. Empty is correct on the first deployment: writes are then checked against the app own ingress host.')
 param appOrigin string = ''
 
+@description('Resource id of the subnet the environment is injected into, from network.bicep\'s appSubnetId output (audit H-4). Empty keeps the old public-only environment, which can reach the database only through a public firewall rule.')
+param appSubnetId string = ''
+
 @description('One trusted Container Apps ingress hop, verified in the staging runbook (issue #78). Other values are rejected so deploys cannot group clients or trust a forged client address.')
 @allowed([
   '1'
@@ -70,6 +73,15 @@ resource appEnvironment 'Microsoft.App/managedEnvironments@2025-01-01' = {
         workloadProfileType: 'Consumption'
       }
     ]
+    // An environment cannot be moved into a network after it is created,
+    // so switching this on recreates the environment and the app, and the
+    // app's address changes with it (runbook §5a). `internal: false` keeps
+    // the ingress public: it is the database that goes private here, not
+    // the website.
+    vnetConfiguration: empty(appSubnetId) ? null : {
+      infrastructureSubnetId: appSubnetId
+      internal: false
+    }
   }
 }
 
