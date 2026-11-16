@@ -62,9 +62,16 @@ class LoginRateLimiter:
             bucket.last_failure_at = now
 
     def record_success(self, key: str) -> None:
+        """Clear the failures counted against one key.
+
+        Only that key: with keys of client+credential (``_login_rate_key``)
+        this forgives the owner their own mistyped attempts and reaches
+        nothing else, so signing in to one account can no longer hand an
+        attacker a fresh run of guesses at another (audit H-2).
+        """
         with self._lock:
             if key in self._buckets:
-                del self._buckets[key]
+                self._buckets[key].failures = 0
 
 
 # Singleton for the application process.
@@ -128,6 +135,28 @@ def _client_key(request) -> str:
     if len(entries) < proxies:
         return connection
     return _address(entries[-proxies]) or connection
+
+
+def _login_rate_key(request, login_id: str) -> str:
+    """The limiter key for an attempt on one credential (audit H-2).
+
+    Keyed by the client *and* the credential it is trying. Keyed by the
+    client alone, ten guesses at one login ID refused every other login ID
+    from that address -- and behind a single ingress that address is
+    everyone, so anyone could lock the whole app out of signing in.
+
+    The target is the credential's lookup key, which is derived, not
+    secret, and never leaves the process. An ID too malformed to derive
+    one from shares a single bucket: it cannot name an account, so it
+    cannot lock one out.
+    """
+    from backend.auth.credentials import derive_lookup_key
+
+    try:
+        target = derive_lookup_key(login_id)
+    except ValueError:
+        target = "invalid"
+    return f"{_client_key(request)}|{target}"
 
 
 class RegistrationLimiter:
