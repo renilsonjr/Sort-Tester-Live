@@ -57,3 +57,9 @@ Verified against the local FastAPI app with an isolated fictional-data database:
 - Quiz/feedback asset references are unchanged; no prize logic changed.
 
 The visible image text remains English and its smallest text is small on phones.
+
+## Owner adjustment — 2026-11-16
+
+Remove the visible “Practice the chart” heading above the artwork. The image
+leads the home; a visually hidden localized “Home” heading retains the page
+heading for assistive technology.

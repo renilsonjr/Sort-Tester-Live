@@ -1936,9 +1936,7 @@ function showStart() {
   const view = labPage(`
     <section class="lab-screen">
       <div class="lab-hero">
-        <div class="lab-hero-copy">
-          <h1>${esc(t('Practice'))}<br>${esc(t('the chart.'))}</h1>
-        </div>
+        <h1 class="sr-only">${esc(t('Home'))}</h1>
         <figure class="lab-campaign">
           <img src="assets/home-podium.jpg" width="860" height="484" alt="${esc(t(
             'Sort Tester Live. Play for points. Reach the top 3. Win a UPS hat. Practice. Compete. Climb the leaderboard. A brown UPS cap above a gold winners’ podium.',
