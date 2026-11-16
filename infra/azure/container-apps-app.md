@@ -285,7 +285,7 @@ wrong — fix that before going on, because the next step removes the way back.
 
 ```sh
 az postgres flexible-server firewall-rule delete -g rg-sort-tester-staging \
-  --name <server> --rule-name allow-azure-services --yes
+  --server-name <server> --name allow-azure-services --yes
 ```
 
 Run §6 again. The app must still work: it is now reaching the database
