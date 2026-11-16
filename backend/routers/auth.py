@@ -4,7 +4,7 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
 from pydantic import BaseModel, Field
 
-from backend.auth.rate_limit import _client_key, get_login_rate_limiter
+from backend.auth.rate_limit import _client_key, _login_rate_key, get_login_rate_limiter
 from backend.auth.service import (
     admin_regenerate_login_id,
     get_account_by_session,
@@ -126,7 +126,7 @@ def register(request: Request, payload: RegisterRequest):
 @router.post("/login", response_model=LoginResponse)
 def login(request: Request, response: Response, payload: LoginRequest):
     limiter = get_login_rate_limiter()
-    rate_key = _client_key(request)
+    rate_key = _login_rate_key(request, payload.login_id)
     if not limiter.is_allowed(rate_key):
         raise HTTPException(status_code=status.HTTP_429_TOO_MANY_REQUESTS, detail="Too many requests")
 
@@ -234,7 +234,7 @@ def reauthenticate_session(
     from backend.ranked.clock import system_clock
 
     limiter = get_login_rate_limiter()
-    rate_key = _client_key(request)
+    rate_key = _login_rate_key(request, payload.login_id)
     if not limiter.is_allowed(rate_key):
         raise HTTPException(status_code=status.HTTP_429_TOO_MANY_REQUESTS, detail="Too many requests")
     with _db_connection() as conn:
@@ -276,7 +276,7 @@ def delete_account(
             detail="Acknowledge that deletion cannot be undone",
         )
     limiter = get_login_rate_limiter()
-    rate_key = _client_key(request)
+    rate_key = _login_rate_key(request, payload.login_id)
     if not limiter.is_allowed(rate_key):
         raise HTTPException(status_code=status.HTTP_429_TOO_MANY_REQUESTS, detail="Too many requests")
     with _db_connection() as conn:
