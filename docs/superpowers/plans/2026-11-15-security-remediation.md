@@ -391,10 +391,12 @@ Step 3 took a different route than written: no CA is baked into the image. Azure
 - Modify: `backend/ranked/tiebreaks.py:926-935`
 - Test: `backend/tests/test_ranked_prize_finalization.py` (extend)
 
-- [ ] **Step 1: Failing test:** season already final → second call returns `"final"` **without** any `FOR UPDATE` (monkeypatch/observe: e.g., assert via a second connection holding the row lock that the call still completes — currently blocks/fails).
-- [ ] **Step 2: Implement:** lock-free `SELECT phase, frozen_at, prizes_final_at, closes_at, closed_at FROM seasons WHERE id = %s` first; return early unless the row is an unfrozen-pending official season; only then re-select `FOR UPDATE` and re-check (double-checked locking — the row can change between reads).
-- [ ] **Step 3: `test_ranked_races.py` + prize finalization tests pass unchanged (concurrency semantics preserved).**
-- [ ] **Step 4: Commit** — `security: finalize_prizes checks before locking, not under lock (audit M-2)`
+- [x] **Step 1: Failing test:** season already final → second call returns `"final"` **without** any `FOR UPDATE` (monkeypatch/observe: e.g., assert via a second connection holding the row lock that the call still completes — currently blocks/fails).
+- [x] **Step 2: Implement:** lock-free `SELECT phase, frozen_at, prizes_final_at, closes_at, closed_at FROM seasons WHERE id = %s` first; return early unless the row is an unfrozen-pending official season; only then re-select `FOR UPDATE` and re-check (double-checked locking — the row can change between reads).
+- [x] **Step 3: `test_ranked_races.py` + prize finalization tests pass unchanged (concurrency semantics preserved).**
+- [x] **Step 4: Commit** — `security: finalize_prizes checks before locking, not under lock (audit M-2)`
+
+**Done 2026-11-16, PR #167.** `test_ranked_races` stayed green unchanged. A new test holds the season row from another connection and asserts that a season *with work to do* still waits for the lock, so the double-award protection cannot be optimised away later.
 
 ### Task 13: Points bounds — no more smallint brick (M-3) — `TDD` + `OPS`
 
@@ -403,12 +405,33 @@ Step 3 took a different route than written: no CA is baked into the image. Azure
 - Create: `backend/migrations/versions/0035_points_bounds.py`
 - Test: `backend/tests/test_ranked_scoring.py` (extend), new schema test in `test_db_balance_ledger_schema.py` style
 
-- [ ] **Step 0 (owner decision, blocking):** confirm negative balances are a legitimate game state (wrong answers deduct, so yes per current rules) → bounds are `±30000`, not `>= 0`.
-- [ ] **Step 1: Failing tests:** `settle(points_before=30000, …quit)` → `points_after == 29990` (stays in range); `settle(points_before=-30000, …quit)` → floor holds; settlement of a clamped result succeeds against a `smallint` column.
-- [ ] **Step 2: Implement clamp:** after computing `points_after` for partial outcomes, `points_after = max(min(points_after, 30000), -30000)`.
-- [ ] **Step 3: Migration 0035** (down_revision = `0034`): `ALTER TABLE balances ADD CONSTRAINT balances_points_range CHECK (current_points BETWEEN -30000 AND 30000)`; same for `balance_history.adjustment, points_before, points_after` (bounds wide enough for the clamp: `adjustment BETWEEN -60000 AND 60000`).
-- [ ] **Step 4: Verify single head:** `backend/.venv/bin/python -c "from backend.db import migrate, settings; print(migrate.current_revision(settings.test_database_url()))"` → `0035`; full suite green.
-- [ ] **Step 5: Commit** — `security: clamp settled points and add schema bounds (audit M-3)`
+- [x] **Step 0 (owner decision, blocking):** confirm negative balances are a legitimate game state (wrong answers deduct, so yes per current rules) → bounds are `±30000`, not `>= 0`.
+- [x] **Step 1: Failing tests:** `settle(points_before=30000, …quit)` → `points_after == 29990` (stays in range); `settle(points_before=-30000, …quit)` → floor holds; settlement of a clamped result succeeds against a `smallint` column.
+- [x] **Step 2: Implement clamp:** after computing `points_after` for partial outcomes, `points_after = max(min(points_after, 30000), -30000)`.
+- [x] **Step 3: Migration 0035** (down_revision = `0034`): `ALTER TABLE balances ADD CONSTRAINT balances_points_range CHECK (current_points BETWEEN -30000 AND 30000)`; same for `balance_history.adjustment, points_before, points_after` (bounds wide enough for the clamp: `adjustment BETWEEN -60000 AND 60000`).
+- [x] **Step 4: Verify single head:** `backend/.venv/bin/python -c "from backend.db import migrate, settings; print(migrate.current_revision(settings.test_database_url()))"` → `0035`; full suite green.
+- [x] **Step 5: Commit** — `security: clamp settled points and add schema bounds (audit M-3)`
+
+**Done 2026-11-16, PR #168, migration applied the same day.**
+
+Step 0's question was already answered by the code: `ranks.badge_for`
+documents that a negative total is Iron, so negative balances are a
+legitimate state and the bounds are a range, not a floor at zero.
+
+The owner chose to clamp at +/-30000 rather than widen the columns, so the
+ceiling is a rule of the game: a Challenger who reaches it stops gaining,
+the way a capped badge does. The existing result screen already explains
+that, since a clamp and a badge cap produce the same shape -- the overflow
+reads "did not fit in Challenger".
+
+The migration is numbered **0036**, not 0035 as the plan wrote: 0035 was
+taken by the Ranked question options while this plan sat unapplied.
+
+Applied to staging on 2026-11-16, the first migration since the database
+went private: firewall opened for one address, `upgrade_app` ran
+0035 -> 0036, the rule was deleted, and the rule list is empty again. The
+app answered `/api/ranked/season/notice` afterwards, so it still reads the
+database.
 
 ### Task 14: Connection pool + statement timeout (M-5) — `TDD`
 
