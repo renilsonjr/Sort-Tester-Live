@@ -90,6 +90,10 @@ def _current_account(request: Request):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized")
     with _db_connection() as conn:
         account = get_account_by_session(conn, raw_token)
+        # the idle refresh and the idle revocation are writes: without this
+        # the close rolls both back, so last_seen_at never leaves the login
+        # time and every session dies one idle window later (audit H-1)
+        conn.commit()
     if account is None:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized")
     return account
