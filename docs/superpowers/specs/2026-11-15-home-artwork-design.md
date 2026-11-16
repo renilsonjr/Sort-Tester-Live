@@ -1,6 +1,6 @@
 # Home artwork — golden hat podium
 
-Status: approved visual mock (owner, 2026-11-15). Not integrated into the app.
+Status: approved visual mock (owner, 2026-11-15); integration prepared for PR review on 2026-11-16. Deployment remains separate.
 
 ## What was approved
 
@@ -32,10 +32,28 @@ untouched.
 - Image weight and the legibility of its embedded text are reviewed at phone
   width before production integration.
 
-## Open questions for the owner
+## Integration decisions — 2026-11-16
 
-- Which build does this land in: `codex/ranked-mode` (the monolith redesign)
-  only, or also the live GitHub Pages `main`? The standing instruction has
-  been that `main` does not change.
-- The PNG is ~1.9 MB. Does it get compressed, or served at a smaller size for
-  phones, before it reaches the home screen of a real player?
+- Targets `codex/ranked-mode` only, as requested; `main` remains unchanged.
+- Ships `assets/home-podium.jpg`, optimized to 860 × 484 px (about 113 KB),
+  instead of the 1.9 MB library source. The whole image keeps its aspect ratio.
+- The shared guest/member home replaces its avatar with the artwork. Quiz
+  and feedback avatars remain unchanged.
+- English alternative text transcribes the message and describes the hat and
+  podium; Spanish alternative text translates it. The visible artwork remains
+  English in both languages.
+- The artwork advertises the existing up-to-three-hat prize feature (#12/#24).
+  Eligibility, tie-breaks, fewer-winner cases and finalization still follow
+  [[2026-11-07-ranked-decision-record]]; the image grants no prize by itself.
+- Embedded small print remains small at phone width. The owner reviewed the
+  full-image mock; this integration preserves that artwork without cropping.
+
+## Browser verification — 2026-11-16
+
+Verified against the local FastAPI app with an isolated fictional-data database:
+- Guest and signed-in home at 320/390 px: artwork loads, no horizontal overflow.
+- Spanish selection translates the image alternative text.
+- Member navigation reaches Practice and returns Home with the poster intact.
+- Quiz/feedback asset references are unchanged; no prize logic changed.
+
+The visible image text remains English and its smallest text is small on phones.

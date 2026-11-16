@@ -1939,7 +1939,11 @@ function showStart() {
         <div class="lab-hero-copy">
           <h1>${esc(t('Practice'))}<br>${esc(t('the chart.'))}</h1>
         </div>
-        <img class="lab-mascot" src="assets/avatar-idle.jpg" alt="${language.code === 'es' ? 'Personaje azul sonriente con una caja de cartón' : 'Smiling blue character holding a cardboard package'}">
+        <figure class="lab-campaign">
+          <img src="assets/home-podium.jpg" width="860" height="484" alt="${esc(t(
+            'Sort Tester Live. Play for points. Reach the top 3. Win a UPS hat. Practice. Compete. Climb the leaderboard. A brown UPS cap above a gold winners’ podium.',
+          ))}">
+        </figure>
       </div>
       <section class="lab-launch" id="launch-callout" hidden aria-live="polite">
         <i aria-hidden="true">!</i>

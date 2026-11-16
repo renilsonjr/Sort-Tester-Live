@@ -474,6 +474,10 @@
   .lab-hero h1 { font: 800 35px/1.02 Arial, Helvetica, sans-serif; letter-spacing: -.065em; margin: 0; }
   .lab-hero p:not(.lab-eyebrow) { margin: 12px 0 0; color: var(--ink); font-size: 14px; }
   .lab-mascot { display: block; width: 100%; height: 225px; object-fit: cover; object-position: 50% 46%; }
+  /* The home poster, unlike the mascot, is never cropped: its own
+     words are part of the picture, so any crop cuts the message. */
+  .lab-campaign { margin: 0; }
+  .lab-campaign img { display: block; width: 100%; height: auto; }
   .lab-section-heading { margin: 16px 0 1px; font-size: 20px; font-weight: 800; }
   .lab-choice { border-radius: 0; box-shadow: none; padding: 17px 15px; }
   .lab-choice-icon, .lab-choice-quiz .lab-choice-icon { border: 1px solid #d6bc75; border-radius: 0; background: #f7eac7; color: var(--ink); width: 44px; height: 44px; font-size: 17px; }
@@ -586,6 +590,7 @@
   .lab-hero h1 { font: 900 clamp(34px, 9vw, 43px)/1.06 Nunito, "Trebuchet MS", sans-serif; letter-spacing: -.055em; }
   .lab-hero p:not(.lab-eyebrow) { color: #54412f; font-size: 15px; }
   .lab-mascot { height: 209px; object-position: center 52%; }
+  .lab-campaign img { border-radius: 0 0 26px 26px; }
   .lab-change { margin-top: 16px; padding: 15px 16px; border: 1px solid #e4d3a8; border-radius: 19px; background: #fbf3e1; }
   .lab-change-kicker { margin: 0 0 8px; color: var(--accent); font-size: 11px; font-weight: 900; letter-spacing: .09em; text-transform: uppercase; }
   .lab-change-row { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
