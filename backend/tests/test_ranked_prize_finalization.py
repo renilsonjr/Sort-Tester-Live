@@ -284,6 +284,97 @@ class FinalizeTests(unittest.TestCase):
         self.assertFalse(self._winners())
 
 
+@unittest.skipUnless(
+    settings.environment_has_test_url(),
+    "SORT_TESTER_TEST_DATABASE_URL not set; database tests skipped",
+)
+class FinalizeLockTests(unittest.TestCase):
+    """What finalize_prizes may take a lock for (audit M-2).
+
+    Every ranked request runs this on its way in. It took ``FOR UPDATE``
+    on the season row *before* deciding whether there was anything to do,
+    so once a season's prizes were final -- the state it stays in forever
+    after -- every request still queued on that one row.
+    """
+
+    @classmethod
+    def setUpClass(cls):
+        try:
+            cls.conninfo = settings.test_database_url()
+            cls.admin = settings.admin_url()
+        except settings.DatabaseConfigError as exc:
+            raise unittest.SkipTest(str(exc)) from None
+
+    def setUp(self):
+        migrate.recreate_scratch_database(self.admin, settings.SCRATCH_DB_NAME)
+        migrate.upgrade_to_head(self.conninfo)
+        self.conn = migrate.connect(self.conninfo)
+        self.addCleanup(self.conn.close)
+        self.t0 = datetime(2027, 1, 1, tzinfo=timezone.utc)
+        self.clock = _Clock(self.t0)
+
+    def _season(self, **columns):
+        row = migrate.fetch_one(
+            self.conn,
+            "INSERT INTO seasons (phase, label, opened_at, closes_at, closed_at,"
+            " frozen_at, prizes_final_at)"
+            " VALUES ('official', 'Peak', %s, %s, %s, %s, %s) RETURNING id",
+            (
+                self.t0 - timedelta(days=60), self.t0, self.t0,
+                columns.get("frozen_at", self.t0),
+                columns.get("prizes_final_at"),
+            ),
+        )["id"]
+        self.conn.commit()
+        return row
+
+    def _hold_the_row(self, season_id):
+        """Another connection sitting on the season row, lock held."""
+        holder = migrate.connect(self.conninfo)
+        self.addCleanup(holder.close)
+        self.addCleanup(holder.rollback)
+        migrate.fetch_one(
+            holder, "SELECT id FROM seasons WHERE id = %s FOR UPDATE", (season_id,)
+        )
+        return holder
+
+    def _finalize_without_waiting(self, season_id):
+        # a lock wait becomes an error instead of a hang, so a test that
+        # should not be waiting fails fast rather than stopping the suite
+        migrate.execute(self.conn, "SET lock_timeout = '2s'")
+        try:
+            return tiebreaks.finalize_prizes(
+                self.conn, season_id, clock=self.clock, bank=BANK
+            )
+        finally:
+            self.conn.rollback()
+            migrate.execute(self.conn, "SET lock_timeout = 0")
+            self.conn.commit()
+
+    def test_a_settled_season_answers_while_another_holds_its_row(self):
+        season = self._season(prizes_final_at=self.t0)
+        self._hold_the_row(season)
+
+        self.assertEqual(self._finalize_without_waiting(season), "final")
+
+    def test_a_season_with_nothing_to_resolve_does_not_queue_either(self):
+        # not frozen yet: there is nothing to finalize, so nothing to lock
+        season = self._season(frozen_at=None)
+        self._hold_the_row(season)
+
+        self.assertEqual(self._finalize_without_waiting(season), "pending")
+
+    def test_a_season_that_does_need_work_still_takes_the_lock(self):
+        # the lock is what keeps two requests from awarding the hats twice,
+        # so the early return must not reach a season with work to do
+        season = self._season()
+        self._hold_the_row(season)
+
+        with self.assertRaises(Exception) as caught:
+            self._finalize_without_waiting(season)
+        self.assertIn("lock", str(caught.exception).lower())
+
+
 class _Clock:
     def __init__(self, moment):
         self.moment = moment
