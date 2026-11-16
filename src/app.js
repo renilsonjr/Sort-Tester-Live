@@ -967,7 +967,7 @@ async function playTiebreak(round) {
     const q = current.data;
     view.querySelector('#tb-count').textContent =
       `${t('Question')} ${q.seq} ${t('of')} 5 · ${t('round')} ${round.number}`;
-    const where = destinationLine(q);
+    const where = destinationLine(q, t('Hard'));
     view.querySelector('#tb-question').innerHTML = `
       <div class="rq-prompt">
         <p class="rq-service">${esc(where.service)}</p>
@@ -1023,11 +1023,14 @@ function showTiebreakSubmitted(round) {
   return view;
 }
 
-function destinationLine(q) {
+// Shared by every question screen: tie-break (always Hard, so it passes
+// a tag), ordinary Ranked and promotion (no tag, matching the approved
+// mock, which never names the difficulty while a question is live).
+function destinationLine(q, tag) {
   const service = [SERVICE_LABEL[q.service] || q.service, q.mode && q.mode !== 'base' ? q.mode : '', q.region_label]
     .filter(Boolean).join(' · ');
   const code = q.named_destination || q.routing_code || '';
-  return { service: `${service} · ${t('Hard')}`, code };
+  return { service: tag ? `${service} · ${tag}` : service, code };
 }
 
 function beltButton(belt) {
@@ -1550,14 +1553,320 @@ async function fillRanked(panel, title) {
       <span><strong>${esc(t('Leaderboard'))}</strong><small>${esc(t('See the standings.'))}</small></span>
       <span class="lab-arrow" aria-hidden="true">→</span>
     </button>
-    <p class="lab-intro" id="ranked-note">${esc(t('Playing a Ranked quiz is being built. Nothing has started.'))}</p>
   `;
   fillTiebreakCallout(panel.querySelector('#tiebreak-callout'));
   panel.querySelector('#ranked-board').addEventListener('click', showLeaderboard);
   panel.querySelector('#ranked-start').addEventListener('click', () => {
-    panel.querySelector('#ranked-note').textContent =
-      t('Playing a Ranked quiz is being built. Nothing has started.');
+    if (atCap) showPromotionOffer(entry);
+    else startRankedAttempt('normal');
   });
+}
+
+// Playing Ranked and promotion (built to the screens approved in #17).
+// The prerequisite #95 (the promotion celebration) was waiting on: that
+// issue triggers only after the server confirms a successful promotion,
+// which needs a promotion attempt to actually be playable first.
+//
+// Ordinary Ranked and promotion share almost everything here -- the
+// question, the belts, feedback held until Next, Cancel/Quit -- so one
+// state machine drives both, parameterized by `mode`.
+const BADGE_ORDER = ['Iron', 'Bronze', 'Silver', 'Gold', 'Challenger'];
+function nextBadgeName(badge) {
+  const i = BADGE_ORDER.indexOf(badge);
+  return i >= 0 && i < BADGE_ORDER.length - 1 ? BADGE_ORDER[i + 1] : null;
+}
+
+async function startRankedAttempt(mode) {
+  const attempt = createAttemptClient();
+  const started = await attempt.start('/ranked/attempts', { mode });
+  if (!started.ok) {
+    const reason = started.status === 409
+      ? (started.data?.detail || t('That did not work. Nothing has started.'))
+      : t('Could not reach the server. Nothing has started.');
+    comingSoon(t('Ranked'), t('Could not start'), reason, 'ranked');
+    return;
+  }
+  attempt.startHeartbeat();
+  playRankedAttempt(attempt, mode, { correctCount: 0 });
+}
+
+async function playRankedAttempt(attempt, mode, tally) {
+  stopTick();
+  clock = null;
+  const current = await attempt.current();
+  if (current.status === 410 || current.status === 204 || !current.data) {
+    attempt.stop();
+    const result = await attempt.result();
+    showRankedResult(mode, result.data, tally);
+    return;
+  }
+  const q = current.data;
+  const view = labPage(`
+    <section class="lab-screen" id="rq-play">
+      <div class="tb-top">
+        <span class="lab-eyebrow" id="rq-count">${esc(t('Question'))} ${q.seq} ${esc(t('of'))} 15</span>
+        <span class="lab-eyebrow" id="rq-clock"></span>
+      </div>
+      <div class="tb-bar"><i id="rq-bar-fill"></i></div>
+      <p class="rq-stake">${esc(mode === 'promotion'
+        ? `◆ ${t('Promotion')} · ${tally.correctCount} ${t('of')} ${q.seq - 1} ${t('right so far')}`
+        : `◆ ${t('Ranked')} · ${t('this attempt counts for points')}`)}</p>
+      <div id="rq-question"></div>
+      <button id="rq-cancel" class="ghost">${esc(t('Cancel this attempt'))}</button>
+    </section>
+  `, 'ranked', () => playRankedAttempt(attempt, mode, tally));
+  const where = destinationLine(q);
+  view.querySelector('#rq-question').innerHTML = `
+    <div class="rq-prompt">
+      <p class="rq-service">${esc(where.service)}</p>
+      <p class="rq-code">${esc(where.code)}</p>
+    </div>
+    <p class="lab-study-meta">${esc(t('Where does this go?'))}</p>
+    <div class="belts" role="group" aria-label="${esc(t('Choose a belt'))}">
+      ${(q.options || []).map((belt) => beltButton(belt)).join('')}
+    </div>
+  `;
+  view.querySelector('#rq-cancel').addEventListener('click', () => showQuitConfirm(attempt, mode, q.seq, tally));
+  let timer = null;
+  const stopTimer = () => { if (timer) clearInterval(timer); timer = null; };
+  function startCountdown(deadlineMs, totalMs) {
+    const paint = () => {
+      const left = deadlineMs - Date.now();
+      const el2 = view.querySelector('#rq-clock');
+      if (el2) el2.textContent = `${Math.max(0, Math.ceil(left / 1000))} ${t('seconds')}`;
+      const fill = view.querySelector('#rq-bar-fill');
+      if (fill) fill.style.width = `${Math.max(0, Math.min(100, (left / totalMs) * 100))}%`;
+      if (left <= 0) stopTimer();
+    };
+    paint();
+    timer = setInterval(paint, 200);
+  }
+  startCountdown(new Date(q.deadline_at).getTime(), 10000);
+  view.querySelectorAll('.belt').forEach((button) => button.addEventListener('click', async () => {
+    view.querySelectorAll('.belt').forEach((b) => { b.disabled = true; b.classList.toggle('picked', b === button); });
+    stopTimer();
+    const result = await attempt.answer(q.seq, button.dataset.belt);
+    if (!result.ok) { playRankedAttempt(attempt, mode, tally); return; }
+    const nextTally = { correctCount: tally.correctCount + (result.data.correct ? 1 : 0) };
+    showRankedFeedback(attempt, mode, q, button.dataset.belt, result.data, nextTally);
+  }));
+  return view;
+}
+
+function showRankedFeedback(attempt, mode, q, chosen, response, tally) {
+  stopTick();
+  clock = null;
+  const right = response.outcome === 'correct';
+  const where = destinationLine(q);
+  const promoCorrect = mode === 'promotion' && right;
+  // A wrong answer does not end a promotion attempt: the engine plays out
+  // all fifteen, the pass is gone and each mistake still deducts its
+  // ordinary points (backend.ranked.scoring._promotion_result).
+  const promoLost = mode === 'promotion' && !right;
+  const verdict = right
+    ? (mode === 'promotion' ? t('Correct · still perfect') : t('Correct'))
+    : (response.outcome === 'timeout' ? t('Time ran out') : t('Review this route'));
+  const view = labPage(`
+    <section class="lab-screen">
+      <h1 class="lab-title rq-verdict ${right ? 'good' : 'bad'}">${esc(verdict)}</h1>
+      ${mode === 'promotion'
+        ? (promoCorrect
+          ? `<p class="rq-worth">${esc(tally.correctCount)} ${esc(t('of'))} ${esc(tally.correctCount)} ${esc(t('right.'))} ${esc(15 - q.seq)} ${esc(t('questions to go.'))}</p>`
+          : `<p class="rq-worth bad">${response.worth} ${esc(t('points'))} · ${esc(t(response.difficulty === 'easy' ? 'Easy question' : response.difficulty === 'hard' ? 'Hard question' : 'Medium question'))}</p>`)
+        : `<p class="rq-worth ${right ? 'good' : 'bad'}">${response.worth > 0 ? '+' : ''}${response.worth} ${esc(t('points'))} · ${esc(t(response.difficulty === 'easy' ? 'Easy question' : response.difficulty === 'hard' ? 'Hard question' : 'Medium question'))}</p>`}
+      <div class="rq-prompt"><p class="rq-service">${esc(where.service)}</p><p class="rq-code">${esc(where.code)}</p></div>
+      <div class="rq-cmp">
+        ${response.outcome === 'timeout'
+          ? `<div><span>${esc(t('Your choice'))}</span><small>${esc(t('none sent in time'))}</small></div>`
+          : (!right ? `<div><span>${esc(t('Your choice'))}</span>${rqChip(chosen)}</div>` : '')}
+        <div><span>${esc(t('Correct belt'))}</span>${rqChip(response.correct_belt)}</div>
+      </div>
+      ${promoCorrect ? boardNotice(
+          t('A right answer in promotion adds no points'),
+          t('It keeps the attempt alive. Only passing all fifteen changes your balance, and it sets you to the next cap.'),
+        ) : `<p class="rq-why">${esc(language.code === 'es' ? response.explanation_es : response.explanation_en)}</p>`}
+      ${promoLost ? boardNotice(
+          t('This promotion is lost'),
+          t('Promotion needs all fifteen right. The attempt plays out, and every mistake from here still takes points off your balance.'),
+        ) : ''}
+      <button id="rq-next" class="primary" type="button">${esc(t('Next'))}</button>
+    </section>
+  `, 'ranked', () => showRankedFeedback(attempt, mode, q, chosen, response, tally));
+  view.querySelector('#rq-next').addEventListener('click', async () => {
+    view.querySelector('#rq-next').disabled = true;
+    if (response.finished) {
+      attempt.stop();
+      showRankedResult(mode, response.result, tally);
+      return;
+    }
+    await attempt.advance();
+    playRankedAttempt(attempt, mode, tally);
+  });
+  return view;
+}
+
+// The balance breakdown the approved result screens show, line by line,
+// so nothing is lumped together: what the answers were worth, what
+// quitting took off, and what the cap would not let in. The quit penalty
+// is the same ten points the confirmation names before anything is sent.
+const QUIT_PENALTY = 10;
+
+function rankedSum(result, quit) {
+  const expected = result.points_before + result.raw_score - (quit ? QUIT_PENALTY : 0);
+  const overflow = result.points_after - expected;
+  return `
+    <div class="sum">
+      <div><span>${esc(t('Before this attempt'))}</span><b>${result.points_before.toLocaleString()}</b></div>
+      <div class="${result.raw_score < 0 ? 'lost' : ''}"><span>${esc(t(quit ? 'Right before you quit' : 'This attempt'))}</span><b>${result.raw_score >= 0 ? '+' : ''}${result.raw_score.toLocaleString()}</b></div>
+      ${quit ? `<div class="lost"><span>${esc(t('Quitting costs'))}</span><b>−${QUIT_PENALTY}</b></div>` : ''}
+      ${overflow < 0 ? `<div class="lost"><span>${esc(t('Did not fit in'))} ${esc(result.badge_before)}</span><b>${overflow.toLocaleString()}</b></div>` : ''}
+      <div class="total"><span>${esc(t('Your balance now'))}</span><b>${result.points_after.toLocaleString()}</b></div>
+    </div>`;
+}
+
+function rqChip(belt) {
+  const style = BELT_STYLE[belt] || { bg: '#333', fg: '#fff' };
+  return `<span class="chip" style="background:${style.bg};color:${style.fg}">${esc(belt)}</span>`;
+}
+
+// Quit (built to the screens approved in #17). Quitting costs the partial
+// score plus 10, applied before the cap -- the same penalty whatever mode
+// this attempt is, since promotion's own penalty math already includes it.
+function showQuitConfirm(attempt, mode, seq, tally) {
+  const view = labPage(`
+    <section class="lab-screen">
+      <h1 class="lab-title">${esc(t('Quit this ranked quiz?'))}</h1>
+      <p class="lab-intro">${esc(t('Your current score will count, and 10 points are taken off it. You cannot resume this attempt.'))}</p>
+      <button id="qc-stay" class="primary">${esc(t('Continue quiz'))}</button>
+      <button id="qc-quit" class="ghost owner-danger">${esc(t('Quit quiz'))}</button>
+    </section>
+  `, 'ranked', () => showQuitConfirm(attempt, mode, seq, tally));
+  view.querySelector('#qc-stay').addEventListener('click', () => playRankedAttempt(attempt, mode, tally));
+  view.querySelector('#qc-quit').addEventListener('click', async () => {
+    view.querySelector('#qc-quit').disabled = true;
+    const quit = await attempt.quit();
+    attempt.stop();
+    showRankedResult(mode, quit.data?.result, tally, { quit: true });
+  });
+  return view;
+}
+
+// The canonical result (built to the screens approved in #17): raw and
+// applied scores, the balance before/after, and -- only for promotion --
+// passed or failed. Preserved in full; nothing here is cosmetic-only.
+function showRankedResult(mode, result, tally, { quit = false } = {}) {
+  stopTick();
+  clock = null;
+  if (!result) {
+    comingSoon(t('Ranked'), t('Could not load the result'), t('Your points are safe. Check your history from Profile.'), 'ranked');
+    return;
+  }
+  if (mode === 'promotion') {
+    showPromotionResult(result, tally, { quit });
+    return;
+  }
+  const droppedBadge = result.badge_after !== result.badge_before
+    && result.points_after < result.points_before;
+  const view = labPage(`
+    <section class="lab-screen">
+      <p class="lab-eyebrow">${esc(t('Ranked'))} · ${esc(t(quit ? 'attempt ended' : 'attempt finished'))}</p>
+      <h1 class="lab-title">${esc(tally.correctCount)} ${esc(t('of'))} 15 ${esc(t('correct'))}</h1>
+      ${rankedSum(result, quit)}
+      ${droppedBadge ? boardNotice(
+          `${t('You are')} ${result.badge_after} ${t('again')}`,
+          `${t('Getting')} ${result.badge_before} ${t('back takes reaching its cap, then passing a perfect promotion.')}`,
+        ) : ''}
+      <button id="rq-done" class="ghost">${esc(t('Back to Ranked'))}</button>
+    </section>
+  `, 'ranked', () => showRankedResult(mode, result, tally, { quit }));
+  view.querySelector('#rq-done').addEventListener('click', showRanked);
+  return view;
+}
+
+function showPromotionResult(result, tally, { quit = false } = {}) {
+  const passed = !quit && result.badge_after !== result.badge_before
+    && result.points_after > result.points_before;
+  if (passed) {
+    const view = labPage(`
+      <section class="lab-screen">
+        <p class="lab-eyebrow">${esc(t('Promotion'))} · ${esc(t('passed'))}</p>
+        <h1 class="lab-title">15 ${esc(t('of'))} 15. ${esc(t('You are'))} ${esc(result.badge_after)}.</h1>
+        <div class="profile-balance">
+          <img class="profile-badge" src="${badgeArt(result.badge_after)}" alt="">
+          <div>
+            <p class="lab-study-meta">${esc(t('Your balance'))}</p>
+            <p class="profile-points">${result.points_after.toLocaleString()} ${esc(t('points'))}</p>
+            <p class="lab-study-meta">${esc(balanceLine({ badge: result.badge_after, points: result.points_after }))}</p>
+          </div>
+        </div>
+        <p class="lab-intro">${esc(t('Passing sets the new badge’s first point total. Ordinary Ranked quizzes are available again until you reach the next cap.'))}</p>
+        <button id="rq-done" class="ghost">${esc(t('Back to Ranked'))}</button>
+      </section>
+    `, 'ranked', () => showPromotionResult(result, tally, { quit }));
+    view.querySelector('#rq-done').addEventListener('click', showRanked);
+    return view;
+  }
+  // the quit penalty is its own line: lumping it in with what the wrong
+  // answers cost would hide where the points went
+  const mistakes = result.adjustment + (quit ? QUIT_PENALTY : 0);
+  const view = labPage(`
+    <section class="lab-screen">
+      <p class="lab-eyebrow">${esc(t('Promotion'))} · ${esc(t(quit ? 'quit' : 'ended'))}</p>
+      <h1 class="lab-title">${esc(tally.correctCount)} ${esc(t('of'))} 15 — ${esc(t('promotion needs all 15'))}</h1>
+      <div class="sum">
+        <div><span>${esc(t('Before this attempt'))}</span><b>${result.points_before.toLocaleString()}</b></div>
+        ${mistakes < 0
+          ? `<div class="lost"><span>${esc(t('Wrong answers and timeouts'))}</span><b>${mistakes.toLocaleString()}</b></div>`
+          : ''}
+        ${quit ? `<div class="lost"><span>${esc(t('Quitting costs'))}</span><b>−${QUIT_PENALTY}</b></div>` : ''}
+        <div class="total"><span>${esc(t('Your balance now'))}</span><b>${result.points_after.toLocaleString()}</b></div>
+      </div>
+      ${boardNotice(
+          `${(BADGE_CAP[result.badge_before] ?? 0) - result.points_after} ${t('points to the cap again')}`,
+          t('Earn them in ordinary Ranked quizzes. Promotion comes back when you reach the cap.'),
+        )}
+      <button id="rq-done" class="ghost">${esc(t('Back to Ranked'))}</button>
+    </section>
+  `, 'ranked', () => showPromotionResult(result, tally, { quit }));
+  view.querySelector('#rq-done').addEventListener('click', showRanked);
+  return view;
+}
+
+// Promotion (built to the screen approved in #17). At a cap, promotion is
+// the only Ranked option. Opening this screen starts nothing -- no
+// question has been sent and no clock is running -- the stakes (losing
+// points on a miss) earn it a confirmation step ordinary Ranked skips.
+function showPromotionOffer(entry) {
+  stopTick();
+  clock = null;
+  const next = nextBadgeName(entry.badge);
+  const view = labPage(`
+    <section class="lab-screen">
+      <p class="lab-eyebrow">${esc(t('Ranked'))}</p>
+      <h1 class="lab-title">${esc(t('Promotion to'))} ${esc(next || entry.badge)}</h1>
+      <div class="profile-balance">
+        <img class="profile-badge" src="${badgeArt(entry.badge)}" alt="">
+        <div>
+          <p class="lab-study-meta">${esc(t('Your balance'))}</p>
+          <p class="profile-points">${entry.points.toLocaleString()} ${esc(t('points'))}</p>
+          <p class="lab-study-meta">${esc(balanceLine(entry))}</p>
+        </div>
+      </div>
+      <ol class="lab-rules">
+        <li>${esc(t('15 questions. You need every one of them right.'))}</li>
+        <li>${esc(t('One wrong answer or timeout and the promotion is lost. The attempt still plays out, and mistakes deduct points.'))}</li>
+        <li>${esc(t('Losing points drops you below the cap, so promotion is not available again until you earn them back.'))}</li>
+        <li>${esc(t('Passing sets you to'))} ${((BADGE_CAP[entry.badge] ?? entry.points) + 1).toLocaleString()} ${esc(t('points and'))} ${esc(next || entry.badge)}.</li>
+      </ol>
+      <p class="lab-intro">${esc(t('Opening this screen has not started anything. No question has been sent and no clock is running.'))}</p>
+      <button id="pr-start" class="primary">${esc(t('Start promotion'))}</button>
+      <button id="pr-not-now" class="ghost">${esc(t('Not now'))}</button>
+      <p class="lab-study-meta">${esc(t('Ordinary Ranked quizzes are not available at the cap. Practice is, and never changes these points.'))}</p>
+    </section>
+  `, 'ranked', () => showPromotionOffer(entry));
+  view.querySelector('#pr-not-now').addEventListener('click', showRanked);
+  view.querySelector('#pr-start').addEventListener('click', () => startRankedAttempt('promotion'));
+  return view;
 }
 
 // Prize tie-break, the player's side (#24, slice 7). A tie-break only

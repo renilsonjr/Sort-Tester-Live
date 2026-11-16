@@ -22,7 +22,7 @@ from dataclasses import dataclass
 from datetime import datetime, timedelta
 
 from backend.db import migrate
-from backend.ranked import modes, ranks, seasons
+from backend.ranked import belt_options, modes, ranks, seasons
 from backend.ranked.capability import hash_token
 from backend.ranked.versions import materialize_question_version
 from backend.ranked_bank.identity import question_content_digest
@@ -96,6 +96,15 @@ class AnswerResult:
     correct: bool
     outcome: str  # 'correct', 'wrong' or 'timeout'
     finished: bool  # True when this answer was the final one and ended the attempt
+    # Feedback for an ordinary or promotion screen: the belt that was
+    # actually right, its difficulty, the worth of this one question under
+    # ordinary scoring, and the bilingual explanation. None for a tie-break,
+    # which reveals none of this until its round closes (settled Q4).
+    correct_belt: str | None = None
+    difficulty: str | None = None
+    worth: int | None = None
+    explanation_en: str | None = None
+    explanation_es: str | None = None
 
 
 @dataclass(frozen=True)
@@ -183,13 +192,18 @@ def start_attempt(
             "account already has an unfinished attempt"
         ) from None
     attempt_id = attempt["id"]
+    belts = belt_options.all_belts(bank)
     for seq, question in enumerate(snapshot.questions, start=1):
         version_id = materialize_question_version(conn, question)
         migrate.execute(
             conn,
-            "INSERT INTO assignment_questions (assignment_id, seq, question_version_id)"
-            " VALUES (%s, %s, %s)",
-            (assignment_id, seq, version_id),
+            "INSERT INTO assignment_questions"
+            " (assignment_id, seq, question_version_id, options)"
+            " VALUES (%s, %s, %s, %s)",
+            (
+                assignment_id, seq, version_id,
+                belt_options.draw_options(question.correct_belt, belts),
+            ),
         )
     _send_question(conn, attempt_id, 1, clock)
     conn.commit()
@@ -321,11 +335,12 @@ def current_question(conn, attempt_id, *, clock, bank) -> QuestionView | None:
         conn.commit()  # releases the attempt lock
         return None
     question = _question_for_version(conn, bank, row["vid"])
-    options = None
     if _is_tiebreak(conn, attempt_id):
         from backend.ranked import tiebreaks
 
         options = tiebreaks.options_for(conn, attempt_id, row["seq"], bank)
+    else:
+        options = _options_for_assignment(conn, attempt_id, row["seq"], question, bank)
     conn.commit()  # releases the attempt lock
     return QuestionView(
         seq=row["seq"],
@@ -364,12 +379,13 @@ def submit_answer(conn, attempt_id, seq, choice, *, clock, bank) -> AnswerResult
         conn.commit()
         if tiebreak:
             return _hidden_result(seq)
-        return _answer_result(seq, row["answer"])
+        question = _question_for_version(conn, bank, row["vid"])
+        return _answer_result(seq, row["answer"], question)
+    question = _question_for_version(conn, bank, row["vid"])
     if now > row["deadline_at"]:
         # too late: the question timed out and the submitted choice is discarded
         graded = "timeout"
     else:
-        question = _question_for_version(conn, bank, row["vid"])
         graded = "correct" if choice == question.correct_belt else "wrong"
     _record_answer(conn, attempt_id, seq, graded, now)
     finished = seq == _settings(conn, attempt_id).question_count
@@ -383,7 +399,7 @@ def submit_answer(conn, attempt_id, seq, choice, *, clock, bank) -> AnswerResult
     conn.commit()
     if tiebreak:
         return _hidden_result(seq, finished=finished)
-    return _answer_result(seq, graded, finished=finished)
+    return _answer_result(seq, graded, question, finished=finished)
 
 
 def advance(conn, attempt_id, *, clock) -> AdvanceResult:
@@ -690,9 +706,17 @@ def _hidden_result(seq, *, finished=False) -> AnswerResult:
     return AnswerResult(seq=seq, correct=None, outcome="submitted", finished=finished)
 
 
-def _answer_result(seq, answer, *, finished=False) -> AnswerResult:
+def _answer_result(seq, answer, question, *, finished=False) -> AnswerResult:
+    from backend.ranked import scoring
+
+    difficulty = question.difficulty.lower()
     return AnswerResult(
-        seq=seq, correct=answer == "correct", outcome=answer, finished=finished
+        seq=seq, correct=answer == "correct", outcome=answer, finished=finished,
+        correct_belt=question.correct_belt,
+        difficulty=difficulty,
+        worth=scoring.answer_points(difficulty, answer),
+        explanation_en=question.text.en.explanation,
+        explanation_es=question.text.es.explanation,
     )
 
 
@@ -806,6 +830,30 @@ def _send_question(conn, attempt_id, seq, clock) -> None:
         " VALUES (%s, %s, %s, %s, %s, 'unsent')",
         (attempt_id, seq, version["vid"], now, deadline),
     )
+
+
+def _options_for_assignment(conn, attempt_id, seq, question, bank):
+    """The four belts this ordinary or promotion question offers (migration
+    0035). A row written before options existed gets them drawn and stored
+    now, once, under a lock -- the same lazy backfill as a tie-break's
+    shared options, but personal to this one attempt."""
+    row = migrate.fetch_one(
+        conn,
+        "SELECT aq.assignment_id, aq.options FROM assignment_questions aq"
+        " JOIN attempts a ON a.assignment_id = aq.assignment_id"
+        " WHERE a.id = %s AND aq.seq = %s FOR UPDATE OF aq",
+        (attempt_id, seq),
+    )
+    if row is None or row["options"] is not None:
+        return None if row is None else list(row["options"])
+    options = belt_options.draw_options(question.correct_belt, belt_options.all_belts(bank))
+    migrate.execute(
+        conn,
+        "UPDATE assignment_questions SET options = %s"
+        " WHERE assignment_id = %s AND seq = %s",
+        (options, row["assignment_id"], seq),
+    )
+    return options
 
 
 def _question_for_version(conn, bank, version_id):

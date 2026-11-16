@@ -30,7 +30,7 @@ from dataclasses import dataclass
 from datetime import timedelta
 
 from backend.db import migrate
-from backend.ranked import standings
+from backend.ranked import belt_options, standings
 from backend.ranked.versions import materialize_question_version
 
 HATS = 3
@@ -101,23 +101,12 @@ def assign_round_questions(conn, round_id, season_id, bank, *, rng=None) -> list
     return chosen
 
 
-OPTIONS_PER_QUESTION = 4
-
-
-def all_belts(bank) -> list:
-    """Every belt the bank routes to, in a fixed order."""
-    return sorted({q.correct_belt for q in bank.questions})
-
-
-def draw_options(correct, belts, random_) -> list:
-    """The right belt and three others drawn at random, in random order
-    (owner decision 2026-11-15). Drawn with the server's randomness and
-    stored, never derived: see migration 0033 for why a formula would leak
-    the answer."""
-    others = [b for b in belts if b != correct]
-    options = random_.sample(others, OPTIONS_PER_QUESTION - 1) + [correct]
-    random_.shuffle(options)
-    return options
+# The drawing logic is shared with ordinary Ranked and promotion questions
+# (migration 0035), so it lives in belt_options and is re-exported here
+# under its old names: nothing outside this module needs to change.
+all_belts = belt_options.all_belts
+draw_options = belt_options.draw_options
+OPTIONS_PER_QUESTION = belt_options.OPTIONS_PER_QUESTION
 
 
 def options_for(conn, attempt_id, seq, bank) -> list | None:
