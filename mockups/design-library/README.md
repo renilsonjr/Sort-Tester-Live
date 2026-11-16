@@ -55,3 +55,9 @@ The owner approved the more blue, front-facing Blender version and requested its
 The owner explicitly approved `quiz-review.html`: quiz layout, avatar position, and the demonstrated reactions in question, correct, incorrect, timeout and results screens. Use this mock together with the approved blue, front-facing Blender model as the visual implementation reference. See [[blender-avatar/README]] for model/animation limitations.
 
 Approval covers the visual mock. Its fictional route data, static timer, sample scores and manually advanced feedback are review aids, not changes to production quiz rules. Preserve existing real quiz timing, scoring, automatic correct-answer advance and persistence when implementing the appearance. The production app has not been modified by this approval record.
+
+## Home artwork proposal — 2026-11-15
+
+Open `home-artwork-review.html` from Screens to compare the supplied golden hat podium artwork with the current home avatar. Based on the home in `mockups/entry-navigation.html`; preserves its headings, announcements, Practice/Ranked actions and navigation. Visitor and season-notice controls demonstrate the existing home states. The poster uses its complete original aspect ratio without cropping; embedded text may be small on phones. Other-screen buttons show a preview notice.
+
+The owner approved this visual mock on 2026-11-15. Approval covers the supplied image replacing the home avatar in this layout; production integration remains separate. The artwork does not change the implemented prize rules. Quiz avatars and production files are unchanged. Source artwork: `home-artwork/golden-hat-podium.png`. Issue draft: [[home-artwork/issue-draft]].
