@@ -146,6 +146,14 @@ print('missing:', [t for t in names if not migrate.table_exists(u, t)] or 'none'
 "
 ```
 
+### Runtime identity after migration — Task 4
+
+The URL above belongs to the migration owner. Before real data, prepare and
+verify a separate runtime role using [[db-runtime-role]]. The application
+secret must use the runtime role; `upgrade_app` continues using the migration
+owner. The new script/runbook are preparation, not evidence that Azure has
+switched roles. Do not deploy the migration-owner URL as the runtime secret.
+
 ### 1e. Close the firewall again
 
 ```sh
