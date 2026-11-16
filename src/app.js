@@ -13,6 +13,7 @@ import * as support from './support.js';
 import { logout } from './auth.js';
 import { idleVerdict } from './idle.js';
 import { createAttemptClient } from './attemptClient.js';
+import { playCorrectSfx, playIncorrectSfx, isSoundEnabled, toggleSound } from './sound.js';
 
 const app = document.getElementById('app');
 const log = createShiftLog(typeof localStorage === 'undefined' ? null : localStorage);
@@ -1647,8 +1648,18 @@ async function playRankedAttempt(attempt, mode, tally) {
     stopTimer();
     const result = await attempt.answer(q.seq, button.dataset.belt);
     if (!result.ok) { playRankedAttempt(attempt, mode, tally); return; }
-    const nextTally = { correctCount: tally.correctCount + (result.data.correct ? 1 : 0) };
-    showRankedFeedback(attempt, mode, q, button.dataset.belt, result.data, nextTally);
+    const isRight = Boolean(result.data.correct);
+    if (isRight) {
+      button.classList.add('belt-correct');
+      playCorrectSfx();
+    } else {
+      button.classList.add('belt-incorrect');
+      playIncorrectSfx();
+    }
+    const nextTally = { correctCount: tally.correctCount + (isRight ? 1 : 0) };
+    setTimeout(() => {
+      showRankedFeedback(attempt, mode, q, button.dataset.belt, result.data, nextTally);
+    }, 550);
   }));
   return view;
 }
@@ -2486,7 +2497,18 @@ function showCard() {
     button.addEventListener('click', () => {
       if (!view.isConnected || bailOpen || run.finished || run.index !== cardIndex) return;
       stopTick();
-      showFeedback(clock.expired() ? timeoutCard(run) : answerCard(run, button.dataset.belt, clock.elapsed()));
+      const current = currentCard(run);
+      const isRight = current && (button.dataset.belt === current.belt);
+      if (isRight) {
+        button.classList.add('belt-correct');
+        playCorrectSfx();
+      } else {
+        button.classList.add('belt-incorrect');
+        playIncorrectSfx();
+      }
+      setTimeout(() => {
+        showFeedback(clock.expired() ? timeoutCard(run) : answerCard(run, button.dataset.belt, clock.elapsed()));
+      }, 450);
     });
   });
 
