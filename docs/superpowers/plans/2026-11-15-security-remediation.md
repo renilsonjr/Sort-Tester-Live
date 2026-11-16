@@ -223,7 +223,7 @@ no-op upgrade-at-head test; no test migration was applied to staging.
 - Modify: `.github/workflows/app-image-publish.yml` (also push the digest to ACR) and `container-apps-app.md` §2/§3
 - Test: `backend/tests/test_azure_container_app.py` (update: no registry password param; identity present)
 
-- [ ] **Step 1: Create the registry** — `az acr create -g rg-sort-tester-staging -n <name> --sku Standard` (uses the verified student free allowance; recheck its quota and expiry first) (name is not a secret; track it in the private inventory, not the runbook).
+- [x] **Step 1: Create the registry** — `az acr create -g rg-sort-tester-staging -n <name> --sku Standard` (uses the verified student free allowance; recheck its quota and expiry first) (name is not a secret; track it in the private inventory, not the runbook).
 - [ ] **Step 2: Publish path** — extend the publish workflow to push the same digest to ACR (repo settings: add an `ACR` environment or use the existing publish gate from Task 8; authenticate with a short-lived token via `az acr login` in the job, not a stored PAT). Manual interim: `az acr import --source ghcr.io/renilsonjr/sort-tester-live-app@sha256:<digest> ...`.
 - [ ] **Step 3: Bicep changes** — on the container app: `identity: { type: 'SystemAssigned' }`; `registries: [{ server: '<name>.azurecr.io', identity: 'system' }]`; remove both registry params and the secret entry.
 - [ ] **Step 4: Grant pull** — after first what-if (the identity must exist), `az role assignment create --assignee <principalId> --role AcrPull --scope <acr-id>`; redeploy.
@@ -231,16 +231,18 @@ no-op upgrade-at-head test; no test migration was applied to staging.
 - [ ] **Step 6: Verify:** app pulls and boots; `az containerapp show` config contains no registry password and no inline DB secret; GHCR PAT is **revoked**.
 - [ ] **Step 7: Update tests + runbook; commit** — `security: ACR + managed identity + Key Vault; PAT and inline DB secret retired (audit H-5, §3 P0-1)`
 
-Task 5 preparation — 2026-11-16: [[../../../infra/azure/security-foundation]]
-contains a create-only registry/vault foundation and cost/credit evidence.
-The proposal now selects Standard to use the verified student free allowance;
-its updated compilation and Azure what-if passed with exactly two Creates.
-Education Hub credit and subscription spending protection were verified;
-the owner permits only credit/free-allowance-covered usage. Azure what-if showed exactly two Creates and no existing-resource
-changes; both names are available. No resources, identities, grants or secrets
-were created. All Task 5 execution/acceptance steps remain incomplete pending
-PR merge, the credit-only authorization checks, and the later
-identity/publisher/runtime slices.
+Task 5 foundation applied — 2026-11-16: PR #157 merged; the owner approved
+only student-credit/free-allowance-covered usage. Refreshed credit, Enabled
+student subscription, spendingLimit On, and create-only what-if were verified.
+ACR Standard and the empty RBAC Key Vault Standard were created. The first
+vault create rejected explicit purge-protection false; the corrected template
+omits it, and the remaining-vault-only deployment succeeded. Postchecks verified
+registry auth flags/zero repositories, vault settings/no direct role assignments,
+unchanged app configuration and spending protection. See
+[[../../../infra/azure/security-foundation]] for exact evidence and API limits.
+Only Step 1 is complete; the vault-creation portion of Step 5 is complete, but
+identity grants, publishing, secret transfer, app switch and PAT retirement
+remain pending. No overall Task 5 completion or rollout approval is claimed.
 
 ### Task 6: Network isolation — VNet-injected environment + private endpoint (H-4) — `OPS` *(biggest change: plan a deployment window)*
 

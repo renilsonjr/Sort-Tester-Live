@@ -1,9 +1,9 @@
-# Registry and secret-store foundation — Task 5 preparation
+# Registry and secret-store foundation — Task 5
 
-Status: **prepared for review; not deployed**. Related: [[db-runtime-role]],
+Status: **created and verified in fictional-data staging on 2026-11-16**; identity, secret transfer and app wiring remain pending. Related: [[db-runtime-role]],
 [[container-apps-app]], [[../../docs/superpowers/plans/2026-11-15-security-remediation]].
 
-## Proposed scope
+## Foundation scope
 
 [[security-foundation.bicep]] adds only two empty resources to the existing
 fictional-data staging resource group in North Central US:
@@ -12,7 +12,7 @@ fictional-data staging resource group in North Central US:
   anonymous pulls disabled. The verified student allowance covers the registry unit within its quota and term.
 - Key Vault Standard: RBAC authorization, no access policies or role assignments,
   soft deletion with seven-day recovery; purge protection is not enabled in this
-  staging proposal. No secrets, keys or certificates are created.
+  staging foundation. No secrets, keys or certificates are created.
 
 Both names use the existing resource-group ID's deterministic suffix. Both carry
 `fictional-only` and review-date tags. The review date does not delete resources
@@ -106,8 +106,8 @@ replacements:
 - `acrsortstgzp6nl6c3wplfy`
 - `kv-sortstg-zp6nl6c3wplfy`
 
-Both name-availability checks returned true. These are prospective names, not
-provisioned services. The review tag is not a requested hosting term; the owner
+Both name-availability checks returned true before creation. These names now
+identify the two provisioned services; see the execution record below. The review tag is not a requested hosting term; the owner
 may choose an earlier review date before creation. Subscription balance and
 spending-limit checks must be refreshed before a paid deployment.
 
@@ -118,5 +118,45 @@ Bicep 0.49.2 compilation and compiled JSON checks passed for Standard. A fresh
 Azure what-if required exactly two Creates and no changes to existing resources;
 the returned registry SKU was Standard and the vault SKU standard. The previous
 Basic what-if is historical evidence. Names and app/secret/access boundaries
-stay the same. No resources were created. The owner's credit-only condition is
-verified; PR review/merge remains pending before execution.
+stay the same. This was the pre-execution validation; the owner's credit-only
+condition and PR #157 merge were then confirmed before creation.
+
+## Execution and service-API correction — 2026-11-16
+
+PR #157 merged as `975aa703d1fde9b0c838a0752b3d43091bdcc7af`. Before execution,
+Education Hub credit was refreshed, and subscription REST again confirmed
+AzureForStudents, Enabled and spendingLimit On. The deployed compiled JSON hash
+matched the merged template. A fresh what-if required exactly the two approved
+Creates with no existing-resource changes.
+
+The initial deployment `sort-security-foundation-975aa70` partially failed:
+ACR creation succeeded, but Key Vault rejected explicit
+`enablePurgeProtection: false`. Resource inventory confirmed the registry
+existed and the vault did not. Bicep compilation and ARM what-if had accepted
+that value, so they were insufficient to validate the service's create API.
+
+The [Key Vault 2024-11-01 API contract](https://learn.microsoft.com/en-us/rest/api/keyvault/keyvault/vaults/create-or-update?view=rest-keyvault-keyvault-2024-11-01#vaultproperties)
+says `enablePurgeProtection` does not accept false. The corrected Bicep omits
+this optional property; it does not enable irreversible purge protection.
+Generated a remaining-vault-only ARM template from that compiled source, with
+registry resources/outputs removed. Its what-if guard required one Create for
+the approved vault and no existing-resource changes. RBAC remained true, access
+policies empty, and purge protection unset. ARM what-if omits empty arrays, so
+the guard accepts an absent/empty accessPolicies value.
+
+Deployment `sort-security-vault-975aa70-fix` then exited 0 with Succeeded.
+Post-creation reads and assertions verified:
+
+- Registry Succeeded, Standard, admin login and anonymous pulls disabled;
+  repository listing returned an empty array.
+- Vault Succeeded, standard, RBAC enabled, soft delete enabled for seven days,
+  purge protection not enabled, no access policies and no direct role assignments.
+- The full app configuration matched the private pre-execution snapshot;
+  subscription spendingLimit remained On. Published app health returned 200/ok.
+
+No secret was transferred, image published to ACR, identity created or runtime
+connection changed. Key Vault data-plane contents were not enumerated; no data
+read permission was added for this check. The foundation was created without
+secret resources. Task 5 is still incomplete until the later access/publisher/
+secret/pull/rollback steps are verified. Check actual billed usage after Azure
+posts it; free-allowance verification is not a final invoice.

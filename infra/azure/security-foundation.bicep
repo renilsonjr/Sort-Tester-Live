@@ -42,7 +42,7 @@ resource vault 'Microsoft.KeyVault/vaults@2024-11-01' = {
     accessPolicies: []
     enableSoftDelete: true
     softDeleteRetentionInDays: 7
-    enablePurgeProtection: false
+    // Azure rejects an explicit false; leave purge protection unset.
     enabledForDeployment: false
     enabledForDiskEncryption: false
     enabledForTemplateDeployment: false
