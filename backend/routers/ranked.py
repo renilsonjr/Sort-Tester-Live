@@ -79,6 +79,20 @@ def get_db():
         yield conn
 
 
+def get_readonly_db():
+    """A connection with no sweeps, for a route anyone can call.
+
+    ``get_db`` runs the whole sweep chain on every request, taking the
+    database locks a season close and a tie-break round need. That is the
+    right trade behind an account, where the traffic is a player's own
+    quiz. In front of one it means anonymous requests drive those locks,
+    and enough of them stall the ranked path for people who are playing
+    (audit M-1). A public read only reads.
+    """
+    with _db_connection() as conn:
+        yield conn
+
+
 def _current_account(request: Request):
     raw_token = request.cookies.get("sort_tester_session")
     if not raw_token:
@@ -831,7 +845,7 @@ def _utc(moment) -> str:
 
 
 @router.get("/season/notice")
-def season_notice(conn=Depends(get_db)):
+def season_notice(conn=Depends(get_readonly_db)):
     """The season-start notice, for anyone — signed in or not.
 
     The approved home page shows a small callout once the official season
