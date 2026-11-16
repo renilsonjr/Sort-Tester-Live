@@ -47,8 +47,8 @@ export function createAttemptClient({ fetchFn = (...a) => fetch(...a), base = '/
     get attemptId() { return attemptId; },
 
     // Start the attempt at a URL that returns {attempt_id, capability}.
-    async start(path) {
-      const result = await send('POST', path);
+    async start(path, body) {
+      const result = await send('POST', path, body);
       if (result.ok) {
         attemptId = result.data.attempt_id;
         capability = result.data.capability;
@@ -64,8 +64,22 @@ export function createAttemptClient({ fetchFn = (...a) => fetch(...a), base = '/
       return send('POST', `/ranked/attempts/${attemptId}/answer`, { seq, choice });
     },
 
+    // Ordinary Ranked and promotion hold feedback until the player presses
+    // Next (settled Q8); this is that press. A tie-break has no Next --
+    // it never calls this -- because its questions advance by themselves.
+    advance() {
+      return send('POST', `/ranked/attempts/${attemptId}/advance`);
+    },
+
     quit() {
       return send('POST', `/ranked/attempts/${attemptId}/quit`);
+    },
+
+    // The settled result of an attempt that has already ended (Quit's own
+    // response already carries it; this is for an attempt the page finds
+    // ended on a later read, e.g. the final answer completed it).
+    result() {
+      return send('GET', `/ranked/attempts/${attemptId}/result`);
     },
 
     heartbeat() {

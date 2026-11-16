@@ -37,6 +37,27 @@ test('the capability from start rides on every later request, in a header', asyn
   assert.equal(client.attemptId, 'att-1');
 });
 
+test('start can carry a body, for starting a promotion attempt', async () => {
+  const { fetchFn, calls } = fakeFetch([
+    { status: 201, body: { attempt_id: 'att-2', capability: 'cap-2' } },
+  ]);
+  const client = createAttemptClient({ fetchFn });
+  await client.start('/ranked/attempts', { mode: 'promotion' });
+  assert.equal(calls[0].options.body, JSON.stringify({ mode: 'promotion' }));
+});
+
+test('result() reads the settled outcome of an already-ended attempt', async () => {
+  const { fetchFn, calls } = fakeFetch([
+    { status: 201, body: { attempt_id: 'att-3', capability: 'cap-3' } },
+    { status: 200, body: { final_outcome: 'completed' } },
+  ]);
+  const client = createAttemptClient({ fetchFn });
+  await client.start('/x');
+  const result = await client.result();
+  assert.match(calls.at(-1).url, /\/attempts\/att-3\/result$/);
+  assert.equal(result.data.final_outcome, 'completed');
+});
+
 test('an unreachable server is answered, not thrown', async () => {
   const client = createAttemptClient({ fetchFn: async () => { throw new TypeError('down'); } });
   const result = await client.start('/x');

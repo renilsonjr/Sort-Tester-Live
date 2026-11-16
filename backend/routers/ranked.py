@@ -317,6 +317,14 @@ def answer(
         "outcome": result.outcome,
         "finished": result.finished,
     }
+    if result.correct_belt is not None:
+        # feedback for an ordinary or promotion screen; None (and absent
+        # here) for a tie-break, which reveals nothing until its round closes
+        body["correct_belt"] = result.correct_belt
+        body["difficulty"] = result.difficulty
+        body["worth"] = result.worth
+        body["explanation_en"] = result.explanation_en
+        body["explanation_es"] = result.explanation_es
     if result.finished and not engine.is_tiebreak_attempt(conn, attempt_id):
         # the final answer ended the attempt: apply and report its points now.
         # A tie-break has no points to apply and reveals nothing until its
