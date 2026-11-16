@@ -22,7 +22,8 @@ resource registry 'Microsoft.ContainerRegistry/registries@2025-04-01' = {
   name: 'acrsortstg${uniqueString(resourceGroup().id)}'
   location: location
   tags: tags
-  sku: { name: 'Basic' }
+  // The subscription's unused student allowance covers one Standard registry.
+  sku: { name: 'Standard' }
   properties: {
     adminUserEnabled: false
     anonymousPullEnabled: false
