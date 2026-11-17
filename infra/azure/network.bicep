@@ -14,7 +14,7 @@
 //
 // The owner chose 10.20.0.0/16 on 2026-11-16, there being no other virtual
 // network in this subscription to collide with.
-targetScope = 'resourceGroup'
+targetScopeX = 'resourceGroup'
 
 @allowed(['northcentralus'])
 param location string = 'northcentralus'
