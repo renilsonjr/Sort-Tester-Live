@@ -92,6 +92,32 @@ class SingleOriginAppTemplateTests(unittest.TestCase):
         self.assertIn("secretRef: 'database-url'", self.code)
         self.assertNotIn("postgresql://", self.code)
 
+    def test_the_database_url_can_come_from_the_vault(self):
+        # audit §3 P0-1: stored in the app's own configuration, the URL is
+        # readable by anyone with Contributor on the resource group. Held in
+        # the vault, the configuration carries only the address, and seeing
+        # the URL needs data access to the vault -- a separate grant.
+        self.assertIn("param databaseUrlSecretUri string = ''", self.code)
+        self.assertIn("keyVaultUrl: databaseUrlSecretUri", self.code)
+        # fetched as the runtime identity, which already holds Secrets User
+        self.assertRegex(
+            self.code,
+            r"keyVaultUrl: databaseUrlSecretUri\s*\n\s*identity: runtimeIdentityId",
+        )
+
+    def test_the_vault_path_and_the_inline_path_are_exclusive(self):
+        # one secret, filled one way or the other. Two entries of the same
+        # name, or a vault URI alongside a value, is a deployment whose
+        # behaviour depends on which Azure happens to prefer.
+        self.assertIn("empty(databaseUrlSecretUri) ?", self.code)
+        self.assertEqual(self.code.count("name: 'database-url'"), 2)
+        self.assertEqual(self.code.count("value: databaseUrl"), 1)
+
+    def test_the_inline_url_is_optional_so_it_need_not_be_deployed_at_all(self):
+        # the point of the vault path: on a vault deployment the URL is not
+        # a parameter, so it is in no deployment history and no params file
+        self.assertIn("param databaseUrl string = ''", self.code)
+
     def test_the_image_is_pulled_by_identity_and_not_by_a_token(self):
         # audit H-5: the old GHCR token was account-scoped, so it could read
         # every private package the account can see, and it had to be typed

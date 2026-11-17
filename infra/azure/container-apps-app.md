@@ -559,13 +559,133 @@ those before deploying rather than after.
 5. One active revision, `ca-sort-app-stg--0000002`, `RunningAtMaxScale`,
    image on the ACR host. `/health` 200, `/api/ranked/season/notice` 200
    with real JSON, so the app still reaches the private database.
-6. Parameters file shredded; the GHCR token revoked.
+6. The GHCR token was revoked, which is what closes the finding.
+   `shred -u ~/app-params.json` then reported the file missing: Cloud Shell
+   had recycled the container, and a file written outside `~/clouddrive`
+   does not always survive that. The right outcome by the wrong route, so
+   write the parameters file under `~/clouddrive` or shred it in the same
+   session as the deployment, and check with `grep -rl "postgresql://" ~`
+   rather than trusting that a failed `shred` means the secret is gone.
 
 Note on rollback: only one revision exists at a time here, so "activate the
 previous revision" is not available. A failed pull is recovered by
 redeploying with `registryServer=ghcr.io` and the GHCR parameters of the
 previous template — which is why §3 says to revoke the token *after* step 6
 and not before.
+
+### 5c. Move the database URL into the vault (audit §3 P0-1)
+
+Until this is done the URL, password and all, is stored in the container
+app's own configuration. Anyone with Contributor on the resource group can
+ask for it back. In the vault, the configuration holds only the secret's
+address: seeing the URL then needs **data** access to the vault, which is a
+separate grant that nobody has by default.
+
+Note what that last part means for you. The vault uses Azure RBAC, and in
+that mode **being Owner of the subscription grants no access to the data**.
+Writing the secret needs `Key Vault Secrets Officer` on the vault, assigned
+to you by name. Grant it, write the secret, and remove it afterwards: an
+operator role that stays is the finding in a different place.
+
+**Step 1 — compile the template.** The secret is a conditional, and a
+conditional whose two branches are different shapes is where Bicep objects:
+
+```sh
+az bicep build --file infra/azure/container-apps-app.bicep --stdout >/dev/null
+```
+
+**Step 2 — grant yourself write access, by name:**
+
+```sh
+ME=$(az ad signed-in-user show --query id -o tsv)
+VAULT=$(az keyvault show -n kv-sortstg-<suffix> -g rg-sort-tester-staging --query id -o tsv)
+az role assignment create --assignee-object-id "$ME" --assignee-principal-type User \
+  --role "Key Vault Secrets Officer" --scope "$VAULT"
+```
+
+RBAC takes up to a few minutes to apply. A write that fails with `Forbidden`
+right after this is usually that delay, not a wrong grant.
+
+**Step 3 — write the secret, without it reaching the shell history.**
+`--value` would put the password in history and in `ps`; `--file` does not:
+
+```sh
+read -rsp "Database password: " PGPW; echo; echo "length: ${#PGPW}"
+umask 077
+PGPW="$PGPW" python3 - <<'EOF'
+import os, urllib.parse
+pw = urllib.parse.quote(os.environ["PGPW"], safe="")
+dsn = (f"postgresql://<user>:{pw}@<server>.postgres.database.azure.com"
+       ":5432/sort_tester_app?sslmode=require")
+with open(os.path.expanduser("~/clouddrive/dsn.txt"), "w") as f:
+    f.write(dsn)
+EOF
+unset PGPW
+az keyvault secret set --vault-name kv-sortstg-<suffix> --name database-url \
+  --file ~/clouddrive/dsn.txt --query id -o tsv
+shred -u ~/clouddrive/dsn.txt
+```
+
+Write the file under `~/clouddrive`: §5b's cleanup failed because Cloud Shell
+recycled the container and took the file with it, which is the right outcome
+reached by luck rather than by the step.
+
+The command prints the **versioned** id. The template wants the
+**versionless** URI, so that a rotated secret is picked up without a
+redeployment — that is the same address with the trailing version removed:
+
+```sh
+az keyvault secret show --vault-name kv-sortstg-<suffix> --name database-url \
+  --query "id" -o tsv | sed 's|/[^/]*$||'
+```
+
+**Step 4 — confirm the identity can read it.** The grant is from Task 4, but
+confirm it rather than discovering a gap during the deployment:
+
+```sh
+az role assignment list --assignee <identity clientId> --scope "$VAULT" \
+  --query "[].roleDefinitionName" -o tsv
+```
+
+It must print `Key Vault Secrets User`.
+
+**Step 5 — deploy with the URI and no URL.** Pass every other parameter
+Azure already holds (§5b's note), `databaseUrlSecretUri` instead of
+`databaseUrl`, and nothing for `databaseUrl` at all:
+
+```sh
+az deployment group what-if \
+  --resource-group rg-sort-tester-staging \
+  --template-file infra/azure/container-apps-app.bicep \
+  --parameters @<a parameters file, 0600, under ~/clouddrive>
+```
+
+Read the `properties.configuration.secrets` block before deploying. It must
+show the `value` going and `keyVaultUrl` plus `identity` arriving. If it
+shows the secret being removed with nothing taking its place, both
+parameters are empty — stop, because the app would start with no database
+URL and exit on its own configuration check.
+
+**Step 6 — verify, then take the write role back:**
+
+```sh
+az containerapp show -n ca-sort-app-stg -g rg-sort-tester-staging \
+  --query "properties.configuration.secrets" -o json
+```
+
+No `value` may appear, only `keyVaultUrl` and `identity`. Then the app's own
+answers, as in §6 — a configuration that looks right proves nothing about an
+app that cannot read the vault. Once `/health` and
+`/api/ranked/season/notice` are 200:
+
+```sh
+az role assignment delete --assignee-object-id "$ME" --assignee-principal-type User \
+  --role "Key Vault Secrets Officer" --scope "$VAULT"
+```
+
+Rollback: redeploy passing `databaseUrl` and leaving `databaseUrlSecretUri`
+empty. That is the whole reason the inline path is still in the template, and
+it is why the write role comes off last — rebuilding the secret needs it.
 
 ## 6. Check what was deployed
 
