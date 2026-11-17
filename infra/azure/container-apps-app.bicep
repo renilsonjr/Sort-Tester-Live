@@ -27,8 +27,8 @@ param imageSha256 string
 @description('Private registry host holding the image, such as <name>.azurecr.io.')
 param registryServer string
 
-@description('Repository path of the image inside that registry.')
-param imageRepository string = 'renilsonjr/sort-tester-live-app'
+@description('Repository path of the image inside that registry. The default is where the runbook\'s az acr import puts it; note it carries no account prefix, because that prefix belongs to GHCR and not to a registry of our own.')
+param imageRepository string = 'sort-tester-live-app'
 
 @description('Resource id of the user-assigned identity that pulls the image, from runtime-identity.bicep. It holds AcrPull on that registry and nothing wider (audit H-5).')
 param runtimeIdentityId string

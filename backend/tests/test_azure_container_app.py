@@ -107,6 +107,16 @@ class SingleOriginAppTemplateTests(unittest.TestCase):
         self.assertRegex(self.code, r"param registryServer string\s*$|param registryServer string\n")
         self.assertNotRegex(self.code, r"param registryServer string\s*=")
 
+    def test_the_image_path_has_no_github_account_prefix(self):
+        # the image used to live at ghcr.io/<account>/<name>, and that
+        # account prefix is GHCR's own namespacing. `az acr import` puts it
+        # at <name> in our registry, so carrying the prefix over points the
+        # deployment at a repository that does not exist.
+        self.assertRegex(
+            self.code, r"param imageRepository string = 'sort-tester-live-app'"
+        )
+        self.assertNotIn("renilsonjr/sort-tester-live-app", self.code)
+
     def test_the_session_cookie_is_marked_secure(self):
         self.assertIn("SORT_TESTER_COOKIE_SECURE", self.code)
         self.assertRegex(self.code, r"'SORT_TESTER_COOKIE_SECURE'\s*\n\s*value: 'true'")
