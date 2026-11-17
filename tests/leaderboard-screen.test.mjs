@@ -108,3 +108,27 @@ test('your own row is marked on the board', () => {
   assert.match(screen(), /board-you/);
   assert.match(page, /\.board li\.board-you/);
 });
+
+// --- the server caps the rows it sends (audit: server-side list caps) ---
+
+test('a player ranked past the rows sent is told their place in words', () => {
+  // Every row carries `you`, so while the whole leaderboard was sent the
+  // player's own line was always there to find. With a cap, someone below
+  // the cut gets a list their name is not in -- and `your_place` is in the
+  // payload precisely for that case, so the screen must use it.
+  const body = app.slice(app.indexOf('async function fillLeaderboard'));
+  assert.match(body, /board\.rows\.some\(\(row\) => row\.you\)/,
+    'the screen must notice when the player is not in the rows shown');
+  assert.match(body, /board\.your_place/,
+    'the place the server already sends must be used');
+});
+
+test('the place line is not shown to a player who is in the list', () => {
+  const body = app.slice(app.indexOf('async function fillLeaderboard'));
+  // guarded by both conditions: not in the list AND a place to state
+  assert.match(body, /!youInList && board\.your_place/);
+});
+
+test('the place line has a style of its own', () => {
+  assert.match(page, /\.board-your-place\s*\{/);
+});

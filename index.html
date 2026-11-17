@@ -325,6 +325,9 @@
   .board li { display: grid; grid-template-columns: 34px 1fr auto; align-items: center; gap: 10px; border: 1px solid var(--line); border-radius: 17px; background: var(--panel); padding: 12px 14px; }
   .board li.board-you { border: 2px solid var(--accent); }
   .board li.board-tied { border-color: #c79a2c; background: #fdf6e4; }
+  /* Shown only when the player is ranked past the rows the server sends,
+     so their place is stated instead of being looked for in vain. */
+  .board-your-place { margin: .6rem 0 0; font-size: .95rem; }
   .board b { font-weight: 900; }
   .board small { display: block; color: var(--muted); font-size: 12px; }
   .board-place { font-weight: 900; font-variant-numeric: tabular-nums; }
@@ -709,7 +712,7 @@
 <div id="auth-panel" hidden></div>
 <main id="app"></main>
 <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js" integrity="sha384-EnyY0/GSHQGSxSgMwaIPzSESbqoOLSexfnSMN2AP+39Ckmn92stwABZynq1JyzdT" crossorigin="anonymous"></script>
-<script type="module" src="src/app.js?v=promocheer-20261116"></script>
+<script type="module" src="src/app.js?v=listcaps-20261117"></script>
 <script type="module" src="src/auth.js"></script>
 </body>
 </html>

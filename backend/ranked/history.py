@@ -10,6 +10,14 @@ from backend.db import migrate
 PHASES = ("pre_season", "official")
 
 
+# A ceiling on the answer, not pagination: there is no cursor here and no
+# way to ask for the next page. One row per settled attempt accumulates
+# for as long as an account plays, and the whole list used to be sent to
+# a phone over a sort-floor connection. The rows kept are the newest,
+# which is the order the query already asks for.
+MAX_ROWS = 500
+
+
 def account_history(conn, account_id, phase=None) -> list[dict]:
     """Return the account's settled attempts, newest first.
 
@@ -34,5 +42,7 @@ def account_history(conn, account_id, phase=None) -> list[dict]:
         sql += " AND s.phase = %s"
         params.append(phase)
     return migrate.fetch_all(
-        conn, sql + " ORDER BY st.settled_at DESC, a.id", tuple(params)
+        conn,
+        sql + f" ORDER BY st.settled_at DESC, a.id LIMIT {MAX_ROWS}",
+        tuple(params),
     )

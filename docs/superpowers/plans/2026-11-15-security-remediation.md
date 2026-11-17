@@ -970,6 +970,38 @@ only the expiry. The constraint was right and the test was fixed.
 - [ ] **Step 3: Implement. Step 4: Suites green; frontend list rendering spot-checked against a capped payload.**
 - [ ] **Step 5: Commit** — `security: server-side row caps on all list endpoints`
 
+Task 18 applied — 2026-11-17, with one change of placement that matters.
+
+**`standings` is not capped where this plan said to cap it.** That
+function feeds the prize tie-break logic (`tiebreaks.py` calls it twice)
+as well as the screen. A `LIMIT` inside it would have computed prizes
+from a truncated leaderboard -- harmless while there are fewer players
+than the cap, and invisible on the day there are not. The cap sits in the
+route instead, applied *after* the player's own place is worked out, so
+someone in 700th place still learns they are 700th. A guard fails if a
+`LIMIT` appears in that function again.
+
+Capped at the query: history (500), a player's own tickets (500), the
+ticket review queue (100) and the open-flags queue (100). The review
+queues keep the oldest, because they are worked front to back; the
+others keep the newest, which is the order those queries already asked
+for.
+
+**A cap creates a case that did not exist before, and this one reached
+the screen.** Every standings row carries `you`, so while the whole
+leaderboard was sent the player's own line was always there. Past a cap,
+a player below the cut receives a list their name is not in -- no error,
+nothing missing-looking. `your_place` was already in the payload for
+exactly that case and the screen had never used it. It does now, stated
+in words, with three frontend guards.
+
+Not pagination, deliberately: there is no cursor and no way to ask for
+the next page, which this plan defers to a later step. What is
+guaranteed is a ceiling on a response.
+
+Mutation-checked both ways: removing a LIMIT fails, and adding one to
+`standings` fails.
+
 ### Task 19: Schema defense-in-depth — composite same-account FKs + cleanup (M-10) — `TDD` + `OPS`
 
 **Files:**
