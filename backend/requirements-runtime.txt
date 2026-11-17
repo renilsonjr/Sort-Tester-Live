@@ -8,7 +8,8 @@
 #
 # Regenerate: in a clean virtual environment,
 #   pip install -c backend/requirements.txt fastapi uvicorn psycopg \
-#     psycopg-binary pydantic pydantic-settings argon2-cffi alembic SQLAlchemy
+#     psycopg-binary psycopg-pool pydantic pydantic-settings argon2-cffi \
+#     alembic SQLAlchemy
 #   pip freeze
 alembic==1.20.1
 annotated-doc==0.0.5
@@ -26,6 +27,7 @@ MarkupSafe==3.0.4
 opentelemetry-api==1.45.2
 psycopg==3.3.8
 psycopg-binary==3.3.8
+psycopg-pool==3.3.3
 pycparser==3.12
 pydantic==2.14.3
 pydantic-settings==2.16.2
