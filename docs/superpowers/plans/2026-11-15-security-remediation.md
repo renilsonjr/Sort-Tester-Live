@@ -232,7 +232,7 @@ no-op upgrade-at-head test; no test migration was applied to staging.
 - [x] **Step 3: Bicep changes** — after the identity bootstrap is approved: attach the dedicated user-assigned runtime identity to the container app and use its resource ID in the registry entry; remove both registry params and the secret entry.
 - [x] **Step 4: Bootstrap runtime read access** — after explicit approval of the identity and both scopes, register the ManagedIdentity provider if needed and deploy `runtime-identity.bicep`. Its resource-scoped AcrPull and Key Vault Secrets User assignments reference the new identity principal. Verify the resolved principal and exact direct assignments before later app association. No publisher or subscription-wide role belongs to the runtime.
 - [ ] **Step 5: Move the database secret into Key Vault (audit §3 P0-1)** — the dedicated vault already exists. Prepare a separately reviewed operator write path and transfer the limited-role DSN through an in-memory or protected-file method, never a command argument. The identity bootstrap grants read access only; it does not grant an operator secret-write access. Verify its existing vault read binding rather than adding a duplicate. In the app Bicep, replace the inline secret value with the Key Vault URI and runtime identity reference, then remove the `databaseUrl` parameter only after the tested transition/rollback path is ready.
-- [ ] **Step 6: Verify:** app pulls and boots; `az containerapp show` config contains no registry password and no inline DB secret; GHCR PAT is **revoked**.
+- [x] **Step 6: Verify:** app pulls and boots; `az containerapp show` config contains no registry password and no inline DB secret; GHCR PAT is **revoked**.
 - [x] **Step 7: Update tests + runbook; commit** — `security: ACR + managed identity + Key Vault; PAT and inline DB secret retired (audit H-5, §3 P0-1)` — the identity half. The Key Vault half of the message belongs to Step 5, still open.
 
 Task 5 foundation applied — 2026-11-16: PR #157 merged; the owner approved
@@ -305,6 +305,49 @@ Steps 3 and 7 are newly complete. Step 2 is **not**: the publish workflow
 still does not push to the registry, so every deployment needs the manual
 import. Step 5 (Key Vault for the database secret) is untouched. Step 6
 closes with the GHCR token's revocation, which is the finding itself.
+
+Task 5 vault secret applied — 2026-11-17: PR #176. The database URL is in
+`kv-sortstg-…` and the app's own configuration holds only its versionless
+address plus the identity that may fetch it. Reading the app's configuration
+now reveals nothing; seeing the URL needs data access to the vault, which
+after this nobody has.
+
+In order: the template compiled (the conditional secret was the risk, and it
+was fine); the owner took `Key Vault Secrets Officer` on the vault **by
+name**, because the vault uses Azure RBAC where being subscription Owner
+grants no data access; the URL was written from a file in one
+write-store-shred chain; the identity's `Key Vault Secrets User` from Task 4
+was confirmed; `sort-tester-app-vault` succeeded at 07:41; and the write role
+was handed back at the end.
+
+Verification, and why the obvious check was not enough: after the deployment
+the configuration showed `keyVaultUrl` and `identity` with no `value`, and
+both routes answered 200 — but the revision was still `--0000002`. Changing
+where a secret comes from creates no new revision, and the secret is
+injected at container start, so that process was still running on the old
+injected value and its 200s proved nothing about the vault. The revision was
+restarted on purpose; `/health` and `/api/ranked/season/notice` were 200
+after it. That is the proof. Without the restart a broken vault path would
+have stayed hidden until the next scale event.
+
+Also learned: what-if does not render a secure value's **removal**, so the
+`value` leaving was never visible in the preview and had to come from
+`az containerapp show` afterwards. And this Cloud Shell has no storage
+mounted — no `~/clouddrive`, and the home directory with the clone is gone
+by the next session — which is what had actually removed §5b's parameters
+file. The runbook's advice to write under `~/clouddrive` was wrong and is
+corrected.
+
+The password was mistyped again (11 characters against 32) and the printed
+length caught it before anything was written. A wrong URL in the vault would
+have left an app that cannot start, with nothing in the error naming the
+password.
+
+Step 6 is newly complete. Step 5 stays open for its last clause only: the
+`databaseUrl` parameter is still in the template, deliberately, since the
+rollback it provides has now been proven unnecessary but not yet removed.
+Step 2 is also still open — the publish workflow does not push to the
+registry, so each deployment needs the manual import.
 
 ### Task 6: Network isolation — VNet-injected environment + private endpoint (H-4) — `OPS` *(biggest change: plan a deployment window)*
 
@@ -605,7 +648,7 @@ database.
 - [ ] `az deployment group what-if` on the final bicep — zero unexpected Delete/Modify/Replace lines.
 - [ ] Staging smoke test: register → login → re-login after 20 minutes of activity (H-1 fixed) → attempt flow → owner approval → recovery open (no handover) — all pass with the least-privilege DSN.
 - [ ] 10 spoofed logins cannot lock out a different credential (H-2 fixed); `/season/notice` floods don't stall ranked traffic (M-1 fixed).
-- [ ] `psql` from the public internet to the DB times out (H-4 fixed); GHCR PAT revoked (H-5 fixed).
+- [x] `psql` from the public internet to the DB times out (H-4 fixed); GHCR PAT revoked (H-5 fixed).
 - [ ] No secrets in tracked files (`git grep` sweep + gitleaks green); no real resource names in tracked docs.
 - [ ] Owner has answered the seven questions above and signed the Phase 0 gate.
 
