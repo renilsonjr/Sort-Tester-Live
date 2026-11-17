@@ -103,8 +103,8 @@ vault, no role assignments, app resources or secrets. Existing frontend suite:
 two non-Ignore changes, both Creates, and found no modifications, deletes or
 replacements:
 
-- `acrsortstgzp6nl6c3wplfy`
-- `kv-sortstg-zp6nl6c3wplfy`
+- `<acr-name>`
+- `<key-vault>`
 
 Both name-availability checks returned true before creation. These names now
 identify the two provisioned services; see the execution record below. The review tag is not a requested hosting term; the owner

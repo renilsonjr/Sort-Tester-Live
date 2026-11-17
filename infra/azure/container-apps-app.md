@@ -37,7 +37,7 @@ grant.
 ## 1. Prepare the database
 
 The app does not create its own tables. Done once, on 2026-11-13, against
-`pg-sort-tester-rjstg1109`; the steps below are what actually worked.
+`<postgres-server>`; the steps below are what actually worked.
 
 ### 1a. Check how the server authenticates
 
@@ -552,7 +552,7 @@ those before deploying rather than after.
    identity's clientId, from the Task 4 bootstrap. Nothing had to be granted.
 3. What-if: `2 to modify`, zero Delete, zero Replace. `username` and
    `passwordSecretRef` out, `identity` in, `server` `ghcr.io` →
-   `acrsortstgzp6nl6c3wplfy.azurecr.io`, the `registry-password` secret
+   `<acr-name>.azurecr.io`, the `registry-password` secret
    removed, the same digest on both sides. The environment was not touched,
    so **the address did not change** — unlike §5a.
 4. `sort-tester-app-h5` succeeded in 1m40.
