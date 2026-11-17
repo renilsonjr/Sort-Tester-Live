@@ -44,7 +44,15 @@ class ContainerAppsStagingContractTests(unittest.TestCase):
             "data-classification": "fictional-only",
             "purpose": "api-only-container-apps-staging",
         }.items():
-            self.assertIn(f"'{key}': '{value}'", self.code)
+            # A key that is a valid identifier is written unquoted, which
+            # is what Bicep's own linter asks for; a hyphenated one cannot
+            # be. The tag has to be there either way, so this accepts both
+            # spellings rather than pinning a style the linter overrules.
+            self.assertTrue(
+                f"{key}: '{value}'" in self.code
+                or f"'{key}': '{value}'" in self.code,
+                f"tag {key} is missing from the template",
+            )
         self.assertIn("'expires-on': expiresOn", self.code)
 
     def test_https_health_and_no_secret_or_database_configuration(self):

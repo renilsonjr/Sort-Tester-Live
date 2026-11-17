@@ -133,7 +133,9 @@ resource postgresPrivateEndpoint 'Microsoft.Network/privateEndpoints@2024-05-01'
       }
     ]
   }
-  dependsOn: [vnet]
+  // No dependsOn: the subnet id above references vnet.id, so Bicep
+  // already orders this after the network. Stating it again implies the
+  // ordering would not happen otherwise, which is the opposite of true.
 }
 
 // Writes the server's private address into the zone, so inside the network
