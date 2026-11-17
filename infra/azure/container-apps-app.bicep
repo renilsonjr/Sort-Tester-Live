@@ -33,9 +33,12 @@ param imageRepository string = 'sort-tester-live-app'
 @description('Resource id of the user-assigned identity that pulls the image, from runtime-identity.bicep. It holds AcrPull on that registry and nothing wider (audit H-5).')
 param runtimeIdentityId string
 
-@description('postgresql:// URL of the application database, already migrated.')
+@description('postgresql:// URL of the application database, already migrated. Leave empty and give databaseUrlSecretUri instead: the URL is then never part of a deployment at all. Kept only as the way back while the vault path is being proven (audit §3 P0-1).')
 @secure()
-param databaseUrl string
+param databaseUrl string = ''
+
+@description('Versionless Key Vault URI of the secret holding that URL, such as https://<vault>.vault.azure.net/secrets/database-url. Given, the app reads the URL from the vault as the runtime identity, and its own configuration holds only this address (audit §3 P0-1). Versionless so a rotated secret is picked up without a redeployment.')
+param databaseUrlSecretUri string = ''
 
 @description('Public origin, such as https://example.com, once it is known. Empty is correct on the first deployment: writes are then checked against the app own ingress host.')
 param appOrigin string = ''
@@ -107,10 +110,24 @@ resource app 'Microsoft.App/containerApps@2025-01-01' = {
         targetPort: 8000
         transport: 'auto'
       }
+      // One secret, two ways of filling it. With a vault URI the app's own
+      // configuration holds only that address, so reading the configuration
+      // reveals nothing: seeing the URL then needs data access to the vault,
+      // which is a separate grant (audit §3 P0-1). Without one the URL is
+      // stored in the configuration as before -- the way back, kept until
+      // the vault path has been through a deployment.
+      //
+      // Both empty is an operator mistake the template cannot refuse: the
+      // app starts with no database URL and exits on its own configuration
+      // check. §5c says to read the what-if's secrets block before deploying.
       secrets: [
-        {
+        empty(databaseUrlSecretUri) ? {
           name: 'database-url'
           value: databaseUrl
+        } : {
+          name: 'database-url'
+          keyVaultUrl: databaseUrlSecretUri
+          identity: runtimeIdentityId
         }
       ]
       registries: [
