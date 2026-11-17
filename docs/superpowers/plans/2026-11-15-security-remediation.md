@@ -229,11 +229,11 @@ no-op upgrade-at-head test; no test migration was applied to staging.
 
 - [x] **Step 1: Create the registry** — `az acr create -g rg-sort-tester-staging -n <name> --sku Standard` (uses the verified student free allowance; recheck its quota and expiry first) (name is not a secret; track it in the private inventory, not the runbook).
 - [ ] **Step 2: Publish path** — extend the publish workflow to push the same digest to ACR (repo settings: add an `ACR` environment or use the existing publish gate from Task 8; authenticate with a short-lived token via `az acr login` in the job, not a stored PAT). Manual interim: `az acr import --source ghcr.io/renilsonjr/sort-tester-live-app@sha256:<digest> ...`.
-- [ ] **Step 3: Bicep changes** — after the identity bootstrap is approved: attach the dedicated user-assigned runtime identity to the container app and use its resource ID in the registry entry; remove both registry params and the secret entry.
+- [x] **Step 3: Bicep changes** — after the identity bootstrap is approved: attach the dedicated user-assigned runtime identity to the container app and use its resource ID in the registry entry; remove both registry params and the secret entry.
 - [x] **Step 4: Bootstrap runtime read access** — after explicit approval of the identity and both scopes, register the ManagedIdentity provider if needed and deploy `runtime-identity.bicep`. Its resource-scoped AcrPull and Key Vault Secrets User assignments reference the new identity principal. Verify the resolved principal and exact direct assignments before later app association. No publisher or subscription-wide role belongs to the runtime.
 - [ ] **Step 5: Move the database secret into Key Vault (audit §3 P0-1)** — the dedicated vault already exists. Prepare a separately reviewed operator write path and transfer the limited-role DSN through an in-memory or protected-file method, never a command argument. The identity bootstrap grants read access only; it does not grant an operator secret-write access. Verify its existing vault read binding rather than adding a duplicate. In the app Bicep, replace the inline secret value with the Key Vault URI and runtime identity reference, then remove the `databaseUrl` parameter only after the tested transition/rollback path is ready.
 - [ ] **Step 6: Verify:** app pulls and boots; `az containerapp show` config contains no registry password and no inline DB secret; GHCR PAT is **revoked**.
-- [ ] **Step 7: Update tests + runbook; commit** — `security: ACR + managed identity + Key Vault; PAT and inline DB secret retired (audit H-5, §3 P0-1)`
+- [x] **Step 7: Update tests + runbook; commit** — `security: ACR + managed identity + Key Vault; PAT and inline DB secret retired (audit H-5, §3 P0-1)` — the identity half. The Key Vault half of the message belongs to Step 5, still open.
 
 Task 5 foundation applied — 2026-11-16: PR #157 merged; the owner approved
 only student-credit/free-allowance-covered usage. Refreshed credit, Enabled
@@ -271,6 +271,40 @@ exactly the two resource-scoped roles; details are in [[../../../infra/azure/run
 Full app resource remained equal to its snapshot, no identity is attached,
 health was HTTP 200, spendingLimit On. Only Step 4 is newly complete; no
 functional image-pull/secret-read or whole Task 5 completion is claimed.
+
+Task 5 image pull applied — 2026-11-17: PRs #172 and #173 merged; #174 carries
+a follow-up fix. The app now pulls as itself.
+
+What was done, in order: the digest already running was copied into the
+dedicated registry with `az acr import` (one use of the GHCR token, by the
+owner, from Cloud Shell), the copy's digest was confirmed to equal
+`b60d5a8e…`, the identity's AcrPull on that registry was confirmed present
+from the Task 4 bootstrap, and `sort-tester-app-h5` deployed in 1m40.
+
+What-if before deploying showed `2 to modify`, no Delete and no Replace:
+`username`/`passwordSecretRef` out and `identity` in, `server` from
+`ghcr.io` to `acrsortstgzp6nl6c3wplfy.azurecr.io`, the `registry-password`
+secret gone, and the same digest either side. The environment was untouched,
+so the address did not change.
+
+Verified after: the one active revision `--0000002` is `RunningAtMaxScale`
+pulling from the ACR host, `/health` is 200 and
+`/api/ranked/season/notice` is 200 with real JSON, so the app reaches the
+private database through the new pull path. The parameters file was shredded.
+
+Three traps, all now in the runbook: `az acr import --image` is a target
+**tag** and refuses a digest (`InvalidImportImageParameter`); `az acr
+manifest list-metadata` reverses `-r` and `-n`; and `imageRepository` still
+defaulted to the GHCR account prefix `renilsonjr/…`, which does not exist
+inside our own registry (fixed in #174, worked around by passing the
+parameter for this deployment). A fourth, not a trap but worth recording:
+only one revision exists, so "roll back to the previous revision" was never
+available — the real rollback was a redeploy pointing at GHCR.
+
+Steps 3 and 7 are newly complete. Step 2 is **not**: the publish workflow
+still does not push to the registry, so every deployment needs the manual
+import. Step 5 (Key Vault for the database secret) is untouched. Step 6
+closes with the GHCR token's revocation, which is the finding itself.
 
 ### Task 6: Network isolation — VNet-injected environment + private endpoint (H-4) — `OPS` *(biggest change: plan a deployment window)*
 
