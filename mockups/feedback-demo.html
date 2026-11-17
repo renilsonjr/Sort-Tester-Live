@@ -1,0 +1,176 @@
+<h2>Efeitos Visuais e Sonoros na Resposta da Ranqueada</h2>
+<p class="subtitle">Teste os botões abaixo para ver e ouvir os efeitos de resposta correta vs incorreta.</p>
+
+<div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 24px; margin-bottom: 24px; text-align: center;">
+  <p style="font-size: 1.1rem; color: #a0aec0; margin-bottom: 8px;">Pergunta Simulada: Qual é a esteira para este pacote?</p>
+  <div style="display: inline-block; padding: 6px 16px; background: #2d3748; border-radius: 20px; font-weight: bold; margin-bottom: 20px;">
+    Destino: SÃO PAULO - SP
+  </div>
+
+  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; max-width: 600px; margin: 0 auto;">
+    <button id="btn-blue" class="demo-btn" onclick="triggerFeedback(this, true)" style="--accent: #3182ce; background: #2b6cb0;">
+      <span>Esteira Azul</span>
+      <span class="badge-hint">(Correta - Clique)</span>
+    </button>
+    <button id="btn-yellow" class="demo-btn" onclick="triggerFeedback(this, false)" style="--accent: #d69e2e; background: #b7791f;">
+      <span>Esteira Amarela</span>
+      <span class="badge-hint">(Incorreta - Clique)</span>
+    </button>
+    <button id="btn-green" class="demo-btn" onclick="triggerFeedback(this, false)" style="--accent: #38a169; background: #2f855a;">
+      <span>Esteira Verde</span>
+      <span class="badge-hint">(Incorreta - Clique)</span>
+    </button>
+    <button id="btn-red" class="demo-btn" onclick="triggerFeedback(this, false)" style="--accent: #e53e3e; background: #c53030;">
+      <span>Esteira Vermelha</span>
+      <span class="badge-hint">(Incorreta - Clique)</span>
+    </button>
+  </div>
+
+  <div id="feedback-msg" style="margin-top: 20px; min-height: 28px; font-weight: bold; font-size: 1.1rem;"></div>
+</div>
+
+<div class="options">
+  <div class="option" data-choice="glow-sound-synth" onclick="toggleSelect(this)">
+    <div class="letter">A</div>
+    <div class="content">
+      <h3>Opção A: Feedback Ágil & Sintetizado (Recomendada)</h3>
+      <p>Brilho rápido (pulso verde/vermelho 300ms) com áudio gerado via Web Audio API (tons sutis e limpos: acorde ascendente para acerto, tom grave suave para erro). Leve, sem downloads de arquivos de áudio.</p>
+    </div>
+  </div>
+  <div class="option" data-choice="glow-sound-arcade" onclick="toggleSelect(this)">
+    <div class="letter">B</div>
+    <div class="content">
+      <h3>Opção B: Feedback Estilo Arcade / Gamificado</h3>
+      <p>Partículas saltando ao redor do botão correto + tremor de tela/botão no incorreto, com efeitos sonoros estilo videogame retro (chime/ding festivo e buzz estilo quiz).</p>
+    </div>
+  </div>
+  <div class="option" data-choice="glow-minimal" onclick="toggleSelect(this)">
+    <div class="letter">C</div>
+    <div class="content">
+      <h3>Opção C: Visual Apenas (Sem áudio obrigatório)</h3>
+      <p>Apenas a iluminação verde e vermelha no contorno com suporte rigoroso a <code>prefers-reduced-motion</code> e opção no menu para ligar/desligar sons.</p>
+    </div>
+  </div>
+</div>
+
+<style>
+.demo-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  border-radius: 10px;
+  border: 2px solid transparent;
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+  outline: none;
+}
+.demo-btn:hover {
+  transform: translateY(-2px);
+  filter: brightness(1.1);
+}
+.badge-hint {
+  font-size: 0.75rem;
+  opacity: 0.8;
+  margin-top: 4px;
+}
+
+/* Efeito Correto */
+.demo-btn.btn-correct {
+  animation: pulseGreen 0.6s ease-out forwards;
+  border-color: #48bb78 !important;
+}
+
+/* Efeito Incorreto */
+.demo-btn.btn-incorrect {
+  animation: shakeRed 0.5s ease-in-out forwards;
+  border-color: #f56565 !important;
+}
+
+@keyframes pulseGreen {
+  0% { box-shadow: 0 0 0 0 rgba(72, 187, 120, 0.8); transform: scale(1); }
+  40% { box-shadow: 0 0 25px 8px rgba(72, 187, 120, 0.9); transform: scale(1.05); }
+  100% { box-shadow: 0 0 10px 2px rgba(72, 187, 120, 0.4); transform: scale(1); }
+}
+
+@keyframes shakeRed {
+  0%, 100% { transform: translateX(0); box-shadow: 0 0 0 0 rgba(245, 101, 101, 0.8); }
+  20%, 60% { transform: translateX(-6px); box-shadow: 0 0 20px 6px rgba(245, 101, 101, 0.8); }
+  40%, 80% { transform: translateX(6px); box-shadow: 0 0 20px 6px rgba(245, 101, 101, 0.8); }
+}
+</style>
+
+<script>
+// Web Audio API sintético para demonstração sem arquivos externos
+let audioCtx = null;
+
+function getAudioContext() {
+  if (!audioCtx) {
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  }
+  if (audioCtx.state === 'suspended') {
+    audioCtx.resume();
+  }
+  return audioCtx;
+}
+
+function playTone(freq, type, duration, delay = 0) {
+  try {
+    const ctx = getAudioContext();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    
+    osc.type = type;
+    osc.frequency.setValueAtTime(freq, ctx.currentTime + delay);
+    
+    gain.gain.setValueAtTime(0.15, ctx.currentTime + delay);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + delay + duration);
+    
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    
+    osc.start(ctx.currentTime + delay);
+    osc.stop(ctx.currentTime + delay + duration);
+  } catch (e) {
+    console.warn("Audio error:", e);
+  }
+}
+
+function playCorrectSound() {
+  // Acorde alegre ascendente (Dó - Mi - Sol - Dó maior)
+  playTone(523.25, 'sine', 0.15, 0.0);
+  playTone(659.25, 'sine', 0.18, 0.08);
+  playTone(783.99, 'sine', 0.25, 0.16);
+}
+
+function playIncorrectSound() {
+  // Tom duplo de erro (baixo / suave para não irritar)
+  playTone(220, 'sawtooth', 0.15, 0.0);
+  playTone(185, 'sawtooth', 0.25, 0.12);
+}
+
+function triggerFeedback(btn, isCorrect) {
+  // Reset de classes
+  document.querySelectorAll('.demo-btn').forEach(b => {
+    b.classList.remove('btn-correct', 'btn-incorrect');
+  });
+
+  const msg = document.getElementById('feedback-msg');
+
+  if (isCorrect) {
+    btn.classList.add('btn-correct');
+    playCorrectSound();
+    msg.style.color = '#48bb78';
+    msg.textContent = '✓ Correto! (+ Pontos & Avanço rápido)';
+  } else {
+    btn.classList.add('btn-incorrect');
+    playIncorrectSound();
+    msg.style.color = '#f56565';
+    msg.textContent = '✗ Incorreto! (Esteira errada)';
+  }
+}
+</script>

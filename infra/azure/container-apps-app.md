@@ -226,20 +226,39 @@ app reads:
 read -rsp "GHCR token (classic, read:packages): " GHTOK; echo
 az acr import -n <acr-name> \
   --source ghcr.io/<user>/sort-tester-live-app@sha256:<digest> \
-  --image sort-tester-live-app@sha256:<digest> \
+  --image sort-tester-live-app:stg-YYYYMMDD \
   --username <user> --password "$GHTOK"
 unset GHTOK
 ```
 
+`--source` takes the digest, because that is what pins the exact image.
+`--image` is the **target tag** and will not take a digest: given one, the
+import is refused with `InvalidImportImageParameter ... TargetTags`. The copy
+is byte for byte, so the digest inside the registry is the same one -- the tag
+is only a name hung on it, and the deployment still goes by digest.
+
 The token is used **here and nowhere else**, by you, for one copy. It never
 reaches Azure's stored configuration.
 
-Confirm the digest arrived:
+Confirm the digest arrived (in this command group `-r` is the registry and
+`-n` the image, the reverse of the rest of the CLI):
 
 ```sh
 az acr manifest list-metadata -r <acr-name> -n sort-tester-live-app \
   --query "[].digest" -o tsv
 ```
+
+Then check the identity may actually pull, before a deployment discovers it
+cannot. `runtime-identity.bicep` grants this, but only if it has been
+deployed since the registry existed:
+
+```sh
+az role assignment list --assignee <identity clientId> \
+  --scope <registry resource id> --query "[].roleDefinitionName" -o tsv
+```
+
+It must print `AcrPull`. Nothing printed means no grant, and the app will
+fail to start with an image-pull error that does not name the missing role.
 
 Once the app is deployed and pulling (§6), **revoke that GitHub token**. It is
 the finding; leaving it alive leaves the finding open.
