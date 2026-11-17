@@ -210,7 +210,66 @@ the package page shows **Private** before deploying.
 First published 2026-11-14 from `b21e2aa`:
 `imageSha256=130d9ee7ca5b4abe79ad354a5c618571ebfc83d2411c6f644a359791b876b6ee`.
 
-## 3. Copy the image into the Azure registry
+## 3. Get the image into the Azure registry
+
+**Once the one-time setup below is done, this section is not a step at
+all**: the publish workflow pushes to the registry itself, with no token
+and nobody copying anything. Until then, the manual copy further down is
+the way.
+
+### 3a. One-time setup, so nobody copies images by hand again
+
+The manual copy needs a GitHub token with `read:packages`, which is
+**account-scoped**: it can read every private package the account can
+see. That is the shape of H-5, which was closed for the running app.
+Leaving it on the path that *puts* images in the registry would have shut
+the door and left the window open.
+
+CI proves who it is instead, with a token GitHub mints for that one run.
+Azure checks it against a federated credential that names one repository
+and one branch, and answers with an access token good for minutes.
+Nothing is stored in GitHub, so there is nothing to leak and nothing to
+rotate.
+
+```sh
+az deployment group create \
+  --name sort-publish-identity \
+  --resource-group rg-sort-tester-staging \
+  --template-file infra/azure/publish-identity.bicep \
+  --parameters expiresOn=YYYY-MM-DD repository=<owner>/<repo> \
+  --confirm-with-what-if
+```
+
+The what-if must show three creates and nothing else: an identity, its
+federated credential, and one AcrPush role assignment on the registry.
+Read the scope on that assignment — it is one registry, and AcrPush only;
+pulling is the app's job with its own identity.
+
+Then record the three identifiers the workflow needs. They are
+**variables, not secrets** — a client id and a tenant id identify, they do
+not authorise, and the federated credential is what decides whether a
+token is believed:
+
+```sh
+az deployment group show -g rg-sort-tester-staging -n sort-publish-identity \
+  --query "properties.outputs.{client:publishClientId.value, subject:federatedSubject.value}" -o json
+az account show --query "{tenant:tenantId, subscription:id}" -o json
+```
+
+Set them as repository *variables* (Settings → Secrets and variables →
+Actions → Variables): `AZURE_PUBLISH_CLIENT_ID`, `AZURE_TENANT_ID`,
+`AZURE_SUBSCRIPTION_ID`, `AZURE_REGISTRY_NAME`.
+
+Check the printed `subject` matches the branch you publish from. A
+federated credential matches one subject exactly: another branch, another
+repository, or a pull request from a fork does not match, and no edit to
+the workflow changes that — the rule lives in Azure, not in the YAML.
+
+Afterwards the publish workflow pushes the same digest to both registries
+and refuses if they disagree, and **the GitHub token can be revoked for
+good**.
+
+### 3b. Copying by hand (until 3a is done)
 
 The app pulls as itself, with the user-assigned identity `id-sort-app-stg`
 and its AcrPull on this subscription's own registry. There is no registry

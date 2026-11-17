@@ -16,6 +16,7 @@ in the repository; the half that lives in GitHub's settings is verified by
 running a dispatch, which the plan's Task 8 verification step covers.
 """
 import pathlib
+import re
 import unittest
 
 WORKFLOW = (
@@ -73,3 +74,65 @@ class PublishGateTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class RegistryPushTests(unittest.TestCase):
+    """Publishing puts the image where the app pulls from (audit H-5 step 2).
+
+    Until this, every deployment needed a person to copy the image across
+    by hand, authenticating with a GitHub token that can read every
+    private package the account can see. That token is the finding H-5
+    closed for the running app; leaving it on the path that *puts* images
+    in the registry would have closed the door and left the window.
+
+    Nothing about this stores a credential. GitHub mints a token for the
+    run, Azure checks it against a federated credential naming one
+    repository and one branch, and answers with an access token that
+    lives for minutes.
+    """
+
+    @classmethod
+    def setUpClass(cls):
+        cls.text = WORKFLOW.read_text(encoding="utf-8")
+        cls.code = "\n".join(
+            line.split(" #")[0] if " #" in line else line
+            for line in cls.text.splitlines()
+            if not line.lstrip().startswith("#")
+        )
+
+    def test_the_run_can_mint_an_identity_token(self):
+        self.assertIn("id-token: write", self.code)
+
+    def test_azure_is_entered_without_a_stored_secret(self):
+        self.assertIn("azure/login@", self.code)
+        # client ids and tenant ids are identifiers, not secrets; a
+        # password or a service-principal secret here would be the thing
+        # this exists to avoid
+        for stored in ("client-secret", "creds:", "AZURE_CREDENTIALS"):
+            self.assertNotIn(stored, self.code)
+
+    def test_the_login_action_is_pinned_to_a_commit(self):
+        match = re.search(r"azure/login@([^\s#]+)", self.code)
+        self.assertIsNotNone(match)
+        self.assertRegex(match.group(1), r"^[0-9a-f]{40}$")
+
+    def test_the_pushed_image_is_the_one_already_published(self):
+        # a second build could produce a different digest for the same
+        # commit, and then the two registries disagree about what that
+        # commit means
+        self.assertIn("docker tag", self.code)
+        self.assertIn("steps.push.outputs.digest", self.code)
+        self.assertNotRegex(
+            self.code.split("Push the image to the Azure registry")[-1],
+            r"docker build",
+        )
+
+    def test_the_digest_check_cannot_compare_ghcr_with_itself(self):
+        # Once an image carries two names it has two RepoDigests, so
+        # taking the first in the ACR step would be a check that always
+        # passes. The GHCR step above may still do it: there the image
+        # has exactly one name.
+        acr_step = self.code.split("Push the image to the Azure registry")[-1]
+        acr_step = acr_step.split("- name: Report the digest")[0]
+        self.assertNotIn("index .RepoDigests 0", acr_step)
+        self.assertIn("ACR_NAME.azurecr.io/", acr_step)
