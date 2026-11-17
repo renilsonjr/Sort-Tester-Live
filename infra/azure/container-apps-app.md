@@ -206,13 +206,43 @@ the package page shows **Private** before deploying.
 First published 2026-11-14 from `b21e2aa`:
 `imageSha256=130d9ee7ca5b4abe79ad354a5c618571ebfc83d2411c6f644a359791b876b6ee`.
 
-## 3. Create a read-only token for the registry
+## 3. Copy the image into the Azure registry
 
-Container Apps pulls from the private GHCR package with a token.
+The app pulls as itself, with the user-assigned identity `id-sort-app-stg`
+and its AcrPull on this subscription's own registry. There is no registry
+password anywhere in the deployment any more (audit H-5).
 
-1. Create a personal access token with `read:packages` and nothing else.
-2. Keep it out of the repository and out of your shell history; it is passed
-   to the deployment as a secure parameter in step 4.
+Why it changed: the old path used a GitHub token with `read:packages`, which
+is **account-scoped** — it can read every private package the account can
+see, not just this one — and it had to be typed into a deployment to get
+there. The identity's grant is on one registry, is not a secret, and cannot
+be copied out of the app.
+
+GHCR stays where the image is built and published (§2). This step copies the
+digest you are deploying into the Azure registry, which is the only thing the
+app reads:
+
+```sh
+read -rsp "GHCR token (classic, read:packages): " GHTOK; echo
+az acr import -n <acr-name> \
+  --source ghcr.io/<user>/sort-tester-live-app@sha256:<digest> \
+  --image sort-tester-live-app@sha256:<digest> \
+  --username <user> --password "$GHTOK"
+unset GHTOK
+```
+
+The token is used **here and nowhere else**, by you, for one copy. It never
+reaches Azure's stored configuration.
+
+Confirm the digest arrived:
+
+```sh
+az acr manifest list-metadata -r <acr-name> -n sort-tester-live-app \
+  --query "[].digest" -o tsv
+```
+
+Once the app is deployed and pulling (§6), **revoke that GitHub token**. It is
+the finding; leaving it alive leaves the finding open.
 
 ## 4. Preview the deployment, change nothing
 
@@ -224,8 +254,8 @@ az deployment group what-if \
   --template-file infra/azure/container-apps-app.bicep \
   --parameters expiresOn=YYYY-MM-DD \
                imageSha256=<digest from step 2> \
-               registryUsername=<github username> \
-               registryPassword=<token from step 3> \
+               registryServer=<acr-name>.azurecr.io \
+               runtimeIdentityId=<runtimeIdentityId from runtime-identity.bicep> \
                databaseUrl=<url from step 1>
 ```
 
@@ -442,11 +472,47 @@ az deployment group create \
   --name sort-tester-app-staging \
   --resource-group rg-sort-tester-staging \
   --template-file infra/azure/container-apps-app.bicep \
-  --parameters expiresOn=YYYY-MM-DD imageSha256=<digest> \
-               registryUsername=<username> registryPassword=<token> \
-               databaseUrl=<url> appSubnetId=<appSubnetId from 5a> \
+  --parameters @<a parameters file, 0600, deleted afterwards> \
   --confirm-with-what-if
 ```
+
+The parameters are `expiresOn`, `imageSha256`, `registryServer`,
+`runtimeIdentityId`, `databaseUrl` and `appSubnetId`. The database URL is the
+only secret left, and it goes through a file rather than the command line, so
+it stays out of shell history and out of `ps`:
+
+```sh
+read -rsp "Database password: " PGPW; echo; echo "length: ${#PGPW}"
+PGPW="$PGPW" python3 - <<'EOF'
+import json, os, urllib.parse
+pw = urllib.parse.quote(os.environ["PGPW"], safe="")
+dsn = (f"postgresql://<user>:{pw}@<server>.postgres.database.azure.com"
+       ":5432/sort_tester_app?sslmode=require")
+params = {
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "expiresOn": {"value": "YYYY-MM-DD"},
+    "imageSha256": {"value": "<digest>"},
+    "registryServer": {"value": "<acr-name>.azurecr.io"},
+    "runtimeIdentityId": {"value": "<runtimeIdentityId>"},
+    "databaseUrl": {"value": dsn},
+    "appSubnetId": {"value": "<appSubnetId>"},
+  },
+}
+path = os.path.expanduser("~/app-params.json")
+with open(path, "w") as f:
+    json.dump(params, f)
+os.chmod(path, 0o600)
+print("written:", path)
+EOF
+```
+
+The password is percent-encoded on the way into the URL. Pasted raw, a `@`,
+`:`, `/` or `#` in it breaks the URL, and the app then fails to start with an
+error that says nothing about a password.
+
+Delete the file when the deployment is done: `shred -u ~/app-params.json`.
 
 Record the returned `appUrl`. A deployment that returns successfully is not
 proof that the app runs; step 6 is.
