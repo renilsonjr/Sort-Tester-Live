@@ -75,7 +75,8 @@ jobs:
       - name: Migrate the throwaway database with the guarded command
         run: |
           docker run --rm --network host -e SORT_TESTER_DATABASE_URL="$DB_URL" "$IMAGE" \
-            python -m backend.db.upgrade_app --confirm sort_tester_ci_app | tee /tmp/migrate.txt
+            python -m backend.db.upgrade_app \
+              --confirm sort_tester_ci_app@127.0.0.1:5432 | tee /tmp/migrate.txt
           grep -q "Revision after: " /tmp/migrate.txt
           if grep -q "ci-only-password" /tmp/migrate.txt; then echo "Password printed"; exit 1; fi
 

@@ -17,6 +17,8 @@ string we hold, and the replace silently does nothing while looking like
 a redaction. Deploy logs are kept.
 """
 import os
+import pathlib
+import re
 import unittest
 from unittest import mock
 
@@ -54,6 +56,35 @@ class ConfirmationNamesTheHostTests(unittest.TestCase):
         # a DSN that lost its dbname silently falls back to it
         with self.assertRaises(upgrade_app._Refused):
             upgrade_app._target("postgresql://app_user:pw@db.example.com:5432/postgres")
+
+
+class TheWorkflowConfirmsTheRightTargetTests(unittest.TestCase):
+    """CI runs this command too, and the suite cannot see a workflow.
+
+    Changing the confirmation format broke the app-image workflow, and
+    nothing here caught it: the callers were looked for in the tests and
+    not in `.github/`. This reads the workflow and checks its `--confirm`
+    against the connection string in the same file, so the two cannot
+    drift apart again.
+    """
+
+    WORKFLOW = (
+        pathlib.Path(__file__).resolve().parents[2]
+        / ".github"
+        / "workflows"
+        / "app-image.yml"
+    )
+
+    def test_the_confirmation_matches_the_workflows_own_database_url(self):
+        text = self.WORKFLOW.read_text(encoding="utf-8")
+
+        dsn = re.search(r"DB_URL:\s*(postgresql://\S+)", text)
+        self.assertIsNotNone(dsn, "the workflow no longer declares DB_URL")
+        expected = upgrade_app._confirmation_for(upgrade_app._target(dsn.group(1)))
+
+        confirm = re.search(r"--confirm\s+(\S+)", text)
+        self.assertIsNotNone(confirm, "the workflow no longer confirms a target")
+        self.assertEqual(confirm.group(1), expected)
 
 
 class ErrorsDoNotCarryThePasswordTests(unittest.TestCase):

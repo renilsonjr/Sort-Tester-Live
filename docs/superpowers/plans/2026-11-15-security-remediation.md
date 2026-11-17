@@ -895,6 +895,17 @@ refusal it asserted was about missing configuration, not about the
 confirmation. Fixed before the implementation, which is the only time
 that is cheap to notice.
 
+A sixteenth thing failed, and it was not a test encoding the old
+behaviour -- it was a real miss. CI migrates a throwaway database with
+this same command, and the workflow still passed the database name alone.
+When the confirmation format changed, callers were looked for in the
+tests and not in `.github/`, and no suite can see a workflow. The runbook
+and `backend/README.md` carried the old form too.
+
+The guard written for it reads the workflow and checks its `--confirm`
+against the connection string declared in the same file, so the two
+cannot drift apart again. Mutation-checked.
+
 Not done: nothing is deployed, so the cookie guard and the narrowed
 origin guard have been exercised only against the test suite. The first
 deployment is where an `appOrigin` that does not match the host people
