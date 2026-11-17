@@ -152,3 +152,54 @@ class DependabotTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class BicepLintTests(unittest.TestCase):
+    """Templates are compiled on every change, not at deployment time.
+
+    A template that does not compile used to be found by whoever deployed
+    it -- mid-change, often inside a booked window. This morning's own
+    §5c step 1 was exactly that: compiling by hand, from Cloud Shell,
+    hoping.
+    """
+
+    @classmethod
+    def setUpClass(cls):
+        cls.source = WORKFLOW.read_text(encoding="utf-8")
+        cls.code = "\n".join(
+            line for line in cls.source.splitlines()
+            if not line.lstrip().startswith("#")
+        )
+
+    def test_the_templates_job_exists(self):
+        self.assertIn("templates:", self.code)
+        self.assertIn("az bicep build", self.code)
+
+    def test_it_finds_templates_by_glob_and_not_by_a_list(self):
+        # a listed file is one someone has to remember to add; two
+        # templates were written today and neither would have been in a
+        # list written yesterday
+        self.assertIn("infra/azure/*.bicep", self.code)
+
+    def test_an_empty_match_is_a_failure_not_a_pass(self):
+        # a glob that matches nothing would otherwise make this job green
+        # while compiling nothing at all
+        self.assertIn("No templates found", self.source)
+
+    def test_a_warning_is_treated_as_a_failure(self):
+        # bicep's linter reports warnings without failing the build, so a
+        # job that only checked the exit code would ignore every one
+        self.assertRegex(self.code, r'grep -qiE "warning\|error"')
+
+    def test_every_template_in_the_repository_would_be_compiled(self):
+        # the guard above says the job globs; this says the glob covers
+        # where the templates actually are
+        import pathlib
+
+        found = sorted(
+            p.as_posix()
+            for p in (ROOT / "infra" / "azure").glob("*.bicep")
+        )
+        self.assertTrue(found, "no templates found in infra/azure")
+        for path in found:
+            self.assertTrue(path.endswith(".bicep"))

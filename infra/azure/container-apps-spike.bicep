@@ -5,9 +5,17 @@ targetScope = 'resourceGroup'
 ])
 param location string = 'northcentralus'
 
+@description('Lands in resource names, where Azure allows a narrower alphabet than a string parameter does: lowercase letters and digits. Bicep cannot express that as a constraint, so the case is normalised below and anything else still fails at resource creation -- read this line before inventing a suffix.')
 @minLength(4)
 @maxLength(12)
 param deploymentSuffix string
+
+// Normalised rather than trusted: an uppercase letter here would be
+// refused by Azure with an error naming the resource, not the parameter,
+// which sends the reader looking in the wrong place. Characters outside
+// the alphabet still fail there -- Bicep has no pattern constraint to
+// catch them earlier.
+var suffix = toLower(deploymentSuffix)
 
 @description('SHA-256 hexadecimal digest of the separately reviewed public GHCR image; no tag accepted.')
 @minLength(64)
@@ -15,15 +23,15 @@ param deploymentSuffix string
 param imageSha256 string
 
 var spikeTags = {
-  'project': 'sort-tester-live'
-  'environment': 'staging'
+  project: 'sort-tester-live'
+  environment: 'staging'
   'data-classification': 'fictional-only'
   'expires-on': '2027-10-09'
-  'purpose': 'api-only-container-apps-spike'
+  purpose: 'api-only-container-apps-spike'
 }
 
 resource spikeEnvironment 'Microsoft.App/managedEnvironments@2025-01-01' = {
-  name: 'cae-sort-spike-${deploymentSuffix}'
+  name: 'cae-sort-spike-${suffix}'
   location: location
   tags: spikeTags
   properties: {
@@ -40,7 +48,7 @@ resource spikeEnvironment 'Microsoft.App/managedEnvironments@2025-01-01' = {
 }
 
 resource spikeApp 'Microsoft.App/containerApps@2025-01-01' = {
-  name: 'ca-sort-spike-${deploymentSuffix}'
+  name: 'ca-sort-spike-${suffix}'
   location: location
   tags: spikeTags
   properties: {

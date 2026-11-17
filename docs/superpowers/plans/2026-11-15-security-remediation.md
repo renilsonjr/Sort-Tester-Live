@@ -1105,6 +1105,37 @@ database@host:port`.
 - Verify: what-if shows only the lock creates; attempting a delete of the DB server is refused by the lock (test in a scratch resource group or trust what-if).
 - Commit — `security: CanNotDelete locks on pre-existing shared resources, bicep lint in CI`
 
+Task 20 — the lint half applied 2026-11-17; **the locks were not done**,
+because they change Azure state and the owner was away from a computer.
+
+Templates are compiled on every push and pull request now. The job globs
+`infra/azure/*.bicep` rather than listing files: two templates were
+written today and neither would have appeared in a list written
+yesterday. A glob that matches nothing fails the job, so it cannot go
+green while compiling nothing.
+
+A Bicep warning fails it too. The linter runs as part of `build` and
+reports without failing, so a job that only read the exit code would
+ignore every complaint it made.
+
+This closes a gap we walked straight into this morning: §5c step 1 is
+"compile the template", by hand, from Cloud Shell, because nothing else
+would have caught a template that did not compile until someone deployed
+it -- mid-change, inside a booked window.
+
+`container-apps-spike.bicep`'s `deploymentSuffix` was the one parameter
+with no validation beyond length. Bicep has no pattern constraint, so it
+cannot be expressed; the case is normalised with `toLower` instead and
+the description says plainly that other characters still fail at
+resource creation. Normalising is worth it on its own: an uppercase
+letter was refused by Azure with an error naming the *resource*, which
+sends the reader looking in the wrong place.
+
+Still open: the `CanNotDelete` locks on the shared resources the app
+template does not own -- the database server, App Insights, Log
+Analytics. They belong in that template precisely because nothing else
+manages them.
+
 ---
 
 ## Phase 4 — Operational closure
