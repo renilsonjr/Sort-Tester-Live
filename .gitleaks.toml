@@ -1,0 +1,30 @@
+# gitleaks configuration (audit M-8).
+#
+# Extends the default rules rather than replacing them: everything gitleaks
+# ships keeps working, and this file only records the exceptions we have
+# looked at and understood.
+#
+# The rule for exceptions here: narrow, and with the reason written down.
+# An allowlist by directory would blind the scanner exactly where test
+# fixtures live, which is where a real secret is most likely to be pasted
+# "just for a moment".
+[extend]
+useDefault = true
+
+[[rules]]
+  # The default generic-api-key rule reads the word "token" followed by a
+  # named numeric argument as a keyword and its value. There is no key
+  # there: it is the number of seconds a session may sit idle, in the
+  # tests for the idle window.
+  #
+  # This comment is deliberately written around the pattern instead of
+  # quoting it: a quoted example is a finding of its own, which is how the
+  # plan document came to fail this very scan.
+  #
+  # Scoped to the one file and the one shape. A real key pasted into this
+  # same file still matches, because this allowlist requires the literal
+  # `idle_seconds=` and a bare integer.
+  id = "generic-api-key"
+  [rules.allowlist]
+    paths = ['''backend/tests/test_auth_sessions\.py''']
+    regexes = ['''idle_seconds=\d+ \* 60''']

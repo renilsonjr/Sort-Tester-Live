@@ -480,6 +480,111 @@ Task 8 is complete.
 - Verify: workflow runs green on the opening PR; push protection blocks a test commit containing a fake `AKIA…`-style key (try on a scratch branch).
 - Commit — `security: secret scanning, dependency review, pip-audit, Dependabot (audit M-8)`
 
+Task 9 provenance answered — 2026-11-17: all five dev-only packages are
+genuine, which the names argue against. `httpx2` and `httpcore2` read like
+textbook typosquats and are in fact Tom Christie's own successors to httpx,
+published under the `pydantic` organisation. `fastar` is Jonathan Ehwald's
+bindings to the Rust tar crate. `agent-detector`, `detect-installer` and
+`rignore` are Patrick Arminio's, and `fastapi-cloud-cli` is FastAPI Labs'.
+Checked against PyPI's own metadata: publisher, summary and source URL.
+
+They arrive transitively: `fastapi[standard]` pulls `fastapi-cli`, which
+pulls `fastapi-cloud-cli`, which pulls the rest. None reaches the runtime
+image, but they do execute in CI, which is where the publish credentials
+live. Owner decision 2026-11-17: keep them and record the check, rather
+than installing fastapi without the `standard` extra. The provenance is
+sound; the reason to drop them would be surface area, not suspicion.
+
+Task 9 applied — 2026-11-17: `.github/workflows/security-gates.yml` and
+`.github/dependabot.yml`.
+
+Secret scanning and push protection were **already enabled** on the
+repository, which is public, so nothing had to be turned on. Two related
+options are off: `secret_scanning_non_provider_patterns` and
+`secret_scanning_validity_checks`. The first is worth a decision of its
+own -- the provider patterns catch an AWS or GitHub token, but a
+`postgresql://user:password@host` is not a provider token and none of them
+match it, which is exactly the shape this project handles by hand.
+
+Three gates, answering three different questions: gitleaks on the history,
+dependency review on what a pull request adds, and pip-audit on what is
+already installed. The third also runs weekly on a schedule, because a
+dependency that was clean when it was added does not stay clean and no
+push would ever notice.
+
+Every third-party action is pinned to a commit SHA resolved from its tag
+and verified to be a commit, not an annotated tag object. That pinning is
+why the `github-actions` Dependabot ecosystem matters as much as `pip`:
+nothing else updates those pins, and without it they age into unpatched
+versions while looking deliberate.
+
+The runtime audit is `--strict` and may not be made advisory -- a finding
+there is a finding in production -- while the dev audit reports without
+failing. Both were run locally before opening the pull request, in an
+isolated environment, and both reported no known vulnerabilities, so the
+gate's first run should be green for reasons other than an empty database.
+
+`backend/tests/test_security_gates_workflow.py` guards the ways a gate can
+report success while checking nothing: a tag instead of a SHA, a shallow
+checkout that leaves gitleaks no history, `continue-on-error` on the
+runtime audit, and permissions wider than read.
+
+First run, and what it exposed — 2026-11-17: all six checks on PR #180
+passed, and `gitleaks-action` v3 needed no licence key on this public
+personal repository. But the secret scan finished in 8 seconds, and its log
+said **"1 commits scanned, ~11974 bytes"**.
+
+So the action scans the commits of the event, never the history. The
+`fetch-depth: 0` is necessary -- without it the action cannot resolve its
+range at all -- but it is not sufficient, and the gate as first written
+would have caught a secret being *added* while never finding one already
+in the repository. That is the question that matters after a key leaks.
+
+The guard written for it, `test_the_secret_scan_reads_the_whole_history`,
+asserted the fetch depth and the action's presence and passed. It was
+named for an outcome it could not check. Renamed to
+`test_the_change_scan_has_a_range_to_work_with`, which is what it tests.
+
+Fixed by adding a second job, `secrets-history`, running weekly and on
+dispatch: `gitleaks detect` with no `--log-opts`, which scans every commit.
+It runs the release binary rather than the action, because the action
+derives its range from the event and no event means "everything"; the
+binary is pinned by version and checked against the release's published
+SHA-256, since a binary fetched at run time is a supply chain of its own.
+
+The first whole-history scan then failed, with four findings — all the
+same and all false. The default `generic-api-key` rule reads
+the word "token" followed by a named numeric argument as a keyword and its
+value; what it found was the idle window in the session-expiry tests.
+
+(That sentence is written around the pattern rather than quoting it. The
+first draft quoted the flagged line verbatim and the scanner found it
+here, in the plan. Widening the allowlist to cover documentation was the
+wrong answer: documentation is exactly where a credential ends up pasted
+into an example.)
+
+`.gitleaks.toml` extends the default rules rather than replacing them, and
+the exception is tied to one file **and** one shape (`idle_seconds=` with a
+bare integer). A path-only allowlist would let a real key pasted into that
+same file through; a directory-wide one would blind the scanner where
+fixtures live, which is where a key gets pasted "just for a moment".
+Guards enforce both: no allowlist path that is not a single `.py` file,
+and no exception without a shape.
+
+The log also showed the two secret jobs doing identical work: on a
+dispatch the action has no range and scans everything. The per-change job
+now steps aside on schedule and dispatch. The explicit history job stays,
+because the action's behaviour there is implicit in the event and implicit
+behaviour changes without a diff.
+
+Verified — 2026-11-17, run `44125295575`: whole history green, **362
+commits, ~7.73 MB, no leaks**. Set against the first run's "1 commit,
+~12 KB", that is the measure of what the gate was worth before and is
+worth now.
+
+Still not done: the push-protection test with a fake key on a scratch
+branch.
+
 ### Task 10: Digest-pin CI images, slim the spike image (M-9) — `OPS`
 
 - Modify: `.github/workflows/app-image.yml:199-200` — replace `aquasec/trivy:0.76.2` with `aquasec/trivy@sha256:<digest>` (get it: `docker manifest inspect aquasec/trivy:0.76.2`); same treatment for the `postgres:18-alpine` service image.
