@@ -11,8 +11,8 @@ reference. It creates the identity and exactly two role assignments:
 
 | Role | Scope | Purpose |
 | --- | --- | --- |
-| AcrPull | Existing `acrsortstgzp6nl6c3wplfy` registry only | Download images; no push or registry administration |
-| Key Vault Secrets User | Existing `kv-sortstg-zp6nl6c3wplfy` vault only | Read secret values/metadata; no secret writes or access administration |
+| AcrPull | Existing `<acr-name>` registry only | Download images; no push or registry administration |
+| Key Vault Secrets User | Existing `<key-vault>` vault only | Read secret values/metadata; no secret writes or access administration |
 
 The vault is dedicated to this app. The grant covers all current/future secrets
 in that vault; do not use it as a shared vault for unrelated secrets. This is
@@ -124,12 +124,12 @@ not automatic expiry), exited 0 and reported Succeeded.
 
 Independent post-deployment reads verified:
 
-- `id-sort-app-stg` principal `1e5f852f-61dc-409f-a4ba-03309452430b`.
+- `id-sort-app-stg` principal `<principal-id>`.
 - The subscription assignment inventory contained exactly two assignments for
   this principal, both ServicePrincipal type and with the expected role IDs and
   exact dedicated resource scopes from the table above.
-- AcrPull assignment `986c61b4-7330-5d49-88ec-9148721aee58` and Key Vault
-  Secrets User assignment `6e35c424-a69c-5ec9-b0a3-b5729effebe9`.
+- Both assignment IDs matched the deterministic values the template
+  computes; the values themselves are in the private inventory.
 - The full Container App resource equaled its pre-deployment snapshot; it still
   has no managed identity attached. Health returned HTTP 200 and the student
   subscription spending limit remained On.

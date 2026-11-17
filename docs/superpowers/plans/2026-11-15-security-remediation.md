@@ -283,7 +283,7 @@ from the Task 4 bootstrap, and `sort-tester-app-h5` deployed in 1m40.
 
 What-if before deploying showed `2 to modify`, no Delete and no Replace:
 `username`/`passwordSecretRef` out and `identity` in, `server` from
-`ghcr.io` to `acrsortstgzp6nl6c3wplfy.azurecr.io`, the `registry-password`
+`ghcr.io` to `<acr-name>.azurecr.io`, the `registry-password`
 secret gone, and the same digest either side. The environment was untouched,
 so the address did not change.
 
@@ -780,9 +780,53 @@ an observed one.
 
 - Modify: `.gitignore` — add `infra/azure/*.parameters*.json`.
 - Modify: `infra/azure/container-apps-app.md:181-185, 227-229` — parameters via `@infra/azure/app.parameters.local.json` (template shown with placeholders; the real file untracked), created with `read -rsp` guidance like §1d.
-- Modify: `container-apps-app.md:40` — replace the real server name `pg-sort-tester-rjstg1109` with `<server>` (keep real names in the private inventory only); update `infra/azure/README.md:10-20` so the app template is listed as the live deployable.
+- Modify: `container-apps-app.md:40` — replace the real server name with a placeholder (keep real names in the private inventory only); update `infra/azure/README.md:10-20` so the app template is listed as the live deployable.
 - Verify: `git check-ignore infra/azure/app.parameters.local.json` → matches; `git grep pg-sort-tester` → no matches.
 - Commit — `security: no secrets on the CLI, no real resource names in tracked docs (audit M-6/L3)`
+
+Task 15 applied — 2026-11-17.
+
+Real names out of tracked prose: the database server, the registry, the
+vault and one principal id, across four documents. Two of the four were
+written **today**, in this plan and in the runbook, while recording the
+work -- which is the honest shape of this finding. It is not a mistake
+made once and found later; it is a thing that happens every time someone
+writes down what they just did.
+
+What was not leaked, and is worth knowing: no subscription id, no app
+ingress host, no client id, no DSN. The records written today used
+truncated names and short digests.
+
+Severity, stated plainly: these are not credentials. On a public
+repository they are reconnaissance -- they say which registry, which
+vault and which server to probe, and vault and registry names resolve in
+global DNS.
+
+Two GUIDs were deliberately **kept**: the AcrPull and Key Vault Secrets
+User role definition ids. Those are Microsoft's, identical in every
+subscription, and writing a role's id beside its name is how a reader
+checks that a template grants what it claims to. The two role *assignment*
+ids, which are ours, were replaced.
+
+`.gitignore` now covers parameters files by shape rather than by name, so
+a file nobody thought to list is still covered; the failure mode here is
+one careless `git add` of a file holding the database password.
+
+`backend/tests/test_docs_hygiene.py` guards both halves. It matches the
+*shape* of these names and never the values -- a guard that spelled them
+out would be the leak it prevents, exactly as the sentence explaining a
+gitleaks false positive became one earlier today. For the ignore rules it
+asks `git check-ignore` rather than reading `.gitignore` as text, since
+only git's answer is authority on what git would do. Mutation-checked: a
+planted vault-shaped name fails it, reported by file and line without
+quoting the value.
+
+`infra/azure/README.md` now names `container-apps-app.bicep` as the live
+deployable and marks the spike and API-only staging templates as history.
+Its standing boundary also said "no PostgreSQL connection from the app
+host", which stopped being true when the app template shipped; left
+standing it would have read as a rule being broken rather than one
+superseded.
 
 ---
 

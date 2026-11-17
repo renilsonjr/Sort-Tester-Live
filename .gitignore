@@ -54,6 +54,12 @@ Thumbs.db
 infra/azure/*.local.bicepparam
 infra/azure/*.generated.json
 infra/azure/deployment-manifest*.json
+# A parameters file carries the database URL, password and all (audit M-6).
+# Ignored by shape rather than by name so a file nobody thought to list
+# here is still covered -- the failure mode is one careless `git add`.
+infra/azure/*.parameters*.json
+infra/azure/*params*.json
+*.parameters.local.json
 
 # worktrees
 .worktrees/
