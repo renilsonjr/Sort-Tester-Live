@@ -12,6 +12,7 @@ from datetime import datetime, timedelta, timezone
 from backend.db import migrate, settings
 from backend.ranked import engine, outages, tiebreaks
 from backend.ranked_bank.catalog import load_reviewed_bank
+from backend.tests.ranked_helpers import make_owner
 
 BANK = load_reviewed_bank()
 
@@ -77,10 +78,16 @@ class TiebreakOutageTests(unittest.TestCase):
             engine.submit_answer(self.conn, attempt, seq, "YELLOW", clock=self.clock, bank=BANK)
         return attempt
 
+    def _owner_id(self):
+        if not hasattr(self, "_owner"):
+            self._owner = make_owner(self.conn)
+        return self._owner
+
     def _outage(self, start_minutes, end_minutes):
         self.clock.moment = self.t0 + timedelta(minutes=end_minutes + 1)
         outages.record_outage(
             self.conn,
+            acting_account_id=self._owner_id(),
             starts_at=self.t0 + timedelta(minutes=start_minutes),
             ends_at=self.t0 + timedelta(minutes=end_minutes),
             clock=self.clock,

@@ -121,7 +121,11 @@ read -rsp "Paste the password and press Enter: " PGPW; echo
 echo "length: ${#PGPW}"     # must match the password you generated
 export SORT_TESTER_DATABASE_URL="postgresql://<admin>:$PGPW@<server>.postgres.database.azure.com:5432/sort_tester_app?sslmode=verify-full&sslrootcert=/etc/ssl/certs/ca-certificates.crt"
 backend/.venv/bin/python -m backend.db.upgrade_app                      # shows the target only
-backend/.venv/bin/python -m backend.db.upgrade_app --confirm sort_tester_app
+# --confirm repeats the whole target, not the database name: staging and
+# production call theirs the same thing (audit L7). Run the line above
+# first and copy what it prints.
+backend/.venv/bin/python -m backend.db.upgrade_app \
+  --confirm sort_tester_app@<server>.postgres.database.azure.com:5432
 ```
 
 `sslmode=verify-full` is now required by the app itself: a DSN without a

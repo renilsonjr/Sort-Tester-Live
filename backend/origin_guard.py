@@ -46,8 +46,21 @@ def _referer_host(referer: str) -> str:
 
 
 def allowed_hosts(request_host: str, app_origin: str, dev_origins) -> set[str]:
-    """Hosts a write may claim to come from. Empty entries are dropped."""
-    hosts = {request_host, _host_of(app_origin)}
+    """Hosts a write may claim to come from. Empty entries are dropped.
+
+    The request's own `Host` header used to be in here. Host is set by
+    whoever makes the request, so admitting it meant the guard asked the
+    caller where they came from and believed the answer: a request
+    carrying a matching Origin and Host pair passed, which is the one
+    thing this exists to refuse.
+
+    It stays as the fallback only while `app_origin` is unset -- local
+    development and a first deployment have no origin to compare against,
+    and refusing every write there would be worse than a guard that
+    cannot yet do its job.
+    """
+    configured = _host_of(app_origin)
+    hosts = {configured} if configured else {request_host}
     hosts.update(_host_of(origin) for origin in dev_origins)
     hosts.discard("")
     return hosts

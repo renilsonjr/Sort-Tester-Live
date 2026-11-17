@@ -849,6 +849,68 @@ superseded.
 - [ ] **Step 2: Implement all six. Step 3: Full suites green.**
 - [ ] **Step 4: Commit** — `security: auth hardening batch (launch reauth, cookie default, ticket cap, reviewer/deleted, login race, origin guard)`
 
+Task 16 applied — 2026-11-17. All nine, one PR, at the owner's choice
+after being shown which two could break the deployed app.
+
+Two were not done the way this plan sketched them.
+
+**The cookie fix is the startup guard, not a flipped default.** Flipping
+`cookie_secure` to True would break local development over http, and a
+setting that has to be remembered per environment is one that will be
+forgotten. The default stays False and `check_cookie_policy` refuses to
+start when the app origin is https and the flag is not set. It earned its
+place immediately: it broke two origin-guard tests that built an app with
+an https origin and no Secure cookie, which is the exact configuration it
+exists to refuse.
+
+**The origin guard keeps the `Host` fallback when no origin is
+configured.** Removing it outright would refuse every write in local
+development and on a first deployment. With an origin configured, Host is
+gone -- it is set by the caller, so admitting it meant the guard asked
+the visitor where they came from and believed the answer.
+
+The other seven are as written. `record_outage` gained its owner check
+inside the function rather than in a future route, which is possible
+precisely because no route calls it yet; the four test call sites now act
+as an owner.
+
+Fifteen existing tests failed on the first full run, and all fifteen were
+the changes working:
+
+* launch tests launched the season without re-authenticating -- the door
+  this fix closes;
+* migration tests confirmed with the database name alone -- the weak
+  confirmation this fix replaces;
+* origin-guard tests served an https origin with an insecure cookie.
+
+Each was updated to the new contract rather than the change being
+loosened to let it pass, with the reason written at the point of change.
+The owner helper in the router tests now re-authenticates, so those tests
+stay about launching; that re-authentication is *required* is proved in
+`test_hardening_batch.py`, where it is the subject.
+
+One of the new tests passed for the wrong reason when first written: it
+ran the migration command with no environment variable set, so the
+refusal it asserted was about missing configuration, not about the
+confirmation. Fixed before the implementation, which is the only time
+that is cheap to notice.
+
+A sixteenth thing failed, and it was not a test encoding the old
+behaviour -- it was a real miss. CI migrates a throwaway database with
+this same command, and the workflow still passed the database name alone.
+When the confirmation format changed, callers were looked for in the
+tests and not in `.github/`, and no suite can see a workflow. The runbook
+and `backend/README.md` carried the old form too.
+
+The guard written for it reads the workflow and checks its `--confirm`
+against the connection string declared in the same file, so the two
+cannot drift apart again. Mutation-checked.
+
+Not done: nothing is deployed, so the cookie guard and the narrowed
+origin guard have been exercised only against the test suite. The first
+deployment is where an `appOrigin` that does not match the host people
+actually reach would show up -- as every write returning 403.
+
 ### Task 17: Session lifecycle — audit trail, cap, cleanup — `TDD`
 
 **Files:**

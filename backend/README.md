@@ -266,14 +266,17 @@ repository root:
 ```sh
 export SORT_TESTER_DATABASE_URL="postgresql://USER@HOST:5432/DATABASE"
 backend/.venv/bin/python -m backend.db.upgrade_app            # shows the target, changes nothing
-backend/.venv/bin/python -m backend.db.upgrade_app --confirm DATABASE
+backend/.venv/bin/python -m backend.db.upgrade_app --confirm DATABASE@HOST:5432
 ```
 
 On Windows use `& backend\.venv\Scripts\python.exe -m backend.db.upgrade_app`.
 
 Before connecting, it refuses (exit code 2) when the URL is missing or invalid,
-when `--confirm` does not repeat the target database name exactly, or when the
-target is the unittest scratch database. It reads only
+when `--confirm` does not repeat the whole target `database@host:port`
+exactly -- the database name alone is the same in staging and production,
+so it proved only that the operator knew what it was called -- or when the
+target is the unittest scratch database or the server's `postgres`
+maintenance database. It reads only
 `SORT_TESTER_DATABASE_URL`, never the test URL. It prints the target host,
 port and database and the revision before and after, never the password. It
 only upgrades to the latest revision; running it again is harmless. There is

@@ -9,6 +9,7 @@ from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 
 from backend import http_hardening, origin_guard
+from backend.auth import settings as auth_settings
 from backend.auth.rate_limit import RegistrationLimiter
 from backend.routers import auth, ranked
 
@@ -37,11 +38,21 @@ def create_app() -> FastAPI:
     # address, 200/day in total)
     application.state.registration_limiter = RegistrationLimiter()
 
+    app_origin = os.environ.get("SORT_TESTER_APP_ORIGIN", "").strip()
+
+    # An insecure session cookie on an https origin is invisible from the
+    # app and discovered on the wire. Checked here so a deployment that
+    # forgot the flag fails to start instead of serving quietly.
+    auth_settings.check_cookie_policy(
+        cookie_secure=auth_settings.get_auth_settings().cookie_secure,
+        app_origin=app_origin,
+    )
+
     # Added first so it sits innermost: CORS still answers preflight, and the
     # guard only ever sees a real write.
     origin_guard.install(
         application,
-        app_origin=os.environ.get("SORT_TESTER_APP_ORIGIN", "").strip(),
+        app_origin=app_origin,
         dev_origins=origins,
     )
 

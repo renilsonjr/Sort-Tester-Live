@@ -77,6 +77,7 @@ class RankedRouterTests(unittest.TestCase):
         login_id = reg.json()["login_id"]
         res = client.post("/api/auth/login", json={"login_id": login_id})
         self.assertEqual(res.status_code, 200, res.text)
+        return login_id
 
     def test_full_attempt_round_trip_over_http(self):
         self._sign_in(self.client, "player_one")
@@ -418,7 +419,7 @@ class RankedRouterTests(unittest.TestCase):
     }
 
     def _sign_in_owner(self, client, username):
-        self._sign_in(client, username)
+        login_id = self._sign_in(client, username)
         conn = migrate.connect(self.conninfo)
         migrate.execute(
             conn,
@@ -427,6 +428,17 @@ class RankedRouterTests(unittest.TestCase):
         )
         conn.commit()
         conn.close()
+        # Launching now asks for the login ID again, like every other owner
+        # action (Task 16). These tests are about what launch does, so the
+        # owner arrives already re-authenticated; that the proof is required
+        # at all is covered in test_hardening_batch.
+        self.assertEqual(
+            client.post(
+                "/api/auth/reauthenticate", json={"login_id": login_id}
+            ).status_code,
+            204,
+        )
+        return login_id
 
     def _official_seasons(self):
         conn = migrate.connect(self.conninfo)

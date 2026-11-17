@@ -8,6 +8,9 @@ from unittest.mock import patch
 from backend.db import upgrade_app
 
 APP_URL = "postgresql://appuser:s3cret-pass@db.example.com:5432/sort_tester_app"
+# --confirm now repeats the whole target, not the database name alone:
+# staging and production call their database the same thing (audit L7).
+APP_TARGET = "sort_tester_app@db.example.com:5432"
 
 
 def run(argv, env_url=APP_URL):
@@ -24,7 +27,7 @@ def run(argv, env_url=APP_URL):
 
 class UpgradeAppCommandTests(unittest.TestCase):
     def test_confirmed_target_is_upgraded_to_head(self):
-        code, out, _err, upgrade = run(["--confirm", "sort_tester_app"])
+        code, out, _err, upgrade = run(["--confirm", APP_TARGET])
         self.assertEqual(code, 0)
         upgrade.assert_called_once_with(APP_URL)
         self.assertIn("sort_tester_app", out)
@@ -45,7 +48,7 @@ class UpgradeAppCommandTests(unittest.TestCase):
         self.assertIn("sort_tester_app", err)
 
     def test_missing_url_refuses(self):
-        code, _out, err, upgrade = run(["--confirm", "sort_tester_app"], env_url=None)
+        code, _out, err, upgrade = run(["--confirm", APP_TARGET], env_url=None)
         self.assertEqual(code, 2)
         upgrade.assert_not_called()
         self.assertIn("SORT_TESTER_DATABASE_URL", err)
@@ -75,7 +78,7 @@ class UpgradeAppCommandTests(unittest.TestCase):
                 upgrade.assert_not_called()
 
     def test_password_is_never_printed(self):
-        for argv in (["--confirm", "sort_tester_app"], ["--confirm", "wrong"], []):
+        for argv in (["--confirm", APP_TARGET], ["--confirm", "wrong"], []):
             with self.subTest(argv=argv):
                 _code, out, err, _upgrade = run(argv)
                 self.assertNotIn("s3cret-pass", out + err)
@@ -87,7 +90,7 @@ class UpgradeAppCommandTests(unittest.TestCase):
                 patch.object(upgrade_app.migrate, "upgrade_to_head",
                              side_effect=RuntimeError(f"could not connect to {APP_URL}")), \
                 redirect_stdout(out), redirect_stderr(err):
-            code = upgrade_app.main(["--confirm", "sort_tester_app"])
+            code = upgrade_app.main(["--confirm", APP_TARGET])
         self.assertEqual(code, 1)
         self.assertNotIn("s3cret-pass", out.getvalue() + err.getvalue())
 

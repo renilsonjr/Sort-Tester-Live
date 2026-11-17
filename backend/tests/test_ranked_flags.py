@@ -6,7 +6,7 @@ import unittest
 from backend.db import migrate, settings
 from backend.ranked import engine, flags, outages, scoring, settlement
 from backend.support import retention
-from backend.tests.ranked_helpers import make_unconstrained_bank
+from backend.tests.ranked_helpers import make_owner, make_unconstrained_bank
 from backend.tests.test_ranked_clock import FakeClock
 
 T0 = datetime(2026, 1, 1, 12, 0, 0, tzinfo=timezone.utc)
@@ -17,6 +17,11 @@ def at(seconds):
 
 
 class FlagTestCase(unittest.TestCase):
+    def _owner_id(self):
+        if not hasattr(self, "_owner"):
+            self._owner = make_owner(self.conn)
+        return self._owner
+
     @classmethod
     def setUpClass(cls):
         try:
@@ -189,7 +194,11 @@ class FlagCreationTests(FlagTestCase):
 class OutageRecordingTests(FlagTestCase):
     def _record(self, start, end):
         return outages.record_outage(
-            self.conn, starts_at=start, ends_at=end, clock=self.clock
+            self.conn,
+            acting_account_id=self._owner_id(),
+            starts_at=start,
+            ends_at=end,
+            clock=self.clock,
         )
 
     def _outage_count(self):
@@ -321,7 +330,9 @@ class FlagReviewTests(FlagTestCase):
         attempt_id = self._flagged_quiz(flaps=5)  # losses at 3..19
         flags.close_flag(self.conn, attempt_id, "network_instability", clock=self.clock)
         reviewed = self._closed(attempt_id)
-        outages.record_outage(self.conn, starts_at=at(2), ends_at=at(4), clock=self.clock)
+        outages.record_outage(
+            self.conn, acting_account_id=self._owner_id(),
+            starts_at=at(2), ends_at=at(4), clock=self.clock)
         self.assertEqual(self._closed(attempt_id), reviewed)
         # untouched: still the first qualifying run recorded at scoring time
         self.assertEqual(self._flag(attempt_id), (at(3), at(15)))
@@ -330,7 +341,8 @@ class FlagReviewTests(FlagTestCase):
         attempt_id = self._flagged_quiz()
         flags.close_flag(self.conn, attempt_id, "insufficient_evidence", clock=self.clock)
         removed = outages.record_outage(
-            self.conn, starts_at=at(6), ends_at=at(8), clock=self.clock
+            self.conn, acting_account_id=self._owner_id(),
+            starts_at=at(6), ends_at=at(8), clock=self.clock
         )
         self.assertEqual(removed, 1)
         self.assertIsNone(self._flag(attempt_id))
