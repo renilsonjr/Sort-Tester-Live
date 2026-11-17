@@ -124,10 +124,14 @@ def _settle(conn, attempt_id, clock) -> tuple[scoring.Settlement, bool]:
 
     migrate.execute(
         conn,
-        "INSERT INTO settlements (attempt_id, season_id, raw_score, adjustment,"
-        " final_outcome, settled_at) VALUES (%s, %s, %s, %s, %s, %s)",
-        (attempt_id, attempt["season_id"], result.raw_score, result.adjustment,
-         attempt["final_outcome"], now),
+        # account_id is carried here, not derived later: the composite key
+        # on (attempt_id, account_id) is what stops a settlement from being
+        # written against another player's attempt (audit M-10)
+        "INSERT INTO settlements (attempt_id, account_id, season_id, raw_score,"
+        " adjustment, final_outcome, settled_at)"
+        " VALUES (%s, %s, %s, %s, %s, %s, %s)",
+        (attempt_id, account_id, attempt["season_id"], result.raw_score,
+         result.adjustment, attempt["final_outcome"], now),
     )
     migrate.execute(
         conn,

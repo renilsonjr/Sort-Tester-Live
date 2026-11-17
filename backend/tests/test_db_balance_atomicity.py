@@ -119,10 +119,10 @@ class BalanceAtomicityTests(unittest.TestCase):
         attempt_id = self._make_attempt(account_id, season_id)
         row = migrate.fetch_one(
             self.setup,
-            "INSERT INTO settlements (attempt_id, season_id, raw_score,"
+            "INSERT INTO settlements (attempt_id, account_id, season_id, raw_score,"
             " adjustment, final_outcome)"
-            " VALUES (%s, %s, 0, 0, 'quit') RETURNING attempt_id",
-            (attempt_id, season_id),
+            " VALUES (%s, (SELECT account_id FROM attempts WHERE id = %s), %s, 0, 0, 'quit') RETURNING attempt_id",
+            (attempt_id, attempt_id, season_id),
         )
         settlement_id = row["attempt_id"]
         self.setup.commit()
