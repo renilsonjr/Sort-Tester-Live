@@ -923,6 +923,43 @@ actually reach would show up -- as every write returning 403.
 - [ ] **Step 2: Implement. Step 3: Suites green.**
 - [ ] **Step 4: Commit** — `security: session audit trail, per-account cap, expired-row cleanup`
 
+Task 17 applied — 2026-11-17, **two of three parts**.
+
+**The audit trail was not built, by owner decision.** This task asked for
+`ip_address` and `user_agent` on every login. The columns exist and login
+passes None for both, which turned out to be a choice rather than an
+oversight: Decision 14 settles this project on minimal collection -- no
+real name, no employee id, no phone -- and Decision 15 removed email from
+the whole app. On a work network an address and a timestamp identify a
+person as surely as a name. Offered the alternatives (collect as written,
+or store a salted hash of the address so a network change is still
+visible without holding the address), the owner chose to collect neither.
+
+What that costs is worth naming: there is now no way to see that a
+session moved to a different network, which is the ordinary signal of a
+stolen cookie. The cap below is the mitigation that remains -- a stolen
+session is still one of at most five, and a sixth login pushes the oldest
+out.
+
+The decision is written in two places that a future change has to pass
+through: the module docstring of `test_session_lifecycle.py`, and a guard
+that reads `auth.py` and requires those arguments to stay None. Starting
+to collect is then a deliberate act, not a drift.
+
+**Cap of five per account.** Revoked by `created_at`, not by
+`last_seen_at` -- ordering by last use would make a stolen session, which
+is being used, the freshest one, and the sixth login would push out the
+owner's rather than the thief's. The cap is applied after the insert, so
+the new session is the one that counts as newest.
+
+**Expired rows are deleted a day after they expire**, from the same sweep
+chain as the other retention work. The grace day is so that a session
+which has just ended can still be told apart from one that never existed.
+
+One of the new tests was wrong against the schema: `sessions` carries
+CHECK (expires_at >= created_at), and the helper that aged a row moved
+only the expiry. The constraint was right and the test was fixed.
+
 ### Task 18: Server-side caps on every list (pagination, minimal) — `TDD`
 
 **Files:**

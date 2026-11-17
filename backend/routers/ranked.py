@@ -16,6 +16,7 @@ from pydantic import BaseModel, Field
 from backend.auth import eligibility, reauth, recovery
 from backend.auth.deletion import purge_deleted_accounts
 from backend.auth.service import get_account_by_session
+from backend.auth import sessions as auth_sessions
 from backend.db import migrate, pool, settings
 from backend.ranked import capability, engine, launch, season_close, seasons, settlement
 from backend.ranked import standings as ranked_standings
@@ -81,6 +82,10 @@ def get_db():
         support_retention.purge_due_cases(conn, clock=_CLOCK)
         # and for accepted account deletions (#47)
         purge_deleted_accounts(conn)
+        # expired session rows authenticate nobody but still point at an
+        # account, so they go a day after they die. One DELETE that
+        # matches nothing on an idle server.
+        auth_sessions.purge_expired_sessions(conn)
         yield conn
 
 
