@@ -1020,6 +1020,47 @@ Mutation-checked both ways: removing a LIMIT fails, and adding one to
 - [ ] **Step 4: Deploy migrations via the guarded admin path (runbook §1d).**
 - [ ] **Step 5: Commit** — `security: same-account composite keys across ledger, attempts, tiebreaks (audit M-10)`
 
+Task 19 applied — 2026-11-17 as migration `0037`, **four of the six steps
+in it**, with the two left out being the interesting part.
+
+**`season_prizes.place` with `UNIQUE (season_id, place)` was not added.**
+The settled prize rule has players tied inside the top three *share* a
+place -- the module's own worked example is 900, 900, 800 giving places
+1, 1, 3 -- so that constraint would forbid the result the rules require,
+and would do it at the first real tie. Deriving a correct `place` would
+also mean changing the prize walk, which is the most sensitive code here;
+offered that as a separate slice, the owner chose the composite keys
+alone.
+
+**`tooling_probe` was not dropped.** It looked like tidying, and it is
+the only table the runtime role cannot read -- `test_runtime_db_role`
+uses exactly that to prove the role is limited. New tables are granted
+automatically (the same test shows it), so there is no replacement.
+Dropping it would have traded a real privilege check for neatness.
+
+What did land: `settlements` gained `account_id`, backfilled from the
+attempt it settles, and composite keys now tie settlements to attempts,
+ledger entries to settlements, attempts to assignments and tie-break
+seats to attempts -- each on `(id, account_id)`, so the pair is checked
+rather than the id alone. Two redundant indexes went: plain btrees on
+columns that each already carry a UNIQUE index, which answers every
+lookup the plain one would.
+
+**The constraint found crossed data on its first run, in the test
+fixtures.** `_make_attempt(account_id=...)` in
+`test_db_attempts_answers_schema` created its assignment without passing
+the account through, so an attempt for one player was being linked to
+another player's assignment. The database had always accepted it: the old
+keys said "this assignment exists" and "this account exists", and both
+were true. Sixteen other failures were mechanical -- inserts that did not
+know about the new column, now filling it from the attempt in SQL so a
+test cannot write a divergent account even by accident.
+
+Not done: **step 4, the deployment**. The migration has run against the
+scratch database only. On the staging database it runs through the
+guarded path in runbook §1d, which now needs `--confirm
+database@host:port`.
+
 ### Task 20: Resource locks + Bicep lint in CI — `OPS`
 
 - Modify: `infra/azure/container-apps-app.bicep` — `Microsoft.Authorization/locks@2020-05-01` `CanNotDelete` locks referencing the pre-existing PG server / App Insights / Log Analytics via `existing` resource references (they are outside this template's lifecycle; the lock belongs here precisely because nothing else manages them).

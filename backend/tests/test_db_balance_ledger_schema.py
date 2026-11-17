@@ -100,10 +100,10 @@ class BalanceLedgerTests(unittest.TestCase):
         attempt_id = self._make_attempt(account_id, season_id)
         row = migrate.fetch_one(
             self.conn,
-            "INSERT INTO settlements (attempt_id, season_id, raw_score,"
+            "INSERT INTO settlements (attempt_id, account_id, season_id, raw_score,"
             " adjustment, final_outcome)"
-            " VALUES (%s, %s, %s, %s, %s) RETURNING attempt_id",
-            (attempt_id, season_id or self.season_id, raw_score, adjustment,
+            " VALUES (%s, (SELECT account_id FROM attempts WHERE id = %s), %s, %s, %s, %s) RETURNING attempt_id",
+            (attempt_id, attempt_id, season_id or self.season_id, raw_score, adjustment,
              final_outcome),
         )
         return row["attempt_id"]

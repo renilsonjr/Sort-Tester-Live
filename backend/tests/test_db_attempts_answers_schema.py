@@ -83,7 +83,14 @@ class AttemptsAnswersSchemaTests(unittest.TestCase):
             " VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s) RETURNING id",
             (
                 account_id or self.account_id,
-                assignment_id or self._make_assignment(mode=mode, season_id=season_id),
+                # the assignment must belong to the same account as the
+                # attempt: before the composite key existed this helper
+                # quietly gave another player's assignment away
+                assignment_id or self._make_assignment(
+                    account_id=account_id or self.account_id,
+                    mode=mode,
+                    season_id=season_id,
+                ),
                 mode,
                 state,
                 tiebreak_round,

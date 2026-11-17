@@ -153,9 +153,9 @@ class _SeedMixin:
     def _make_settlement(self, attempt_id, season_id):
         row = migrate.fetch_one(
             self.setup,
-            "INSERT INTO settlements (attempt_id, season_id, raw_score, adjustment,"
-            " final_outcome) VALUES (%s, %s, 0, 0, 'quit') RETURNING attempt_id",
-            (attempt_id, season_id),
+            "INSERT INTO settlements (attempt_id, account_id, season_id, raw_score, adjustment,"
+            " final_outcome) VALUES (%s, (SELECT account_id FROM attempts WHERE id = %s), %s, 0, 0, 'quit') RETURNING attempt_id",
+            (attempt_id, attempt_id, season_id),
         )
         self.setup.commit()
         return row["attempt_id"]
@@ -378,9 +378,10 @@ class ConcurrencyConstraintTests(_SeedMixin, unittest.TestCase):
         with self.assertRaises(migrate.IntegrityError):
             migrate.execute(
                 self.setup,
-                "INSERT INTO settlements (attempt_id, season_id, raw_score, adjustment,"
-                " final_outcome) VALUES (%s, %s, 0, 0, 'quit')",
-                (a["attempt_id"], a["season_id"]),
+                "INSERT INTO settlements (attempt_id, account_id, season_id, raw_score, adjustment,"
+                " final_outcome) VALUES (%s,"
+                " (SELECT account_id FROM attempts WHERE id = %s), %s, 0, 0, 'quit')",
+                (a["attempt_id"], a["attempt_id"], a["season_id"]),
             )
         self.setup.rollback()
 
