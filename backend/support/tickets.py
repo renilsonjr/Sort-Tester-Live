@@ -34,6 +34,14 @@ class TicketNotFoundError(Exception):
     """No such ticket."""
 
 
+# Ceilings on the two lists this module answers with. A player's own
+# tickets accumulate like their history; a review queue is worked front
+# to back, so a hundred of the oldest is what a reviewer can act on, and
+# more than that on one screen is not help.
+MAX_ROWS = 500
+MAX_REVIEW_ROWS = 100
+
+
 def open_ticket(conn, account_id, attempt_id, *, description=None):
     """Open a ticket for this account about one of its own attempts.
 
@@ -79,7 +87,7 @@ def tickets_for(conn, account_id) -> list[dict]:
         conn,
         "SELECT id, attempt_id, description, opened_at, closed_at, closed_outcome"
         " FROM support_tickets WHERE account_id = %s"
-        " ORDER BY opened_at DESC, id",
+        f" ORDER BY opened_at DESC, id LIMIT {MAX_ROWS}",
         (account_id,),
     )
 
@@ -133,7 +141,7 @@ def open_tickets_for_review(conn, admin_account_id) -> list[dict]:
         " FROM support_tickets t"
         " JOIN accounts ac ON ac.id = t.account_id"
         " WHERE t.closed_at IS NULL"
-        " ORDER BY t.opened_at, t.id",
+        f" ORDER BY t.opened_at, t.id LIMIT {MAX_REVIEW_ROWS}",
     )
     for row in rows:
         row["events"] = migrate.fetch_all(

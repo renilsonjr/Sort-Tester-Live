@@ -1450,9 +1450,18 @@ async function fillLeaderboard(panel) {
     : (board.points_final
       ? t('Points are final for this season. Prize places stay provisional until any tie-break quizzes are played.')
       : t('Standings update after each settled Ranked quiz, not once a day.'));
+  // The server sends a bounded number of rows. A player ranked past that
+  // cut is eligible and has a place, but no line of their own in the list,
+  // so the place is said in words rather than left for them to look for.
+  const youInList = board.rows.some((row) => row.you);
+  const placeLine = (!youInList && board.your_place)
+    ? `<p class="board-your-place">${esc(t('Your place'))}: <b>${board.your_place}</b>${
+        esc(t(' — beyond the rows shown above.'))}</p>`
+    : '';
   panel.innerHTML = `
     <p class="lab-intro">${esc(intro)}</p>
     <ol class="board">${rows}</ol>
+    ${placeLine}
     ${board.eligible ? '' : boardNotice(
       t('You are not in the standings'),
       t('Your points and badge count as usual and are on your profile. The competition is for Primary Sort on the Twilight shift, approved by the owner. Ask the owner if that should be you.'),

@@ -51,6 +51,11 @@ def qualifying_run_for(conn, attempt_id):
     return instability.qualifying_run(_counted_events(conn, attempt_id))
 
 
+# The review queue is worked oldest first, so the cap keeps the front of
+# the queue, which is the part a reviewer can act on.
+MAX_REVIEW_ROWS = 100
+
+
 def open_flags(conn) -> list[dict]:
     """Open flags, oldest first, with only the evidence a reviewer needs: the
     player's display name and tag, the run, and the attempt's connection
@@ -61,7 +66,8 @@ def open_flags(conn) -> list[dict]:
         " f.flagged_at FROM connection_flags f"
         " JOIN attempts a ON a.id = f.attempt_id"
         " JOIN accounts ac ON ac.id = a.account_id"
-        " WHERE f.closed_at IS NULL ORDER BY f.flagged_at, f.attempt_id",
+        f" WHERE f.closed_at IS NULL ORDER BY f.flagged_at, f.attempt_id"
+        f" LIMIT {MAX_REVIEW_ROWS}",
     )
     for row in rows:
         row["events"] = migrate.fetch_all(

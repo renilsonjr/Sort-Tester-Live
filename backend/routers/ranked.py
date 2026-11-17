@@ -32,6 +32,11 @@ router = APIRouter(prefix="/api/ranked", tags=["ranked"])
 
 CAPABILITY_HEADER = "X-Attempt-Capability"
 
+# How many leaderboard rows one response carries. A ceiling on the answer,
+# not pagination: there is no cursor, and the player's own place is worked
+# out before the cut so it survives it.
+STANDINGS_ROWS_SHOWN = 500
+
 _CLOCK = system_clock()
 _bank = None
 
@@ -547,7 +552,14 @@ def leaderboard(account: dict = Depends(_current_account), conn=Depends(get_db))
         }
     rows = ranked_standings.standings(conn, launch_fact.season_id)
     current = seasons.current_season_status(conn, _CLOCK.now())
+    # Worked out over the whole leaderboard, before the cap below, so a
+    # player past the cut still learns where they stand.
     place = ranked_standings.place_of(rows, account["id"])
+    # The cap lives here rather than in standings(), which the prize
+    # tie-break logic also calls: a LIMIT there would compute prizes from
+    # a truncated leaderboard -- harmless while there are fewer players
+    # than the cap, and invisible on the day there are not.
+    rows = rows[:STANDINGS_ROWS_SHOWN]
     season_row = migrate.fetch_one(
         conn, "SELECT prizes_final_at FROM seasons WHERE id = %s", (launch_fact.season_id,)
     )
