@@ -34,6 +34,17 @@ jobs:
   publish:
     name: Build and publish the app image
     runs-on: ubuntu-latest
+    # The run stops here and waits for the owner's approval, and only a ref
+    # the environment's branch policy allows may reach it at all (audit
+    # M-7). Anyone with write access can dispatch this workflow; without the
+    # gate that is enough to publish the image, which carries the Ranked
+    # question bank.
+    #
+    # The environment must already exist **with its protection rules**. A
+    # workflow naming an environment that does not exist makes GitHub create
+    # an unprotected one, and the gate would then approve everything while
+    # looking like a gate.
+    environment: publish
     timeout-minutes: 20
     permissions:
       contents: read
@@ -44,6 +55,19 @@ jobs:
       EXPECTED: ${{ inputs.expected_visibility }}
       CONFIRM: ${{ inputs.confirm_publish }}
     steps:
+      - name: Check the branch this run came from
+        env:
+          REF: ${{ github.ref }}
+        run: |
+          # Belt and braces beside the environment's branch policy (audit
+          # M-7): a policy is repository configuration, which can be widened
+          # by anyone with admin access and without a commit. This check
+          # lives in the file, so widening it leaves a diff to review.
+          case "$REF" in
+            refs/heads/main|refs/heads/codex/ranked-mode) ;;
+            *) echo "Publishing from $REF is not allowed. Nothing was published."; exit 1 ;;
+          esac
+
       - name: Check the confirmation
         run: |
           # Inputs reach the shell only through the environment, never spliced

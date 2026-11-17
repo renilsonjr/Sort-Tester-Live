@@ -423,6 +423,36 @@ Step 3 took a different route than written: no CA is baked into the image. Azure
 - Verify: dispatch from a disallowed branch is rejected; a dispatch from an allowed branch waits for approval; expected reviewers listed in the run.
 - Commit — `security: require publish environment approval and branch policy (audit M-7)`
 
+Task 8 applied — 2026-11-17: the `publish` environment exists on the
+repository with `renilsonjr` as a required reviewer and custom branch
+policies for `main` and `codex/ranked-mode` only. The owner chose to have it
+created through the API rather than the settings UI; the created rules were
+read back and matched.
+
+Order mattered, and the reason is worth keeping: a workflow naming an
+environment that does not exist makes GitHub create an **unprotected** one.
+Merging the workflow first would have produced a gate that approves
+everything while looking like a gate — worse than no gate, because it
+invites trust. So the environment and its rules were created first, and the
+workflow second.
+
+The in-file branch check is deliberately redundant beside the environment's
+branch policy. The policy is repository configuration: an admin can widen it
+in the settings UI, leaving no commit and no diff. The check in the workflow
+cannot be widened without a change someone can review. It also runs before
+the build and the login, so a refused ref never reaches a registry
+credential.
+
+`backend/tests/test_publish_workflow.py` guards the half that lives in the
+repository (5 tests). Both were mutation-checked: removing
+`environment: publish` fails, and turning the refusal into a warning fails.
+The half that lives in GitHub's settings cannot be tested from the
+repository, which is what the verification step below is for.
+
+Not yet done: the verification dispatch. Nothing has been published through
+the new gate, so "a disallowed branch is rejected" and "an allowed branch
+waits for approval" are designed and reviewed, not observed.
+
 ### Task 9: Secret scanning + dependency review + pip-audit (M-8) — `OPS`
 
 - Create: `.github/workflows/security-gates.yml` — on push/PR: gitleaks (action SHA-pinned); on PR: `actions/dependency-review` (SHA-pinned); a `pip-audit` job installing `pip-audit` and running `pip-audit -r backend/requirements-runtime.txt` (dev set too if desired; runtime first).
