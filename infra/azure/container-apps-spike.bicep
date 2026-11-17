@@ -23,11 +23,11 @@ var suffix = toLower(deploymentSuffix)
 param imageSha256 string
 
 var spikeTags = {
-  'project': 'sort-tester-live'
-  'environment': 'staging'
+  project: 'sort-tester-live'
+  environment: 'staging'
   'data-classification': 'fictional-only'
   'expires-on': '2027-10-09'
-  'purpose': 'api-only-container-apps-spike'
+  purpose: 'api-only-container-apps-spike'
 }
 
 resource spikeEnvironment 'Microsoft.App/managedEnvironments@2025-01-01' = {
