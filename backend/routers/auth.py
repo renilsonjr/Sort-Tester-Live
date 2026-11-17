@@ -151,6 +151,13 @@ def login(request: Request, response: Response, payload: LoginRequest):
         token, _ = result
         account = get_account_by_session(conn, token)
         conn.commit()
+    if account is None:
+        # the account can be deleted between creating the session and
+        # reading it back; indexing into None here made that a 500 and a
+        # traceback for what is simply an unauthenticated request
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized"
+        )
     response.set_cookie(
         key="sort_tester_session",
         value=token,

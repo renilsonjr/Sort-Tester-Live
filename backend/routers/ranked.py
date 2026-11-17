@@ -11,7 +11,7 @@ from typing import Literal
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from backend.auth import eligibility, reauth, recovery
 from backend.auth.deletion import purge_deleted_accounts
@@ -423,6 +423,7 @@ def _unprocessable(detail: str) -> HTTPException:
 
 @router.post("/season/launch", status_code=status.HTTP_201_CREATED)
 def launch_season(
+    request: Request,
     payload: LaunchRequest,
     account: dict = Depends(_current_account),
     conn=Depends(get_db),
@@ -432,6 +433,10 @@ def launch_season(
     the typed confirmation, so a stray or replayed request does nothing."""
     if not account["is_owner"]:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden")
+    # the most destructive action there is -- it voids unfinished attempts
+    # and resets every balance -- and the only owner action that did not
+    # ask for the login ID again. A session left open was enough.
+    _require_recent_reauth(request, conn)
     if payload.confirm != LAUNCH_CONFIRMATION:
         raise _unprocessable("Type LAUNCH to confirm")
     if payload.closes_at is not None and payload.closes_at.tzinfo is None:
@@ -930,7 +935,8 @@ def close_flag(
 
 class CreateTicketRequest(BaseModel):
     attempt_id: str
-    description: str | None = None
+    # unbounded free text is storage whose size someone else chooses
+    description: str | None = Field(default=None, max_length=2000)
 
 
 class CloseTicketRequest(BaseModel):

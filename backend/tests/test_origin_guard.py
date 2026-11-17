@@ -33,6 +33,11 @@ def client(dev_origins=None, app_origin=None):
         environment["SORT_TEST_DEV_ORIGINS"] = dev_origins
     if app_origin is not None:
         environment["SORT_TESTER_APP_ORIGIN"] = app_origin
+        if app_origin.startswith("https://"):
+            # serving an https origin without a Secure cookie now refuses to
+            # start (Task 16); these tests are about origins, so they meet
+            # that requirement rather than working around it
+            environment["SORT_TESTER_COOKIE_SECURE"] = "true"
     with patch.dict(os.environ, environment, clear=True):
         # An allowed write reaches a route that wants the database, which is
         # not configured here; let that surface as a response, not a raise.

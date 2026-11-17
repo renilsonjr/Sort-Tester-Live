@@ -107,7 +107,10 @@ def _require_reviewer(conn, admin_account_id):
     """
     row = migrate.fetch_one(
         conn,
-        "SELECT 1 AS ok FROM accounts WHERE id = %s AND is_owner = true",
+        # deletion is a timestamp, not a DELETE, so the row of a deleted
+        # owner still answers is_owner = true
+        "SELECT 1 AS ok FROM accounts"
+        " WHERE id = %s AND is_owner = true AND deleted_at IS NULL",
         (admin_account_id,),
     )
     if row is None:

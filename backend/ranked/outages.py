@@ -13,12 +13,34 @@ from backend.db import migrate
 from backend.ranked import engine, flags, settlement, tiebreaks
 
 
-def record_outage(conn, *, starts_at, ends_at, clock) -> int:
+class NotOwnerError(PermissionError):
+    """Raised when an account that is not the owner tries to record one."""
+
+
+def _require_owner(conn, acting_account_id) -> None:
+    row = migrate.fetch_one(
+        conn,
+        "SELECT 1 AS ok FROM accounts"
+        " WHERE id = %s AND is_owner = true AND deleted_at IS NULL",
+        (acting_account_id,),
+    )
+    if row is None:
+        raise NotOwnerError(acting_account_id)
+
+
+def record_outage(conn, *, acting_account_id, starts_at, ends_at, clock) -> int:
     """Save a confirmed outage and apply its consequences.
 
     Returns how many flags were removed for good: flags whose run overlapped
     the outage and whose attempt no longer qualifies without it.
+
+    The owner check lives **here**, not in whichever route eventually calls
+    this (audit L5). This function voids attempts and rewrites flags for
+    every account on the server; left as a bare primitive, it would be
+    correct only for as long as every future caller remembered. There is no
+    route today, which is exactly when the check is cheap to add.
     """
+    _require_owner(conn, acting_account_id)
     if ends_at < starts_at:
         raise ValueError("an outage cannot end before it starts")
     migrate.execute(
