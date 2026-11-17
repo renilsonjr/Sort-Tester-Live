@@ -735,6 +735,47 @@ database.
 - [ ] **Step 4: Deploy; verify** under a burst (`for i in $(seq 1 50); do curl -s localhost:8000/api/ranked/season/notice & done` locally, or staging) that response times stay flat and `pg_stat_activity` shows ≤ 8 app connections.
 - [ ] **Step 5: Commit** — `security: pooled connections with statement timeout for the runtime (audit M-5)`
 
+Task 5 of this task's own list is the deploy; steps 1-3 and 5 are done.
+
+Task 14 applied — 2026-11-17: `backend/db/pool.py`, both routers'
+`_db_connection` on it, and `psycopg-pool==3.3.3` pinned in both manifests
+(its only dependency, typing_extensions, was already pinned at the same
+version).
+
+**Divergence from this plan, owner decision 2026-11-17.** The interface
+above specified a checkout that commits on clean exit. It does not.
+`psycopg_pool`'s own `pool.connection()` helper does exactly that, which
+is why this module borrows and returns by hand instead. The reason is
+that committing on exit silently changes what every route means: today a
+route that writes and does not commit discards the write, and the H-1 fix
+depends on a commit being something a route *does*. A route that relied
+on the discard would have started writing with no test failing. The
+explicit commits and Task 1's guards stay as they are.
+
+The timeout is part of the DSN rather than a statement after checkout.
+Set per connection it is one more thing to forget, and a connection that
+skipped it would look identical to one that did not. The test asks the
+session what it will enforce instead of checking what was configured.
+
+**A health check on checkout was added, which this plan did not ask for,
+and it turned out to be load-bearing.** With it removed, two router tests
+fail: the scratch database is recreated between test classes and pooled
+connections then point at a database that no longer exists. The same
+shape exists in production -- a restarted database, a dropped idle
+connection, a blip to the private endpoint -- and without the check the
+first request to borrow a dead connection is the one that pays.
+
+Its cost is measured, not estimated: the full suite went from 181s to
+389s. That ratio is an artefact of the setting. Each test makes many
+requests against a local Postgres where every query is a fraction of a
+millisecond, so one extra round trip dominates; against the private
+endpoint it is one round trip on a request that already makes several.
+
+Not done: **step 4, the burst verification**. Nothing has been deployed,
+and `pg_stat_activity` has not been watched showing <= 8 app connections
+under load. Until that runs, the cap is a configured number rather than
+an observed one.
+
 ### Task 15: Runbook secrets off the CLI + docs hygiene (M-6 + L3) — `OPS`
 
 - Modify: `.gitignore` — add `infra/azure/*.parameters*.json`.

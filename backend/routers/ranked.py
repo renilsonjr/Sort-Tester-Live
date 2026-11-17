@@ -16,7 +16,7 @@ from pydantic import BaseModel
 from backend.auth import eligibility, reauth, recovery
 from backend.auth.deletion import purge_deleted_accounts
 from backend.auth.service import get_account_by_session
-from backend.db import migrate, settings
+from backend.db import migrate, pool, settings
 from backend.ranked import capability, engine, launch, season_close, seasons, settlement
 from backend.ranked import standings as ranked_standings
 from backend.ranked import tiebreaks as ranked_tiebreaks
@@ -45,11 +45,16 @@ def _reviewed_bank():
 
 @contextmanager
 def _db_connection():
-    conn = migrate.connect(settings.app_database_url())
-    try:
+    """One pooled connection for this request (audit M-5).
+
+    Opening a connection per request cost a connect to Postgres each time
+    and had no ceiling; the pool reuses a capped set and makes a burst
+    wait. Commits are still the caller's own: see backend/db/pool.py for
+    why that was kept rather than folded into the checkout.
+    """
+    pool.init_pool(settings.app_database_url())
+    with pool.checkout() as conn:
         yield conn
-    finally:
-        conn.close()
 
 
 def get_db():
