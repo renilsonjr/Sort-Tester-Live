@@ -559,7 +559,13 @@ those before deploying rather than after.
 5. One active revision, `ca-sort-app-stg--0000002`, `RunningAtMaxScale`,
    image on the ACR host. `/health` 200, `/api/ranked/season/notice` 200
    with real JSON, so the app still reaches the private database.
-6. Parameters file shredded; the GHCR token revoked.
+6. The GHCR token was revoked, which is what closes the finding.
+   `shred -u ~/app-params.json` then reported the file missing: Cloud Shell
+   had recycled the container, and a file written outside `~/clouddrive`
+   does not always survive that. The right outcome by the wrong route, so
+   write the parameters file under `~/clouddrive` or shred it in the same
+   session as the deployment, and check with `grep -rl "postgresql://" ~`
+   rather than trusting that a failed `shred` means the secret is gone.
 
 Note on rollback: only one revision exists at a time here, so "activate the
 previous revision" is not available. A failed pull is recovered by
