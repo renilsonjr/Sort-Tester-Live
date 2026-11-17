@@ -449,9 +449,27 @@ repository (5 tests). Both were mutation-checked: removing
 The half that lives in GitHub's settings cannot be tested from the
 repository, which is what the verification step below is for.
 
-Not yet done: the verification dispatch. Nothing has been published through
-the new gate, so "a disallowed branch is rejected" and "an allowed branch
-waits for approval" are designed and reviewed, not observed.
+Task 8 verified — 2026-11-17, after PR #178 merged. Both dispatches were run
+and nothing was published.
+
+From a branch outside the policy (a throwaway cut from `codex/ranked-mode`,
+deleted afterwards), run `44121891487` ended in `failure` with **zero steps
+executed** and no job log. The environment's branch policy refuses before
+the job starts, so on a disallowed ref nothing runs at all -- not the branch
+check, not the build, not the registry login. The in-file check is therefore
+a second line and never the first, which is what it was meant to be.
+
+From `codex/ranked-mode`, run `44122057446` went to `waiting`, not
+`in_progress`. Its pending deployment named environment `publish`, reviewer
+`renilsonjr`, wait timer 0. It was cancelled without approving, so no image
+was built or pushed.
+
+Note for whoever repeats this: `workflow_dispatch` reads the workflow from
+the ref it is dispatched from, so the change must be merged before the
+disallowed-branch test, and that branch must still exist -- GitHub deletes
+the PR branch on merge.
+
+Task 8 is complete.
 
 ### Task 9: Secret scanning + dependency review + pip-audit (M-8) — `OPS`
 
