@@ -13,8 +13,14 @@
 !backend/
 !backend/**
 
-# Never in the image, even if present locally
+# Never in the image, even if present locally (audit L4). `COPY backend`
+# takes the whole directory, so anything not excluded here ships.
 backend/tests
+backend/tests/**
+# The development manifest. The image installs requirements-runtime.txt and
+# has no use for this one; shipped, it is a printed list of every package
+# and version the project uses, handed to anyone who pulls the image.
+backend/requirements.txt
 backend/.venv
 **/__pycache__
 **/*.py[cod]

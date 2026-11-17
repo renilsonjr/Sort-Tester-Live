@@ -582,6 +582,22 @@ commits, ~7.73 MB, no leaks**. Set against the first run's "1 commit,
 ~12 KB", that is the measure of what the gate was worth before and is
 worth now.
 
+Non-provider patterns are **not available** on this repository — 2026-11-17.
+The REST API accepts a PATCH enabling them and reports success, and the
+value stays `disabled`; the repository's own security page has no such
+toggle. The likeliest reason is that generic-secret detection belongs to
+the paid Secret Protection product, while a public repository gets
+partner-pattern detection for free. Recorded as observed, not as a billing
+claim: what is certain is that the switch is absent and the API's success
+response meant nothing.
+
+The gap is narrower than it looks, because gitleaks' `generic-api-key` is
+generic-secret detection and runs on every push and pull request here --
+that is the rule that produced all of today's findings. What is lost is
+*when*: GitHub's push protection refuses the push, while gitleaks reports
+after the commit has reached a public repository. For a database URL
+committed by accident, those few minutes are the whole difference.
+
 Still not done: the push-protection test with a fake key on a scratch
 branch.
 
@@ -592,6 +608,45 @@ branch.
 - Modify: `infra/azure/app.Dockerfile.dockerignore:13-24` — re-ignore `backend/requirements.txt` and `backend/tests/**` so only the runtime manifest and app code ship in the app image (audit L4).
 - Verify: spike workflow builds and its `/health` probe passes; Trivy step still gates HIGH/CRITICAL; digest recorded in the workflow file.
 - Commit — `security: digest-pinned CI images, spike image on runtime deps only (audit M-9)`
+
+Task 10 applied — 2026-11-17: the two tagged images CI runs are now pinned
+by digest, the spike image installs the runtime set, and the development
+manifest no longer ships in the app image.
+
+`postgres:18-alpine` → `postgres@sha256:b6972e11…` and
+`aquasec/trivy:0.76.2` → `aquasec/trivy@sha256:8f6bb947…`. The two are
+worth different amounts. A moved Postgres tag means tests failing with no
+commit to explain them, which costs a day. The Trivy container is handed
+`/var/run/docker.sock`, so whatever that tag resolves to runs with control
+of the daemon that builds and holds our images -- there the tag is the
+trust boundary. The version is kept in a comment beside each digest,
+because a digest says nothing about which release it is.
+
+Note the limit of this: Dependabot does not update a service image or a
+`docker run` argument, so these move only when a person moves them. A
+stale pin a human can see is still better than a fresh one nobody chose,
+but it is a thing to revisit rather than a thing that maintains itself.
+
+The spike image installed `requirements.txt` -- the whole development
+environment -- to serve a single `/health` route, and then carried two
+pinned upgrades (`setuptools`, `msgpack`) to patch findings in packages it
+never imported. On `requirements-runtime.txt` both upgrades became
+unnecessary and were deleted with what needed them.
+
+For the app image (audit L4), `COPY backend` takes the whole directory, so
+`backend/requirements.txt` was shipping: a printed list of every package
+and version the project uses, handed to anyone who pulls the image. Now
+excluded, with the workflow's existing "unexpected paths" check extended
+to observe its absence rather than trusting the ignore file.
+
+`backend/tests/test_ci_images.py` guards all of it, including a test that
+fails on *any* image named by tag in that workflow, so the next one added
+is caught rather than noticed. Mutation-checked: restoring the Postgres
+tag fails two guards.
+
+Not verified here: the spike workflow's own build and `/health` probe.
+There is no Docker on the machine this was written on, so the image was
+not built; the workflow run is the verification.
 
 ---
 
