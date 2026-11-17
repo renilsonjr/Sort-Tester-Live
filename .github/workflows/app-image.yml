@@ -18,7 +18,13 @@ jobs:
     timeout-minutes: 20
     services:
       postgres:
-        image: postgres:18-alpine
+        # Pinned by digest, not by tag (audit M-9). `18-alpine` is a moving
+        # name: the same workflow file can run different database code on
+        # different days, which is how a test starts failing with no commit
+        # to explain it. Dependabot's github-actions ecosystem does not
+        # update a service image, so this moves when someone moves it --
+        # read `docker manifest inspect postgres:18-alpine` to get the next.
+        image: postgres@sha256:b6972e1115a4ff8eba5d7f7d19184926d1e16d7d1136ae1e1a7ebf286da0f015
         env:
           POSTGRES_USER: ci
           POSTGRES_PASSWORD: ci-only-password
@@ -58,7 +64,8 @@ jobs:
               [ -e "$path" ] || { echo "Missing in image: $path"; missing=1; }
             done
             for path in /app/.git /app/.github /app/backend/tests /app/backend/.venv /app/tests /app/dev \
-                        /app/docs /app/infra /app/mockups /app/tools /app/README.md /tmp/requirements.txt; do
+                        /app/docs /app/infra /app/mockups /app/tools /app/README.md /tmp/requirements.txt \
+                        /app/backend/requirements.txt; do
               [ -e "$path" ] && { echo "Unexpected in image: $path"; missing=1; }
             done
             found=$(find /app \( -name ".env" -o -name ".env.*" -o -name "*.pem" -o -name "*.key" -o -name "__pycache__" \) -print)
@@ -196,6 +203,11 @@ jobs:
         # HIGH and CRITICAL findings, so a new one now fails the build.
         run: |
           set -o pipefail  # without it, tee would hide a failing scan
-          docker run --rm -v /var/run/docker.sock:/var/run/docker.sock aquasec/trivy:0.76.2 \
+          # Digest-pinned (audit M-9): this container is handed the Docker
+          # socket, so whatever `0.76.2` resolves to runs with control of
+          # the daemon. The tag is kept in the comment because the digest
+          # alone says nothing about which version it is: 0.76.2.
+          docker run --rm -v /var/run/docker.sock:/var/run/docker.sock \
+            aquasec/trivy@sha256:8f6bb947dbc528902e11f2f5be52f7b519f6a39d5d148f41166f2040499768fb \
             image --no-progress --severity HIGH,CRITICAL --exit-code 1 "$IMAGE" | tee /tmp/trivy.txt
           { echo '### Trivy (HIGH/CRITICAL, blocking)'; echo '```'; tail -n 40 /tmp/trivy.txt; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
