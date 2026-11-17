@@ -536,6 +536,37 @@ Delete the file when the deployment is done: `shred -u ~/app-params.json`.
 Record the returned `appUrl`. A deployment that returns successfully is not
 proof that the app runs; step 6 is.
 
+On a **re**deployment, pass every parameter Azure already holds, not only the
+ones you are changing. A parameter left out of the file falls back to the
+template's default, which silently undoes whatever is configured: omitting
+`appOrigin` reset it from the app's address to empty. The what-if names each
+such reset as a `-` line under `properties.template.containers`, so read
+those before deploying rather than after.
+
+### 5b applied — 2026-11-17 (the identity pull, audit H-5)
+
+1. `az acr import` copied the running digest `b60d5a8e…` from GHCR into the
+   registry as `sort-tester-live-app:stg-20261117`. `list-metadata` showed
+   that digest tagged, plus the index's two untagged platform manifests.
+2. `az role assignment list` on the registry scope printed `AcrPull` for the
+   identity's clientId, from the Task 4 bootstrap. Nothing had to be granted.
+3. What-if: `2 to modify`, zero Delete, zero Replace. `username` and
+   `passwordSecretRef` out, `identity` in, `server` `ghcr.io` →
+   `acrsortstgzp6nl6c3wplfy.azurecr.io`, the `registry-password` secret
+   removed, the same digest on both sides. The environment was not touched,
+   so **the address did not change** — unlike §5a.
+4. `sort-tester-app-h5` succeeded in 1m40.
+5. One active revision, `ca-sort-app-stg--0000002`, `RunningAtMaxScale`,
+   image on the ACR host. `/health` 200, `/api/ranked/season/notice` 200
+   with real JSON, so the app still reaches the private database.
+6. Parameters file shredded; the GHCR token revoked.
+
+Note on rollback: only one revision exists at a time here, so "activate the
+previous revision" is not available. A failed pull is recovered by
+redeploying with `registryServer=ghcr.io` and the GHCR parameters of the
+previous template — which is why §3 says to revoke the token *after* step 6
+and not before.
+
 ## 6. Check what was deployed
 
 A successful command is not a working app. With `URL` set to `appUrl`:
