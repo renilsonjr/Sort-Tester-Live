@@ -694,9 +694,15 @@ and the write role is still in place, then check `/health` and
 Once both are 200 after the restart:
 
 ```sh
-az role assignment delete --assignee-object-id "$ME" --assignee-principal-type User \
+az role assignment delete --assignee-object-id "$ME" \
   --role "Key Vault Secrets Officer" --scope "$VAULT"
 ```
+
+`delete` takes no `--assignee-principal-type`; only `create` does. Passing it
+fails with `unrecognized arguments`, and the role stays in place.
+
+Chain the confirmation with `&&`, not `;`: a `;` runs the "removed" message
+even when the delete failed.
 
 Rollback: redeploy passing `databaseUrl` and leaving `databaseUrlSecretUri`
 empty. That is the whole reason the inline path is still in the template, and
