@@ -561,11 +561,14 @@ those before deploying rather than after.
    with real JSON, so the app still reaches the private database.
 6. The GHCR token was revoked, which is what closes the finding.
    `shred -u ~/app-params.json` then reported the file missing: Cloud Shell
-   had recycled the container, and a file written outside `~/clouddrive`
-   does not always survive that. The right outcome by the wrong route, so
-   write the parameters file under `~/clouddrive` or shred it in the same
-   session as the deployment, and check with `grep -rl "postgresql://" ~`
-   rather than trusting that a failed `shred` means the secret is gone.
+   had recycled the container and taken the file with it. The right outcome
+   by the wrong route, so write the file and shred it inside one command
+   chain, and check with `grep -rl "postgresql://" ~` rather than trusting
+   that a failed `shred` means the secret is gone.
+
+   This Cloud Shell has **no storage mounted**: there is no `~/clouddrive`,
+   and the whole home directory, the git clone included, is gone by the next
+   session. Do not plan a step around a file surviving.
 
 Note on rollback: only one revision exists at a time here, so "activate the
 previous revision" is not available. A failed pull is recovered by
@@ -609,26 +612,22 @@ right after this is usually that delay, not a wrong grant.
 **Step 3 — write the secret, without it reaching the shell history.**
 `--value` would put the password in history and in `ps`; `--file` does not:
 
+Write it, store it and shred it in **one** command chain, so the file exists
+for a second or two and no recycled container can carry it away (§5b):
+
 ```sh
-read -rsp "Database password: " PGPW; echo; echo "length: ${#PGPW}"
-umask 077
-PGPW="$PGPW" python3 - <<'EOF'
-import os, urllib.parse
-pw = urllib.parse.quote(os.environ["PGPW"], safe="")
-dsn = (f"postgresql://<user>:{pw}@<server>.postgres.database.azure.com"
-       ":5432/sort_tester_app?sslmode=require")
-with open(os.path.expanduser("~/clouddrive/dsn.txt"), "w") as f:
-    f.write(dsn)
-EOF
+read -rsp "Database password: " PGPW; echo "length: ${#PGPW}"; umask 077
+PGPW="$PGPW" python3 -c 'import os,urllib.parse; pw=urllib.parse.quote(os.environ["PGPW"],safe=""); open(os.path.expanduser("~/dsn.txt"),"w").write(f"postgresql://<user>:{pw}@<server>.postgres.database.azure.com:5432/sort_tester_app?sslmode=require")'
 unset PGPW
 az keyvault secret set --vault-name kv-sortstg-<suffix> --name database-url \
-  --file ~/clouddrive/dsn.txt --query id -o tsv
-shred -u ~/clouddrive/dsn.txt
+  --file ~/dsn.txt --query id -o tsv
+shred -u ~/dsn.txt
 ```
 
-Write the file under `~/clouddrive`: §5b's cleanup failed because Cloud Shell
-recycled the container and took the file with it, which is the right outcome
-reached by luck rather than by the step.
+**Check the printed length before letting the rest run.** The password has
+been mistyped twice here, and both times the length said so: a wrong one
+written to the vault leaves an app that cannot start, with nothing in the
+error naming the password.
 
 The command prints the **versioned** id. The template wants the
 **versionless** URI, so that a rotated secret is picked up without a
@@ -657,31 +656,53 @@ Azure already holds (§5b's note), `databaseUrlSecretUri` instead of
 az deployment group what-if \
   --resource-group rg-sort-tester-staging \
   --template-file infra/azure/container-apps-app.bicep \
-  --parameters @<a parameters file, 0600, under ~/clouddrive>
+  --parameters @<a parameters file; it holds no secret now, which is the point>
 ```
 
 Read the `properties.configuration.secrets` block before deploying. It must
-show the `value` going and `keyVaultUrl` plus `identity` arriving. If it
-shows the secret being removed with nothing taking its place, both
-parameters are empty — stop, because the app would start with no database
-URL and exit on its own configuration check.
+show `keyVaultUrl` and `identity` arriving. It will **not** show the old
+`value` leaving: what-if does not render a secure value's removal, so the
+proof that it is gone comes from step 6 and not from here. If nothing at all
+arrives under `secrets`, both parameters are empty — stop, because the app
+would start with no database URL and exit on its own configuration check.
 
-**Step 6 — verify, then take the write role back:**
+**Step 6 — verify, restart, then take the write role back:**
 
 ```sh
 az containerapp show -n ca-sort-app-stg -g rg-sort-tester-staging \
   --query "properties.configuration.secrets" -o json
 ```
 
-No `value` may appear, only `keyVaultUrl` and `identity`. Then the app's own
-answers, as in §6 — a configuration that looks right proves nothing about an
-app that cannot read the vault. Once `/health` and
-`/api/ranked/season/notice` are 200:
+No `value` may appear, only `keyVaultUrl` and `identity`.
+
+Then **restart the revision**, and only afterwards trust the app's answers:
 
 ```sh
-az role assignment delete --assignee-object-id "$ME" --assignee-principal-type User \
+az containerapp revision restart -n ca-sort-app-stg -g rg-sort-tester-staging \
+  --revision <the active revision>
+```
+
+Changing where a secret comes from does **not** create a new revision, and
+the secret is injected when the container starts. So the process answering
+right after the deployment is still the one that started with the old
+injected value: its 200s say nothing about the vault. Without this restart a
+broken vault path stays hidden until the next scale event or deployment,
+whenever that happens to be. Restart on purpose, while someone is watching
+and the write role is still in place, then check `/health` and
+`/api/ranked/season/notice` as in §6.
+
+Once both are 200 after the restart:
+
+```sh
+az role assignment delete --assignee-object-id "$ME" \
   --role "Key Vault Secrets Officer" --scope "$VAULT"
 ```
+
+`delete` takes no `--assignee-principal-type`; only `create` does. Passing it
+fails with `unrecognized arguments`, and the role stays in place.
+
+Chain the confirmation with `&&`, not `;`: a `;` runs the "removed" message
+even when the delete failed.
 
 Rollback: redeploy passing `databaseUrl` and leaving `databaseUrlSecretUri`
 empty. That is the whole reason the inline path is still in the template, and
