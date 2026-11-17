@@ -118,6 +118,50 @@ jobs:
           # formality. Flag them for a human rather than refusing outright.
           comment-summary-in-pr: on-failure
 
+  templates:
+    name: Bicep templates
+    # A template that does not compile is found when someone deploys it,
+    # which is the worst moment: the person is mid-change, often with a
+    # window booked. This compiles every one of them on every change.
+    #
+    # It globs rather than listing files, so a template added later is
+    # covered without anyone remembering to add it here -- the way the
+    # last two were nearly missed.
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Compile every template, and treat a warning as a failure
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+          templates=(infra/azure/*.bicep)
+          if [ ${#templates[@]} -eq 0 ]; then
+            echo "No templates found: this job is looking in the wrong place."
+            exit 1
+          fi
+          failed=0
+          for template in "${templates[@]}"; do
+            echo "::group::$template"
+            # Bicep's linter runs as part of build and reports warnings
+            # without failing. A warning here is the linter saying
+            # something is wrong and being ignored, so stderr that
+            # mentions one fails the job.
+            if ! az bicep build --file "$template" --stdout >/dev/null 2>/tmp/bicep.err; then
+              echo "did not compile:"; cat /tmp/bicep.err; failed=1
+            elif grep -qiE "warning|error" /tmp/bicep.err; then
+              echo "compiled with complaints:"; cat /tmp/bicep.err; failed=1
+            else
+              echo "ok"
+            fi
+            echo "::endgroup::"
+          done
+          exit $failed
+
   vulnerabilities:
     name: pip-audit
     runs-on: ubuntu-latest
