@@ -228,7 +228,7 @@ no-op upgrade-at-head test; no test migration was applied to staging.
 - Test: `backend/tests/test_azure_container_app.py` (update: no registry password param; identity present)
 
 - [x] **Step 1: Create the registry** — `az acr create -g rg-sort-tester-staging -n <name> --sku Standard` (uses the verified student free allowance; recheck its quota and expiry first) (name is not a secret; track it in the private inventory, not the runbook).
-- [ ] **Step 2: Publish path** — extend the publish workflow to push the same digest to ACR (repo settings: add an `ACR` environment or use the existing publish gate from Task 8; authenticate with a short-lived token via `az acr login` in the job, not a stored PAT). Manual interim: `az acr import --source ghcr.io/renilsonjr/sort-tester-live-app@sha256:<digest> ...`.
+- [x] **Step 2: Publish path** — extend the publish workflow to push the same digest to ACR (repo settings: add an `ACR` environment or use the existing publish gate from Task 8; authenticate with a short-lived token via `az acr login` in the job, not a stored PAT). Manual interim: `az acr import --source ghcr.io/renilsonjr/sort-tester-live-app@sha256:<digest> ...`.
 - [x] **Step 3: Bicep changes** — after the identity bootstrap is approved: attach the dedicated user-assigned runtime identity to the container app and use its resource ID in the registry entry; remove both registry params and the secret entry.
 - [x] **Step 4: Bootstrap runtime read access** — after explicit approval of the identity and both scopes, register the ManagedIdentity provider if needed and deploy `runtime-identity.bicep`. Its resource-scoped AcrPull and Key Vault Secrets User assignments reference the new identity principal. Verify the resolved principal and exact direct assignments before later app association. No publisher or subscription-wide role belongs to the runtime.
 - [ ] **Step 5: Move the database secret into Key Vault (audit §3 P0-1)** — the dedicated vault already exists. Prepare a separately reviewed operator write path and transfer the limited-role DSN through an in-memory or protected-file method, never a command argument. The identity bootstrap grants read access only; it does not grant an operator secret-write access. Verify its existing vault read binding rather than adding a duplicate. In the app Bicep, replace the inline secret value with the Key Vault URI and runtime identity reference, then remove the `databaseUrl` parameter only after the tested transition/rollback path is ready.
@@ -305,6 +305,42 @@ Steps 3 and 7 are newly complete. Step 2 is **not**: the publish workflow
 still does not push to the registry, so every deployment needs the manual
 import. Step 5 (Key Vault for the database secret) is untouched. Step 6
 closes with the GHCR token's revocation, which is the finding itself.
+
+Task 5 publish path — 2026-11-17, **code only; the Azure half waits**.
+
+The manual copy needed a GitHub token with `read:packages`, which is
+account-scoped: it reads every private package the account can see. That
+is the shape of H-5, closed for the running app this morning. Leaving it
+on the path that *puts* images in the registry would have shut the door
+and left the window.
+
+The publish workflow now pushes the image it already built to the
+registry as well, signing in to Azure with **no stored secret**: GitHub
+mints a token for that run, a federated credential in Azure names one
+repository and one branch, and the answer is an access token good for
+minutes. Nothing to leak, nothing to rotate. Storing a service-principal
+secret in GitHub instead would have been the same finding moved rather
+than fixed.
+
+Where the rule lives matters: the federated credential matches one
+subject exactly, so another branch, another repository or a pull request
+from a fork does not match, and editing the workflow does not change
+that. The grant is AcrPush on one registry and nothing else -- not
+AcrPull as well, since pulling is the app's job with its own identity.
+
+The image is tagged and pushed, never rebuilt, and the run fails if the
+two registries end up with different digests for one commit.
+
+A bug found in my own work here: the digest was read by position in
+`RepoDigests`, and once an image carries two names there are two of them
+-- so the check could compare GHCR's digest with itself and pass without
+checking anything. It now selects by registry host, and a guard fails if
+the positional form comes back.
+
+Not done, and it is the half that makes this real: the Azure setup
+(`publish-identity.bicep`) and the four repository *variables*. Runbook
+§3a has the steps; §3b keeps the manual copy until then. Once it runs,
+**the GitHub token can be revoked for good**.
 
 Task 5 vault secret applied — 2026-11-17: PR #176. The database URL is in
 `kv-sortstg-…` and the app's own configuration holds only its versionless
