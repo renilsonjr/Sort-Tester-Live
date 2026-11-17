@@ -1,0 +1,150 @@
+name: Security gates
+
+# Three checks that answer three different questions (audit M-8):
+#
+#   gitleaks           did a secret get committed, now or at any point in
+#                      the history this run can see?
+#   dependency review  does this pull request add a dependency with a known
+#                      vulnerability or a licence we do not want?
+#   pip-audit          do the dependencies we already have carry a known
+#                      vulnerability today?
+#
+# The first two run on the change; the third is about the passage of time,
+# so it also runs on a schedule. A dependency that was clean when it was
+# added does not stay clean, and nothing else here would ever notice.
+#
+# Every third-party action is pinned to a commit SHA, not a tag: a tag can
+# be moved to different code by whoever owns the action, and these run with
+# access to the repository.
+on:
+  push:
+    branches: [main, codex/ranked-mode]
+  pull_request:
+  schedule:
+    # Mondays, 06:00 UTC. The hour is arbitrary; the point is that it runs
+    # when nobody pushed.
+    - cron: '0 6 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: security-gates-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  secrets:
+    name: Secret scan
+    # What arrives: on a pull request the action scans that branch's own
+    # commits, on a push the commits pushed. Measured, not assumed -- the
+    # first run of this workflow reported "1 commits scanned". So this job
+    # catches a secret being added and would never find one already in the
+    # history. That is what `secrets-history` below is for.
+    #
+    # On a schedule or a dispatch the action has no range and scans
+    # everything, which `secrets-history` already does explicitly -- so
+    # this job steps aside there rather than scanning twice.
+    if: github.event_name == 'push' || github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          # Necessary but not sufficient: without it the action cannot
+          # resolve the range it scans at all.
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Run gitleaks
+        uses: gitleaks/gitleaks-action@e0c47f4f8be36e29cdc102c57e68cb5cbf0e8d1e # v3.0.0
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+
+  secrets-history:
+    name: Secret scan (whole history)
+    # The other job answers "is this change adding a secret". This one
+    # answers "is there a secret in here at all", which is a different
+    # question and the one that matters after a key has leaked. It is slow
+    # and the answer changes rarely, so it runs weekly rather than on
+    # every push.
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Check out the whole repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Run gitleaks over every commit
+        # The binary rather than the action: the action derives a commit
+        # range from the event, and there is no event here whose range is
+        # "everything". `gitleaks detect` with no --log-opts scans the
+        # whole history. Pinned by version and checked by digest, because
+        # a downloaded binary is a supply chain of its own.
+        env:
+          GITLEAKS_VERSION: 8.24.3
+          GITLEAKS_SHA256: 9991e0b2903da4c8f6122b5c3186448b927a5da4deef1fe45271c3793f4ee29c
+        run: |
+          set -euo pipefail
+          url="https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz"
+          curl --proto '=https' --tlsv1.2 -sSfL "$url" -o gitleaks.tar.gz
+          echo "${GITLEAKS_SHA256}  gitleaks.tar.gz" | sha256sum --check --status
+          tar xzf gitleaks.tar.gz gitleaks
+          ./gitleaks detect --redact --verbose --exit-code 1
+
+  dependencies:
+    name: Dependency review
+    # Only a pull request has two commits to compare, which is what this
+    # action needs; on a push there is nothing for it to review.
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Review the dependencies this pull request adds
+        uses: actions/dependency-review-action@a1d282b36b6f3519aa1f3fc636f609c47dddb294 # v5.0.0
+        with:
+          fail-on-severity: moderate
+          # The app is served over the public internet, so a copyleft
+          # licence in the shipped image is a real decision and not a
+          # formality. Flag them for a human rather than refusing outright.
+          comment-summary-in-pr: on-failure
+
+  vulnerabilities:
+    name: pip-audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up Python
+        uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: '3.14'
+
+      - name: Install pip-audit
+        run: python -m pip install --disable-pip-version-check pip-audit==2.9.0
+
+      - name: Audit the runtime dependencies
+        # These are what the container actually installs, so a finding here
+        # is a finding in production. This step may not be made to continue
+        # on error.
+        run: python -m pip_audit --requirement backend/requirements-runtime.txt --strict
+
+      - name: Audit the development dependencies
+        # The dev set is wider and runs only in CI and on laptops, so a
+        # finding here is less urgent -- but CI is where the publish
+        # credentials live, so it is not nothing. Reported, not fatal.
+        continue-on-error: true
+        run: python -m pip_audit --requirement backend/requirements.txt

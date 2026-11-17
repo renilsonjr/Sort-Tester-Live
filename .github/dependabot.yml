@@ -1,0 +1,41 @@
+# Dependabot keeps the two sets of pins current (audit M-8).
+#
+# Both ecosystems matter for different reasons. `pip` is the code the app
+# and its tests run. `github-actions` is the code CI runs with access to
+# the repository and to the publish credentials -- and because every action
+# here is pinned to a commit SHA, nothing updates those pins except this.
+# Without it the SHAs would quietly age into unpatched versions while
+# looking deliberate.
+version: 2
+updates:
+  - package-ecosystem: pip
+    directory: /backend
+    schedule:
+      interval: weekly
+      day: monday
+      time: '06:00'
+    open-pull-requests-limit: 5
+    labels:
+      - dependencies
+    commit-message:
+      prefix: 'deps'
+    groups:
+      # One pull request for the routine bumps, so they can be read and
+      # merged together; a major version still arrives on its own, because
+      # it deserves to be read on its own.
+      minor-and-patch:
+        update-types:
+          - minor
+          - patch
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: '06:00'
+    open-pull-requests-limit: 5
+    labels:
+      - dependencies
+    commit-message:
+      prefix: 'ci'
