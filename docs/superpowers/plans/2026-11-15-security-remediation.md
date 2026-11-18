@@ -1218,10 +1218,30 @@ resource creation. Normalising is worth it on its own: an uppercase
 letter was refused by Azure with an error naming the *resource*, which
 sends the reader looking in the wrong place.
 
-Still open: the `CanNotDelete` locks on the shared resources the app
-template does not own -- the database server, App Insights, Log
-Analytics. They belong in that template precisely because nothing else
-manages them.
+Still open: applying and verifying the `CanNotDelete` locks on the shared
+resources the app template does not own -- the database server, App
+Insights, Log Analytics.
+
+Task 20 preparation — 2026-11-18 (issue #196):
+[[../../../infra/azure/shared-resource-locks]] and its Bicep template
+declare exactly three resource-scoped `CanNotDelete` locks on typed
+`existing` resources. Real target names are required parameters from the
+private inventory, never defaults or committed values. The existing CI
+glob compiles the new template.
+
+**Implementation ruling:** use a standalone lock template rather than
+adding the locks to `container-apps-app.bicep` as proposed above. It keeps
+the preview/deployment to the three lock writes and avoids replaying app,
+network and secret defaults to protect resources outside that template's
+lifecycle. No resource-group/subscription lock, `ReadOnly` level, app
+redeployment, ingestion or grant change is included.
+
+Not done: owner-reviewed live what-if, owner deployment approval,
+deployment/read-back, app postchecks or a demonstrated delete refusal.
+The runbook does not attempt deletion of the staging database as a test;
+restore is still unverified (#13). Configuration read-back is distinct
+from observed deletion rejection, so those acceptance items stay open.
+No completion checkbox is changed by this preparation.
 
 ---
 
