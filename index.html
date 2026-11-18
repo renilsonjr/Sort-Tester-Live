@@ -667,8 +667,15 @@
   .lab-main .deckbtn .dname { font-size: 17px; font-weight: 900; }
   .lab-picker-heading { margin: 23px 0 11px; font-size: 20px; font-weight: 900; }
   .lab-main .primary, .lab-main .ghost, .primary, .ghost { border-radius: 14px; font-weight: 900; }
-  /* The library's primary action: gold with dark text, not a brown fill. */
-  .primary { background: var(--gold); color: var(--ink); border: 1px solid var(--gold-line); }
+  /* The library's primary action: gold with dark text, not a brown fill.
+     The gradient and the light edge come from the mockup's `.btn-primary`.
+     It stays opaque on purpose while the panels around it are frosted: an
+     action meant to be found cannot be made of the same material as the
+     surface behind it. */
+  .primary {
+    background: linear-gradient(135deg, var(--gold) 0%, #e5a720 100%);
+    color: var(--ink); border: 1px solid rgba(255, 255, 255, 0.5);
+  }
   .quiz-card, .quiz-feedback { color: var(--ink); }
   .quiz-card .quiz-avatar, .quiz-feedback .quiz-avatar { border-radius: 17px; }
   .quiz-actions .stopbtn { color: var(--accent); border-color: var(--line); font-family: inherit; }

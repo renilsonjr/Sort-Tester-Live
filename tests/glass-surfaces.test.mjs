@@ -106,12 +106,31 @@ test('the secondary button is glass', () => {
   assert.match(rule[0], /var\(--glass-surface-sub\)/);
 });
 
-test('the primary action stays solid, on purpose', () => {
+function primaryRules() {
+  // EVERY rule, not the first one. `.primary` is declared twice: an early
+  // block sets the shape and a later one sets the colour, and in CSS the
+  // later one wins. A guard that matched once inspected a declaration
+  // that no longer had any effect, and would have passed while the button
+  // was turned to glass further down the file.
+  return [...page.matchAll(/^\s*\.primary \{[^}]*\}/gm)].map((m) => m[0]);
+}
+
+test('no rule turns the primary action into glass', () => {
   // A call to action made of the same material as the panel behind it
-  // stops being a call to action. The mockup keeps `.btn-primary` solid
-  // too; this pins that decision so it is reversed deliberately or not
-  // at all.
-  const rule = page.match(/^\s*\.primary \{[^}]*\}/m);
-  assert.ok(rule, '.primary rule is missing');
-  assert.doesNotMatch(rule[0], /backdrop-filter|--glass-surface/);
+  // stops being a call to action. The mockup keeps `.btn-primary` opaque
+  // for the same reason.
+  const rules = primaryRules();
+  assert.ok(rules.length > 0, '.primary rule is missing');
+  for (const rule of rules) {
+    assert.doesNotMatch(rule, /backdrop-filter|--glass-surface/);
+  }
+});
+
+test('the rule that actually wins paints the gold gradient', () => {
+  // Checked on the last declaration, because that is the one the browser
+  // uses. The mockup's `.btn-primary` gradient with a light edge.
+  const rules = primaryRules();
+  const effective = rules[rules.length - 1];
+  assert.match(effective, /linear-gradient\(135deg, var\(--gold\)/);
+  assert.match(effective, /border: 1px solid rgba\(255, 255, 255/);
 });
