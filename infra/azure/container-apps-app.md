@@ -680,7 +680,7 @@ for a second or two and no recycled container can carry it away (§5b):
 
 ```sh
 read -rsp "Database password: " PGPW; echo "length: ${#PGPW}"; umask 077
-PGPW="$PGPW" python3 -c 'import os,urllib.parse; pw=urllib.parse.quote(os.environ["PGPW"],safe=""); open(os.path.expanduser("~/dsn.txt"),"w").write(f"postgresql://<user>:{pw}@<server>.postgres.database.azure.com:5432/sort_tester_app?sslmode=require")'
+PGPW="$PGPW" python3 -c 'import os,urllib.parse; pw=urllib.parse.quote(os.environ["PGPW"],safe=""); open(os.path.expanduser("~/dsn.txt"),"w").write(f"postgresql://sort_app:{pw}@<server>.postgres.database.azure.com:5432/sort_tester_app?sslmode=require")'
 unset PGPW
 az keyvault secret set --vault-name kv-sortstg-<suffix> --name database-url \
   --file ~/dsn.txt --query id -o tsv
@@ -691,6 +691,11 @@ shred -u ~/dsn.txt
 been mistyped twice here, and both times the length said so: a wrong one
 written to the vault leaves an app that cannot start, with nothing in the
 error naming the password.
+
+The role is spelled out rather than left as a placeholder. It was a
+placeholder once, and the value filled in was the migration owner's --
+the one account §1d says never to deploy as the runtime secret. See §9a
+before trusting that the running app is on `sort_app`.
 
 The command prints the **versioned** id. The template wants the
 **versionless** URI, so that a rotated secret is picked up without a
@@ -882,6 +887,162 @@ record, because the next person to open it will not guess it.
 Confirm both are gone and that **every pre-existing resource ID from step 0 is
 still there**. Do not delete the resource group. Record any cleanup failure
 and any charge that appears afterwards.
+
+## 9. Credentials, and how to rotate each one
+
+Four secrets exist in this deployment, and they are not the same kind of
+thing. Rotating one is routine; rotating another takes the app down if it
+is done in the wrong order. This section says which is which.
+
+Nothing here records a value. Values live in the password manager and in
+the vault.
+
+| What | Who holds it | Where it lives | Rotate |
+| --- | --- | --- | --- |
+| Postgres **admin** password | the owner | password manager only | every 90 days, and on any suspicion |
+| `sort_app` **runtime** password | the owner | password manager, and inside the vault secret | every 90 days |
+| Key Vault secret `database-url` | the app, via its identity | the vault | whenever either password above changes |
+| GHCR publish token | nobody, once §3a is done | — | revoke; do not rotate |
+
+The identity the app pulls and reads with has **no** secret: it is a
+managed identity, and that is the point of it. The same goes for CI once
+§3a is applied. A credential that does not exist cannot leak, and this
+table is shorter than it was this morning for that reason.
+
+### 9a. First, check which role the app is actually using
+
+**This is the first thing to run, before any rotation.** The app is
+supposed to connect as `sort_app`, which can read and write data but
+cannot create or alter tables (audit H-3, [[db-runtime-role]]). The
+secret written into the vault on 2026-11-17 was built with the
+**migration owner's** username instead, which is the one thing §1d's note
+says never to deploy as the runtime secret.
+
+Whether earlier deployments did the same is not known from the
+repository: the runbook shows `<user>` as a placeholder, so what was
+typed is not recorded anywhere.
+
+```sh
+az containerapp exec -n ca-sort-app-stg -g rg-sort-tester-staging \
+  --command "sh -c 'echo \$SORT_TESTER_DATABASE_URL | sed s/:[^:@]*@/:***@/'"
+```
+
+That prints the user without the password. If it names the admin rather
+than `sort_app`, the app is running with permission to rewrite its own
+schema and the migration bookkeeping, which is what H-3 closed. Fix it
+with 9b, using the `sort_app` password.
+
+The stronger proof is the one §4's evidence used on 2026-11-16: ask the
+app's own connection to create a table and watch it be refused. A
+configuration that reads correctly and a connection that is actually
+limited are different claims.
+
+### 9b. Rotate the database URL in the vault
+
+Changing the URL the app reads — a new password, or the correct role.
+**Order matters**: the secret is read when the container starts, so a
+password changed in Postgres before the vault is updated leaves the app
+unable to start the next time it restarts, which may be minutes or days
+later.
+
+1. **Write the new secret first**, while the old password still works.
+   Take the write role by name, as in §5c step 2: being Owner of the
+   subscription grants no access to vault data.
+
+   ```sh
+   read -rsp "sort_app password: " PGPW; echo "length: ${#PGPW}"; umask 077
+   PGPW="$PGPW" python3 -c 'import os,urllib.parse; pw=urllib.parse.quote(os.environ["PGPW"],safe=""); open(os.path.expanduser("~/dsn.txt"),"w").write(f"postgresql://sort_app:{pw}@<server>.postgres.database.azure.com:5432/sort_tester_app?sslmode=require")'
+   unset PGPW
+   az keyvault secret set --vault-name kv-sortstg-<suffix> --name database-url \
+     --file ~/dsn.txt --query id -o tsv
+   shred -u ~/dsn.txt
+   ```
+
+   Check the printed length before letting the rest run. The password has
+   been mistyped twice in this runbook's history, and both times the
+   length said so.
+
+   `sslmode=require` matches the secret in force, not the stronger
+   setting §1d uses for migrations. `verify-full` needs the app image to
+   carry a CA bundle, and that is Task 7 step 3 -- **not yet verified**.
+   A rotation run under pressure is the worst moment to find out, so this
+   keeps what is known to work; upgrade it as its own change, with the
+   bundle checked first:
+   `docker run --rm <image> ls -l /etc/ssl/certs/ca-certificates.crt`.
+
+2. **Restart the revision**, because nothing else re-reads the secret:
+
+   ```sh
+   az containerapp revision restart -n ca-sort-app-stg -g rg-sort-tester-staging \
+     --revision <the active revision>
+   ```
+
+   Changing a secret creates no new revision. Without this the running
+   container keeps the value it started with, and a broken secret stays
+   hidden until the next scale event — at which point the app stops with
+   no change to explain it.
+
+3. **Check it answers**: `/health` and `/api/ranked/season/notice` both
+   200, and the second with real JSON, which is what proves it reached
+   the database rather than merely started.
+
+4. **Hand the write role back**, as in §5c step 6. `delete` takes no
+   `--assignee-principal-type`; chain the confirmation with `&&`, never
+   `;`, or a failed delete still prints "removed".
+
+Rollback: write the previous URL back and restart again. That needs the
+write role, which is why it comes off last.
+
+### 9c. Rotate a Postgres password
+
+The admin password and `sort_app`'s rotate the same way, but they are
+used by different things, so the blast radius differs.
+
+```sh
+az postgres flexible-server update -g rg-sort-tester-staging \
+  --name <server> --admin-password <prompted, never typed inline>
+```
+
+Never run `--password-auth Enabled` without a password: it **generates
+and prints one**.
+
+- Changing the **admin** password affects migrations (§1d) and nothing
+  else, as long as the app is on `sort_app`. If the app is still on the
+  admin role, it also takes the app down at its next restart — another
+  reason to run 9a first.
+- Changing **`sort_app`**'s password is done from `psql` as the migration
+  owner, with `\password sort_app` at its hidden prompt
+  ([[db-runtime-role]]), and must be followed by 9b in the same sitting.
+  The database and the vault disagreeing is an app that works until it
+  restarts.
+
+Both need the firewall open to your address (§1c) and closed again
+afterwards (§1e).
+
+### 9d. The GHCR token is revoked, not rotated
+
+It was revoked on 2026-11-17. It is listed here so nobody re-creates one
+out of habit: a token with `read:packages` reads **every** private
+package the account can see, which is why §3a replaced it with a
+federated identity that holds no secret at all.
+
+If §3a has not been applied yet, §3b still needs a token for the manual
+copy. Make one for that copy, use it, and revoke it the same day. A
+token that outlives its errand is the finding again.
+
+### 9e. What has no secret, and must stay that way
+
+`id-sort-app-stg` (pull and vault read) and `id-sort-publish-ci` (push)
+are managed identities. There is no password, so there is nothing to
+rotate and nothing to leak. If a future change adds a client secret to
+either, that is a regression and not a convenience — the federated
+credential and the role assignments are the whole mechanism.
+
+### 9f. When any of this happens, write it down
+
+Each rotation adds a dated line to this section saying what changed and
+what proved it afterwards. The dates in the table above are what make
+"every 90 days" a statement rather than an intention.
 
 ## What this runbook does not do
 

@@ -1154,6 +1154,48 @@ manages them.
 - Final verification (the definition of done, below) executed end-to-end and recorded.
 - Commit — `docs: credential rotation runbook; audit remediation complete`
 
+Task 22 rotation runbook — 2026-11-17, runbook §9. The final verification
+pass is **not** done; it needs Azure.
+
+Writing it turned up a regression we introduced today, which is the best
+argument for writing it while the work is fresh.
+
+**The app's database secret was built with the migration owner's
+username.** §1d says in so many words never to deploy that URL as the
+runtime secret: the migration owner can create and alter tables and
+rewrite `alembic_version`, while `sort_app` can read and write data and
+nothing else. That separation is the whole of H-3, closed on 2026-11-16
+and *verified* that day -- the evidence in [[../../../infra/azure/db-runtime-role]]
+records CREATE TABLE, ALTER TABLE and an UPDATE of `alembic_version`
+being refused through the app's own connection.
+
+What is certain: the vault-write command written on 2026-11-17 carries
+`renilsonjr`. Whether the deployments before it did the same is not
+knowable from the repository -- the runbook showed `<user>`, so what was
+typed was never recorded. Claiming it has been wrong since the 16th would
+be a guess; §9a is how to find out, and it has to run from Azure.
+
+The placeholder was the mechanism. `<user>` in a command someone fills in
+under time pressure is an invitation, and the thing most ready to hand is
+the admin account they just used for the migration. The role is written
+out now, and `test_docs_hygiene` fails if any vault-write DSN names
+anything but `sort_app` or turns back into a placeholder.
+Mutation-checked both ways.
+
+A second, smaller slip caught in review: §9b was first written with
+`sslmode=verify-full`, which is what §1d uses. The live secret uses
+`require`, and `verify-full` depends on the app image carrying a CA
+bundle -- Task 7 step 3, still unverified. A rotation procedure is run
+under pressure, so it now matches what is known to work and says what
+upgrading would need.
+
+The section also records what has **no** secret: both managed identities,
+and CI once §3a is applied. That table is shorter than it would have been
+this morning, which is the measure of the day's work.
+
+Not done: §9a itself (which role the app is really using), the correction
+if it is wrong, and the final verification pass.
+
 ## Owner questions (unverifiable from the repo — answer before Phase 0 sign-off)
 
 1. Flexible Server: `ssl-enforcement` state? Full firewall-rule inventory beyond `allow-azure-services`? `authConfig` (password + Entra) current state?
