@@ -1,0 +1,1613 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Sort Lab — Glassmorphism Trivia UI Mock & Sound</title>
+  <style>
+    @font-face {
+      font-family: Nunito;
+      src: url("../assets/nunito-variable.ttf") format("truetype");
+      font-style: normal;
+      font-weight: 200 1000;
+      font-display: swap;
+    }
+
+    :root {
+      /* Saddle Brook Twilight Design Tokens */
+      --ink: #35271e;
+      --muted: #7d6b5c;
+      --brand: #38261b;
+      --brand-rgb: 56, 38, 27;
+      --gold: #f4bd38;
+      --gold-dark: #b47d15;
+      --gold-glow: rgba(244, 189, 56, 0.4);
+      --soft: #f7eac7;
+      --focus: #175e94;
+      --good: #226442;
+      --bad: #a12d2d;
+
+      /* Glassmorphism Refinado Light Glass */
+      --glass-surface: rgba(255, 253, 248, 0.65);
+      --glass-surface-sub: rgba(255, 255, 255, 0.48);
+      --glass-border: rgba(255, 255, 255, 0.85);
+      --glass-border-subtle: rgba(222, 212, 197, 0.55);
+      --glass-highlight: rgba(255, 255, 255, 0.95);
+      --glass-shadow: 0 16px 40px -4px rgba(56, 38, 27, 0.14), 0 4px 12px rgba(56, 38, 27, 0.05);
+      --dock-bg: rgba(255, 253, 248, 0.85);
+      
+      --blur-lg: blur(24px);
+      --blur-md: blur(14px);
+      --radius-sm: 14px;
+      --radius-md: 22px;
+      --radius-lg: 32px;
+      --radius-pill: 9999px;
+    }
+
+    /* Twilight Dark Glass (Mantendo o tom café / caramelo / ouro do app) */
+    [data-theme="dark"] {
+      --ink: #fffdf8;
+      --muted: #c4b5a5;
+      --brand: #f4bd38;
+      --brand-rgb: 244, 189, 56;
+      --glass-surface: rgba(38, 26, 18, 0.68);
+      --glass-surface-sub: rgba(56, 38, 27, 0.55);
+      --glass-border: rgba(244, 189, 56, 0.35);
+      --glass-border-subtle: rgba(255, 255, 255, 0.12);
+      --glass-highlight: rgba(255, 255, 255, 0.25);
+      --glass-shadow: 0 20px 50px -8px rgba(0, 0, 0, 0.65);
+      --dock-bg: rgba(28, 19, 13, 0.88);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    
+    body {
+      font-family: Nunito, system-ui, -apple-system, sans-serif;
+      background: #e8dccb;
+      color: var(--ink);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px 16px 80px;
+      overflow-x: hidden;
+      transition: background-color 0.3s ease, color 0.3s ease;
+    }
+
+    body[data-theme="dark"] {
+      background: #140d09;
+    }
+
+    /* Ambient Lighting Orbs (Trivia Style) */
+    .ambient-canvas {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+      overflow: hidden;
+    }
+    .orb {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(85px);
+      transition: all 0.5s ease;
+    }
+    .orb-gold {
+      width: 440px;
+      height: 440px;
+      background: radial-gradient(circle, #f4bd38 0%, rgba(244, 189, 56, 0.02) 70%);
+      top: -60px;
+      left: 15%;
+      opacity: 0.65;
+    }
+    .orb-amber {
+      width: 460px;
+      height: 460px;
+      background: radial-gradient(circle, #c96b1b 0%, rgba(201, 107, 27, 0.02) 70%);
+      top: 35%;
+      right: 10%;
+      opacity: 0.5;
+    }
+    .orb-blue {
+      width: 360px;
+      height: 360px;
+      background: radial-gradient(circle, #175e94 0%, rgba(23, 94, 148, 0.02) 70%);
+      bottom: -40px;
+      left: 20%;
+      opacity: 0.35;
+    }
+
+    /* Top Global Controller Bar */
+    .top-toolbar {
+      position: relative;
+      z-index: 10;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      width: 100%;
+      max-width: 1200px;
+      margin-bottom: 20px;
+      padding: 12px 20px;
+      background: var(--glass-surface);
+      backdrop-filter: var(--blur-lg);
+      -webkit-backdrop-filter: var(--blur-lg);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-md);
+      box-shadow: var(--glass-shadow);
+      gap: 12px;
+    }
+    .toolbar-brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 17px;
+      font-weight: 900;
+      letter-spacing: -0.03em;
+    }
+    .brand-mark {
+      width: 32px;
+      height: 32px;
+      background: var(--brand);
+      color: #fffdf8;
+      border-radius: 10px;
+      display: grid;
+      place-items: center;
+      font-size: 14px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+    }
+    body[data-theme="dark"] .brand-mark {
+      background: var(--gold);
+      color: #1a120b;
+    }
+    .toolbar-tag {
+      font-size: 10px;
+      padding: 4px 9px;
+      background: var(--gold);
+      color: #38261b;
+      font-weight: 900;
+      border-radius: var(--radius-pill);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .nav-tabs {
+      display: flex;
+      background: rgba(0,0,0,0.06);
+      padding: 4px;
+      border-radius: var(--radius-pill);
+      gap: 4px;
+    }
+    body[data-theme="dark"] .nav-tabs {
+      background: rgba(255,255,255,0.08);
+    }
+    .tab-btn {
+      background: transparent;
+      border: 0;
+      padding: 8px 16px;
+      border-radius: var(--radius-pill);
+      font-size: 13px;
+      font-weight: 800;
+      color: var(--muted);
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .tab-btn.active {
+      background: var(--glass-surface);
+      color: var(--ink);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      border: 1px solid var(--glass-border);
+    }
+    
+    .audio-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .btn-audio-control {
+      background: var(--glass-surface);
+      color: var(--ink);
+      border: 1px solid var(--glass-border);
+      padding: 7px 14px;
+      border-radius: var(--radius-pill);
+      font-weight: 800;
+      font-size: 12px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s ease;
+    }
+    .btn-audio-control:hover {
+      border-color: var(--gold);
+      transform: translateY(-1px);
+    }
+    .btn-audio-control.active {
+      background: var(--gold);
+      color: #38261b;
+      border-color: var(--gold);
+    }
+
+    /* App Phone Shell / Glass Container */
+    .app-viewport {
+      position: relative;
+      z-index: 10;
+      width: 100%;
+      max-width: 440px;
+      min-height: 860px;
+      background: var(--glass-surface);
+      backdrop-filter: var(--blur-lg);
+      -webkit-backdrop-filter: var(--blur-lg);
+      border: 1.5px solid var(--glass-border);
+      border-radius: 44px;
+      box-shadow: var(--glass-shadow);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .app-viewport::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 45px;
+      right: 45px;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--glass-highlight), transparent);
+      z-index: 25;
+    }
+
+    /* Screen Panes */
+    .screen-pane {
+      display: none;
+      flex-direction: column;
+      flex: 1;
+      padding: 24px 20px 96px;
+      opacity: 0;
+      transform: translateY(12px) scale(0.99);
+      transition: opacity 0.25s ease, transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .screen-pane.active {
+      display: flex;
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+
+    /* Glass Cards & Elements */
+    .glass-card {
+      background: var(--glass-surface);
+      backdrop-filter: var(--blur-md);
+      -webkit-backdrop-filter: var(--blur-md);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-md);
+      box-shadow: var(--glass-shadow);
+      padding: 20px;
+      position: relative;
+      overflow: hidden;
+      margin-bottom: 16px;
+    }
+    .glass-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 15%;
+      right: 15%;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--glass-highlight), transparent);
+    }
+
+    /* Floating Dock Navigation */
+    .glass-dock {
+      position: absolute;
+      bottom: 20px;
+      left: 20px;
+      right: 20px;
+      height: 66px;
+      background: var(--dock-bg);
+      backdrop-filter: blur(28px);
+      -webkit-backdrop-filter: blur(28px);
+      border: 1px solid var(--glass-border);
+      border-radius: 33px;
+      box-shadow: 0 14px 34px -4px rgba(0,0,0,0.18);
+      display: flex;
+      align-items: center;
+      justify-content: space-around;
+      padding: 0 8px;
+      z-index: 50;
+    }
+    .dock-btn {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      width: 50px;
+      height: 50px;
+      border-radius: 25px;
+      color: var(--muted);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      background: transparent;
+      border: 0;
+      font-size: 11px;
+      font-weight: 800;
+      gap: 3px;
+    }
+    .dock-btn svg {
+      width: 20px;
+      height: 20px;
+      stroke: currentColor;
+      fill: none;
+      stroke-width: 2.2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      transition: transform 0.2s ease;
+    }
+    .dock-btn:hover svg {
+      transform: translateY(-2px);
+    }
+    .dock-btn.active {
+      color: #38261b;
+      background: var(--gold);
+      box-shadow: 0 4px 14px var(--gold-glow);
+    }
+    body[data-theme="dark"] .dock-btn.active {
+      color: #19120e;
+    }
+
+    /* Top App Header inside mobile */
+    .mobile-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+    }
+    .user-pill {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: var(--glass-surface-sub);
+      backdrop-filter: blur(12px);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-pill);
+      padding: 5px 14px 5px 6px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.04);
+    }
+    .avatar-mini {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      border: 2px solid var(--gold);
+      object-fit: cover;
+    }
+    .user-pill-name {
+      font-size: 13px;
+      font-weight: 800;
+      line-height: 1.1;
+    }
+    .user-pill-belt {
+      font-size: 10px;
+      font-weight: 900;
+      color: var(--gold-dark);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    body[data-theme="dark"] .user-pill-belt {
+      color: var(--gold);
+    }
+    .score-badge {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--glass-surface-sub);
+      backdrop-filter: blur(12px);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-pill);
+      padding: 6px 14px;
+      font-weight: 900;
+      font-size: 13px;
+    }
+    .score-badge .coin {
+      color: var(--gold);
+      font-size: 16px;
+    }
+
+    /* Buttons */
+    .btn-primary {
+      width: 100%;
+      min-height: 52px;
+      background: linear-gradient(135deg, var(--gold) 0%, #e5a720 100%);
+      color: #38261b;
+      border: 1px solid rgba(255, 255, 255, 0.5);
+      border-radius: var(--radius-md);
+      font-size: 15px;
+      font-weight: 900;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      box-shadow: 0 8px 24px var(--gold-glow);
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 28px rgba(244, 189, 56, 0.45);
+    }
+    .btn-secondary {
+      width: 100%;
+      min-height: 48px;
+      background: var(--glass-surface-sub);
+      color: var(--ink);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-md);
+      font-size: 14px;
+      font-weight: 800;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.04);
+      transition: all 0.2s ease;
+    }
+    .btn-secondary:hover {
+      border-color: var(--gold);
+      transform: translateY(-1px);
+    }
+
+    /* Inputs */
+    .input-field {
+      margin-bottom: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .input-label {
+      font-size: 12px;
+      font-weight: 800;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .glass-input {
+      width: 100%;
+      height: 50px;
+      background: var(--glass-surface-sub);
+      backdrop-filter: blur(10px);
+      border: 1px solid var(--glass-border-subtle);
+      border-radius: var(--radius-sm);
+      padding: 0 16px;
+      color: var(--ink);
+      font-family: inherit;
+      font-size: 15px;
+      font-weight: 700;
+      outline: none;
+      transition: all 0.2s ease;
+    }
+    .glass-input:focus {
+      border-color: var(--gold);
+      box-shadow: 0 0 0 3px var(--gold-glow);
+    }
+
+    /* Leaderboard Podium 3D (Dribbble Ref Exact Match) */
+    .podium-container {
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      gap: 12px;
+      margin: 16px 0 24px;
+      padding-bottom: 4px;
+    }
+    .podium-slot {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      flex: 1;
+      position: relative;
+    }
+    .podium-avatar-wrap {
+      position: relative;
+      margin-bottom: 8px;
+    }
+    .podium-avatar {
+      border-radius: 50%;
+      object-fit: cover;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.18);
+    }
+    .slot-1 .podium-avatar {
+      width: 76px;
+      height: 76px;
+      border: 3.5px solid var(--gold);
+    }
+    .slot-2 .podium-avatar, .slot-3 .podium-avatar {
+      width: 58px;
+      height: 58px;
+      border: 3px solid rgba(255,255,255,0.7);
+    }
+    .crown-icon {
+      position: absolute;
+      top: -16px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 22px;
+      filter: drop-shadow(0 2px 6px rgba(0,0,0,0.25));
+    }
+    .podium-rank-badge {
+      position: absolute;
+      bottom: -6px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: var(--brand);
+      color: #fffdf8;
+      font-size: 11px;
+      font-weight: 900;
+      display: grid;
+      place-items: center;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+    }
+    .slot-1 .podium-rank-badge {
+      background: var(--gold);
+      color: #38261b;
+    }
+    .podium-pillar {
+      width: 100%;
+      background: var(--glass-surface);
+      backdrop-filter: blur(14px);
+      border: 1px solid var(--glass-border);
+      border-radius: 20px 20px 14px 14px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 12px 6px 14px;
+      box-shadow: var(--glass-shadow);
+      text-align: center;
+      position: relative;
+    }
+    .slot-1 .podium-pillar {
+      height: 125px;
+      border-color: rgba(244, 189, 56, 0.45);
+      background: linear-gradient(180deg, rgba(244, 189, 56, 0.22) 0%, var(--glass-surface) 60%);
+    }
+    .slot-2 .podium-pillar { height: 98px; }
+    .slot-3 .podium-pillar { height: 86px; }
+    .podium-name {
+      font-size: 12px;
+      font-weight: 900;
+      margin-bottom: 2px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 80px;
+    }
+    .podium-pts {
+      font-size: 13px;
+      font-weight: 900;
+      color: var(--gold-dark);
+    }
+    body[data-theme="dark"] .podium-pts {
+      color: var(--gold);
+    }
+
+    /* Ranked Player Rows */
+    .ranked-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .ranked-item {
+      display: flex;
+      align-items: center;
+      padding: 12px 14px;
+      background: var(--glass-surface-sub);
+      backdrop-filter: blur(12px);
+      border: 1px solid var(--glass-border-subtle);
+      border-radius: var(--radius-sm);
+      box-shadow: 0 4px 14px rgba(0,0,0,0.03);
+      gap: 12px;
+      transition: all 0.2s ease;
+    }
+    .ranked-item:hover {
+      transform: translateX(3px);
+      border-color: var(--gold);
+    }
+    .ranked-item.current-user {
+      border: 1.5px solid var(--gold);
+      background: rgba(244, 189, 56, 0.16);
+      box-shadow: 0 4px 18px var(--gold-glow);
+    }
+    .rank-num {
+      font-size: 14px;
+      font-weight: 900;
+      color: var(--muted);
+      width: 22px;
+      text-align: center;
+    }
+    .rank-user-avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      object-fit: cover;
+    }
+    .rank-user-info {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+    .rank-user-name {
+      font-size: 14px;
+      font-weight: 800;
+      line-height: 1.2;
+    }
+    .belt-tag {
+      display: inline-flex;
+      font-size: 9px;
+      font-weight: 900;
+      padding: 2px 7px;
+      border-radius: 6px;
+      margin-top: 3px;
+      width: fit-content;
+      text-transform: uppercase;
+    }
+    .rank-score {
+      font-size: 15px;
+      font-weight: 900;
+    }
+
+    /* ================= SCREEN: QUIZ GAMEPLAY WITH MASCOT & ANIMATIONS ================= */
+    .quiz-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
+    .progress-track {
+      flex: 1;
+      height: 8px;
+      background: rgba(0,0,0,0.08);
+      border-radius: var(--radius-pill);
+      margin: 0 14px;
+      overflow: hidden;
+    }
+    body[data-theme="dark"] .progress-track {
+      background: rgba(255,255,255,0.12);
+    }
+    .progress-fill {
+      height: 100%;
+      width: 35%;
+      background: linear-gradient(90deg, var(--gold) 0%, #e09819 100%);
+      border-radius: var(--radius-pill);
+      box-shadow: 0 0 10px var(--gold-glow);
+      transition: width 0.3s ease;
+    }
+    .timer-badge {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: var(--glass-surface);
+      backdrop-filter: blur(12px);
+      border: 2px solid var(--gold);
+      display: grid;
+      place-items: center;
+      font-size: 14px;
+      font-weight: 900;
+      box-shadow: 0 4px 12px var(--gold-glow);
+    }
+
+    /* Avatar Stage with Live Reaction */
+    .avatar-reaction-stage {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      margin: 4px 0 12px;
+      position: relative;
+    }
+    .avatar-interactive-img {
+      width: 74px;
+      height: 74px;
+      border-radius: 24px;
+      object-fit: cover;
+      border: 2.5px solid var(--glass-border);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.14);
+      transition: transform 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    .reaction-bubble {
+      position: absolute;
+      top: -6px;
+      right: 32%;
+      background: var(--gold);
+      color: #38261b;
+      font-size: 11px;
+      font-weight: 900;
+      padding: 3px 9px;
+      border-radius: var(--radius-pill);
+      box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+      opacity: 0;
+      transform: translateY(4px);
+      transition: all 0.2s ease;
+      pointer-events: none;
+    }
+    .reaction-bubble.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .question-card {
+      background: var(--glass-surface);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1.5px solid var(--glass-border);
+      border-radius: var(--radius-lg);
+      padding: 20px 18px;
+      text-align: center;
+      box-shadow: var(--glass-shadow);
+      margin-bottom: 18px;
+      position: relative;
+    }
+    .question-tag {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--gold-dark);
+      margin-bottom: 8px;
+    }
+    body[data-theme="dark"] .question-tag {
+      color: var(--gold);
+    }
+    .question-code {
+      font-size: 32px;
+      font-weight: 900;
+      letter-spacing: -0.04em;
+      margin-bottom: 4px;
+      color: var(--ink);
+    }
+    .question-subtitle {
+      font-size: 13px;
+      color: var(--muted);
+      font-weight: 700;
+    }
+
+    /* Belt Answer Options (2x2 Grid) with Glass & Glowing Feedback */
+    .answer-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .belt-option-btn {
+      position: relative;
+      min-height: 58px;
+      padding: 12px 14px;
+      border: 1.5px solid rgba(255, 255, 255, 0.4);
+      border-radius: var(--radius-md);
+      font-family: inherit;
+      font-size: 15px;
+      font-weight: 900;
+      letter-spacing: 0.04em;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.06);
+      transition: transform 0.15s ease, filter 0.15s ease, box-shadow 0.2s ease;
+      user-select: none;
+    }
+    .belt-option-btn:hover {
+      filter: brightness(1.08);
+      transform: translateY(-2px);
+    }
+    .belt-option-btn:active {
+      transform: scale(0.96);
+    }
+
+    /* Brilho Verde Animado - Acerto */
+    .belt-option-btn.feedback-correct {
+      animation: correctGlow 0.65s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+      z-index: 5;
+    }
+
+    /* Brilho Vermelho & Tremor - Erro */
+    .belt-option-btn.feedback-incorrect {
+      animation: incorrectShake 0.5s ease-in-out forwards;
+      z-index: 5;
+    }
+
+    @keyframes correctGlow {
+      0% {
+        box-shadow: 0 0 0 0 rgba(34, 100, 66, 0.9);
+        transform: scale(1);
+      }
+      40% {
+        box-shadow: 0 0 0 6px rgba(34, 100, 66, 0.4), 0 0 28px 8px #226442;
+        transform: scale(1.05);
+        filter: brightness(1.2);
+      }
+      100% {
+        box-shadow: 0 0 0 4px rgba(34, 100, 66, 0.75), 0 0 16px 4px #226442;
+        transform: scale(1.02);
+      }
+    }
+
+    @keyframes incorrectShake {
+      0%, 100% {
+        box-shadow: 0 0 0 0 rgba(161, 45, 45, 0.8);
+        transform: translateX(0);
+      }
+      20%, 60% {
+        box-shadow: 0 0 0 5px rgba(161, 45, 45, 0.4), 0 0 24px 6px #a12d2d;
+        transform: translateX(-6px);
+        filter: brightness(1.15);
+      }
+      40%, 80% {
+        box-shadow: 0 0 0 5px rgba(161, 45, 45, 0.4), 0 0 24px 6px #a12d2d;
+        transform: translateX(6px);
+        filter: brightness(1.15);
+      }
+    }
+
+    /* Result Banner / Next Stage */
+    .feedback-banner {
+      min-height: 44px;
+      padding: 10px 14px;
+      background: var(--glass-surface-sub);
+      backdrop-filter: blur(12px);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-sm);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 13px;
+      font-weight: 800;
+      opacity: 0;
+      transform: translateY(6px);
+      transition: all 0.25s ease;
+    }
+    .feedback-banner.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    .feedback-banner.correct {
+      border-color: #226442;
+      background: rgba(34, 100, 66, 0.18);
+      color: #226442;
+    }
+    body[data-theme="dark"] .feedback-banner.correct {
+      color: #4ade80;
+    }
+    .feedback-banner.incorrect {
+      border-color: #a12d2d;
+      background: rgba(161, 45, 45, 0.18);
+      color: #a12d2d;
+    }
+    body[data-theme="dark"] .feedback-banner.incorrect {
+      color: #f87171;
+    }
+
+    /* SCREEN: PROFILE */
+    .profile-hero {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      margin: 10px 0 20px;
+    }
+    .profile-avatar-large-wrap {
+      position: relative;
+      margin-bottom: 12px;
+    }
+    .profile-avatar-large {
+      width: 96px;
+      height: 96px;
+      border-radius: 50%;
+      border: 4px solid var(--gold);
+      object-fit: cover;
+      box-shadow: 0 10px 28px rgba(0,0,0,0.18);
+    }
+    .profile-belt-badge {
+      position: absolute;
+      bottom: 0;
+      right: 0;
+      background: #8a6400;
+      color: #fff;
+      font-size: 10px;
+      font-weight: 900;
+      padding: 4px 8px;
+      border-radius: var(--radius-pill);
+      border: 2px solid #fffdf8;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+    }
+    .profile-name {
+      font-size: 22px;
+      font-weight: 900;
+      margin-bottom: 4px;
+    }
+    .profile-handle {
+      font-size: 13px;
+      color: var(--muted);
+      font-weight: 700;
+    }
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+    .stat-card {
+      background: var(--glass-surface-sub);
+      backdrop-filter: blur(12px);
+      border: 1px solid var(--glass-border-subtle);
+      border-radius: var(--radius-sm);
+      padding: 12px 8px;
+      text-align: center;
+    }
+    .stat-value {
+      font-size: 18px;
+      font-weight: 900;
+      color: var(--gold-dark);
+      margin-bottom: 2px;
+    }
+    body[data-theme="dark"] .stat-value {
+      color: var(--gold);
+    }
+    .stat-label {
+      font-size: 11px;
+      font-weight: 800;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .badge-collection {
+      display: flex;
+      gap: 12px;
+      overflow-x: auto;
+      padding: 4px 2px 10px;
+      scrollbar-width: none;
+    }
+    .badge-item {
+      flex: 0 0 76px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      gap: 6px;
+    }
+    .badge-thumb {
+      width: 56px;
+      height: 56px;
+      border-radius: 16px;
+      background: var(--glass-surface-sub);
+      border: 1px solid var(--glass-border);
+      padding: 6px;
+      object-fit: contain;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+    }
+    .badge-name {
+      font-size: 11px;
+      font-weight: 800;
+      line-height: 1.2;
+    }
+
+    /* SCREEN: LOGIN */
+    .login-hero {
+      text-align: center;
+      padding: 24px 0 20px;
+    }
+    .brand-logo-badge {
+      width: 72px;
+      height: 72px;
+      margin: 0 auto 16px;
+      background: linear-gradient(135deg, var(--gold) 0%, #d89115 100%);
+      border-radius: 22px;
+      display: grid;
+      place-items: center;
+      font-size: 30px;
+      color: #38261b;
+      box-shadow: 0 12px 30px var(--gold-glow);
+      transform: rotate(-6deg);
+    }
+
+    /* Bottom Design Specs Footer */
+    .review-notes {
+      max-width: 1200px;
+      width: 100%;
+      margin-top: 36px;
+      position: relative;
+      z-index: 10;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+    @media (max-width: 860px) {
+      .review-notes { grid-template-columns: 1fr; }
+    }
+    .note-box {
+      background: var(--glass-surface);
+      backdrop-filter: var(--blur-lg);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-md);
+      padding: 22px;
+      box-shadow: var(--glass-shadow);
+    }
+    .note-box h3 {
+      font-size: 17px;
+      font-weight: 900;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .note-box p, .note-box ul {
+      font-size: 14px;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+    .note-box ul {
+      padding-left: 20px;
+      margin-top: 10px;
+    }
+    .note-box li { margin-bottom: 6px; }
+  </style>
+</head>
+<body data-theme="light">
+
+  <!-- Ambient Light Orbs -->
+  <div class="ambient-canvas">
+    <div class="orb orb-gold"></div>
+    <div class="orb orb-amber"></div>
+    <div class="orb orb-blue"></div>
+  </div>
+
+  <!-- Top Controller Bar -->
+  <div class="top-toolbar">
+    <div class="toolbar-brand">
+      <div class="brand-mark">◆</div>
+      <span>Sort Lab Glassmorphism</span>
+      <span class="toolbar-tag">Trivia UI + Sound</span>
+    </div>
+
+    <!-- Screen Navigation Switcher -->
+    <div class="nav-tabs">
+      <button class="tab-btn active" onclick="switchScreen('ranked-quiz')">Quiz Ranqueado (Live SFX)</button>
+      <button class="tab-btn" onclick="switchScreen('ranked')">Leaderboard</button>
+      <button class="tab-btn" onclick="switchScreen('profile')">Perfil</button>
+      <button class="tab-btn" onclick="switchScreen('login')">Login / Auth</button>
+    </div>
+
+    <!-- Audio Controls & Theme -->
+    <div class="audio-actions">
+      <button id="btn-toggle-sound" class="btn-audio-control active" onclick="toggleSoundEffect()">
+        <span id="sound-icon">🔊</span>
+        <span id="sound-text">SFX: On</span>
+      </button>
+
+      <button id="btn-toggle-bgm" class="btn-audio-control" onclick="toggleBgmMusic()">
+        <span>🎵</span>
+        <span id="bgm-text">BGM: Off</span>
+      </button>
+
+      <button class="btn-audio-control" onclick="toggleTheme()">
+        <span id="theme-icon">🌙</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Main Mobile App Viewport (Glass Container) -->
+  <div class="app-viewport">
+
+    <!-- ================= SCREEN 1: QUIZ RANQUEADO INTERATIVO COM SOM E ANIMAÇÃO ================= -->
+    <div id="screen-ranked-quiz" class="screen-pane active">
+      <div class="quiz-bar">
+        <button class="btn-secondary" style="width:38px; min-height:38px; padding:0; border-radius:50%;" onclick="switchScreen('ranked')">✕</button>
+        <div class="progress-track">
+          <div class="progress-fill" id="quiz-progress-bar"></div>
+        </div>
+        <div class="timer-badge" id="quiz-timer">15s</div>
+      </div>
+
+      <!-- Live Mascot Reaction Area -->
+      <div class="avatar-reaction-stage">
+        <div class="reaction-bubble" id="avatar-reaction-bubble">BOM TRABALHO!</div>
+        <img id="mascot-img" src="../assets/avatar-thinking.jpg" alt="Mascote" class="avatar-interactive-img">
+      </div>
+
+      <!-- Question Glass Card (Ranked Item) -->
+      <div class="question-card">
+        <span class="question-tag">Modo Ranqueado · Rodada 4 de 10</span>
+        <div class="question-code" id="question-zip">07663-1204</div>
+        <div class="question-subtitle">Qual é a esteira (Belt) correta deste CEP?</div>
+      </div>
+
+      <!-- 2x2 Answer Grid com Belts e Animação de Brilho -->
+      <div class="answer-grid">
+        <!-- Correto nesta rodada de teste: GOLD -->
+        <button class="belt-option-btn" style="background:#8a6400; color:#ffffff;" onclick="handleAnswerChoice(this, 'GOLD')">
+          <span>GOLD</span>
+        </button>
+
+        <button class="belt-option-btn" style="background:#f6d33c; color:#1a1600;" onclick="handleAnswerChoice(this, 'YELLOW')">
+          <span>YELLOW</span>
+        </button>
+
+        <button class="belt-option-btn" style="background:#a81f5e; color:#ffffff;" onclick="handleAnswerChoice(this, 'PINK')">
+          <span>PINK</span>
+        </button>
+
+        <button class="belt-option-btn" style="background:#b34d06; color:#ffffff;" onclick="handleAnswerChoice(this, 'ORANGE')">
+          <span>ORANGE</span>
+        </button>
+      </div>
+
+      <!-- Feedback Banner -->
+      <div class="feedback-banner" id="feedback-banner">
+        <span id="feedback-message">Selecione a esteira correspondente</span>
+        <span id="feedback-points">+100 pts</span>
+      </div>
+
+      <div style="margin-top: auto; padding-top: 14px;">
+        <button class="btn-primary" id="btn-next-question" onclick="resetQuestionRound()">
+          <span>Próxima Pergunta</span>
+          <span>→</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- ================= SCREEN 2: MODO RANQUEADO LEADERBOARD ================= -->
+    <div id="screen-ranked" class="screen-pane">
+      <div class="mobile-header">
+        <div class="user-pill">
+          <img src="../assets/avatar-idle.jpg" alt="Avatar" class="avatar-mini">
+          <div class="user-pill-info">
+            <div class="user-pill-name">Alex Dev</div>
+            <div class="user-pill-belt">Gold Belt · #4</div>
+          </div>
+        </div>
+        <div class="score-badge">
+          <span class="coin">★</span>
+          <span>1,840 pts</span>
+        </div>
+      </div>
+
+      <h1 class="screen-title">Leaderboard</h1>
+      <p class="screen-subtitle">Temporada 2 · Saddle Brook Masters</p>
+
+      <!-- Podium Top 3 (Dribbble 3D Glass Podium) -->
+      <div class="podium-container">
+        <!-- 2nd Place -->
+        <div class="podium-slot slot-2">
+          <div class="podium-avatar-wrap">
+            <img src="../assets/avatar-thinking.jpg" alt="2nd" class="podium-avatar">
+            <div class="podium-rank-badge">2</div>
+          </div>
+          <div class="podium-pillar">
+            <span class="podium-name">Beatriz</span>
+            <span class="podium-pts">2,410</span>
+          </div>
+        </div>
+
+        <!-- 1st Place -->
+        <div class="podium-slot slot-1">
+          <span class="crown-icon">👑</span>
+          <div class="podium-avatar-wrap">
+            <img src="../assets/avatar-correct.jpg" alt="1st" class="podium-avatar">
+            <div class="podium-rank-badge">1</div>
+          </div>
+          <div class="podium-pillar">
+            <span class="podium-name">Carlos_M</span>
+            <span class="podium-pts">2,890</span>
+          </div>
+        </div>
+
+        <!-- 3rd Place -->
+        <div class="podium-slot slot-3">
+          <div class="podium-avatar-wrap">
+            <img src="../assets/avatar-incorrect.jpg" alt="3rd" class="podium-avatar">
+            <div class="podium-rank-badge">3</div>
+          </div>
+          <div class="podium-pillar">
+            <span class="podium-name">Daniel_K</span>
+            <span class="podium-pts">2,150</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Ranked List -->
+      <div class="ranked-list">
+        <div class="ranked-item current-user">
+          <span class="rank-num">4</span>
+          <img src="../assets/avatar-idle.jpg" alt="Alex Dev" class="rank-user-avatar">
+          <div class="rank-user-info">
+            <span class="rank-user-name">Alex Dev (Você)</span>
+            <span class="belt-tag" style="background:#8a6400; color:#fff">Gold Belt</span>
+          </div>
+          <span class="rank-score">1,840</span>
+        </div>
+
+        <div class="ranked-item">
+          <span class="rank-num">5</span>
+          <img src="../assets/avatar-thinking.jpg" alt="Elena" class="rank-user-avatar">
+          <div class="rank-user-info">
+            <span class="rank-user-name">Elena Costa</span>
+            <span class="belt-tag" style="background:#1f4e9c; color:#fff">Blue Belt</span>
+          </div>
+          <span class="rank-score">1,690</span>
+        </div>
+
+        <div class="ranked-item">
+          <span class="rank-num">6</span>
+          <img src="../assets/avatar-idle.jpg" alt="Marcos" class="rank-user-avatar">
+          <div class="rank-user-info">
+            <span class="rank-user-name">Marcos Vinicius</span>
+            <span class="belt-tag" style="background:#1e6b3a; color:#fff">Green Belt</span>
+          </div>
+          <span class="rank-score">1,520</span>
+        </div>
+      </div>
+
+      <div style="margin-top: 18px;">
+        <button class="btn-primary" onclick="switchScreen('ranked-quiz')">
+          <span>⚡</span>
+          <span>Iniciar Partida Ranqueada</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- ================= SCREEN 3: PERFIL ================= -->
+    <div id="screen-profile" class="screen-pane">
+      <div class="mobile-header">
+        <span style="font-size:16px; font-weight:900;">Meu Perfil</span>
+        <button class="btn-secondary" style="width:36px; min-height:36px; padding:0; border-radius:50%;">⚙</button>
+      </div>
+
+      <div class="profile-hero">
+        <div class="profile-avatar-large-wrap">
+          <img src="../assets/avatar-idle.jpg" alt="Alex Dev" class="profile-avatar-large">
+          <div class="profile-belt-badge">GOLD BELT</div>
+        </div>
+        <h2 class="profile-name">Alexandre Silva</h2>
+        <span class="profile-handle">@alexdev · Membro desde Out 2026</span>
+      </div>
+
+      <!-- Stats Grid -->
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-value">1,840</div>
+          <div class="stat-label">Pontos</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value">84.2%</div>
+          <div class="stat-label">Precisão</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value">#4</div>
+          <div class="stat-label">Ranking</div>
+        </div>
+      </div>
+
+      <!-- Badges Section -->
+      <div class="glass-card" style="padding: 16px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+          <span style="font-size:13px; font-weight:900; text-transform:uppercase; letter-spacing:0.04em;">Conquistas & Emblemas</span>
+          <span style="font-size:12px; color:var(--gold-dark); font-weight:800;">Ver todos (12)</span>
+        </div>
+        <div class="badge-collection">
+          <div class="badge-item">
+            <img src="../assets/badge-gold.jpg" alt="Gold Badge" class="badge-thumb">
+            <span class="badge-name">Mestre Gold</span>
+          </div>
+          <div class="badge-item">
+            <img src="../assets/badge-challenger.jpg" alt="Challenger" class="badge-thumb">
+            <span class="badge-name">Challenger</span>
+          </div>
+          <div class="badge-item">
+            <img src="../assets/badge-silver.jpg" alt="Silver Badge" class="badge-thumb">
+            <span class="badge-name">Speed Demon</span>
+          </div>
+          <div class="badge-item">
+            <img src="../assets/badge-bronze.jpg" alt="Bronze Badge" class="badge-thumb">
+            <span class="badge-name">Primeira Vitória</span>
+          </div>
+        </div>
+      </div>
+
+      <div style="margin-top: 10px;">
+        <button class="btn-secondary" onclick="switchScreen('login')">
+          <span>Sair da Conta (Logout)</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- ================= SCREEN 4: LOGIN / AUTH ================= -->
+    <div id="screen-login" class="screen-pane">
+      <div class="login-hero">
+        <div class="brand-logo-badge">◆</div>
+        <h1 class="screen-title">Sort Lab</h1>
+        <p class="screen-subtitle">Desafie sua mente e suba no ranking global</p>
+      </div>
+
+      <div class="glass-card" style="margin-bottom: 20px;">
+        <div class="input-field">
+          <label class="input-label">E-mail ou Usuário</label>
+          <input type="text" class="glass-input" placeholder="ex: alex@sortlab.dev" value="alex@sortlab.dev">
+        </div>
+
+        <div class="input-field">
+          <label class="input-label">Senha</label>
+          <input type="password" class="glass-input" placeholder="••••••••••••" value="supersecretpass">
+        </div>
+
+        <div style="display:flex; justify-content:space-between; align-items:center; margin: 12px 0 18px;">
+          <label style="display:flex; align-items:center; gap:8px; font-size:12px; font-weight:700; cursor:pointer;">
+            <input type="checkbox" checked style="accent-color: var(--gold);"> Lembrar de mim
+          </label>
+          <a href="#" style="font-size:12px; color:var(--muted); font-weight:800; text-decoration:none;">Esqueceu a senha?</a>
+        </div>
+
+        <button class="btn-primary" onclick="switchScreen('ranked-quiz')">
+          <span>Entrar no Lab</span>
+          <span>→</span>
+        </button>
+      </div>
+
+      <div style="text-align:center;">
+        <p style="font-size:13px; color:var(--muted); font-weight:700; margin-bottom:12px;">Ou acesse com suas credenciais de time</p>
+        <button class="btn-secondary" onclick="switchScreen('ranked-quiz')">
+          <span>Acesso Visitante / Convidado</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Floating Dock Glass Bar (Visible across screens) -->
+    <nav class="glass-dock">
+      <button class="dock-btn active" id="dock-ranked-quiz" onclick="switchScreen('ranked-quiz')">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg>
+        <span>Quiz</span>
+      </button>
+
+      <button class="dock-btn" id="dock-ranked" onclick="switchScreen('ranked')">
+        <svg viewBox="0 0 24 24"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.45 1-1 1H7"/><path d="M14 14.66V17c0 .55.45 1 1 1h2"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg>
+        <span>Ranked</span>
+      </button>
+
+      <button class="dock-btn" id="dock-profile" onclick="switchScreen('profile')">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="5"/><path d="M20 21a8 8 0 0 0-16 0"/></svg>
+        <span>Perfil</span>
+      </button>
+
+      <button class="dock-btn" id="dock-login" onclick="switchScreen('login')">
+        <svg viewBox="0 0 24 24"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
+        <span>Auth</span>
+      </button>
+    </nav>
+
+  </div>
+
+  <!-- Design Notes & References -->
+  <div class="review-notes">
+    <div class="note-box">
+      <h3>🔊 Áudio Sintetizado Web Audio (Zero Latência)</h3>
+      <p>O som do quiz usa os mesmos sintetizadores procedurais de <code>src/sound.js</code>:</p>
+      <ul>
+        <li><strong>Acerto:</strong> Arpeggio ascendente alegre (Dó5 - Mi5 - Sol5 - Dó6).</li>
+        <li><strong>Erro:</strong> Buzzer duplo e sutil (Lá3 - Fá3) com tremor no botão.</li>
+        <li><strong>BGM Opcional:</strong> Trilha de fundo arcade relaxante ativada pelo botão <code>🎵 BGM</code>.</li>
+      </ul>
+    </div>
+
+    <div class="note-box">
+      <h3>⚡ Feedback Visual & Animação Reativa</h3>
+      <p>Totalmente sincronizado com o mascote oficial:</p>
+      <ul>
+        <li><strong>Mascote Reativo:</strong> Alterna entre estados <code>Thinking</code>, <code>Correct</code> e <code>Incorrect</code> com balão de reação.</li>
+        <li><strong>Brilho das Esteiras:</strong> Botão correto pulsa com brilho verde difuso (<code>correctGlow</code>); opções incorretas tremem em vermelho (<code>incorrectShake</code>).</li>
+        <li><strong>Glassmorphism Trivia:</strong> Cartões de vidro refinado com cantos amplos, relevo de refração e orbes dinâmicos no fundo.</li>
+      </ul>
+    </div>
+  </div>
+
+  <script>
+    // Audio Context & Procedural Sound Synthesizer
+    let audioCtx = null;
+    let soundEnabled = true;
+    let bgmPlaying = false;
+    let bgmTimer = null;
+    let bgmIndex = 0;
+
+    const bgmNotes = [
+      { f: 261.63, d: 0.3 }, // C4
+      { f: 329.63, d: 0.3 }, // E4
+      { f: 392.00, d: 0.3 }, // G4
+      { f: 523.25, d: 0.4 }, // C5
+      { f: 440.00, d: 0.3 }, // A4
+      { f: 392.00, d: 0.3 }, // G4
+      { f: 349.23, d: 0.3 }, // F4
+      { f: 329.63, d: 0.5 }, // E4
+    ];
+
+    function getAudioContext() {
+      if (!audioCtx) {
+        const AudioClass = window.AudioContext || window.webkitAudioContext;
+        audioCtx = new AudioClass();
+      }
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+      return audioCtx;
+    }
+
+    function playTone(freq, type, duration, delay = 0, gainLevel = 0.15) {
+      if (!soundEnabled) return;
+      try {
+        const ctx = getAudioContext();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+
+        osc.type = type;
+        osc.frequency.setValueAtTime(freq, ctx.currentTime + delay);
+
+        gain.gain.setValueAtTime(gainLevel, ctx.currentTime + delay);
+        gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + delay + duration);
+
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+
+        osc.start(ctx.currentTime + delay);
+        osc.stop(ctx.currentTime + delay + duration);
+      } catch (e) {
+        console.warn("Audio play error", e);
+      }
+    }
+
+    function playCorrectSfx() {
+      playTone(523.25, 'sine', 0.15, 0.00, 0.20);
+      playTone(659.25, 'sine', 0.16, 0.08, 0.20);
+      playTone(783.99, 'sine', 0.18, 0.16, 0.22);
+      playTone(1046.50, 'sine', 0.35, 0.24, 0.25);
+    }
+
+    function playIncorrectSfx() {
+      playTone(220, 'triangle', 0.18, 0.00, 0.25);
+      playTone(174.61, 'triangle', 0.28, 0.12, 0.25);
+    }
+
+    function tickBgm() {
+      if (!bgmPlaying) return;
+      const note = bgmNotes[bgmIndex % bgmNotes.length];
+      playTone(note.f, 'sine', note.d, 0, 0.035);
+      bgmIndex++;
+      bgmTimer = setTimeout(tickBgm, 420);
+    }
+
+    function toggleSoundEffect() {
+      soundEnabled = !soundEnabled;
+      const btn = document.getElementById('btn-toggle-sound');
+      const text = document.getElementById('sound-text');
+      if (soundEnabled) {
+        btn.classList.add('active');
+        text.textContent = 'SFX: On';
+      } else {
+        btn.classList.remove('active');
+        text.textContent = 'SFX: Off';
+        if (bgmPlaying) toggleBgmMusic();
+      }
+    }
+
+    function toggleBgmMusic() {
+      const btn = document.getElementById('btn-toggle-bgm');
+      const text = document.getElementById('bgm-text');
+      if (bgmPlaying) {
+        bgmPlaying = false;
+        if (bgmTimer) clearTimeout(bgmTimer);
+        btn.classList.remove('active');
+        text.textContent = 'BGM: Off';
+      } else {
+        getAudioContext();
+        soundEnabled = true;
+        document.getElementById('btn-toggle-sound').classList.add('active');
+        document.getElementById('sound-text').textContent = 'SFX: On';
+        bgmPlaying = true;
+        btn.classList.add('active');
+        text.textContent = 'BGM: On';
+        tickBgm();
+      }
+    }
+
+    // Quiz Gameplay Animation & Answer Handling
+    let answered = false;
+    const CORRECT_BELT = 'GOLD';
+
+    function handleAnswerChoice(btn, selectedBelt) {
+      if (answered) return;
+      answered = true;
+
+      const mascot = document.getElementById('mascot-img');
+      const bubble = document.getElementById('avatar-reaction-bubble');
+      const banner = document.getElementById('feedback-banner');
+      const bannerMsg = document.getElementById('feedback-message');
+      const bannerPts = document.getElementById('feedback-points');
+
+      if (selectedBelt === CORRECT_BELT) {
+        // Correct feedback
+        btn.classList.add('feedback-correct');
+        playCorrectSfx();
+        mascot.src = '../assets/avatar-correct.jpg';
+        mascot.style.transform = 'scale(1.12)';
+        bubble.textContent = 'EXCELENTE!';
+        bubble.classList.add('show');
+        
+        banner.className = 'feedback-banner show correct';
+        bannerMsg.textContent = 'Correto! Esteira GOLD identificada.';
+        bannerPts.textContent = '+150 pts';
+      } else {
+        // Incorrect feedback
+        btn.classList.add('feedback-incorrect');
+        playIncorrectSfx();
+        mascot.src = '../assets/avatar-incorrect.jpg';
+        mascot.style.transform = 'scale(0.95)';
+        bubble.textContent = 'QUASE LÁ!';
+        bubble.classList.add('show');
+
+        // Mostra qual era a correta com destaque suave
+        document.querySelectorAll('.belt-option-btn').forEach(b => {
+          if (b.textContent.includes('GOLD')) {
+            b.classList.add('feedback-correct');
+          }
+        });
+
+        banner.className = 'feedback-banner show incorrect';
+        bannerMsg.textContent = 'Incorreto! A esteira correta era GOLD.';
+        bannerPts.textContent = '+0 pts';
+      }
+    }
+
+    function resetQuestionRound() {
+      answered = false;
+      document.querySelectorAll('.belt-option-btn').forEach(b => {
+        b.className = 'belt-option-btn';
+      });
+      const mascot = document.getElementById('mascot-img');
+      const bubble = document.getElementById('avatar-reaction-bubble');
+      const banner = document.getElementById('feedback-banner');
+
+      mascot.src = '../assets/avatar-thinking.jpg';
+      mascot.style.transform = 'scale(1)';
+      bubble.classList.remove('show');
+      banner.className = 'feedback-banner';
+
+      // Atualiza CEP para nova simulação
+      const zips = ['07663-1204', '07010-001', '08500-110', '07120-450'];
+      const nextZip = zips[Math.floor(Math.random() * zips.length)];
+      document.getElementById('question-zip').textContent = nextZip;
+    }
+
+    // Navigation & Themes
+    function switchScreen(screenId) {
+      document.querySelectorAll('.screen-pane').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('.dock-btn').forEach(el => el.classList.remove('active'));
+
+      const targetPane = document.getElementById('screen-' + screenId);
+      if (targetPane) targetPane.classList.add('active');
+
+      const dockBtn = document.getElementById('dock-' + screenId);
+      if (dockBtn) dockBtn.classList.add('active');
+
+      const tabs = Array.from(document.querySelectorAll('.tab-btn'));
+      const activeTab = tabs.find(b => b.getAttribute('onclick').includes(screenId));
+      if (activeTab) activeTab.classList.add('active');
+    }
+
+    function toggleTheme() {
+      const body = document.body;
+      const isDark = body.getAttribute('data-theme') === 'dark';
+      const newTheme = isDark ? 'light' : 'dark';
+      body.setAttribute('data-theme', newTheme);
+      document.getElementById('theme-icon').textContent = isDark ? '🌙' : '☀️';
+    }
+  </script>
+</body>
+</html>
