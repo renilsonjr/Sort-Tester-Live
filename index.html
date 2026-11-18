@@ -18,12 +18,14 @@
      come from BELT_STYLE in src/belts.js and are routing information, never
      restyled here. */
   :root {
-    --bg: #fffdf8; --panel: #fffdf8; --sunk: #ede3d2;
-    --ink: #35271e; --muted: #6e5c4d; --line: #ded4c5;
+    /* Twilight palette (dark glass). Belt colours stay in BELT_STYLE
+       (src/belts.js) and are routing information, never restyled. */
+    --bg: #140d09; --panel: #241811; --sunk: #1a110a;
+    --ink: #fffdf8; --muted: #c9bbab; --line: rgba(255, 255, 255, 0.12);
     --accent: #38261b; --accent-ink: #fffdf8;
     --gold: #f4bd38; --gold-line: #b47d15;
-    --soft: #f7eac7; --soft-line: #d6bc75;
-    --focus: #175e94; --good: #226442; --bad: #a12d2d;
+    --soft: rgba(244, 189, 56, 0.14); --soft-line: rgba(244, 189, 56, 0.3);
+    --focus: #6db6ff; --good: #6cd39a; --bad: #f08a8a;
   }
   * { box-sizing: border-box; }
 
@@ -37,7 +39,8 @@
        this the browser's default 8px body margin overflows the 100dvh card
        screen and every card scrolls. */
     margin: 0;
-    background: #f7f3ec; color: var(--ink);
+    background: radial-gradient(130% 90% at 50% -10%, #3a2516 0%, #1d120b 55%, #0d0805 100%) fixed;
+    color: var(--ink);
     font-family: "DM Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
     font-size: 16px; line-height: 1.45; -webkit-text-size-adjust: 100%;
   }
@@ -737,15 +740,16 @@
     * { animation: none !important; transition: none !important; }
   }
 
-  /* Glassmorphism Trivia UI Tokens & Surfaces for Ranked Mode */
+  /* Glassmorphism twilight tokens & surfaces (dark glass over the twilight
+     gradient). These replace the earlier light/warm-white glass values. */
   :root {
-    --glass-surface: rgba(255, 253, 248, 0.72);
-    --glass-surface-sub: rgba(255, 255, 255, 0.52);
-    --glass-border: rgba(255, 255, 255, 0.85);
-    --glass-border-subtle: rgba(222, 212, 197, 0.55);
-    --glass-highlight: rgba(255, 255, 255, 0.95);
-    --glass-shadow: 0 16px 40px -4px rgba(56, 38, 27, 0.12), 0 4px 12px rgba(56, 38, 27, 0.05);
-    --dock-bg: rgba(255, 253, 248, 0.88);
+    --glass-surface: rgba(38, 26, 18, 0.62);
+    --glass-surface-sub: rgba(56, 38, 27, 0.5);
+    --glass-border: rgba(255, 255, 255, 0.14);
+    --glass-border-subtle: rgba(255, 255, 255, 0.08);
+    --glass-highlight: rgba(255, 255, 255, 0.22);
+    --glass-shadow: 0 16px 40px -4px rgba(0, 0, 0, 0.5), 0 4px 12px rgba(0, 0, 0, 0.3);
+    --dock-bg: rgba(28, 19, 13, 0.85);
     --blur-lg: blur(24px);
     --blur-md: blur(14px);
   }
