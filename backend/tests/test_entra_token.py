@@ -2,6 +2,7 @@
 import logging
 import time
 import unittest
+from contextlib import contextmanager
 
 from backend.db import entra_token
 
@@ -54,13 +55,36 @@ class EntraTokenTests(unittest.TestCase):
         with self.assertRaises(entra_token.TokenUnavailable):
             entra_token.db_access_token()
 
+    @contextmanager
+    def _capture_logs(self):
+        """Capture this module's log records regardless of global logging
+        state. assertLogs requires >=1 record and is defeated by whatever
+        another test left behind; notably alembic's fileConfig runs with
+        disable_existing_loggers=True and sets this logger's .disabled flag,
+        which the app process (migrations run separately) never does. We
+        re-enable the logger for the capture and restore every change."""
+        records = []
+        handler = logging.Handler()
+        handler.emit = records.append
+        logger = logging.getLogger("backend.db.entra_token")
+        previous_level = logger.level
+        previous_disabled = logger.disabled
+        logger.addHandler(handler)
+        logger.setLevel(logging.DEBUG)
+        logger.disabled = False
+        try:
+            yield records
+        finally:
+            logger.removeHandler(handler)
+            logger.setLevel(previous_level)
+            logger.disabled = previous_disabled
+
     def test_token_value_is_never_logged(self):
         entra_token.set_token_fetcher(lambda: _payload("super-secret-token", 3600))
-        with self.assertLogs("backend.db.entra_token", level=logging.DEBUG) as captured:
-            logging.getLogger("backend.db.entra_token").debug("probe")
+        with self._capture_logs() as records:
             entra_token.db_access_token()
         self.assertFalse(
-            any("super-secret-token" in line for line in captured.output),
+            any("super-secret-token" in record.getMessage() for record in records),
             "the token value must never appear in logs",
         )
 
@@ -69,11 +93,11 @@ class EntraTokenTests(unittest.TestCase):
             raise RuntimeError("secret-looking-detail")
 
         entra_token.set_token_fetcher(fetch)
-        with self.assertLogs("backend.db.entra_token", level=logging.DEBUG) as captured:
+        with self._capture_logs() as records:
             try:
                 entra_token.db_access_token()
             except entra_token.TokenUnavailable:
                 pass
-        joined = "\n".join(captured.output)
-        self.assertIn("RuntimeError", joined)
-        self.assertNotIn("secret-looking-detail", joined)
+        messages = "\n".join(record.getMessage() for record in records)
+        self.assertIn("RuntimeError", messages)
+        self.assertNotIn("secret-looking-detail", messages)
