@@ -168,3 +168,23 @@ class VerifiedTlsTests(unittest.TestCase):
         secured = f"{remote}?sslmode=verify-full"
         with mock.patch.dict(os.environ, {settings.ENV_VAR: secured}):
             self.assertEqual(settings.test_database_url(), secured)
+
+
+class DbAuthModeTests(unittest.TestCase):
+    def test_defaults_to_password_when_unset(self):
+        with mock.patch.dict(os.environ, {}, clear=False):
+            os.environ.pop(settings.DB_AUTH_ENV_VAR, None)
+            self.assertEqual(settings.db_auth_mode(), settings.PASSWORD_MODE)
+
+    def test_blank_is_password(self):
+        with mock.patch.dict(os.environ, {settings.DB_AUTH_ENV_VAR: "   "}):
+            self.assertEqual(settings.db_auth_mode(), settings.PASSWORD_MODE)
+
+    def test_managed_identity_is_accepted(self):
+        with mock.patch.dict(os.environ, {settings.DB_AUTH_ENV_VAR: "managed_identity"}):
+            self.assertEqual(settings.db_auth_mode(), settings.MANAGED_IDENTITY_MODE)
+
+    def test_unknown_mode_raises(self):
+        with mock.patch.dict(os.environ, {settings.DB_AUTH_ENV_VAR: "kerberos"}):
+            with self.assertRaises(settings.DatabaseConfigError):
+                settings.db_auth_mode()

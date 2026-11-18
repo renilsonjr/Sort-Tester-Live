@@ -10,9 +10,32 @@ APP_ENV_VAR = "SORT_TESTER_DATABASE_URL"
 SCRATCH_DB_NAME = "sort_tester_unittest_scratch"
 MAINTENANCE_DATABASE = "postgres"
 
+DB_AUTH_ENV_VAR = "SORT_TESTER_DB_AUTH"
+DB_IDENTITY_CLIENT_ID_ENV_VAR = "SORT_TESTER_DB_IDENTITY_CLIENT_ID"
+PASSWORD_MODE = "password"
+MANAGED_IDENTITY_MODE = "managed_identity"
+_DB_AUTH_MODES = (PASSWORD_MODE, MANAGED_IDENTITY_MODE)
+
 
 class DatabaseConfigError(Exception):
     """Raised when the test database connection setting is unset or malformed."""
+
+
+def db_auth_mode() -> str:
+    """Which runtime authentication mode the app uses.
+
+    Defaults to password so development and CI need no new variable. An
+    unknown value stops startup rather than guessing (audit #84).
+    """
+    raw = os.environ.get(DB_AUTH_ENV_VAR, "").strip()
+    if not raw:
+        return PASSWORD_MODE
+    if raw not in _DB_AUTH_MODES:
+        raise DatabaseConfigError(
+            f"{DB_AUTH_ENV_VAR} must be one of {', '.join(_DB_AUTH_MODES)}; "
+            f"got {raw!r}."
+        )
+    return raw
 
 
 # libpq's own default is "prefer", which falls back to an unencrypted
