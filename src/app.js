@@ -388,7 +388,7 @@ async function apiSendOwner(method, path, body) {
 }
 
 function badgeArt(badge) {
-  return `assets/badge-${badge.toLowerCase()}.jpg`;
+  return `assets/badge-${badge.toLowerCase()}.png`;
 }
 
 function balanceLine(entry) {
@@ -408,18 +408,9 @@ function showProfile(tab = 'overview') {
       <p class="lab-eyebrow">${esc(t('Profile'))}</p>
       <h1 class="lab-title" id="profile-name">\u2026</h1>
       <p class="lab-intro" id="profile-tag"></p>
-      <div class="profile-tabs" role="tablist" aria-label="${esc(t('Profile sections'))}">
-        <button type="button" role="tab" data-tab="overview" aria-selected="${tab === 'overview'}">${esc(t('Overview'))}</button>
-        <button type="button" role="tab" data-tab="history" aria-selected="${tab === 'history'}">pre season history</button>
-        <button type="button" role="tab" data-tab="settings" aria-selected="${tab === 'settings'}">${esc(t('Settings'))}</button>
-      </div>
       <div id="profile-panel"><p class="lab-intro">${esc(t('Loading\u2026'))}</p></div>
     </section>
   `, 'profile', () => showProfile(tab));
-
-  view.querySelectorAll('[data-tab]').forEach((button) => button.addEventListener('click', () => {
-    if (button.dataset.tab !== tab) showProfile(button.dataset.tab);
-  }));
 
   const panel = view.querySelector('#profile-panel');
   fillProfile(view, panel, tab);
@@ -433,8 +424,16 @@ async function fillProfile(view, panel, tab) {
     view.querySelector('#profile-tag').textContent = `${t('Tag')} #${me.tag}`;
   }
   if (tab === 'overview') return fillOverview(panel);
-  if (tab === 'history') return fillHistory(panel);
-  return fillSettings(panel);
+  if (tab === 'history') await fillHistory(panel);
+  else await fillSettings(panel);
+  // History and Settings are sub-screens now (the mock profile has no tabs),
+  // so give them a way back to the profile overview.
+  const back = document.createElement('button');
+  back.className = 'ghost';
+  back.textContent = `← ${t('Back')}`;
+  back.addEventListener('click', () => showProfile('overview'));
+  panel.prepend(back);
+  return undefined;
 }
 
 async function fillOverview(panel) {
@@ -443,39 +442,39 @@ async function fillOverview(panel) {
     panel.innerHTML = `<p class="notice">${esc(t('Could not load your balance. Your points are safe.'))}</p>`;
     return;
   }
-  const cap = BADGE_CAP[entry.badge];
-  const filled = cap === undefined ? 100
-    : Math.max(0, Math.min(100, Math.round((entry.points / cap) * 100)));
+  // Profile laid out like the mock: badge, a stats grid, the climb, and a way
+  // into history. Points come from the ledger; Best Ranked / Practices / Place
+  // are not tracked by the backend yet, so they show a placeholder until they
+  // are (see the roadmap issue).
+  const DASH = '\u2014';
+  const tagEl = panel.closest('.lab-screen')?.querySelector('#profile-tag');
+  if (tagEl) tagEl.textContent = `${tagEl.textContent} \u00b7 ${entry.badge} \u00b7 ${entry.points.toLocaleString()} ${t('points')}`;
   panel.innerHTML = `
-    <div class="profile-balance">
-      <img class="profile-badge" src="${badgeArt(entry.badge)}" alt="">
-      <div>
-        <p class="lab-study-meta">${esc(t('Your balance'))}</p>
-        <p class="profile-points">${entry.points.toLocaleString()} ${esc(t('points'))}</p>
-        <div class="profile-bar"><i style="width:${filled}%"></i></div>
-        <p class="lab-study-meta">${esc(balanceLine(entry))}</p>
-      </div>
+    <div class="pf-hero">
+      <img class="pf-badge" src="${badgeArt(entry.badge)}" alt="${esc(entry.badge)}">
+    </div>
+    <div class="pf-stats">
+      <div class="pf-stat"><b>${entry.points.toLocaleString()}</b><small>${esc(t('Points'))}</small></div>
+      <div class="pf-stat"><b>${DASH}</b><small>${esc(t('Best Ranked'))}</small></div>
+      <div class="pf-stat"><b>${DASH}</b><small>${esc(t('Practices'))}</small></div>
+      <div class="pf-stat"><b>${DASH}</b><small>${esc(t('Place'))}</small></div>
     </div>
     ${entry.mode === 'promotion' ? `
     <div class="profile-promo">
       <h2>${esc(t('Promotion available'))}</h2>
       <p>${esc(t('A perfect 15 out of 15 quiz moves you up. Start promotion is on the Ranked screen; nothing starts from here.'))}</p>
     </div>` : ''}
-    <details class="lab-study-card">
-      <summary><span><strong>${esc(t('How badges work'))}</strong></span></summary>
-      <div class="lab-study-body">
-        <ol class="profile-ladder">
-          ${BADGES.map(([name, range]) => `
-          <li ${name === entry.badge ? 'aria-current="true"' : ''}>
-            <img src="${badgeArt(name)}" alt="">
-            <b>${esc(name)}</b>
-            <span>${esc(range)}${name === entry.badge ? ` \u00b7 ${esc(t('you are here'))}` : ''}</span>
-          </li>`).join('')}
-        </ol>
-        <p>${esc(t('One balance decides your badge. Reaching a cap makes promotion available; only a perfect promotion quiz moves you up.'))}</p>
+    <div class="pf-climb">
+      <p class="lab-change-kicker">${esc(t('Your climb'))}</p>
+      <div class="pf-badges">
+        ${[...BADGES].reverse().map(([name]) => `<img class="${name === entry.badge ? '' : 'off'}" src="${badgeArt(name)}" alt="${esc(name)}">`).join('')}
       </div>
-    </details>
+    </div>
+    <button id="pf-history" class="ghost" type="button">${esc(t('See history'))}</button>
+    <button id="pf-settings" class="auth-link" type="button">${esc(t('Settings'))}</button>
   `;
+  panel.querySelector('#pf-history').addEventListener('click', () => showProfile('history'));
+  panel.querySelector('#pf-settings').addEventListener('click', () => showProfile('settings'));
 }
 
 async function fillHistory(panel) {
@@ -1433,7 +1432,22 @@ async function fillLeaderboard(panel) {
     );
     return;
   }
-  const rows = board.rows.map((row) => `
+  // Top three get a 3D-style podium (mock); the rest stay in the list below.
+  const hasPodium = board.rows.length >= 3;
+  const top = board.rows.slice(0, 3);
+  const slot = (row, rank, cls) => !row ? '' : `
+    <div class="pslot ${cls}${row.you ? ' pslot-you' : ''}">
+      ${row.hat ? '<div class="pcrown" aria-hidden="true">♛</div>' : ''}
+      <div class="pdisc">${row.hat ? '♛' : esc(row.username.slice(0, 1).toUpperCase())}</div>
+      <div class="pname">${esc(row.username)}</div>
+      <div class="ppts">◆ ${row.points.toLocaleString()}</div>
+      <div class="ppillar">${rank}</div>
+    </div>`;
+  const podium = hasPodium ? `<div class="podium">
+    ${slot(top[1], 2, 'p2')}${slot(top[0], 1, 'p1')}${slot(top[2], 3, 'p3')}
+  </div>` : '';
+  const listRows = hasPodium ? board.rows.slice(3) : board.rows;
+  const rows = listRows.map((row) => `
     <li class="${row.you ? 'board-you' : ''}${row.hat ? ' board-hat' : (row.tied ? ' board-tied' : '')}">
       <span class="board-place">${row.hat ? '♛' : row.place}</span>
       <span class="board-who">
@@ -1460,6 +1474,7 @@ async function fillLeaderboard(panel) {
     : '';
   panel.innerHTML = `
     <p class="lab-intro">${esc(intro)}</p>
+    ${podium}
     <ol class="board">${rows}</ol>
     ${placeLine}
     ${board.eligible ? '' : boardNotice(
@@ -1615,12 +1630,13 @@ async function playRankedAttempt(attempt, mode, tally) {
     <section class="lab-screen" id="rq-play">
       <div class="tb-top">
         <span class="lab-eyebrow" id="rq-count">${esc(t('Question'))} ${q.seq} ${esc(t('of'))} 15</span>
-        <span class="lab-eyebrow" id="rq-clock"></span>
+        <div class="rq-ring" id="rq-clock" role="timer" aria-label="${esc(t('seconds'))}"><span id="rq-ring-num"></span></div>
       </div>
       <div class="tb-bar"><i id="rq-bar-fill"></i></div>
       <p class="rq-stake">${esc(mode === 'promotion'
         ? `◆ ${t('Promotion')} · ${tally.correctCount} ${t('of')} ${q.seq - 1} ${t('right so far')}`
         : `◆ ${t('Ranked')} · ${t('this attempt counts for points')}`)}</p>
+      <div class="rq-stage">${quizAvatar('thinking')}</div>
       <div id="rq-question"></div>
       <button id="rq-cancel" class="ghost">${esc(t('Cancel this attempt'))}</button>
     </section>
@@ -1642,10 +1658,13 @@ async function playRankedAttempt(attempt, mode, tally) {
   function startCountdown(deadlineMs, totalMs) {
     const paint = () => {
       const left = deadlineMs - Date.now();
-      const el2 = view.querySelector('#rq-clock');
-      if (el2) el2.textContent = `${Math.max(0, Math.ceil(left / 1000))} ${t('seconds')}`;
+      const pct = Math.max(0, Math.min(100, (left / totalMs) * 100));
+      const ring = view.querySelector('#rq-clock');
+      const num = view.querySelector('#rq-ring-num');
+      if (num) num.textContent = Math.max(0, Math.ceil(left / 1000));
+      if (ring) { ring.style.setProperty('--pct', pct); ring.classList.toggle('low', left <= 3000); }
       const fill = view.querySelector('#rq-bar-fill');
-      if (fill) fill.style.width = `${Math.max(0, Math.min(100, (left / totalMs) * 100))}%`;
+      if (fill) fill.style.width = `${pct}%`;
       if (left <= 0) stopTimer();
     };
     paint();
@@ -1688,6 +1707,7 @@ function showRankedFeedback(attempt, mode, q, chosen, response, tally) {
     : (response.outcome === 'timeout' ? t('Time ran out') : t('Review this route'));
   const view = labPage(`
     <section class="lab-screen">
+      <div class="rq-stage">${quizAvatar(right ? 'happy' : 'sad')}</div>
       <h1 class="lab-title rq-verdict ${right ? 'good' : 'bad'}">${esc(verdict)}</h1>
       ${mode === 'promotion'
         ? (promoCorrect
@@ -1789,6 +1809,7 @@ function showRankedResult(mode, result, tally, { quit = false, attemptId = null 
     && result.points_after < result.points_before;
   const view = labPage(`
     <section class="lab-screen">
+      <div class="rq-stage rq-stage-sm">${quizAvatar('idle')}</div>
       <p class="lab-eyebrow">${esc(t('Ranked'))} · ${esc(t(quit ? 'attempt ended' : 'attempt finished'))}</p>
       <h1 class="lab-title">${esc(tally.correctCount)} ${esc(t('of'))} 15 ${esc(t('correct'))}</h1>
       ${rankedSum(result, quit)}
@@ -2359,12 +2380,17 @@ function leaveRun() {
 // The approved Blender avatar, rendered to stills. The animated model is
 // 2 MB with its viewer, so it stays out of the question screens, which
 // re-render once per question.
-const AVATAR_POSE = { thinking: 'thinking', happy: 'correct', sad: 'incorrect' };
+const AVATAR_POSE = { thinking: 'thinking', happy: 'correct', sad: 'incorrect', idle: 'idle' };
 
 function quizAvatar(mood) {
   const label = mood === 'thinking' ? 'Blue mascot thinking with a question mark'
-    : mood === 'happy' ? 'Happy blue mascot' : 'Sad blue mascot';
-  return `<img class="quiz-avatar" src="assets/avatar-${AVATAR_POSE[mood]}.jpg" alt="${esc(t(label))}">`;
+    : mood === 'happy' ? 'Happy blue mascot'
+    : mood === 'idle' ? 'Blue mascot'
+    : 'Sad blue mascot';
+  // The approved animated Blender avatar (Three.js viewer), transparent
+  // background, driven by the ?state= pose. Heavier than a still but clean.
+  return `<iframe class="quiz-avatar3d" title="${esc(t(label))}" scrolling="no"
+    src="assets/avatar3d/embed.html?state=${AVATAR_POSE[mood]}"></iframe>`;
 }
 
 function quizHeader(cardNumber, total, withTimer = false) {

@@ -52,22 +52,19 @@ export function createAuthPanel(container, onContinueAsGuest, onLoggedIn) {
   // Keep entry choices compact; a form replaces them while it is open.
   container.innerHTML = `
     <div class="auth-screen">
-      <div class="auth-brand"><span class="lab-mark" aria-hidden="true">RJ</span> Sort Lab</div>
-      <h1 class="sr-only">Welcome to Sort Lab</h1>
-      <div id="auth-choices" class="auth-choices">
-        <div class="auth-card">
-          <p class="auth-eyebrow">With an account</p>
-          <h2>Keep your results</h2>
-          <p class="auth-copy">Log in to keep your quiz history on this account.</p>
-          <button id="auth-login-btn" class="primary">Log in</button>
-          <button id="auth-register-btn" class="ghost">Create account</button>
-        </div>
-        <div class="auth-card guest">
-          <p class="auth-eyebrow">No account</p>
-          <h2>Study and practice</h2>
-          <p class="auth-copy">Study the chart and take quizzes. Nothing is saved to an account.</p>
-          <button id="auth-guest-btn" class="ghost">Continue as guest</button>
-        </div>
+      <div class="brandmark" aria-hidden="true">RJ</div>
+      <div class="auth-head">
+        <h1 class="auth-title">Sort Lab</h1>
+        <p class="auth-sub">Learn the chart. Play Ranked. Climb the leaderboard.</p>
+      </div>
+      <div id="auth-choices" class="auth-card">
+        <p class="auth-eyebrow">Log in</p>
+        <label class="sr-only" for="login-id-input">Login ID</label>
+        <input id="login-id-input" class="glass-input" type="text" autocomplete="off" placeholder="Your login ID">
+        <button id="auth-login-btn" class="primary">Log in with ID</button>
+        <button id="auth-guest-btn" class="ghost">Continue as guest</button>
+        <p class="auth-note">Ranked needs a login. Guests get Practice only.</p>
+        <button id="auth-register-btn" class="auth-link" type="button">Need an ID? Create an account</button>
       </div>
       <div id="auth-form" class="auth-card" hidden></div>
       <p id="auth-message" class="warn"></p>
@@ -91,33 +88,23 @@ export function createAuthPanel(container, onContinueAsGuest, onLoggedIn) {
     message.className = isError ? 'notice' : 'warn';
   }
 
-  container.querySelector('#auth-login-btn').addEventListener('click', () => {
-    choices.hidden = true;
-    showMessage('');
-    form.hidden = false;
-    form.innerHTML = `
-      <label class="field">
-        <span>Login ID</span>
-        <input id="login-id-input" type="text" autocomplete="off" placeholder="ABCD-EFGH-JKLM-NPQR">
-      </label>
-      <button id="login-submit" class="primary">Log in</button>
-      <button id="login-cancel" class="ghost">Cancel</button>
-    `;
-    form.querySelector('#login-id-input').focus();
-    form.querySelector('#login-submit').addEventListener('click', async () => {
-      const loginId = form.querySelector('#login-id-input').value;
-      const result = await loginWithId(loginId);
-      if (result.ok) {
-        showMessage(`Welcome, ${result.data.username}#${result.data.tag}`);
-        form.hidden = true;
-        if (onLoggedIn) onLoggedIn(result.data);
-      } else if (result.status === 0) {
-        showMessage('Could not reach the server. Your login ID is fine; try again in a moment.', true);
-      } else {
-        showMessage('Invalid login ID. Please try again.', true);
-      }
-    });
-    form.querySelector('#login-cancel').addEventListener('click', () => closeForm('#auth-login-btn'));
+  // The login ID is entered directly on the entry card (mock's single-card
+  // entry); "Log in with ID" (or Enter) submits it.
+  async function doLogin() {
+    const loginId = container.querySelector('#login-id-input').value;
+    const result = await loginWithId(loginId);
+    if (result.ok) {
+      showMessage(`Welcome, ${result.data.username}#${result.data.tag}`);
+      if (onLoggedIn) onLoggedIn(result.data);
+    } else if (result.status === 0) {
+      showMessage('Could not reach the server. Your login ID is fine; try again in a moment.', true);
+    } else {
+      showMessage('Invalid login ID. Please try again.', true);
+    }
+  }
+  container.querySelector('#auth-login-btn').addEventListener('click', doLogin);
+  container.querySelector('#login-id-input').addEventListener('keydown', (event) => {
+    if (event.key === 'Enter') { event.preventDefault(); doLogin(); }
   });
 
   container.querySelector('#auth-register-btn').addEventListener('click', () => {

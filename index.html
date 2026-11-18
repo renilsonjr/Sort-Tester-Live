@@ -18,12 +18,14 @@
      come from BELT_STYLE in src/belts.js and are routing information, never
      restyled here. */
   :root {
-    --bg: #fffdf8; --panel: #fffdf8; --sunk: #ede3d2;
-    --ink: #35271e; --muted: #6e5c4d; --line: #ded4c5;
+    /* Twilight palette (dark glass). Belt colours stay in BELT_STYLE
+       (src/belts.js) and are routing information, never restyled. */
+    --bg: #140d09; --panel: #241811; --sunk: #1a110a;
+    --ink: #fffdf8; --muted: #c9bbab; --line: rgba(255, 255, 255, 0.12);
     --accent: #38261b; --accent-ink: #fffdf8;
     --gold: #f4bd38; --gold-line: #b47d15;
-    --soft: #f7eac7; --soft-line: #d6bc75;
-    --focus: #175e94; --good: #226442; --bad: #a12d2d;
+    --soft: rgba(244, 189, 56, 0.14); --soft-line: rgba(244, 189, 56, 0.3);
+    --focus: #6db6ff; --good: #6cd39a; --bad: #f08a8a;
   }
   * { box-sizing: border-box; }
 
@@ -37,7 +39,8 @@
        this the browser's default 8px body margin overflows the 100dvh card
        screen and every card scrolls. */
     margin: 0;
-    background: #f7f3ec; color: var(--ink);
+    background: radial-gradient(130% 90% at 50% -10%, #2b1b11 0%, #160d07 52%, #0a0504 100%) fixed;
+    color: var(--ink);
     font-family: "DM Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
     font-size: 16px; line-height: 1.45; -webkit-text-size-adjust: 100%;
   }
@@ -737,15 +740,16 @@
     * { animation: none !important; transition: none !important; }
   }
 
-  /* Glassmorphism Trivia UI Tokens & Surfaces for Ranked Mode */
+  /* Glassmorphism twilight tokens & surfaces (dark glass over the twilight
+     gradient). These replace the earlier light/warm-white glass values. */
   :root {
-    --glass-surface: rgba(255, 253, 248, 0.72);
-    --glass-surface-sub: rgba(255, 255, 255, 0.52);
-    --glass-border: rgba(255, 255, 255, 0.85);
-    --glass-border-subtle: rgba(222, 212, 197, 0.55);
-    --glass-highlight: rgba(255, 255, 255, 0.95);
-    --glass-shadow: 0 16px 40px -4px rgba(56, 38, 27, 0.12), 0 4px 12px rgba(56, 38, 27, 0.05);
-    --dock-bg: rgba(255, 253, 248, 0.88);
+    --glass-surface: rgba(38, 26, 18, 0.62);
+    --glass-surface-sub: rgba(56, 38, 27, 0.5);
+    --glass-border: rgba(255, 255, 255, 0.14);
+    --glass-border-subtle: rgba(255, 255, 255, 0.08);
+    --glass-highlight: rgba(255, 255, 255, 0.22);
+    --glass-shadow: 0 16px 40px -4px rgba(0, 0, 0, 0.5), 0 4px 12px rgba(0, 0, 0, 0.3);
+    --dock-bg: rgba(28, 19, 13, 0.85);
     --blur-lg: blur(24px);
     --blur-md: blur(14px);
   }
@@ -829,6 +833,137 @@
     20%, 60% { box-shadow: 0 0 0 5px rgba(161, 45, 45, 0.4), 0 0 20px 4px var(--bad); transform: translateX(-5px); filter: brightness(1.15); }
     40%, 80% { box-shadow: 0 0 0 5px rgba(161, 45, 45, 0.4), 0 0 20px 4px var(--bad); transform: translateX(5px); filter: brightness(1.15); }
   }
+
+  /* ============================================================
+     Twilight glass — component port to match the approved mock
+     (mockups/app-redesign-mock.html). Appended last, so these are
+     the styles in force. Visual only; behaviour unchanged. Belt
+     colours (src/belts.js) are never restyled here.
+     ============================================================ */
+  :root { --r-md: 22px; --r-sm: 14px; }
+
+  /* Crisper glass cards with a soft top highlight */
+  .lab-change, .lab-choice, .auth-card, .quiz-card, .rq-cmp, .sum,
+  .profile-balance, .board li, .reauth-card, .owner-form, .cases li, .approved li {
+    background: rgba(48, 32, 22, 0.62);
+    border: 1px solid rgba(255, 255, 255, 0.11);
+    border-radius: var(--r-md);
+    box-shadow: 0 20px 45px -14px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  }
+
+  /* Hero art rounded like the mock */
+  .lab-campaign { margin: 0; }
+  .lab-campaign img { display: block; width: 100%; height: auto; border-radius: var(--r-md); border: 1px solid rgba(255, 255, 255, 0.08); }
+
+  /* Gold eyebrows / section headings */
+  .lab-change-kicker { color: var(--gold); text-transform: uppercase; letter-spacing: .14em; font-weight: 900; font-size: 11px; }
+  .lab-change-note { color: var(--muted); }
+
+  /* Choice cards — gold-tinted icon and gold arrow (mock .choice) */
+  .lab-choice { border-radius: var(--r-sm); padding: 14px; gap: 12px; box-shadow: 0 10px 26px -12px rgba(0,0,0,0.6); }
+  .lab-choice-icon, .lab-choice-quiz .lab-choice-icon {
+    background: rgba(244, 189, 56, 0.14); border: 1px solid rgba(244, 189, 56, 0.32);
+    color: var(--gold); border-radius: 12px; width: 44px; height: 44px; font-size: 16px; font-weight: 800;
+  }
+  .lab-choice small { color: var(--muted); }
+  .lab-arrow { color: var(--gold); font-weight: 900; }
+
+  /* Buttons matched to the mock (.btn / .btn.ghost): radius 14, padding 14 */
+  .primary {
+    background: linear-gradient(135deg, var(--gold) 0%, #d89115 100%);
+    color: #2a1c10; border: 1px solid rgba(255, 255, 255, 0.45);
+    border-radius: var(--r-sm); padding: 14px; font-size: 15px; font-weight: 900;
+    box-shadow: 0 8px 20px -6px rgba(244, 189, 56, 0.5);
+  }
+  .ghost { border-radius: var(--r-sm); padding: 14px; font-weight: 800; background: var(--glass-surface-sub); border: 1px solid var(--glass-border); }
+  input, .glass-input { border-radius: var(--r-sm); }
+
+  /* Brand mark in gold (mock brandmark) */
+  .lab-mark {
+    background: linear-gradient(135deg, var(--gold), #d89115); color: #2a1c10;
+    border-radius: 12px;
+  }
+
+  /* Dock labels/icons readable on the dark glass dock */
+  .lab-nav button { color: var(--muted); }
+
+  /* Language toggle as glass */
+  .lab-language button { background: var(--glass-surface-sub); border: 1px solid var(--glass-border); color: var(--ink); backdrop-filter: var(--blur-md); -webkit-backdrop-filter: var(--blur-md); }
+  .lab-language button[aria-pressed="true"] { border-color: var(--gold); color: var(--ink); }
+
+  /* Avatar now a transparent portrait PNG (was a landscape JPG): contain it */
+  .quiz-avatar { width: auto; max-width: 68%; height: auto; aspect-ratio: auto; object-fit: contain; display: block; margin: 0 auto; filter: drop-shadow(0 10px 18px rgba(0, 0, 0, 0.45)); }
+
+  /* Animated 3D avatar viewer (transparent iframe) */
+  .quiz-avatar3d { width: 100%; height: 190px; border: 0; display: block; background: transparent; }
+
+  /* Ranked quiz — avatar stage, belts and timer bar (match the mock) */
+  .rq-stage { height: 160px; margin: 2px 0 4px; border-radius: var(--r-md); border: 1px solid rgba(255, 255, 255, 0.08); background: radial-gradient(ellipse at center, rgba(244, 189, 56, 0.12), rgba(26, 17, 10, 0.12)); display: grid; place-items: center; overflow: hidden; }
+  .rq-stage .quiz-avatar { max-width: none; height: 138px; filter: drop-shadow(0 12px 22px rgba(0, 0, 0, 0.5)); }
+  .rq-stage .quiz-avatar3d { height: 100%; }
+  .rq-stake { color: var(--muted); }
+  /* Ring timer (mock): conic gold ring with the seconds on a dark disc */
+  .rq-ring { width: 46px; height: 46px; border-radius: 50%; display: grid; place-items: center; font-weight: 900; font-size: 14px; color: var(--gold); background: conic-gradient(var(--gold) calc(var(--pct, 100) * 1%), rgba(255, 255, 255, 0.12) 0); }
+  .rq-ring.low { color: var(--bad); background: conic-gradient(var(--bad) calc(var(--pct, 0) * 1%), rgba(255, 255, 255, 0.12) 0); }
+  .rq-ring span { width: 36px; height: 36px; border-radius: 50%; background: #1a110a; display: grid; place-items: center; }
+  .tb-bar { background: rgba(255, 255, 255, 0.1); }
+  .tb-bar i { background: linear-gradient(90deg, var(--gold), #ffe08a); }
+  /* Balance meter on Ranked home / Profile: dark track, gold fill */
+  .profile-bar { background: rgba(255, 255, 255, 0.1); }
+  .profile-bar i { background: linear-gradient(90deg, var(--gold), #ffe08a); }
+
+  /* Profile laid out like the mock: centered badge, stats grid, climb row */
+  .pf-hero { display: flex; flex-direction: column; align-items: center; gap: 8px; text-align: center; }
+  .pf-badge { width: 92px; height: 92px; object-fit: contain; filter: drop-shadow(0 6px 16px rgba(0, 0, 0, 0.45)) drop-shadow(0 0 14px rgba(244, 189, 56, 0.22)); }
+  .pf-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; }
+  .pf-stat { padding: 14px; border-radius: var(--r-sm); text-align: center; background: var(--glass-surface-sub); border: 1px solid var(--glass-border); }
+  .pf-stat b { display: block; font-size: 24px; font-weight: 900; }
+  .pf-stat small { font-size: 11px; color: var(--muted); }
+  .pf-climb { padding: 14px; border-radius: var(--r-md); background: var(--glass-surface-sub); border: 1px solid var(--glass-border); }
+  .pf-badges { display: flex; justify-content: space-between; gap: 8px; margin-top: 9px; }
+  .pf-badges img { width: 46px; height: 46px; object-fit: contain; filter: drop-shadow(0 3px 7px rgba(0, 0, 0, 0.4)); }
+  .pf-badges img.off { opacity: 0.32; filter: grayscale(1); }
+  .belts .belt { border: 1px solid rgba(255, 255, 255, 0.18); box-shadow: inset 0 0 0 100px rgba(255, 255, 255, 0.04); }
+  .rq-stage-sm { height: 120px; }
+  .rq-stage-sm .quiz-avatar { height: 108px; }
+
+  /* Leaderboard — 3D-style podium (match the mock) */
+  .podium { display: flex; align-items: flex-end; justify-content: center; gap: 8px; margin: 6px 0 12px; }
+  .pslot { display: flex; flex-direction: column; align-items: center; gap: 5px; width: 33%; max-width: 112px; }
+  .pcrown { font-size: 16px; color: var(--gold); line-height: 1; }
+  .pdisc { width: 46px; height: 46px; border-radius: 50%; display: grid; place-items: center; font-weight: 900; font-size: 18px; color: var(--ink); background: var(--glass-surface-sub); border: 2px solid var(--glass-border); }
+  .pslot.p1 .pdisc { width: 56px; height: 56px; border-color: var(--gold); box-shadow: 0 0 18px rgba(244, 189, 56, 0.5); }
+  .pslot-you .pdisc { border-color: var(--gold); }
+  .pname { font-size: 11px; font-weight: 800; }
+  .ppts { font-size: 10.5px; color: var(--gold); font-weight: 800; }
+  .ppillar { width: 100%; border-radius: 12px 12px 0 0; display: grid; place-items: center; font-weight: 900; font-size: 22px; color: var(--ink); background: linear-gradient(180deg, rgba(244, 189, 56, 0.22), var(--glass-surface-sub)); border: 1px solid var(--glass-border-subtle); border-bottom: 0; }
+  .pslot.p1 .ppillar { height: 86px; } .pslot.p2 .ppillar { height: 66px; } .pslot.p3 .ppillar { height: 54px; }
+
+  /* Entry / login — single card like the mock. The panel gets a dark rgba
+     scrim (still translucent) so the twilight reads dark, not washed by orbs. */
+  #auth-panel { background: rgba(13, 8, 5, 0.86); }
+  .auth-screen { align-items: center; text-align: center; }
+  .auth-screen .brandmark { width: 64px; height: 64px; border-radius: 20px; display: grid; place-items: center; font: 900 26px/1 Arial, Helvetica, sans-serif; color: #2a1c10; background: linear-gradient(135deg, var(--gold), #d89115); box-shadow: 0 10px 26px -6px rgba(244, 189, 56, 0.55); }
+  .auth-title { font-size: 26px; font-weight: 900; margin: 0; letter-spacing: -0.03em; }
+  .auth-sub { margin: 4px 0 0; color: var(--muted); font-size: 14px; }
+  .auth-head { margin: 0; }
+  #auth-panel .auth-card { text-align: left; width: 100%; }
+  #auth-panel .auth-card .auth-eyebrow { color: var(--gold); }
+  .auth-note { margin: 2px 0 0; color: var(--muted); font-size: 12.5px; text-align: center; }
+  .auth-link { background: transparent; border: 0; color: var(--gold); font-weight: 800; font-size: 13px; width: 100%; padding: 4px; cursor: pointer; }
+
+  /* The app screen is an opaque dark panel (like the mock's phone screen), so
+     the UI reads crisp and dark; the ambient orbs stay behind it and only peek
+     at the edges on wide screens. */
+  #app { background: radial-gradient(120% 80% at 50% 0%, #2e1d12 0%, #140d08 68%); border: 0; box-shadow: 0 16px 70px rgba(0,0,0,0.5); backdrop-filter: none; -webkit-backdrop-filter: none; }
+  .orb-gold { opacity: 0.30; }
+  .orb-amber { opacity: 0.24; }
+  .orb-blue { opacity: 0.2; }
+
+  /* Leaderboard rows: keep tied/hat/you rows on dark glass, gold accents */
+  .board li.board-tied, .board li.board-hat { background: var(--glass-surface-sub); border-color: rgba(244, 189, 56, 0.4); }
+  .board li.board-hat .board-place { color: var(--gold); }
+  .board li.board-you { border: 2px solid var(--gold); }
 
 </style>
 </head>
