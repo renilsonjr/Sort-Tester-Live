@@ -125,3 +125,85 @@ employee rollout remain separate checks under #13 and [[security-foundation]].
 
 Removed agent-created secret parameter/deployment-result files from Cloud Shell.
 [Image publication evidence](https://github.com/renilsonjr/Sort-Tester-Live/actions/runs/43831986133).
+
+## Managed-identity mode (#84) — procedure, NOT YET APPLIED
+
+Status: **not applied.** This records the reviewed procedure to replace the
+runtime password with a short-lived Entra token. No Azure write, grant change,
+deployment or server-wide `passwordAuth` change follows from documenting it.
+Prepare and test opt-in identity authentication locally and in CI first,
+preserving password mode for local development, and review the role, grants,
+runtime configuration and rollback before any live Azure change.
+
+### What the code does
+
+The app selects its mode with `SORT_TESTER_DB_AUTH` (`password`, the default,
+or `managed_identity`). In managed-identity mode the connection password is a
+fresh Entra token the app fetches from IMDS per physical connection and caches
+until near expiry; the DSN carries **no password**, the database user is the
+Entra role, and TLS stays `verify-full` where the image's CA bundle is
+confirmed (Task 7 step 3), else `require`. The app reuses the existing
+user-assigned managed identity; its client id is supplied as
+`SORT_TESTER_DB_IDENTITY_CLIENT_ID`. Token or connection failure returns a
+clean HTTP 503 with no secret logged.
+
+### Map the identity to a least-privilege Entra role — reviewed, not applied
+
+Connect to the application database as the server's **Entra administrator**
+(not the password admin), in a private Cloud Shell, with verified TLS. First
+verify the exact server, database and the identity's object id against the
+reviewed values; do not proceed on a guessed name or id.
+
+The mapping creates an Entra-authenticated role for the existing identity and
+grants it the **same runtime privileges as `sort_app` and no more** — read and
+write app data, `USAGE` on sequences, and no superuser, `CREATE`, DDL or
+migration authority. Using non-secret shell variables set to the verified
+values (`$MI_ROLE` the new role name, `$MI_OBJECT_ID` the identity's object id,
+`$APP_DATABASE` the application database):
+
+```sql
+-- As the Entra administrator, in the application database:
+SELECT pgaadauth_create_principal_with_oid(:'mi_role', :'mi_object_id', 'service', false, false);
+
+-- Mirror the sort_app runtime grants exactly; grant nothing the migration
+-- owner holds. Review db-role.sql and keep this list identical to it.
+GRANT CONNECT ON DATABASE :"app_database" TO :"mi_role";
+GRANT USAGE ON SCHEMA public TO :"mi_role";
+GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO :"mi_role";
+GRANT USAGE ON ALL SEQUENCES IN SCHEMA public TO :"mi_role";
+-- Keep alembic_version and tooling_probe OUT of the runtime grants, as
+-- db-role.sql does; revoke if the ALL-TABLES grant included them.
+REVOKE ALL ON alembic_version, tooling_probe FROM :"mi_role";
+```
+
+Then **verify the actual mapping and grants against the live server** —
+existing registry and Key Vault access the identity already holds is not
+database access and must not be assumed to grant it. Confirm the role cannot
+`CREATE TABLE`, `ALTER TABLE`, or write `alembic_version`, exactly as the
+password role was verified above.
+
+### Rollback to password mode — tested before the forward cutover
+
+Set `SORT_TESTER_DB_AUTH=password` (or unset it) and confirm the Key Vault
+password reference still resolves as the `sort_app` DSN. Apply the change on a
+**new revision** — a restart does not re-read the vault secret (see
+[[container-apps-app]] §9b). Exercise this rollback and confirm the app serves
+on the password credential before the forward cutover is trusted.
+
+### Ordered deploy and verification — gated on separate owner approval
+
+None of these is run as part of preparing this work:
+
+1. Deploy with `SORT_TESTER_DB_AUTH=managed_identity` and the identity client
+   id set; the runtime DSN carries no password.
+2. Verify hosted identity login, reconnect after an idle period, and a token
+   refresh across the token lifetime; database-dependent requests return 503
+   only when no connection can be made, never a logged secret.
+3. Verify administrator and migration access still work through their intended
+   Entra path; the migration identity stays separate from the runtime role.
+4. Only after the above, and separately approved: remove the runtime password
+   reference from Key Vault, and consider disabling server-wide `passwordAuth`
+   after confirming administrator/migration access through its Entra path.
+
+This does not approve the employee pilot (#13), expand Azure access, or
+authorise any deployment.
