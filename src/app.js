@@ -2385,7 +2385,10 @@ function quizAvatar(mood) {
     : mood === 'happy' ? 'Happy blue mascot'
     : mood === 'idle' ? 'Blue mascot'
     : 'Sad blue mascot';
-  return `<img class="quiz-avatar" src="assets/avatar-${AVATAR_POSE[mood]}.png" alt="${esc(t(label))}">`;
+  // The approved animated Blender avatar (Three.js viewer), transparent
+  // background, driven by the ?state= pose. Heavier than a still but clean.
+  return `<iframe class="quiz-avatar3d" title="${esc(t(label))}" scrolling="no"
+    src="assets/avatar3d/embed.html?state=${AVATAR_POSE[mood]}"></iframe>`;
 }
 
 function quizHeader(cardNumber, total, withTimer = false) {
