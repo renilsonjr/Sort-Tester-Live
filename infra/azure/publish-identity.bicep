@@ -26,8 +26,8 @@ param expiresOn string
 @description('The GitHub repository allowed to publish, as owner/name.')
 param repository string
 
-@description('The single branch allowed to publish from. A federated credential matches one subject exactly, so a second branch needs a second credential and a second review.')
-param publishBranch string = 'codex/ranked-mode'
+@description('The subject GitHub actually presents, copied from a run. A federated credential matches it exactly, so a second branch or environment needs a second credential and a second review.')
+param federatedSubject string
 
 // AcrPush: push and pull images. Verified against Microsoft's published
 // built-in role list; AcrPull on the same page matches the GUID already
@@ -47,6 +47,10 @@ resource publishIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2024-
     environment: 'staging'
     'data-classification': 'fictional-only'
     purpose: 'ci-registry-push'
+    // The subject below carries numeric ids, so it says nothing to a
+    // reader. This tag is how someone looking at the identity in the
+    // portal can tell which repository it trusts.
+    repository: repository
     'expires-on': expiresOn
   }
 }
@@ -60,7 +64,20 @@ resource federated 'Microsoft.ManagedIdentity/userAssignedIdentities/federatedId
   name: 'github-publish'
   properties: {
     issuer: 'https://token.actions.githubusercontent.com'
-    subject: 'repo:${repository}:ref:refs/heads/${publishBranch}'
+    // Not built from the repository name, because two things change it
+    // and neither is guessable from the outside:
+    //
+    //   * a job with `environment:` gets `:environment:<name>` in place
+    //     of `:ref:refs/heads/<branch>` -- so the publish gate added in
+    //     Task 8 changed the identity CI presents;
+    //   * an account using immutable claims gets numeric ids folded in,
+    //     as `owner@<id>/repo@<id>`, which is better (a rename cannot
+    //     inherit the trust) but is not the form the docs show.
+    //
+    // Read it from a run instead of predicting it: Azure's refusal
+    // prints 'No matching federated identity record found for presented
+    // assertion subject ...', and that string is the value to pass here.
+    subject: federatedSubject
     audiences: ['api://AzureADTokenExchange']
   }
 }
