@@ -3,12 +3,14 @@ import re
 from pathlib import Path
 from urllib.parse import urlsplit
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request, status
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
+from psycopg_pool import PoolTimeout
 
 from backend import http_hardening, origin_guard
+from backend.db.entra_token import TokenUnavailable
 from backend.auth import settings as auth_settings
 from backend.auth.rate_limit import RegistrationLimiter
 from backend.routers import auth, ranked
@@ -72,6 +74,18 @@ def create_app() -> FastAPI:
 
     application.include_router(auth.router)
     application.include_router(ranked.router)
+
+    @application.exception_handler(TokenUnavailable)
+    @application.exception_handler(PoolTimeout)
+    def _database_unavailable(_request: Request, _exc: Exception) -> JSONResponse:
+        # No token or DSN is read from the exception, so nothing secret can
+        # reach the client or the log. A request that needs a *new*
+        # connection while none can be made gets this; healthy pooled
+        # connections keep serving (audit #84).
+        return JSONResponse(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            content={"detail": "database temporarily unavailable"},
+        )
 
     @application.get("/health")
     def health() -> dict[str, str]:
