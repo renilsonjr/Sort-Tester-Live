@@ -911,6 +911,18 @@
   /* Balance meter on Ranked home / Profile: dark track, gold fill */
   .profile-bar { background: rgba(255, 255, 255, 0.1); }
   .profile-bar i { background: linear-gradient(90deg, var(--gold), #ffe08a); }
+
+  /* Profile laid out like the mock: centered badge, stats grid, climb row */
+  .pf-hero { display: flex; flex-direction: column; align-items: center; gap: 8px; text-align: center; }
+  .pf-badge { width: 92px; height: 92px; object-fit: contain; filter: drop-shadow(0 6px 16px rgba(0, 0, 0, 0.45)) drop-shadow(0 0 14px rgba(244, 189, 56, 0.22)); }
+  .pf-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; }
+  .pf-stat { padding: 14px; border-radius: var(--r-sm); text-align: center; background: var(--glass-surface-sub); border: 1px solid var(--glass-border); }
+  .pf-stat b { display: block; font-size: 24px; font-weight: 900; }
+  .pf-stat small { font-size: 11px; color: var(--muted); }
+  .pf-climb { padding: 14px; border-radius: var(--r-md); background: var(--glass-surface-sub); border: 1px solid var(--glass-border); }
+  .pf-badges { display: flex; justify-content: space-between; gap: 8px; margin-top: 9px; }
+  .pf-badges img { width: 46px; height: 46px; object-fit: contain; filter: drop-shadow(0 3px 7px rgba(0, 0, 0, 0.4)); }
+  .pf-badges img.off { opacity: 0.32; filter: grayscale(1); }
   .belts .belt { border: 1px solid rgba(255, 255, 255, 0.18); box-shadow: inset 0 0 0 100px rgba(255, 255, 255, 0.04); }
   .rq-stage-sm { height: 120px; }
   .rq-stage-sm .quiz-avatar { height: 108px; }

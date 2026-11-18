@@ -408,18 +408,9 @@ function showProfile(tab = 'overview') {
       <p class="lab-eyebrow">${esc(t('Profile'))}</p>
       <h1 class="lab-title" id="profile-name">\u2026</h1>
       <p class="lab-intro" id="profile-tag"></p>
-      <div class="profile-tabs" role="tablist" aria-label="${esc(t('Profile sections'))}">
-        <button type="button" role="tab" data-tab="overview" aria-selected="${tab === 'overview'}">${esc(t('Overview'))}</button>
-        <button type="button" role="tab" data-tab="history" aria-selected="${tab === 'history'}">pre season history</button>
-        <button type="button" role="tab" data-tab="settings" aria-selected="${tab === 'settings'}">${esc(t('Settings'))}</button>
-      </div>
       <div id="profile-panel"><p class="lab-intro">${esc(t('Loading\u2026'))}</p></div>
     </section>
   `, 'profile', () => showProfile(tab));
-
-  view.querySelectorAll('[data-tab]').forEach((button) => button.addEventListener('click', () => {
-    if (button.dataset.tab !== tab) showProfile(button.dataset.tab);
-  }));
 
   const panel = view.querySelector('#profile-panel');
   fillProfile(view, panel, tab);
@@ -433,8 +424,16 @@ async function fillProfile(view, panel, tab) {
     view.querySelector('#profile-tag').textContent = `${t('Tag')} #${me.tag}`;
   }
   if (tab === 'overview') return fillOverview(panel);
-  if (tab === 'history') return fillHistory(panel);
-  return fillSettings(panel);
+  if (tab === 'history') await fillHistory(panel);
+  else await fillSettings(panel);
+  // History and Settings are sub-screens now (the mock profile has no tabs),
+  // so give them a way back to the profile overview.
+  const back = document.createElement('button');
+  back.className = 'ghost';
+  back.textContent = `← ${t('Back')}`;
+  back.addEventListener('click', () => showProfile('overview'));
+  panel.prepend(back);
+  return undefined;
 }
 
 async function fillOverview(panel) {
@@ -443,39 +442,39 @@ async function fillOverview(panel) {
     panel.innerHTML = `<p class="notice">${esc(t('Could not load your balance. Your points are safe.'))}</p>`;
     return;
   }
-  const cap = BADGE_CAP[entry.badge];
-  const filled = cap === undefined ? 100
-    : Math.max(0, Math.min(100, Math.round((entry.points / cap) * 100)));
+  // Profile laid out like the mock: badge, a stats grid, the climb, and a way
+  // into history. Points come from the ledger; Best Ranked / Practices / Place
+  // are not tracked by the backend yet, so they show a placeholder until they
+  // are (see the roadmap issue).
+  const DASH = '\u2014';
+  const tagEl = panel.closest('.lab-screen')?.querySelector('#profile-tag');
+  if (tagEl) tagEl.textContent = `${tagEl.textContent} \u00b7 ${entry.badge} \u00b7 ${entry.points.toLocaleString()} ${t('points')}`;
   panel.innerHTML = `
-    <div class="profile-balance">
-      <img class="profile-badge" src="${badgeArt(entry.badge)}" alt="">
-      <div>
-        <p class="lab-study-meta">${esc(t('Your balance'))}</p>
-        <p class="profile-points">${entry.points.toLocaleString()} ${esc(t('points'))}</p>
-        <div class="profile-bar"><i style="width:${filled}%"></i></div>
-        <p class="lab-study-meta">${esc(balanceLine(entry))}</p>
-      </div>
+    <div class="pf-hero">
+      <img class="pf-badge" src="${badgeArt(entry.badge)}" alt="${esc(entry.badge)}">
+    </div>
+    <div class="pf-stats">
+      <div class="pf-stat"><b>${entry.points.toLocaleString()}</b><small>${esc(t('Points'))}</small></div>
+      <div class="pf-stat"><b>${DASH}</b><small>${esc(t('Best Ranked'))}</small></div>
+      <div class="pf-stat"><b>${DASH}</b><small>${esc(t('Practices'))}</small></div>
+      <div class="pf-stat"><b>${DASH}</b><small>${esc(t('Place'))}</small></div>
     </div>
     ${entry.mode === 'promotion' ? `
     <div class="profile-promo">
       <h2>${esc(t('Promotion available'))}</h2>
       <p>${esc(t('A perfect 15 out of 15 quiz moves you up. Start promotion is on the Ranked screen; nothing starts from here.'))}</p>
     </div>` : ''}
-    <details class="lab-study-card">
-      <summary><span><strong>${esc(t('How badges work'))}</strong></span></summary>
-      <div class="lab-study-body">
-        <ol class="profile-ladder">
-          ${BADGES.map(([name, range]) => `
-          <li ${name === entry.badge ? 'aria-current="true"' : ''}>
-            <img src="${badgeArt(name)}" alt="">
-            <b>${esc(name)}</b>
-            <span>${esc(range)}${name === entry.badge ? ` \u00b7 ${esc(t('you are here'))}` : ''}</span>
-          </li>`).join('')}
-        </ol>
-        <p>${esc(t('One balance decides your badge. Reaching a cap makes promotion available; only a perfect promotion quiz moves you up.'))}</p>
+    <div class="pf-climb">
+      <p class="lab-change-kicker">${esc(t('Your climb'))}</p>
+      <div class="pf-badges">
+        ${[...BADGES].reverse().map(([name]) => `<img class="${name === entry.badge ? '' : 'off'}" src="${badgeArt(name)}" alt="${esc(name)}">`).join('')}
       </div>
-    </details>
+    </div>
+    <button id="pf-history" class="ghost" type="button">${esc(t('See history'))}</button>
+    <button id="pf-settings" class="auth-link" type="button">${esc(t('Settings'))}</button>
   `;
+  panel.querySelector('#pf-history').addEventListener('click', () => showProfile('history'));
+  panel.querySelector('#pf-settings').addEventListener('click', () => showProfile('settings'));
 }
 
 async function fillHistory(panel) {
