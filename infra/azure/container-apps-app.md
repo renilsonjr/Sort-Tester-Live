@@ -236,12 +236,32 @@ and one branch, and answers with an access token good for minutes.
 Nothing is stored in GitHub, so there is nothing to leak and nothing to
 rotate.
 
+The subject is **read from a run, not predicted**. Deploy once with a
+placeholder, let the publish workflow fail at the Azure sign-in, and copy
+the subject out of its error — Azure prints exactly what was presented:
+
+```
+AADSTS700213: No matching federated identity record found for presented
+assertion subject 'repo:owner@123/repo@456:environment:publish'.
+```
+
+Two things change that string, and neither is guessable:
+
+* a job with `environment:` presents `:environment:<name>` **instead of**
+  `:ref:refs/heads/<branch>` — so the publish gate from Task 8 changed
+  the identity CI presents;
+* an account using immutable claims gets numeric ids folded in, as
+  `owner@<id>/repo@<id>`. That is the better form — a renamed repository
+  cannot inherit the trust — but it is not what the documentation's
+  examples show.
+
 ```sh
 az deployment group create \
   --name sort-publish-identity \
   --resource-group rg-sort-tester-staging \
   --template-file infra/azure/publish-identity.bicep \
   --parameters expiresOn=YYYY-MM-DD repository=<owner>/<repo> \
+               federatedSubject='<the subject from the error>' \
   --confirm-with-what-if
 ```
 
