@@ -1161,8 +1161,11 @@ Audit M-5 / issue #196. The 2026-11-18 observations and the completed
 temporary-capacity experiment are in [[pool-verification-2026-11-18]].
 The allocation was returned to **0.25 CPU / 0.5 GiB**, one active replica,
 100% traffic; both health and database-backed notice returned HTTP 200.
-The eight-connection cap was observed, but flat latency and pilot
-performance acceptance remain unverified.
+The eight-connection cap was observed. On 2026-11-18 the owner accepted
+pool protection in #196 separately from mandatory pilot performance
+validation in #13. Flat latency was not established. The proposed 30-player,
+15-minute workload and p95 control/quiz <= 1 s still require their own target
+review and measurement; no pilot or permanent capacity increase is approved.
 
 ### 10a. Keep the generator outside the app
 

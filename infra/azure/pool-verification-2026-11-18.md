@@ -14,7 +14,9 @@ measurements and repeatable method in git.
 - The external burst returned **260/260 HTTP 200**; its observer collected
   **408 samples** at 100 ms intervals, with a maximum of **8** connections.
 - Response times rose with concurrency. The original Task 14 requirement
-  that they stay flat is **not satisfied**; that part remains open in #196.
+  that they stay flat is **not satisfied**. On 2026-11-18 the owner explicitly
+  separated pool protection acceptance in #196 from mandatory pilot
+  performance validation in #13; this revises the original criterion.
 - CPU-quota throttling overlapped the test traffic. A temporary capacity
   increase improved measured latency; it was **reverted and verified**.
 - No application code, pool size, database schema or permanent allocation
@@ -117,10 +119,16 @@ longer active. Final HTTP smoke:
 - `/api/ranked/season/notice`: **200**,
   `{"started":false,"label":null,"started_at":null,"closes_at":null}`.
 
-The temporary experiment and its return are complete. Performance
-acceptance, resource locks, the final audit pass and pilot gates remain
-separate outstanding work in #196 / #13. No checkbox asserting flat
-latency, audit closure or pilot approval follows from this record.
+The temporary experiment and its return are complete. On 2026-11-18 the
+owner accepted the observed pool protection for #196 and kept performance
+validation mandatory in #13. This explicitly replaces the original combined
+flat-latency/pool criterion; it does not assert that latency stayed flat.
+The proposed pilot workload remains 30 simultaneous players for 15 minutes,
+with p95 control/quiz <= 1 s; the target still requires its own owner review
+and actual mixed-traffic measurement. No pilot or permanent capacity increase
+is approved. Resource-lock configuration acceptance is recorded separately in
+[[shared-resource-locks#Acceptance boundary]]; final audit verification
+remains open in #196, and restore and other pilot gates remain open in #13.
 
 ## Repeat the method
 

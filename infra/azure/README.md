@@ -26,7 +26,8 @@ the app template replaced it.
   only, with pip removed after install.
 - [[pool-verification-2026-11-18]] — observed eight-connection cap,
   latency/throttling measurements, temporary capacity experiment and
-  verified return; performance acceptance remains open in #196.
+  verified return; pool protection accepted in #196, mandatory pilot
+  performance validation remains open in #13.
 - `diagnostics/` — bounded HTTP burst generator and read-only pool/CPU
   observers; runbook §10 explains the two-terminal method.
 - `network.bicep` — the VNet, private DNS zone and private endpoint the
@@ -34,8 +35,9 @@ the app template replaced it.
 - [[shared-resource-locks]] (+ `.bicep`) — independently deployable
   `CanNotDelete` locks for the existing PostgreSQL, Application Insights
   and Log Analytics resources; applied/read-back verified 2026-11-18,
-  no-change preview and unchanged app checks passed. The separate
-  observed-delete-refusal acceptance remains open; §7 records evidence.
+  no-change preview and unchanged app checks passed. The owner accepted
+  configuration-based verification on 2026-11-18; no real deletion was
+  attempted. Section 7 records evidence and the acceptance decision.
 - `runtime-identity.bicep` (+ `.md`) — the app's identity and its two
   resource-scoped roles: pull from the registry, read from the vault.
 - `security-foundation.md` — how the registry and vault were created.

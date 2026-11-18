@@ -3,9 +3,10 @@
 **Applied and read-back verified — 2026-11-18.** The owner ran every `az`
 command in Cloud Shell; §7 records the supplied evidence. The three locks
 are installed, with unchanged app snapshot fields and passing HTTP smoke.
-The separate observed-delete-refusal acceptance remains open. The
-procedure below is retained for repeatable operation; PR merge alone was
-not treated as deployment evidence or approval.
+The owner accepted configuration-based lock verification on 2026-11-18,
+using the alternative already allowed by Task 20; no actual delete was
+attempted. The procedure below is retained for repeatable operation; PR
+merge alone was not treated as deployment evidence or approval.
 
 ## Scope and limits
 
@@ -202,10 +203,14 @@ checks in #196 and a dated applied note here. Only then is the
 **Do not issue a real delete against the staging PostgreSQL server to
 prove the guard works.** Its backup restore is still untested. Scope/level
 read-back and a no-change preview verify installed configuration, not an
-observed rejected deletion. Keep #196's separate delete-refusal checkbox
-open unless suitable evidence is obtained. If a behavioral test is
-required, propose a disposable resource/group and explicit owner approval
-separately; no such resource or test is authorised by this procedure.
+observed rejected deletion. For the 2026-11-18 rollout, the owner selected
+the configuration-verification alternative already allowed by Task 20:
+reviewed preview, three exact-scope `CanNotDelete` read-backs, a no-change
+repeat preview and unchanged app checks. That evidence satisfies the
+selected lock-verification criterion; it must not be described as an
+observed failed delete. If a behavioral test is later required, propose
+a disposable resource/group and explicit owner approval separately; no
+such resource or test is authorised by this procedure.
 
 ## 6. Intentional removal and cleanup
 
@@ -299,8 +304,21 @@ cleared, by the operator's cleanup chain without reported errors.
 
 The preview/approval/deploy/read-back/unchanged-app acceptance is complete
 and recorded in [issue #196](https://github.com/renilsonjr/Sort-Tester-Live/issues/196).
-**No actual delete was attempted**, so the separate observed-delete-refusal
-checkbox remains open. No disposable test resource/group was provisioned.
-Installed configuration is distinct from a demonstrated rejected operation.
+**Owner decision — 2026-11-18:** accept that configuration evidence for the
+lock-verification item, following the original Task 20 alternative
+"test in a scratch resource group or trust what-if". The issue's earlier
+wording required an observed delete refusal and was more restrictive than
+that alternative; its replacement criterion is explicit:
+
+> Verify the three `CanNotDelete` locks at the correct scopes, with a
+> reviewed preview, independent read-back and a final what-if with no
+> changes. No real deletion was attempted.
+
+The recorded evidence meets this selected criterion. **No actual delete
+was attempted** and no disposable test resource/group was provisioned.
+Installed configuration is distinct from a demonstrated rejected operation;
+the latter remains unobserved, not a required remaining step for this
+owner-approved verification method. This decision changes the acceptance
+method, not the measured facts or deployed configuration.
 The backup restore, performance acceptance, final audit pass and employee
 pilot gates remain separate work; this record does not close or approve them.

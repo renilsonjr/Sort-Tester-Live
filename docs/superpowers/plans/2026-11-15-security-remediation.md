@@ -819,11 +819,11 @@ database.
 - [x] **Step 1: Failing test:** two concurrent `checkout()` calls reuse one connection object after release (identity check) — no pool today, so a fresh `connect` each time fails it.
 - [x] **Step 2: Implement `pool.py`; swap both routers' `_db_connection` to `checkout()`.** Note the commit-on-exit semantics replace Task 1's explicit `conn.commit()` inside `_current_account` — keep the tests from Task 1 as the guard that semantics are unchanged.
 - [x] **Step 3: Full suite green** (the app falls back to the test DSN in test environments — `settings.app_database_url()` already handles that).
-- [ ] **Step 4: Deploy; verify** under a burst (`for i in $(seq 1 50); do curl -s localhost:8000/api/ranked/season/notice & done` locally, or staging) that response times stay flat and `pg_stat_activity` shows ≤ 8 app connections.
+- [x] **Step 4: Deploy; verify pool protection** under a burst: `pg_stat_activity` shows ≤ 8 app connections (observer excluded), with successful requests. Owner revised the original combined flat-latency/pool criterion on 2026-11-18; mandatory pilot performance validation remains in #13, as recorded below.
 - [x] **Step 5: Commit** — `security: pooled connections with statement timeout for the runtime (audit M-5)`
 
-Steps 1-3 and 5 are done. Step 4 combines deployment with burst and
-performance verification; its partial status is recorded below.
+All five steps are complete under the explicitly revised Step 4 criterion
+recorded below. This does not establish pilot performance acceptance.
 
 Task 14 applied — 2026-11-17: `backend/db/pool.py`, both routers'
 `_db_connection` on it, and `psycopg-pool==3.3.3` pinned in both manifests
@@ -872,7 +872,7 @@ own PID and collected **408 samples**, with a maximum of **8** other
 same-role client connections. The cap is now observed, subject to the
 sampling limits, rather than just configured.
 
-**Step 4 remains partially open:** latency increased with concurrency;
+**Original Step 4 performance outcome:** latency increased with concurrency;
 the original flat-response-time requirement was not demonstrated.
 Synchronized observations found CPU-quota throttling during the burst.
 A separately authorised temporary change from 0.25 CPU / 0.5 GiB to
@@ -884,9 +884,19 @@ one replica, 100% traffic, and health + database-backed notice both
 returned HTTP 200. No permanent sizing or pool-size change was made.
 
 Results, limitations and the repeatable method:
-[[../../../infra/azure/pool-verification-2026-11-18]]. The remaining
-performance criterion stays open in #196; the 30-player, 15-minute mixed
-traffic pilot is still #13. No completion checkbox is changed here.
+[[../../../infra/azure/pool-verification-2026-11-18]].
+
+**Owner acceptance-criterion decision — 2026-11-18.** The owner explicitly
+approved separating pool protection from performance validation. The original
+Step 4 asked that "response times stay flat" and connections remain <= 8.
+Flat latency was not achieved. The revised #196 criterion accepts deployment,
+observed connection protection and successful burst requests; the evidence
+above satisfies it, so Step 4 is checked for that revised scope only.
+Performance validation remains mandatory and unchecked in pilot #13. The
+proposed 30-player, 15-minute mixed-traffic test and p95 control/quiz <= 1 s
+still need their own owner review and measurement. This decision approves no
+pilot, permanent capacity increase or pool-size change; final audit
+verification remains open.
 
 ### Task 15: Runbook secrets off the CLI + docs hygiene (M-6 + L3) — `OPS`
 
@@ -1189,7 +1199,7 @@ database@host:port`.
 - Modify: `infra/azure/container-apps-app.bicep` — `Microsoft.Authorization/locks@2020-05-01` `CanNotDelete` locks referencing the pre-existing PG server / App Insights / Log Analytics via `existing` resource references (they are outside this template's lifecycle; the lock belongs here precisely because nothing else manages them).
 - Modify: `infra/azure/container-apps-spike.bicep:8-10` — constrain `deploymentSuffix` to lowercase alphanumeric (the only unvalidated param in the templates).
 - Add to `.github/workflows/security-gates.yml` (Task 9): `az bicep build --file infra/azure/container-apps-app.bicep --stdout >/dev/null` (compile check) + PSRule for Azure or `az deployment group what-if` dry-run job on PRs touching `infra/`.
-- Verify: what-if shows only the lock creates; attempting a delete of the DB server is refused by the lock (test in a scratch resource group or trust what-if).
+- Verify through the owner-selected configuration path (reviewed lock-only what-if, three exact-scope `CanNotDelete` read-backs, no-change repeat preview and unchanged app checks), or a separately authorised behavioral test on a disposable target. Do not attempt a real staging-database delete as verification. The original wording already allowed "test in a scratch resource group or trust what-if"; the 2026-11-18 owner choice is recorded below.
 - Commit — `security: CanNotDelete locks on pre-existing shared resources, bicep lint in CI`
 
 Task 20 — the lint half applied 2026-11-17; **the locks were not done**,
@@ -1239,7 +1249,8 @@ Not done at preparation time: owner-reviewed live what-if, owner deployment appr
 deployment/read-back, app postchecks or a demonstrated delete refusal.
 The runbook does not attempt deletion of the staging database as a test;
 restore is still unverified (#13). Configuration read-back is distinct
-from observed deletion rejection, so those acceptance items stay open.
+from observed deletion rejection, so those acceptance items remained open
+at preparation time; later application and method selection are below.
 No completion checkbox is changed by this preparation.
 
 Task 20 applied — 2026-11-18, merged PR #200 (`9c1d383`). The owner
@@ -1260,11 +1271,19 @@ file/variable cleanup completed without reported errors.
 
 Full redacted evidence, hashes and limits:
 [[../../../infra/azure/shared-resource-locks#7. Applied evidence — 2026-11-18]].
-The deployment/read-back/app-check item in #196 is complete. **An observed
-delete refusal is still not done**: no real staging-database delete was
-attempted and no disposable test resource was provisioned. That separate
-acceptance, performance and final audit verification remain open. This is
-not a claim that all of Task 20, the audit or the pilot is complete.
+The deployment/read-back/app-check item in #196 is complete. No real
+staging-database delete was attempted and no disposable test resource was
+provisioned; an observed deletion rejection is not claimed.
+
+Task 20 verification-method decision — 2026-11-18. The owner explicitly
+accepted the original "trust what-if" alternative for this rollout:
+reviewed preview, three exact-scope `CanNotDelete` read-backs, a repeat
+preview with no changes and unchanged app checks. This completes the
+resource-lock verification criterion in #196 by configuration evidence.
+The issue's earlier literal observed-delete-refusal wording is replaced,
+not marked as if that operation had occurred. No Azure or application
+change follows from this decision. Performance and final audit
+verification remain open; no overall audit or pilot approval is claimed.
 
 ---
 
