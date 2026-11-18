@@ -927,6 +927,19 @@
   .ppillar { width: 100%; border-radius: 12px 12px 0 0; display: grid; place-items: center; font-weight: 900; font-size: 22px; color: var(--ink); background: linear-gradient(180deg, rgba(244, 189, 56, 0.22), var(--glass-surface-sub)); border: 1px solid var(--glass-border-subtle); border-bottom: 0; }
   .pslot.p1 .ppillar { height: 86px; } .pslot.p2 .ppillar { height: 66px; } .pslot.p3 .ppillar { height: 54px; }
 
+  /* Entry / login — single card like the mock. The panel gets a dark rgba
+     scrim (still translucent) so the twilight reads dark, not washed by orbs. */
+  #auth-panel { background: rgba(13, 8, 5, 0.86); }
+  .auth-screen { align-items: center; text-align: center; }
+  .auth-screen .brandmark { width: 64px; height: 64px; border-radius: 20px; display: grid; place-items: center; font: 900 26px/1 Arial, Helvetica, sans-serif; color: #2a1c10; background: linear-gradient(135deg, var(--gold), #d89115); box-shadow: 0 10px 26px -6px rgba(244, 189, 56, 0.55); }
+  .auth-title { font-size: 26px; font-weight: 900; margin: 0; letter-spacing: -0.03em; }
+  .auth-sub { margin: 4px 0 0; color: var(--muted); font-size: 14px; }
+  .auth-head { margin: 0; }
+  #auth-panel .auth-card { text-align: left; width: 100%; }
+  #auth-panel .auth-card .auth-eyebrow { color: var(--gold); }
+  .auth-note { margin: 2px 0 0; color: var(--muted); font-size: 12.5px; text-align: center; }
+  .auth-link { background: transparent; border: 0; color: var(--gold); font-weight: 800; font-size: 13px; width: 100%; padding: 4px; cursor: pointer; }
+
   /* The app screen is an opaque dark panel (like the mock's phone screen), so
      the UI reads crisp and dark; the ambient orbs stay behind it and only peek
      at the edges on wide screens. */

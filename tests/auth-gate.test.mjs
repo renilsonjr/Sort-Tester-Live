@@ -113,10 +113,8 @@ test('a successful login opens the app', async () => {
   const fetchFn = fakeFetch({ login: jsonResponse(200, { username: 'alice', tag: '1234' }) });
   await withGlobalFetch(fetchFn, async () => {
     await auth.startAuthGate({ doc, fetchFn });
+    panel.querySelector('#login-id-input').value = 'ABCD-EFGH-JKLM-NPQR';
     await panel.querySelector('#auth-login-btn').fire('click');
-    const form = panel.querySelector('#auth-form');
-    form.querySelector('#login-id-input').value = 'ABCD-EFGH-JKLM-NPQR';
-    await form.querySelector('#login-submit').fire('click');
   });
   assert.equal(panel.hidden, true);
   assert.equal(app.hidden, false);
@@ -127,8 +125,8 @@ test('a failed login keeps the login screen', async () => {
   const fetchFn = fakeFetch({ login: jsonResponse(401, {}) });
   await withGlobalFetch(fetchFn, async () => {
     await auth.startAuthGate({ doc, fetchFn });
+    panel.querySelector('#login-id-input').value = 'ABCD-EFGH-JKLM-NPQR';
     await panel.querySelector('#auth-login-btn').fire('click');
-    await panel.querySelector('#auth-form').querySelector('#login-submit').fire('click');
   });
   assert.equal(panel.hidden, false);
   assert.equal(app.hidden, true);
@@ -142,7 +140,7 @@ test('an existing session skips the login screen', async () => {
   assert.equal(app.hidden, false);
 });
 
-for (const kind of ['login', 'register']) {
+for (const kind of ['register']) {
   test(`${kind} replaces the entry choices and Cancel restores them`, async () => {
     const { doc, panel } = fakePage();
     auth.initAuthPanel(doc);
@@ -164,7 +162,7 @@ test('returning to entry restores choices after an open form', async () => {
   const { doc, panel } = fakePage();
   doc.defaultView = {};
   auth.initAuthPanel(doc);
-  await panel.querySelector('#auth-login-btn').fire('click');
+  await panel.querySelector('#auth-register-btn').fire('click');
   doc.defaultView.showSortLabEntry('Session ended');
   assert.equal(panel.querySelector('#auth-choices').hidden, false);
   assert.equal(panel.querySelector('#auth-form').hidden, true);
