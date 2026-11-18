@@ -306,7 +306,40 @@ still does not push to the registry, so every deployment needs the manual
 import. Step 5 (Key Vault for the database secret) is untouched. Step 6
 closes with the GHCR token's revocation, which is the finding itself.
 
-Task 5 publish path — 2026-11-17, **code only; the Azure half waits**.
+Task 5 publish path finished — 2026-11-18. The Azure half is applied and
+the whole path is proved end to end: CI builds, pushes to GHCR, signs in
+to Azure **with no stored credential**, and pushes the same digest to our
+own registry. The GitHub token is no longer needed to publish anything.
+
+The first attempt failed, and the failure is the useful part. Azure
+refused the sign-in and named the subject GitHub had actually presented:
+
+    repo:<owner>@<id>/<repo>@<id>:environment:publish
+
+The template was asking for `repo:<owner>/<repo>:ref:refs/heads/<branch>`.
+Two independent reasons it was wrong, and neither is guessable:
+
+* a job carrying `environment:` presents `:environment:<name>` **instead
+  of** the ref claim -- so the publish gate built in Task 8 changed the
+  identity CI presents, which nothing in the Task 5 design anticipated;
+* this account uses immutable claims, folding numeric ids into the owner
+  and repository names. That is the better form, since a renamed
+  repository cannot inherit the trust, but it is not what the
+  documentation's examples show.
+
+The subject is a parameter now, and the runbook says to deploy once, read
+it from Azure's refusal, and pass it back. Predicting it would have been
+guessing twice.
+
+A second failure, from the lint added the day before: moving the subject
+to a parameter left `repository` declared and unused, and the
+warning-as-failure rule caught it. Deleting the parameter was the easy
+answer and the wrong one -- the subject now carries numeric ids and says
+nothing to a reader, so the repository name went into a tag on the
+identity instead. The gate caught its own author, the day after it was
+written.
+
+Task 5 publish path — 2026-11-17, **the code half**.
 
 The manual copy needed a GitHub token with `read:packages`, which is
 account-scoped: it reads every private package the account can see. That
@@ -437,8 +470,8 @@ failure only surfaces halfway through the deployment as `DENIED: denied`.
 
 - [x] **Step 1: Failing tests:** DSN without `sslmode` → `DatabaseConfigError`; `sslmode=disable`/`allow`/`prefer` → rejected; `require`/`verify-full` → accepted (parse with `conninfo_to_dict`, mirroring the existing validation style).
 - [x] **Step 2: Run → FAIL. Implement in `settings.py` (both functions).**
-- [ ] **Step 3: Bake the CA + update the deploy DSN** as above; `docker build` locally and confirm the file is present (`docker run --rm <img> ls -l /app/postgres-ca.pem`).
-- [ ] **Step 4: Redeploy; verify** the app connects (verify-full succeeds only with the right CA) and the DSN validation refuses a tampered `sslmode` at startup.
+- [x] **Step 3: Bake the CA + update the deploy DSN** as above; `docker build` locally and confirm the file is present (`docker run --rm <img> ls -l /app/postgres-ca.pem`).
+- [x] **Step 4: Redeploy; verify** the app connects (verify-full succeeds only with the right CA) and the DSN validation refuses a tampered `sslmode` at startup.
 - [x] **Step 5: Suites pass; commit** — `security: fail closed on DSNs without verified TLS (audit M-4/L1)`
 
 **Phase 0 exit gate (real-data bar):** Tasks 1–7 done; full backend + node suites green; Trivy gate green; `what-if` clean; staging smoke (register/login/attempt/owner flow) passes; owner signs off — only then may the `fictional-only` tag change.
@@ -450,6 +483,24 @@ failure only surfaces halfway through the deployment as `DENIED: denied`.
 **Code done 2026-11-16, PR #152; Steps 3 and 4 still open.** The loopback exemption was widened to `app_database_url` as well, because the development server uses the app DSN on `localhost`.
 
 Step 3 took a different route than written: no CA is baked into the image. Azure PostgreSQL chains to a public root, so the runbook points `sslrootcert` at the distro bundle (`/etc/ssl/certs/ca-certificates.crt`) and carries the one-line check to run before deploying. **Still to do:** build the image and confirm that bundle is there, then Step 4 — redeploy with the new DSN and confirm the app connects with `verify-full` against the real server.
+
+Task 7 finished — 2026-11-18. Nothing had to be baked: the app image
+already carries `/etc/ssl/certs/ca-certificates.crt` (178 KB, from the
+Alpine Python base), confirmed by reading it inside the running
+container. So step 3 was a check rather than a change, and the DSN in the
+vault moved from `sslmode=require` to `verify-full` with that bundle.
+
+Why it mattered enough to do: Microsoft's own TLS page lists `require`
+under "Don't use the following configurations", because it *"can make
+your app vulnerable to man-in-the-middle attacks"*. The connection runs
+over a private endpoint, which narrows who could be in the middle, but
+the page does not say verification stops mattering on a private path --
+I looked for exactly that sentence and it is not there.
+
+Verified by the one route that proves it: `/api/ranked/season/notice`
+returned real JSON, which it can only do by reading the database. The
+active revision was confirmed to be the new one first, because the same
+answer from the old revision would have proved nothing.
 
 ### Task 8: Publish environment gate (M-7) — `OPS`
 
@@ -1232,6 +1283,35 @@ throughout, on the wrong credential.
 Still not done: the final verification pass, and the question of whether
 deployments before 2026-11-17 carried the same username — unknowable from
 the repository, and the window is at most two days on fictional data.
+
+## The code is deployed — 2026-11-18
+
+Until this morning every application-level fix in this plan was merged
+and **inert**. The image serving the public app was built on 2026-11-16
+and predated thirteen security commits: the connection pool, the
+hardening batch, the session cap, the list caps. The infrastructure work
+was live; the code was not.
+
+Digest `37c37ba6…`, built from `44e98a97`, is now serving. The what-if
+before it showed exactly one change — the image digest — with the
+environment, the network, the vault and both identities untouched.
+
+Verified by exercising the change that could have broken everything. The
+narrowed origin guard no longer trusts the request's own `Host` header,
+so a write could have started returning 403 to everyone:
+
+* `/health` and `/api/ranked/season/notice`: 200, the second with real
+  JSON, so the app reads the database;
+* a registration carrying the app's own `Origin`: **200**;
+* the same registration carrying `Origin: https://atacante.example`:
+  **403**.
+
+That last pair is the guard working in production for the first time,
+and the first of the two is what says it did not take legitimate writes
+with it.
+
+A test account, `deploy_check_01`, was created on the staging database by
+that check. Fictional data, left in place.
 
 ## Owner questions (unverifiable from the repo — answer before Phase 0 sign-off)
 
