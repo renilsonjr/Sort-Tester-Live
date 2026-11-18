@@ -21,8 +21,11 @@ const app = readdirSync(srcDir)
 const page = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
 
 function glassSelector() {
-  const match = page.match(/^\s*([^\n{]*)\{\s*\n\s*background: var\(--glass-surface-sub\);/m);
-  assert.ok(match, 'the glass rule is missing from index.html');
+  // Anchored on a surface only this rule names. Matching "the first rule
+  // using --glass-surface-sub" broke the moment a second rule used it:
+  // the guard then inspected `.ghost` and reported the real rule missing.
+  const match = page.match(/^\s*([^\n{]*,\s*\.board li)\s*\{/m);
+  assert.ok(match, 'the multi-surface glass rule is missing from index.html');
   return match[1];
 }
 
@@ -77,4 +80,38 @@ test('the highlighted rows stay translucent', () => {
       `.${state} uses an opaque background, which hides the blur`,
     );
   }
+});
+
+// --- the entry screen ---
+
+test('the guest card is the same material as the card beside it', () => {
+  // `.auth-card.guest` outranks the glass rule, so an opaque fill here
+  // is not overridden: it simply wins, and one card reads as solid next
+  // to a frosted one.
+  const rule = page.match(/\.auth-card\.guest \{[^}]*\}/);
+  assert.ok(rule, '.auth-card.guest rule is missing');
+  assert.match(rule[0], /background: rgba\(/);
+});
+
+test('text inputs are frosted, not opaque panels', () => {
+  const rule = page.match(/^\s*input \{[^}]*\}/m);
+  assert.ok(rule, 'the input rule is missing');
+  assert.match(rule[0], /var\(--glass-surface-sub\)/);
+  assert.match(rule[0], /backdrop-filter/);
+});
+
+test('the secondary button is glass', () => {
+  const rule = page.match(/^\s*\.ghost \{[^}]*\}/m);
+  assert.ok(rule, '.ghost rule is missing');
+  assert.match(rule[0], /var\(--glass-surface-sub\)/);
+});
+
+test('the primary action stays solid, on purpose', () => {
+  // A call to action made of the same material as the panel behind it
+  // stops being a call to action. The mockup keeps `.btn-primary` solid
+  // too; this pins that decision so it is reversed deliberately or not
+  // at all.
+  const rule = page.match(/^\s*\.primary \{[^}]*\}/m);
+  assert.ok(rule, '.primary rule is missing');
+  assert.doesNotMatch(rule[0], /backdrop-filter|--glass-surface/);
 });
