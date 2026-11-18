@@ -1218,9 +1218,8 @@ resource creation. Normalising is worth it on its own: an uppercase
 letter was refused by Azure with an error naming the *resource*, which
 sends the reader looking in the wrong place.
 
-Still open: applying and verifying the `CanNotDelete` locks on the shared
-resources the app template does not own -- the database server, App
-Insights, Log Analytics.
+At preparation time, applying and verifying the `CanNotDelete` locks on
+the shared resources remained open. The later applied record is below.
 
 Task 20 preparation — 2026-11-18 (issue #196):
 [[../../../infra/azure/shared-resource-locks]] and its Bicep template
@@ -1236,12 +1235,36 @@ network and secret defaults to protect resources outside that template's
 lifecycle. No resource-group/subscription lock, `ReadOnly` level, app
 redeployment, ingestion or grant change is included.
 
-Not done: owner-reviewed live what-if, owner deployment approval,
+Not done at preparation time: owner-reviewed live what-if, owner deployment approval,
 deployment/read-back, app postchecks or a demonstrated delete refusal.
 The runbook does not attempt deletion of the staging database as a test;
 restore is still unverified (#13). Configuration read-back is distinct
 from observed deletion rejection, so those acceptance items stay open.
 No completion checkbox is changed by this preparation.
+
+Task 20 applied — 2026-11-18, merged PR #200 (`9c1d383`). The owner
+reviewed the live Incremental what-if (**3 Create, 15 Ignore**, exact
+resource scopes, all `CanNotDelete`, no errors or other changes), then
+explicitly approved and ran deployment `shared-resource-locks`:
+**Succeeded**, three expected extension lock IDs. Independent per-resource
+reads returned the correct IDs/levels for PostgreSQL, Application Insights
+and Log Analytics. Repeating the what-if returned **3 NoChange, 15 Ignore**,
+with error/diagnostics/potentialChanges null.
+
+The compared app snapshot fields were unchanged (ready revision,
+environment, identity, revision mode, traffic, container image/resources/env,
+scale); health and database-backed notice both returned HTTP 200. Allocation
+remained **0.25 CPU / 0.5 GiB**. Post-deployment source/compiled hashes
+matched the local validation using Bicep 0.49.2, and the operator's temporary
+file/variable cleanup completed without reported errors.
+
+Full redacted evidence, hashes and limits:
+[[../../../infra/azure/shared-resource-locks#7. Applied evidence — 2026-11-18]].
+The deployment/read-back/app-check item in #196 is complete. **An observed
+delete refusal is still not done**: no real staging-database delete was
+attempted and no disposable test resource was provisioned. That separate
+acceptance, performance and final audit verification remain open. This is
+not a claim that all of Task 20, the audit or the pilot is complete.
 
 ---
 

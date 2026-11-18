@@ -1,9 +1,11 @@
 # Shared-resource delete locks — Task 20 / issue #196
 
-**Prepared procedure, not deployed evidence.** The owner runs every `az`
-command in Cloud Shell. A merged PR does not install these locks; keep
-the deployment and delete-refusal acceptance items open until their
-actual evidence is recorded.
+**Applied and read-back verified — 2026-11-18.** The owner ran every `az`
+command in Cloud Shell; §7 records the supplied evidence. The three locks
+are installed, with unchanged app snapshot fields and passing HTTP smoke.
+The separate observed-delete-refusal acceptance remains open. The
+procedure below is retained for repeatable operation; PR merge alone was
+not treated as deployment evidence or approval.
 
 ## Scope and limits
 
@@ -218,3 +220,87 @@ After the work is complete, remove the temporary parameter file and clear
 the resource-name variables. If Cloud Shell loses its ephemeral home or
 variables, rebuild the preflight and preview instead of guessing them.
 The lock template does not expire or auto-remove its protections.
+
+## 7. Applied evidence — 2026-11-18
+
+The owner executed the commands in Cloud Shell and supplied their outputs.
+The assistant reviewed those outputs, not an independent Azure session.
+Real target names, subscription ID and lock IDs remain in the private
+inventory rather than this tracked record. Source: merged PR #200,
+commit `9c1d38369729ba4d980c52cb993a013c676e4c1d`.
+
+### Preflight, preview and approval
+
+- Azure for Students reported **Enabled**. The staging inventory contained
+  one resource of each expected type: Flexible Server, Application Insights
+  component and Log Analytics workspace.
+- Per-resource lock lists returned **empty** for all three reviewed targets.
+- The Cloud Shell checkout fast-forwarded to the merged commit; the
+  template compiled without reported warnings or errors. A fresh private
+  parameter file held the three reviewed names.
+- The full live **Incremental** what-if returned **Succeeded: 3 Create,
+  15 Ignore**, error/diagnostics/potentialChanges null. Each Create was a
+  `Microsoft.Authorization/locks@2020-05-01` resource, level `CanNotDelete`,
+  at exactly the reviewed existing resource ID plus its extension lock
+  suffix. All ignored entries had equal before/after payloads; there was
+  no Modify/Delete/Replace.
+- After the preview review, the owner explicitly authorised those three
+  exact locks. No protected-resource deletion test was authorised.
+
+### Apply and independent read-back
+
+Deployment `shared-resource-locks`, using the same template/parameter file
+in **Incremental** mode, returned **Succeeded** with the three expected
+extension lock IDs. Subsequent independent `az lock show` calls confirmed:
+
+| Resource scope | Lock name | Read-back level |
+| --- | --- | --- |
+| Existing PostgreSQL Flexible Server | `sort-tester-prevent-delete` | `CanNotDelete` |
+| Existing Application Insights component | `sort-tester-prevent-delete` | `CanNotDelete` |
+| Existing Log Analytics workspace | `sort-tester-prevent-delete` | `CanNotDelete` |
+
+Read-back IDs matched the preview/deployment targets, normalising ARM ID
+casing. A second what-if returned **Succeeded: 3 NoChange, 15 Ignore**;
+error, diagnostics and potentialChanges were all null. There were no
+remaining planned changes.
+
+The owner's pre/post comparison covered ready revision, environment,
+identity, revision mode, ingress traffic, container image/resources/env
+and scale. It returned **app_snapshot_unchanged: true, changed_fields: []**.
+The ready revision remained the returned baseline from the capacity test;
+allocation was **0.25 CPU / 0.5 GiB**, with **1 GiB ephemeral storage**.
+This is equality of the compared snapshot fields, not a full data-plane
+or service-health audit.
+
+Post-lock smoke passed:
+
+- `/health`: **HTTP 200**, `{"status":"ok"}`.
+- `/api/ranked/season/notice`: **HTTP 200**,
+  `{"started":false,"label":null,"started_at":null,"closes_at":null}`,
+  exercising the existing private database read path.
+
+### Fingerprints and cleanup
+
+The owner captured these fingerprints **after deployment**, recompiling
+the same merged source, using **Bicep CLI 0.49.2 (b34271ac51)**:
+
+| Artifact | SHA-256 |
+| --- | --- |
+| `shared-resource-locks.bicep` | `bd0a6092ce78702c89ee86c6d5f29e4cbf5d9699d435dcb9590b1584ea18cb75` |
+| Compiled ARM JSON | `d868d96ff966b6d91e2870fd4af50b59e6f4ee1beb6350eb408c1cc21e432f67` |
+
+Both match the assistant's local validation artifacts for that source and
+compiler. These are reproducibility fingerprints, not an archived copy of
+the original ARM request. The temporary compiled file/directory and private
+parameter file were removed, and the task's resource-name/snapshot variables
+cleared, by the operator's cleanup chain without reported errors.
+
+### Acceptance boundary
+
+The preview/approval/deploy/read-back/unchanged-app acceptance is complete
+and recorded in [issue #196](https://github.com/renilsonjr/Sort-Tester-Live/issues/196).
+**No actual delete was attempted**, so the separate observed-delete-refusal
+checkbox remains open. No disposable test resource/group was provisioned.
+Installed configuration is distinct from a demonstrated rejected operation.
+The backup restore, performance acceptance, final audit pass and employee
+pilot gates remain separate work; this record does not close or approve them.
