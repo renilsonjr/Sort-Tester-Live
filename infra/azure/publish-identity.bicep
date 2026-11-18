@@ -47,6 +47,10 @@ resource publishIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2024-
     environment: 'staging'
     'data-classification': 'fictional-only'
     purpose: 'ci-registry-push'
+    // The subject below carries numeric ids, so it says nothing to a
+    // reader. This tag is how someone looking at the identity in the
+    // portal can tell which repository it trusts.
+    repository: repository
     'expires-on': expiresOn
   }
 }
