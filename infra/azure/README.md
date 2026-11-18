@@ -24,6 +24,11 @@ the app template replaced it.
 - `container-apps-app.bicep` (+ `.md`, `.dockerignore`) — the deployed app.
 - `app.Dockerfile` — its image: Alpine, non-root, runtime dependencies
   only, with pip removed after install.
+- [[pool-verification-2026-11-18]] — observed eight-connection cap,
+  latency/throttling measurements, temporary capacity experiment and
+  verified return; performance acceptance remains open in #196.
+- `diagnostics/` — bounded HTTP burst generator and read-only pool/CPU
+  observers; runbook §10 explains the two-terminal method.
 - `network.bicep` — the VNet, private DNS zone and private endpoint the
   database is reached through (audit H-4).
 - `runtime-identity.bicep` (+ `.md`) — the app's identity and its two

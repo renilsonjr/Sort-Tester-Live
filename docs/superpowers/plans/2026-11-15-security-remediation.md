@@ -822,7 +822,8 @@ database.
 - [ ] **Step 4: Deploy; verify** under a burst (`for i in $(seq 1 50); do curl -s localhost:8000/api/ranked/season/notice & done` locally, or staging) that response times stay flat and `pg_stat_activity` shows ≤ 8 app connections.
 - [x] **Step 5: Commit** — `security: pooled connections with statement timeout for the runtime (audit M-5)`
 
-Task 5 of this task's own list is the deploy; steps 1-3 and 5 are done.
+Steps 1-3 and 5 are done. Step 4 combines deployment with burst and
+performance verification; its partial status is recorded below.
 
 Task 14 applied — 2026-11-17: `backend/db/pool.py`, both routers'
 `_db_connection` on it, and `psycopg-pool==3.3.3` pinned in both manifests
@@ -858,10 +859,34 @@ requests against a local Postgres where every query is a fraction of a
 millisecond, so one extra round trip dominates; against the private
 endpoint it is one round trip on a request that already makes several.
 
-Not done: **step 4, the burst verification**. Nothing has been deployed,
-and `pg_stat_activity` has not been watched showing <= 8 app connections
-under load. Until that runs, the cap is a configured number rather than
+Historical status recorded 2026-11-17: **step 4, the burst verification**
+was not done. Nothing had been deployed,
+and `pg_stat_activity` had not been watched showing <= 8 app connections
+under load. At that point, the cap was a configured number rather than
 an observed one.
+
+Task 14 operational evidence — 2026-11-18 (issue #196). The pool was
+deployed on 2026-11-18. The owner ran an external HTTPS burst: **260/260
+HTTP 200**; an in-container observer connected as `sort_app`, excluded its
+own PID and collected **408 samples**, with a maximum of **8** other
+same-role client connections. The cap is now observed, subject to the
+sampling limits, rather than just configured.
+
+**Step 4 remains partially open:** latency increased with concurrency;
+the original flat-response-time requirement was not demonstrated.
+Synchronized observations found CPU-quota throttling during the burst.
+A separately authorised temporary change from 0.25 CPU / 0.5 GiB to
+0.5 CPU / 1 GiB improved notice p95 from **1019.4 to 402.9 ms**, but also
+changed memory, restarted the app/pool and added warm-up. It does not
+prove an isolated CPU effect or pilot readiness. The owner restored the
+original allocation; only the returned revision was active, Healthy,
+one replica, 100% traffic, and health + database-backed notice both
+returned HTTP 200. No permanent sizing or pool-size change was made.
+
+Results, limitations and the repeatable method:
+[[../../../infra/azure/pool-verification-2026-11-18]]. The remaining
+performance criterion stays open in #196; the 30-player, 15-minute mixed
+traffic pilot is still #13. No completion checkbox is changed here.
 
 ### Task 15: Runbook secrets off the CLI + docs hygiene (M-6 + L3) — `OPS`
 

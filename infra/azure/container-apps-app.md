@@ -973,13 +973,16 @@ The admin's is 32 characters, `sort_app`'s is 11. Twice on 2026-11-17 a
 length check printed 11 where 32 was wanted, and both times it was read
 as a typo. It was the right password for the wrong role.
 
-Ask the database, not the container: `pg_stat_activity` shows which role
-the connections are actually open as, which is a fact rather than a
-reading of configuration. It needs the firewall open (§1c), so it costs
-nothing to do during a migration, which is when it is open anyway.
+Ask the database, not just the configuration: `pg_stat_activity` shows
+which role the connections are actually open as. The current private-path
+method in §10 runs an observer inside the app container using the existing
+runtime credential; no public database firewall rule is needed.
 
-The app opens a connection per request, so sample while it is being
-called:
+The historical administrator probe below was used before pooling. It
+connects from Cloud Shell, so it needs the temporary public firewall rule
+from §1c and its removal in §1e. The app now reuses pooled connections;
+use §10 for current role/count observations rather than reopening the
+public path just for this probe.
 
 ```sh
 URL=https://<app>; ( for i in $(seq 1 40); do curl -s -o /dev/null "$URL/api/ranked/season/notice"; done ) &
@@ -1152,9 +1155,94 @@ Each rotation adds a dated line to this section saying what changed and
 what proved it afterwards. The dates in the table above are what make
 "every 90 days" a statement rather than an intention.
 
+## 10. Observe the pool and compare request paths
+
+Audit M-5 / issue #196. The 2026-11-18 observations and the completed
+temporary-capacity experiment are in [[pool-verification-2026-11-18]].
+The allocation was returned to **0.25 CPU / 0.5 GiB**, one active replica,
+100% traffic; both health and database-backed notice returned HTTP 200.
+The eight-connection cap was observed, but flat latency and pilot
+performance acceptance remain unverified.
+
+### 10a. Keep the generator outside the app
+
+Use two Cloud Shell Bash tabs. The first connects to the **currently
+serving revision** with `az containerapp exec --command /bin/sh`; the
+second generates requests through public HTTPS. Read the serving revision,
+replica count and traffic first. A terminal still attached to an older
+revision observes the wrong process after an update.
+
+In the external tab, with the repository checked out at the reviewed
+commit, set `SORT_TESTER_URL` to the app's HTTPS origin, then run:
+
+```sh
+python3 infra/azure/diagnostics/http-burst.py --profile pool
+python3 infra/azure/diagnostics/http-burst.py --profile control --warmup 50
+```
+
+These are separate runs: start and stop the appropriate observer for each.
+`pool` makes 260 GET requests at concurrency 1/10/30/50. `control` makes
+90 requests each to health/notice/health at concurrency 30; `--warmup 50`
+adds 50 notice reads at concurrency 10 before measurement. The scripts
+print UTC timestamps, status counts, percentiles and throughput. They
+do not register accounts, start quizzes or write application data.
+They exit nonzero on failed or unexpected responses.
+
+Use the **same warm-up and workload on both sides of a comparison**.
+Warm-up differed in the historical experiment, which is a recorded limit
+of those results. Do not run the external generator in the app container:
+it would compete for the CPU being measured. Do not interpret the GET
+burst as the full mixed-traffic pilot in #13.
+
+### 10b. Observe inside the container, without opening the DB firewall
+
+[observe-runtime.py](diagnostics/observe-runtime.py) reads either the
+database or the cgroup counters. It is operator tooling under `infra/`,
+not part of the current app image. Do not rebuild/deploy the app just to
+run it. Open the versioned source in Cloud Shell and copy it into the
+container shell using the same heredoc procedure used for this session:
+enter `python - pool <<'PY'` (or `python - cpu <<'PY'`), paste the complete
+file contents, then enter a line containing only `PY`. The mode argument
+selects the observer. No secret value needs to be copied or printed.
+
+In `pool` mode it uses the app's existing DSN in a read-only, autocommit
+connection and samples `pg_stat_activity` every 100 ms. It counts client
+backends in the same database and role, excluding its own PID. Leave it
+running during the external burst, then press **Ctrl+C once** for the
+summary. This is sampled evidence, not an exhaustive peak detector. The
+observing connection is additional to the app pool; exclude other manual
+same-role diagnostics from the test as well. The cap is per app process.
+
+In `cpu` mode it reads the **cgroup v1** quota, period and counters every
+500 ms, prints throttling deltas with UTC timestamps, and prints the
+whole-window deltas on Ctrl+C. It deliberately fails on an unavailable
+layout instead of treating cgroup v2 microseconds as v1 nanoseconds.
+This observer does not open a database connection. Interpret the windows
+against the generator's phase timestamps; totals that include different
+amounts of warm-up/idle time are not a controlled comparison.
+
+An error prints its class and exits nonzero; it does not print the DSN.
+The saved observer is a reproducible version of the diagnostic used in
+the session, not a claim of another live verification.
+
+### 10c. Capacity experiments need a verified return
+
+The owner must explicitly approve resource/cost changes under #13. Keep
+the image, replica count and pool size fixed, record CPU **and memory**,
+and arrange the return to the original allocation in the same sitting.
+Confirm the new revision's health and traffic before measuring; an
+update reporting `Succeeded` while `latestReadyRevisionName` still names
+the previous revision is not enough.
+
+After returning, check the allocation, active revisions, replica count,
+traffic and real `/health` + `/api/ranked/season/notice` responses. Record
+the temporary allocation as still active until those return checks are
+complete. A successful short burst does not authorise permanent sizing
+or a pilot. No Azure resources are changed by these diagnostic helpers.
+
 ## What this runbook does not do
 
 No employee data, no public launch, no custom domain, no backup or restore
 test, no 30-player load test, and no removal of the spending limit. Those are
-#13. The app-image workflow's vulnerability scan only reports; nobody has
-decided to make it blocking.
+#13. The app-image workflow blocks on HIGH/CRITICAL Trivy findings; a green
+image scan does not verify these operational and pilot gates.
