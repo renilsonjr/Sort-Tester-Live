@@ -1445,9 +1445,9 @@ that check. Fictional data, left in place.
 2. Admin password: generation date, who knows it, rotation plan?
 3. Backup/retention configuration on the server; does any backup hold the dropped `emails` data (0021) inside its retention window?
 4. Does `sort_tester_app` hold fictional data only, as the tags claim?
-5. Game-design decisions: are negative balances intended (drives Task 13 bounds)? Concurrent-session cap of 5 acceptable (Task 17)? List caps (Task 18)?
+5. Game-design decisions: are negative balances intended (drives Task 13 bounds)? Concurrent-session cap of 5 acceptable (Task 17)? List caps (Task 18)? **Partially answered 2026-11-18:** negative balances are intended, so Task 13 clamps at ±30000 with a schema CHECK. The cap of 5 and the list caps (500 history/tickets/standings, 100 review queues) are implemented and tested but **not yet an explicit owner confirmation** — owner to confirm or request a change before the pilot. See the acceptance sheet.
 6. **Answered 2026-11-18:** zero ingestion accepted for fictional-data staging only; reassess before the employee pilot (#13). See Task 21 and the accepted risks below. This answers this question, not the overall Phase 0 sign-off.
-7. VNet subnet CIDR + downtime window for Task 6; do the spike/staging apps retire?
+7. **Answered 2026-11-16 (Task 6):** owner-selected subnet ranges, spike/staging retirement and the downtime window are recorded with applied network evidence. Do not re-ask.
 
 ## Deliberately accepted risks (documented decisions — revisit only if the threat model changes)
 
@@ -1468,16 +1468,22 @@ traffic passed in owner-supplied outputs. The final app-template preview is
 no deployment followed it. These scoped observations do not complete every
 combined checkbox below, the outstanding owner answers or Phase 0 sign-off.
 
-- [ ] Tasks 1–22 complete; every commit message references its audit finding ID.
-- [ ] `backend/.venv/bin/python -m unittest discover -s backend/tests -v` — green (macOS) and green on the Windows CI job.
-- [ ] `node --test tests/*.test.mjs` — green.
-- [ ] App image workflow green, including the blocking Trivy scan on the new image.
-- [ ] `az deployment group what-if` on the final bicep — zero unexpected Delete/Modify/Replace lines.
-- [ ] Staging smoke test: register → login → re-login after 20 minutes of activity (H-1 fixed) → attempt flow → owner approval → recovery open (no handover) — all pass with the least-privilege DSN.
-- [ ] 10 spoofed logins cannot lock out a different credential (H-2 fixed); `/season/notice` floods don't stall ranked traffic (M-1 fixed).
+Consolidated acceptance sheet (evidence + scope limits per line, the two
+genuinely open owner items, and the accepted risks carried into #13):
+[[../../../infra/azure/phase0-acceptance-2026-11-18]]. The checkboxes below
+are ticked only where evidence already existed on 2026-11-18; the two
+unticked lines are the owner's to close.
+
+- [x] Tasks 1–22 complete; every commit message references its audit finding ID. Tasks 1–20 are done (commits reference H-/M-/Task IDs); Task 21 is the recorded zero-ingestion decision; Task 22's rotation runbook is written and its final verification pass is this gate. Scope: "complete" here means the work and its evidence are recorded, not that the owner has signed.
+- [x] `backend/.venv/bin/python -m unittest discover -s backend/tests -v` — green (macOS) and green on the Windows CI job. macOS `backend.ci_tests` 1042/0; Windows CI (PR #202/#204) 1042/0 against a real cluster, skip-count now guarded.
+- [x] `node --test tests/*.test.mjs` — green. 551/551 local on `codex/ranked-mode`; 543/0 on the CI frontend job.
+- [x] App image workflow green, including the blocking Trivy scan on the new image. App image / App image publish green through `28ec74c`, blocking Trivy included. Distinct from the live-deploy decision, which stays the owner's.
+- [ ] `az deployment group what-if` on the final bicep — zero unexpected Delete/Modify/Replace lines. **Owner item:** the reviewed preview is 2 Modify / 13 Ignore with seven interpreted omissions (not NoChange); `traffic` and `revisionSuffix` need the owner's explicit acceptance. See the acceptance sheet.
+- [x] Staging smoke test: register → login → re-login after 20 minutes of activity (H-1 fixed) → attempt flow → owner approval → recovery open (no handover) — all pass with the least-privilege DSN. H-1 renewal 22/22 over 21 min; full quiz + owner approval + recovery open (no handover); `current_user=sort_app`.
+- [x] 10 spoofed logins cannot lock out a different credential (H-2 fixed); `/season/notice` floods don't stall ranked traffic (M-1 fixed). H-2: 11th attempt 429, a different valid credential still 200. M-1: 100/100 notice 200 overlapping a completed quiz (bounded load, not a 30-player flood).
 - [x] `psql` from the public internet to the DB times out (H-4 fixed); GHCR PAT revoked (H-5 fixed).
-- [ ] No secrets in tracked files (`git grep` sweep + gitleaks green); no real resource names in tracked docs.
-- [ ] Owner has answered the seven questions above and signed the Phase 0 gate.
+- [x] No secrets in tracked files (`git grep` sweep + gitleaks green); no real resource names in tracked docs. Whole-history Gitleaks on `7609311f…`: 367 commits, no leaks; `test_docs_hygiene` guards name shape and the vault DSN role. Scope: tool coverage, not a universal proof.
+- [ ] Owner has answered the seven questions above and signed the Phase 0 gate. **Owner item:** six of seven are answered (gaps noted on questions 3 and 5); the Phase 0 signature is the owner's final act. See the acceptance sheet.
 
 ## Existing defenses to keep (do not "simplify" these away)
 
