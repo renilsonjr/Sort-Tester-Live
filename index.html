@@ -322,9 +322,14 @@
   /* Leaderboard (#12, built to the screen approved in #16). No timestamps:
      the first-reached-score rule was superseded by tie-break quizzes. */
   .board { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
-  .board li { display: grid; grid-template-columns: 34px 1fr auto; align-items: center; gap: 10px; border: 1px solid var(--line); border-radius: 17px; background: var(--panel); padding: 12px 14px; }
+  /* No `background` here: the glass rule below supplies a translucent
+     one, and an opaque colour at this point would sit on top of it. */
+  .board li { display: grid; grid-template-columns: 34px 1fr auto; align-items: center; gap: 10px; border: 1px solid var(--line); border-radius: 17px; padding: 12px 14px; }
   .board li.board-you { border: 2px solid var(--accent); }
-  .board li.board-tied { border-color: #c79a2c; background: #fdf6e4; }
+  /* Tinted, not painted: an opaque fill would hide the blur that every
+     other row has, and the tie marker would read as a different surface
+     rather than the same one highlighted. */
+  .board li.board-tied { border-color: #c79a2c; background: rgba(253, 246, 228, 0.62); }
   /* Shown only when the player is ranked past the rows the server sends,
      so their place is stated instead of being looked for in vain. */
   .board-your-place { margin: .6rem 0 0; font-size: .95rem; }
@@ -432,7 +437,9 @@
   .sel-list label input { width: auto; flex: none; }
   .sel-hist { display: block; margin-top: 4px; color: var(--muted); font-size: 12px; }
   .handover-id { font: 900 26px/1.3 "Space Grotesk", sans-serif; letter-spacing: .06em; overflow-wrap: anywhere; user-select: all; }
-  .board li.board-hat { border-color: var(--gold-line); background: #fdf6e4; }
+  /* Same reason as the tied row: translucent, so the hat winner is the
+     same surface as everyone else, lit differently. */
+  .board li.board-hat { border-color: var(--gold-line); background: rgba(253, 246, 228, 0.62); }
   .board-marker-hat { color: #7a5200; }
   .board li.board-hat .board-place { color: var(--gold-line); }
   .board-notice-bad { border-color: #d8b6b6; background: #fbf0ee; }
@@ -768,7 +775,7 @@
   }
 
   /* Glass Cards across Ranked & Quiz */
-  .lab-change, .lab-choice, .auth-card, .quiz-card, .rq-cmp, .sum, .profile-balance, .leaderboard-card {
+  .lab-change, .lab-choice, .auth-card, .quiz-card, .rq-cmp, .sum, .profile-balance, .board li {
     background: var(--glass-surface-sub);
     backdrop-filter: var(--blur-md); -webkit-backdrop-filter: var(--blur-md);
     border: 1px solid var(--glass-border);
