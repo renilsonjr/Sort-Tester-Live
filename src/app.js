@@ -1,3 +1,4 @@
+import { playCorrectSfx, playIncorrectSfx, isSoundEnabled, toggleSound } from "./sound.js";
 import { BELT_STYLE } from './belts.js?v=sort-change-20261116-r1';
 import { formatDestinationLabel } from './destination.js?v=sort-change-20261116-r1';
 import { SERVICE_LABEL } from './questions.js?v=sort-change-20261116-r1';
@@ -531,7 +532,18 @@ function showCard() {
     button.addEventListener('click', () => {
       if (!view.isConnected || bailOpen || run.finished || run.index !== cardIndex) return;
       stopTick();
-      showFeedback(clock.expired() ? timeoutCard(run) : answerCard(run, button.dataset.belt, clock.elapsed()));
+      const current = currentCard(run);
+      const isRight = current && (button.dataset.belt === current.belt);
+      if (isRight) {
+        button.classList.add("belt-correct");
+        playCorrectSfx();
+      } else {
+        button.classList.add("belt-incorrect");
+        playIncorrectSfx();
+      }
+      setTimeout(() => {
+        showFeedback(clock.expired() ? timeoutCard(run) : answerCard(run, button.dataset.belt, clock.elapsed()));
+      }, 450);
     });
   });
 
