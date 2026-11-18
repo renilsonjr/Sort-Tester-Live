@@ -30,6 +30,9 @@ the app template replaced it.
   performance validation remains open in #13.
 - `diagnostics/` — bounded HTTP burst generator and read-only pool/CPU
   observers; runbook §10 explains the two-terminal method.
+- [[final-verification-2026-11-18]] — H-1/H-2, Ranked/owner/recovery,
+  runtime-role and bounded mixed-traffic evidence; full app-template preview
+  and its seven omissions. Final audit and pilot acceptance remain open.
 - `network.bicep` — the VNet, private DNS zone and private endpoint the
   database is reached through (audit H-4).
 - [[shared-resource-locks]] (+ `.bicep`) — independently deployable
