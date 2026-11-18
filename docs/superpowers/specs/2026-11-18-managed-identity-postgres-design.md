@@ -77,22 +77,36 @@ the pool at connection time (below), never embedded in this string.
 
 ### 2. Token provider (`backend/db/entra_token.py`, new)
 
-A small module wrapping `azure.identity.ManagedIdentityCredential`.
+A small module that fetches the token from the Azure Instance Metadata
+Service (IMDS) directly, using only the standard library.
 
-- `DB_TOKEN_SCOPE = "https://ossrdbms-aad.database.windows.net/.default"`.
-- A module-level credential, built lazily from
-  `SORT_TESTER_DB_IDENTITY_CLIENT_ID`, with a setter seam
-  (`set_credential(...)`) so tests inject a fake and no test touches Azure.
-- `db_access_token() -> str` calls `credential.get_token(DB_TOKEN_SCOPE)`
-  and returns `.token`. `azure-identity` caches the token internally and
-  only contacts the IMDS endpoint when the cached token is near expiry, so
-  "reuse within lifetime" and "refresh before expiry" come from the SDK; we
-  do not reimplement a cache.
-- **The token value is never logged.** The module logs nothing containing
-  it; failures log the error type, not the token. A test enforces this.
-- On acquisition failure the exception propagates to the pool/connection
-  layer, which decides the HTTP outcome (below). The module does not retry
-  in a loop.
+> **Why not the azure-identity SDK (decision 2026-11-18):** the SDK pulls
+> `requests` and a dozen transitive packages. The container's dependency
+> list is a tested invariant — `test_runtime_requirements` forbids
+> `requests` in the image and caps the list at 30 pins — and the SDK breaks
+> both. IMDS is a single documented endpoint, so we call it with `urllib`
+> and keep the image's guards intact.
+
+- `DB_TOKEN_RESOURCE = "https://ossrdbms-aad.database.windows.net"`.
+- IMDS endpoint
+  `http://169.254.169.254/metadata/identity/oauth2/token?api-version=2018-02-01&resource=<resource>&client_id=<client id>`,
+  with the required header `Metadata: true`. The client id comes from
+  `SORT_TESTER_DB_IDENTITY_CLIENT_ID`. The response JSON carries
+  `access_token` and `expires_on` (epoch seconds).
+- A module-level cache holds `(token, expires_at)`. `db_access_token()`
+  returns the cached token while it is valid and refetches when within a
+  skew window (300 s) of expiry — this is the "reuse within lifetime" and
+  "refresh before expiry" behaviour, implemented here since there is no SDK
+  cache to lean on.
+- A fetcher seam (`set_token_fetcher(fn)`, where `fn() -> dict` returns the
+  parsed IMDS payload) lets tests inject a fake and touch no network; the
+  default fetcher performs the real `urllib` request.
+- **The token value is never logged.** Failures log the error type, not the
+  token. A test enforces this.
+- On acquisition failure `db_access_token()` raises `TokenUnavailable` with
+  no token material in the message; it does not retry in a loop. The
+  exception propagates to the pool/connection layer, which decides the HTTP
+  outcome (below).
 
 ### 3. Pool integration (`backend/db/pool.py`)
 
@@ -191,9 +205,9 @@ clearly marked as a procedure gated on separate approval:
 
 ## Dependencies
 
-- `azure-identity` (and its transitive `azure-core`) pinned by version in
-  `backend/requirements-runtime.txt`. This is the one runtime-image size
-  cost of the change.
+- **None new.** The IMDS call uses the standard library, so the container's
+  dependency list and its tested invariants (no `requests`, ≤30 pins) are
+  unchanged.
 - Needs the hosted app (#41, done). Should land before employee data (#13).
   Parent roadmap: #1.
 

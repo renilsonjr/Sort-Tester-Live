@@ -1155,6 +1155,16 @@ Each rotation adds a dated line to this section saying what changed and
 what proved it afterwards. The dates in the table above are what make
 "every 90 days" a statement rather than an intention.
 
+### 9g. Removing the database password entirely (#84)
+
+The surest way not to leak or rotate the `sort_app` password is to stop
+having one: managed-identity mode replaces it with a short-lived Entra
+token the app fetches per connection. The reviewed procedure — the Entra
+role mapping, the tested rollback to password mode (a new revision, not a
+restart — see §9b), and the approval-gated cutover — lives in
+[[db-runtime-role]] under "Managed-identity mode (#84)". It is **not
+applied**; it changes nothing until separately approved.
+
 ## 10. Observe the pool and compare request paths
 
 Audit M-5 / issue #196. The 2026-11-18 observations and the completed

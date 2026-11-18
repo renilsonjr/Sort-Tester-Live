@@ -33,7 +33,7 @@ def _db_connection():
     wait. Commits are still the caller's own: see backend/db/pool.py for
     why that was kept rather than folded into the checkout.
     """
-    pool.init_pool(settings.app_database_url())
+    pool.init_pool(settings.app_database_url(), auth_mode=settings.db_auth_mode())
     with pool.checkout() as conn:
         yield conn
 
