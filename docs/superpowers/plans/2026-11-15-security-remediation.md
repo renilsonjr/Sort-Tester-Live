@@ -1459,6 +1459,15 @@ that check. Fictional data, left in place.
 
 ## Definition of Done (final gate)
 
+Partial staging verification recorded 2026-11-18:
+[[../../../infra/azure/final-verification-2026-11-18]]. Auth-route renewal
+over 21 minutes, credential isolation, a complete quiz/owner approval/recovery
+open (no handover), runtime-role read-back and bounded overlapping notice/quiz
+traffic passed in owner-supplied outputs. The final app-template preview is
+2 Modify / 13 Ignore, with seven explicitly reviewed omissions, not NoChange;
+no deployment followed it. These scoped observations do not complete every
+combined checkbox below, the outstanding owner answers or Phase 0 sign-off.
+
 - [ ] Tasks 1–22 complete; every commit message references its audit finding ID.
 - [ ] `backend/.venv/bin/python -m unittest discover -s backend/tests -v` — green (macOS) and green on the Windows CI job.
 - [ ] `node --test tests/*.test.mjs` — green.
