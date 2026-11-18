@@ -1299,6 +1299,33 @@ live ingestion check was performed. See
 Task 22 rotation runbook — 2026-11-17, runbook §9. The final verification
 pass is **not** done; it needs Azure.
 
+Task 22 verification gap found — 2026-11-18. The Windows backend check
+on PR #201 was green, but its actual log reported **1030 tests, 670
+skipped**; 667 lines named the missing `SORT_TESTER_TEST_DATABASE_URL`.
+The workflow did not configure a test DSN or start PostgreSQL. That green
+check was not evidence that the database-backed suite ran on Windows.
+The final audit gate remains open.
+
+The Windows job now initialises a fresh PostgreSQL cluster from the
+hosted runner's existing `PGBIN` binaries, listens only on **127.0.0.1:5433**
+and configures the dedicated scratch database URL. The binaries are also
+added to PATH for the existing role/dump/restore tests. Trust authentication
+is local to that disposable job; there is no Azure connection, real
+credential, new role grant or production configuration change. An
+`always()` step stops only that job's data directory.
+
+`python -m backend.ci_tests` validates the scratch URL and loopback host/
+hostaddr, refuses an application-database override, then runs discovery.
+Inherited `PGHOSTADDR` is accounted for and connection service profiles
+are refused, so an implicit libpq profile cannot redirect the local URL.
+It returns failure for an empty suite, a test failure/error, **or any
+skipped test**; missing/unsafe configuration stops before discovery.
+This preserves ordinary unittest for development while preventing the
+required CI check from silently passing without its database. Functional
+regressions exercise these exit/report behaviours with tiny real suites;
+only the CI run itself verifies the Windows startup and workflow wiring.
+Do not tick the final verification gate from this change alone.
+
 Writing it turned up a regression we introduced today, which is the best
 argument for writing it while the work is fresh.
 
