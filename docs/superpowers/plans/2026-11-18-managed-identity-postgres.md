@@ -4,9 +4,9 @@
 
 **Goal:** Let the hosted app authenticate to PostgreSQL with a short-lived Entra token instead of a password, behind an off-by-default flag, so no code change alters the running app until a separately-approved deployment.
 
-**Architecture:** A `SORT_TESTER_DB_AUTH` flag selects `password` (today's path, default) or `managed_identity`. In managed-identity mode the pool supplies a fresh Entra token as the connection password for each physical connection it opens, via `psycopg_pool`'s per-connection callable `kwargs`; the token comes from an `azure-identity` wrapper whose own cache handles reuse and refresh. Token/connect failure surfaces as a clean HTTP 503 through one FastAPI exception handler, with no secret logged.
+**Architecture:** A `SORT_TESTER_DB_AUTH` flag selects `password` (today's path, default) or `managed_identity`. In managed-identity mode the pool supplies a fresh Entra token as the connection password for each physical connection it opens, via `psycopg_pool`'s per-connection callable `kwargs`; the token comes from an IMDS call (standard library) with a small expiry-aware cache for reuse and refresh. Token/connect failure surfaces as a clean HTTP 503 through one FastAPI exception handler, with no secret logged.
 
-**Tech Stack:** Python 3.14, FastAPI, psycopg 3.3.8, psycopg-pool 3.3.3, azure-identity. Tests: `unittest` (`backend.ci_tests` / `backend/tests`).
+**Tech Stack:** Python 3.14, FastAPI, psycopg 3.3.8, psycopg-pool 3.3.3, Azure IMDS via stdlib `urllib`. Tests: `unittest` (`backend.ci_tests` / `backend/tests`).
 
 **Spec:** `docs/superpowers/specs/2026-11-18-managed-identity-postgres-design.md`.
 
@@ -15,7 +15,7 @@
 - **No deployment, no Azure change.** This plan ships code, tests and a written (not applied) runbook only. No Bicep edit, no grant change, no `passwordAuth` change, no removal of the vault password reference.
 - **`password` is the default mode.** Merging this must change nothing about the running app or local development. No new env var is required in `password` mode.
 - **The token value is never logged**, in success, failure or error paths.
-- **Pinned dependencies.** `psycopg-pool==3.3.3`, `psycopg==3.3.8`. Add `azure-identity` pinned by exact version to `backend/requirements-runtime.txt` **and** `backend/requirements.txt`.
+- **No new dependency.** The token is fetched from IMDS with the standard library; the container's tested invariants (`test_runtime_requirements`: no `requests`, ≤30 pins) stay intact. (The azure-identity SDK was rejected on 2026-11-18 for breaking both.)
 - **Preserve the pool contract:** `MAX_SIZE = 8`, `STATEMENT_TIMEOUT_MS = 5000` in the DSN options, `check=ConnectionPool.check_connection`, `row_factory=dict_row`, explicit transactions (`checkout()` never commits; rolls back on return).
 - **TLS unchanged:** both modes pass through `_require_verified_tls`; `managed_identity` DSNs carry no password.
 - **Migrations/tests bypass the pool** via `migrate.connect` — do not route them through the token path.
@@ -128,193 +128,217 @@ git commit -m "feat: SORT_TESTER_DB_AUTH mode selector, password default (#84)"
 
 ---
 
-### Task 2: Entra token provider
+### Task 2: Entra token provider (IMDS, stdlib only)
 
 **Files:**
 - Create: `backend/db/entra_token.py`
 - Create test: `backend/tests/test_entra_token.py`
-- Modify: `backend/requirements-runtime.txt`, `backend/requirements.txt` (add `azure-identity`)
+
+No dependency change: the IMDS call uses the standard library, so the
+container's tested invariants (no `requests`, ≤30 pins) stay intact. (The
+azure-identity SDK was rejected on 2026-11-18 because it pulls `requests`
+and ~13 transitive packages, breaking `test_runtime_requirements`.)
 
 **Interfaces:**
-- Produces: `entra_token.DB_TOKEN_SCOPE = "https://ossrdbms-aad.database.windows.net/.default"`; `entra_token.db_access_token() -> str`; `entra_token.set_credential(credential_or_none)` test seam; a credential object exposes `get_token(*scopes) -> object` whose `.token` is the string (matches `azure-identity`'s `AccessToken`). `entra_token.TokenUnavailable(Exception)` raised when acquisition fails.
+- Produces: `entra_token.DB_TOKEN_RESOURCE = "https://ossrdbms-aad.database.windows.net"`; `entra_token.db_access_token() -> str`; `entra_token.set_token_fetcher(fn_or_none)` test seam, where `fn() -> dict` returns the parsed IMDS payload (`{"access_token": str, "expires_on": "epoch-seconds"}`); `entra_token.reset_cache()` for tests; `entra_token.TokenUnavailable(Exception)` raised when acquisition fails; `entra_token.EXPIRY_SKEW_SECONDS = 300`.
 
-- [ ] **Step 1: Add the dependency**
-
-Find the current `azure-identity` release and pin it. Add to `backend/requirements-runtime.txt` after the psycopg lines:
-
-```
-azure-identity==<latest-stable>
-```
-
-Add the identical pin to `backend/requirements.txt`. Then install into the venv:
-
-```bash
-backend/.venv/bin/pip install "azure-identity==<latest-stable>"
-```
-
-(Replace `<latest-stable>` with the resolved version; record it identically in both files.)
-
-- [ ] **Step 2: Write the failing tests**
+- [ ] **Step 1: Write the failing tests**
 
 ```python
 # backend/tests/test_entra_token.py
 import logging
+import time
 import unittest
 
 from backend.db import entra_token
 
 
-class FakeToken:
-    def __init__(self, token):
-        self.token = token
-
-
-class FakeCredential:
-    def __init__(self, tokens=None, error=None):
-        self._tokens = list(tokens or ["tok-1"])
-        self._error = error
-        self.calls = 0
-
-    def get_token(self, *scopes):
-        self.calls += 1
-        if self._error is not None:
-            raise self._error
-        value = self._tokens.pop(0) if len(self._tokens) > 1 else self._tokens[0]
-        return FakeToken(value)
+def _payload(token, ttl_seconds):
+    return {"access_token": token, "expires_on": str(int(time.time()) + ttl_seconds)}
 
 
 class EntraTokenTests(unittest.TestCase):
     def tearDown(self):
-        entra_token.set_credential(None)
+        entra_token.set_token_fetcher(None)
+        entra_token.reset_cache()
 
-    def test_returns_the_token_string(self):
-        entra_token.set_credential(FakeCredential(["tok-abc"]))
+    def test_returns_the_access_token(self):
+        entra_token.set_token_fetcher(lambda: _payload("tok-abc", 3600))
         self.assertEqual(entra_token.db_access_token(), "tok-abc")
 
-    def test_requests_the_postgres_scope(self):
-        cred = FakeCredential(["tok-abc"])
-        captured = {}
-        orig = cred.get_token
-        def spy(*scopes):
-            captured["scopes"] = scopes
-            return orig(*scopes)
-        cred.get_token = spy
-        entra_token.set_credential(cred)
-        entra_token.db_access_token()
-        self.assertEqual(captured["scopes"], (entra_token.DB_TOKEN_SCOPE,))
+    def test_reuses_within_lifetime(self):
+        calls = {"n": 0}
 
-    def test_failure_raises_tokenunavailable_not_the_raw_error(self):
-        entra_token.set_credential(FakeCredential(error=RuntimeError("imds down")))
+        def fetch():
+            calls["n"] += 1
+            return _payload(f"tok-{calls['n']}", 3600)
+
+        entra_token.set_token_fetcher(fetch)
+        first = entra_token.db_access_token()
+        second = entra_token.db_access_token()
+        self.assertEqual(first, "tok-1")
+        self.assertEqual(second, "tok-1")
+        self.assertEqual(calls["n"], 1, "a valid cached token must be reused")
+
+    def test_refreshes_within_the_skew_window(self):
+        calls = {"n": 0}
+
+        def fetch():
+            calls["n"] += 1
+            # first token already inside the skew window, so it must refetch
+            ttl = entra_token.EXPIRY_SKEW_SECONDS - 10 if calls["n"] == 1 else 3600
+            return _payload(f"tok-{calls['n']}", ttl)
+
+        entra_token.set_token_fetcher(fetch)
+        self.assertEqual(entra_token.db_access_token(), "tok-1")
+        self.assertEqual(entra_token.db_access_token(), "tok-2")
+        self.assertEqual(calls["n"], 2)
+
+    def test_failure_raises_tokenunavailable(self):
+        def fetch():
+            raise RuntimeError("imds down")
+
+        entra_token.set_token_fetcher(fetch)
         with self.assertRaises(entra_token.TokenUnavailable):
             entra_token.db_access_token()
 
     def test_token_value_is_never_logged(self):
-        entra_token.set_credential(FakeCredential(["super-secret-token"]))
-        with self.assertLogs(level=logging.DEBUG) as captured:
-            logging.getLogger("backend.db.entra_token").debug("probe")  # ensure the logger exists
+        entra_token.set_token_fetcher(lambda: _payload("super-secret-token", 3600))
+        with self.assertLogs("backend.db.entra_token", level=logging.DEBUG) as captured:
+            logging.getLogger("backend.db.entra_token").debug("probe")
             entra_token.db_access_token()
         self.assertFalse(
             any("super-secret-token" in line for line in captured.output),
             "the token value must never appear in logs",
         )
 
-    def test_failure_does_not_log_any_token(self):
-        entra_token.set_credential(FakeCredential(error=RuntimeError("boom")))
-        with self.assertLogs(level=logging.DEBUG) as captured:
+    def test_failure_logs_the_error_type_not_a_token(self):
+        def fetch():
+            raise RuntimeError("secret-looking-detail")
+
+        entra_token.set_token_fetcher(fetch)
+        with self.assertLogs("backend.db.entra_token", level=logging.DEBUG) as captured:
             try:
                 entra_token.db_access_token()
             except entra_token.TokenUnavailable:
                 pass
-        self.assertFalse(any("tok" in line.lower() and "token" not in line.lower()
-                             for line in captured.output))
+        joined = "\n".join(captured.output)
+        self.assertIn("RuntimeError", joined)
+        self.assertNotIn("secret-looking-detail", joined)
 ```
 
-- [ ] **Step 3: Run to verify it fails**
+- [ ] **Step 2: Run to verify it fails**
 
 Run: `backend/.venv/bin/python -m unittest backend.tests.test_entra_token -v`
 Expected: FAIL — module `backend.db.entra_token` does not exist.
 
-- [ ] **Step 4: Implement the provider**
+- [ ] **Step 3: Implement the provider**
 
 ```python
 # backend/db/entra_token.py
 """An Entra access token used as the PostgreSQL connection password (#84).
 
 Managed-identity mode replaces the database password with a short-lived
-Entra token. azure-identity's credential caches the token and refreshes it
-near expiry on its own, so this module does not keep a cache of its own; it
-asks for the token per physical connection and lets the SDK decide whether
-that means a network call. The token value is never logged.
+Entra token fetched from the Azure Instance Metadata Service (IMDS). The
+azure-identity SDK would do this, but it pulls requests and a dozen
+transitive packages, which breaks the container's tested dependency
+invariants (test_runtime_requirements). IMDS is one documented endpoint, so
+this calls it with the standard library and caches the token until it is
+near expiry. The token value is never logged.
 """
+import json
 import logging
 import os
+import time
+import urllib.request
 
 from backend.db import settings
 
 logger = logging.getLogger(__name__)
 
-DB_TOKEN_SCOPE = "https://ossrdbms-aad.database.windows.net/.default"
+DB_TOKEN_RESOURCE = "https://ossrdbms-aad.database.windows.net"
+_IMDS_URL = "http://169.254.169.254/metadata/identity/oauth2/token"
+_IMDS_API_VERSION = "2018-02-01"
+EXPIRY_SKEW_SECONDS = 300
+_IMDS_TIMEOUT_SECONDS = 5
 
-_credential = None  # set lazily, or injected by tests via set_credential
+_fetcher = None  # None -> real IMDS call; tests inject a fake with set_token_fetcher
+_cache = None  # (token, expires_at) or None
 
 
 class TokenUnavailable(Exception):
     """Raised when no Entra token could be obtained."""
 
 
-def set_credential(credential) -> None:
-    """Inject a credential (tests) or reset to lazy default with None."""
-    global _credential
-    _credential = credential
+def set_token_fetcher(fetcher) -> None:
+    """Inject a payload fetcher (tests) or reset to the real IMDS call with None."""
+    global _fetcher
+    _fetcher = fetcher
 
 
-def _build_credential():
-    # Imported lazily so password-mode environments need not install
-    # azure-identity to import this module indirectly.
-    from azure.identity import ManagedIdentityCredential
+def reset_cache() -> None:
+    """Forget any cached token. For tests and for a deliberate refresh."""
+    global _cache
+    _cache = None
 
+
+def _imds_fetch() -> dict:
     client_id = os.environ.get(settings.DB_IDENTITY_CLIENT_ID_ENV_VAR, "").strip()
     if not client_id:
         raise TokenUnavailable(
             f"{settings.DB_IDENTITY_CLIENT_ID_ENV_VAR} is not set; "
             "managed-identity mode needs the user-assigned identity's client id."
         )
-    return ManagedIdentityCredential(client_id=client_id)
-
-
-def _current_credential():
-    global _credential
-    if _credential is None:
-        _credential = _build_credential()
-    return _credential
+    query = urllib.parse.urlencode(
+        {
+            "api-version": _IMDS_API_VERSION,
+            "resource": DB_TOKEN_RESOURCE,
+            "client_id": client_id,
+        }
+    )
+    request = urllib.request.Request(
+        f"{_IMDS_URL}?{query}", headers={"Metadata": "true"}
+    )
+    with urllib.request.urlopen(request, timeout=_IMDS_TIMEOUT_SECONDS) as response:
+        return json.loads(response.read().decode("utf-8"))
 
 
 def db_access_token() -> str:
-    """Return a fresh Entra token for the PostgreSQL scope.
+    """Return a valid Entra token for the PostgreSQL resource.
 
-    Never logs the token. On any failure raises TokenUnavailable with no
-    token material in the message.
+    Reuses a cached token until it is within EXPIRY_SKEW_SECONDS of expiry,
+    then refetches. Never logs the token. On any failure raises
+    TokenUnavailable with no token material in the message.
     """
+    global _cache
+    now = time.time()
+    if _cache is not None and now < _cache[1] - EXPIRY_SKEW_SECONDS:
+        return _cache[0]
     try:
-        access = _current_credential().get_token(DB_TOKEN_SCOPE)
-        return access.token
+        payload = (_fetcher or _imds_fetch)()
+        token = payload["access_token"]
+        expires_at = float(payload["expires_on"])
     except TokenUnavailable:
         raise
-    except Exception as error:  # noqa: BLE001 - deliberately broad; no token in the message
+    except Exception as error:  # noqa: BLE001 - broad on purpose; no token in the message
         logger.warning("Entra token acquisition failed: %s", type(error).__name__)
         raise TokenUnavailable("could not obtain an Entra token for the database") from error
+    _cache = (token, expires_at)
+    return token
 ```
 
-- [ ] **Step 5: Run to verify it passes**
+Note: `urllib.parse` must be imported for `urlencode`; add `import urllib.parse` beside `import urllib.request`.
+
+- [ ] **Step 4: Run to verify it passes**
 
 Run: `backend/.venv/bin/python -m unittest backend.tests.test_entra_token -v`
-Expected: PASS (5 tests).
+Expected: PASS (6 tests).
 
-- [ ] **Step 6: Commit**
+- [ ] **Step 5: Commit**
 
 ```bash
-git add backend/db/entra_token.py backend/tests/test_entra_token.py backend/requirements-runtime.txt backend/requirements.txt
-git commit -m "feat: Entra token provider for database auth, never logged (#84)"
+git add backend/db/entra_token.py backend/tests/test_entra_token.py
+git commit -m "feat: Entra token from IMDS, cached and never logged (#84)"
 ```
 
 ---
@@ -600,9 +624,9 @@ git commit -m "docs: managed-identity role, connection and rollback runbook, not
 - Per-physical-connection token in the pool, contract preserved (spec §3) → Task 3. ✅
 - Clean 503, single tested place, healthy connections unaffected (spec §4) → Task 4. ✅
 - Local dev stays password (spec §5) → Task 1 default + Task 3 password branch unchanged; the full suite runs in password mode in Tasks 3/4. ✅
-- Tests: reuse, refresh, failure, no-token-in-logs, mode validation, password untouched (spec §6) → Tasks 1–4 (reuse/refresh are exercised via the per-call provider in Task 3's callable test and the SDK-cache note; the failure + no-log guards are Task 2/4). ✅
+- Tests: reuse, refresh, failure, no-token-in-logs, mode validation, password untouched (spec §6) → Task 2 (reuse/refresh/failure/no-log directly against the cache), Task 1 (mode validation), Task 3 (password branch untouched). ✅
 - Runbook: role/grants, connection, rollback, ordered deploy (spec §7) → Task 5. ✅
-- Dependency `azure-identity` pinned in both requirements files (spec Dependencies) → Task 2 Step 1. ✅
+- No new dependency; IMDS via stdlib keeps the container invariants (spec Dependencies) → Task 2 (no requirements edit). ✅
 
 **2. Placeholder scan:** `<latest-stable>` in Task 2 and `<identity client id>` / placeholder names in Task 5 are deliberate fill-ins the implementer resolves against the live package/doc conventions, not skipped work; every code step carries real code. No "TBD"/"add error handling"/"write tests for the above".
 
@@ -610,5 +634,5 @@ git commit -m "docs: managed-identity role, connection and rollback runbook, not
 
 ## Notes and open implementation detail
 
-- **Reuse/refresh evidence (spec §6.1–6.2):** azure-identity's own cache makes "reuse within lifetime" and "refresh near expiry" the SDK's behaviour, not ours. Task 3's callable test proves the pool asks the provider per physical connect; Task 2's tests prove the provider returns/raises correctly. A direct SDK-cache timing test is not meaningful against a fake and is explicitly left to the SDK — note this in the test file's docstring rather than faking expiry semantics.
+- **Reuse/refresh evidence (spec §6.1–6.2):** the module's own expiry-aware cache is tested directly in Task 2 (`test_reuses_within_lifetime`, `test_refreshes_within_the_skew_window`) using a fake fetcher that returns controlled `expires_on` values — no network, no SDK. Task 3's callable test proves the pool asks the provider per physical connect.
 - **Pool acquisition timeout:** the default pool `timeout` is 30s and `reconnect_timeout` 300s (bounded background retry, not a tight spin). If a faster 503 is wanted in managed-identity mode, a shorter pool `timeout` can be added in Task 3 — left out here to avoid changing password-mode behaviour; raise it with the owner if the 503 latency matters before the pilot.
