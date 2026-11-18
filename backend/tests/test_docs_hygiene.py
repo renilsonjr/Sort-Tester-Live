@@ -167,6 +167,46 @@ class RuntimeSecretNamesTheRuntimeRoleTests(unittest.TestCase):
                 f"{user!r}: the migration owner can rewrite the schema",
             )
 
+    def test_no_app_dsn_is_left_as_a_placeholder_anywhere(self):
+        """Not only the vault write: the rollback path builds one too.
+
+        §5b's inline `databaseUrl` is the way back if the vault path
+        fails, and it carried `<user>` long after the vault command had
+        been fixed. A placeholder in the command someone reaches for
+        during a failure is the worst place to leave one.
+
+        §1d's migration URL is the exception and uses `<admin>`: that one
+        is supposed to be the migration owner.
+        """
+        text = self.RUNBOOK.read_text(encoding="utf-8")
+        self.assertNotIn(
+            "postgresql://<user>",
+            text,
+            "a DSN the operator fills in by hand has no role named",
+        )
+
+    def test_every_vault_secret_verifies_the_server_certificate(self):
+        """A rotation must not quietly downgrade TLS.
+
+        The secret in force uses `verify-full`. Microsoft lists `require`
+        under "Don't use the following configurations", because it
+        encrypts without checking who is on the other end. A rotation is
+        run under pressure from whatever the runbook says, so a stale
+        `require` in these commands would undo the upgrade with no error
+        and nothing to notice.
+        """
+        text = self.RUNBOOK.read_text(encoding="utf-8")
+        for block in text.split("az keyvault secret set")[:-1]:
+            dsns = re.findall(r'postgresql://[^\'"]*', block)
+            if not dsns:
+                continue
+            self.assertIn(
+                "sslmode=verify-full",
+                dsns[-1],
+                "a vault-write command would store a DSN that does not"
+                " verify the server certificate",
+            )
+
     def test_the_role_is_not_left_as_a_placeholder(self):
         for user in self._vault_write_dsns():
             self.assertFalse(

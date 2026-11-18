@@ -593,8 +593,8 @@ read -rsp "Database password: " PGPW; echo; echo "length: ${#PGPW}"
 PGPW="$PGPW" python3 - <<'EOF'
 import json, os, urllib.parse
 pw = urllib.parse.quote(os.environ["PGPW"], safe="")
-dsn = (f"postgresql://<user>:{pw}@<server>.postgres.database.azure.com"
-       ":5432/sort_tester_app?sslmode=require")
+dsn = (f"postgresql://sort_app:{pw}@<server>.postgres.database.azure.com"
+       ":5432/sort_tester_app?sslmode=verify-full&sslrootcert=/etc/ssl/certs/ca-certificates.crt")
 params = {
   "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
   "contentVersion": "1.0.0.0",
@@ -705,7 +705,7 @@ for a second or two and no recycled container can carry it away (§5b):
 
 ```sh
 read -rsp "Database password: " PGPW; echo "length: ${#PGPW}"; umask 077
-PGPW="$PGPW" python3 -c 'import os,urllib.parse; pw=urllib.parse.quote(os.environ["PGPW"],safe=""); open(os.path.expanduser("~/dsn.txt"),"w").write(f"postgresql://sort_app:{pw}@<server>.postgres.database.azure.com:5432/sort_tester_app?sslmode=require")'
+PGPW="$PGPW" python3 -c 'import os,urllib.parse; pw=urllib.parse.quote(os.environ["PGPW"],safe=""); open(os.path.expanduser("~/dsn.txt"),"w").write(f"postgresql://sort_app:{pw}@<server>.postgres.database.azure.com:5432/sort_tester_app?sslmode=verify-full&sslrootcert=/etc/ssl/certs/ca-certificates.crt")'
 unset PGPW
 az keyvault secret set --vault-name kv-sortstg-<suffix> --name database-url \
   --file ~/dsn.txt --query id -o tsv
@@ -1011,7 +1011,7 @@ later.
 
    ```sh
    read -rsp "sort_app password: " PGPW; echo "length: ${#PGPW}"; umask 077
-   PGPW="$PGPW" python3 -c 'import os,urllib.parse; pw=urllib.parse.quote(os.environ["PGPW"],safe=""); open(os.path.expanduser("~/dsn.txt"),"w").write(f"postgresql://sort_app:{pw}@<server>.postgres.database.azure.com:5432/sort_tester_app?sslmode=require")'
+   PGPW="$PGPW" python3 -c 'import os,urllib.parse; pw=urllib.parse.quote(os.environ["PGPW"],safe=""); open(os.path.expanduser("~/dsn.txt"),"w").write(f"postgresql://sort_app:{pw}@<server>.postgres.database.azure.com:5432/sort_tester_app?sslmode=verify-full&sslrootcert=/etc/ssl/certs/ca-certificates.crt")'
    unset PGPW
    az keyvault secret set --vault-name kv-sortstg-<suffix> --name database-url \
      --file ~/dsn.txt --query id -o tsv
@@ -1021,6 +1021,18 @@ later.
    Check the printed length before letting the rest run. The password has
    been mistyped twice in this runbook's history, and both times the
    length said so.
+
+   **Applied 2026-11-18:** the secret now uses
+   `sslmode=verify-full&sslrootcert=/etc/ssl/certs/ca-certificates.crt`.
+   The bundle was already in the app image — 178 KB, from the Alpine
+   Python base — so nothing had to be baked in, and
+   `/api/ranked/season/notice` returned real JSON afterwards, which it
+   can only do by reading the database. Microsoft lists `require` under
+   "Don't use", so this was worth the extra revision.
+
+   The paragraph below is kept for the case where a future image turns
+   out to ship no bundle: `sslmode=require` was what the secret used
+   until then, and it is still the fallback that is known to connect.
 
    `sslmode=require` matches the secret in force, not the stronger
    setting §1d uses for migrations. `verify-full` needs the app image to
