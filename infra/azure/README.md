@@ -33,8 +33,9 @@ the app template replaced it.
   database is reached through (audit H-4).
 - [[shared-resource-locks]] (+ `.bicep`) — independently deployable
   `CanNotDelete` locks for the existing PostgreSQL, Application Insights
-  and Log Analytics resources; prepared for owner-reviewed what-if,
-  not evidence that locks are deployed.
+  and Log Analytics resources; applied/read-back verified 2026-11-18,
+  no-change preview and unchanged app checks passed. The separate
+  observed-delete-refusal acceptance remains open; §7 records evidence.
 - `runtime-identity.bicep` (+ `.md`) — the app's identity and its two
   resource-scoped roles: pull from the registry, read from the vault.
 - `security-foundation.md` — how the registry and vault were created.
