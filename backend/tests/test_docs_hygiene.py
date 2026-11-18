@@ -124,3 +124,52 @@ class ParameterFilesAreIgnoredTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class RuntimeSecretNamesTheRuntimeRoleTests(unittest.TestCase):
+    """The app's own database URL must name `sort_app` (audit H-3).
+
+    The migration owner can create and alter tables and rewrite the
+    migration bookkeeping; `sort_app` can read and write data and nothing
+    else. That separation is the whole of H-3, and the runbook says in
+    §1d never to deploy the migration owner's URL as the runtime secret.
+
+    It happened anyway, on 2026-11-17: the vault-write command carried
+    `<user>` as a placeholder, and what got filled in was the admin. A
+    placeholder is an invitation, so the role is written out now -- and
+    this fails if it turns back into one.
+
+    §1d's own migration URL is exempt: that one is *supposed* to be the
+    owner, which is the point of keeping the two apart.
+    """
+
+    RUNBOOK = ROOT / "infra" / "azure" / "container-apps-app.md"
+
+    def _vault_write_dsns(self):
+        """Every postgresql:// built for a vault secret, by its section."""
+        text = self.RUNBOOK.read_text(encoding="utf-8")
+        found = []
+        for block in text.split("az keyvault secret set")[:-1]:
+            # the DSN is built just above the command that stores it
+            dsns = re.findall(r"postgresql://([A-Za-z0-9_<>-]+):", block)
+            if dsns:
+                found.append(dsns[-1])
+        return found
+
+    def test_every_vault_secret_is_written_for_the_runtime_role(self):
+        users = self._vault_write_dsns()
+        self.assertTrue(users, "no vault-write commands found in the runbook")
+        for user in users:
+            self.assertEqual(
+                user,
+                "sort_app",
+                "the app's secret must name the runtime role, not "
+                f"{user!r}: the migration owner can rewrite the schema",
+            )
+
+    def test_the_role_is_not_left_as_a_placeholder(self):
+        for user in self._vault_write_dsns():
+            self.assertFalse(
+                user.startswith("<"),
+                "a placeholder here is how the admin account got in once",
+            )
