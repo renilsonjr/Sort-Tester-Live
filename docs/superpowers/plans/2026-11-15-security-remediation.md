@@ -1053,8 +1053,19 @@ Mutation-checked both ways: removing a LIMIT fails, and adding one to
   6. `DROP TABLE tooling_probe`; drop duplicate indexes `sessions_token_hash_idx`, `login_credentials_lookup_key_idx`.
 - [x] **Step 2: Schema tests:** each composite FK rejects a cross-account insert; the dropped objects are gone; `place` cap enforced.
 - [x] **Step 3: Verify exactly one head** (`current_revision` → the new head; the chain stays linear) and run the full suite (fictional staging data makes the backfill trivial).
-- [ ] **Step 4: Deploy migrations via the guarded admin path (runbook §1d).**
+- [x] **Step 4: Deploy migrations via the guarded admin path (runbook §1d).**
 - [x] **Step 5: Commit** — `security: same-account composite keys across ledger, attempts, tiebreaks (audit M-10)`
+
+Migration 0037 deployed — 2026-11-18. `upgrade_app` took the staging
+database 0036 → 0037 through the guarded path, and the confirmation it
+demanded was the new full form, `database@host:port` — the L7 fix
+working against a real server rather than a test.
+
+The composite keys were created without a single failure, which is
+itself a result: had any settlement, ledger entry, attempt or tie-break
+seat belonged to a different account than its parent, the constraint
+would have refused and the whole transaction rolled back. The staging
+data is consistent.
 
 Task 19 applied — 2026-11-17 as migration `0037`, **four of the six steps
 in it**, with the two left out being the interesting part.
@@ -1193,8 +1204,34 @@ The section also records what has **no** secret: both managed identities,
 and CI once §3a is applied. That table is shorter than it would have been
 this morning, which is the measure of the day's work.
 
-Not done: §9a itself (which role the app is really using), the correction
-if it is wrong, and the final verification pass.
+§9a run and the regression corrected — 2026-11-18.
+
+The app **was** connecting as the server administrator. Proved from
+`pg_stat_activity` rather than from configuration, with `client_addr`
+showing an internal `fd40:` address so it could not be confused with our
+own session — an earlier sample without that column had looked like
+proof and was not.
+
+Order of the fix, which is now what §9b says: test the `sort_app`
+credential *first*, while the firewall was already open for the
+migration. It read the accounts table and was refused `CREATE TABLE`,
+which is both proof the password is right and proof the role is still
+limited. Only then was it written to the vault.
+
+**A restart did not pick up the new secret.** The secret was rewritten,
+the revision restarted, the app answered 200 — and it was still on the
+old user. Microsoft's page lists a restart as a way to pick up a changed
+secret but never says a restart re-reads the vault; the only documented
+timing is that a versionless reference retrieves the latest version
+*within 30 minutes*, and caching is not documented at all. A new revision
+put it in force at once. Both facts are in §9b now.
+
+That is also why "the app answers 200" is not the check. It answered 200
+throughout, on the wrong credential.
+
+Still not done: the final verification pass, and the question of whether
+deployments before 2026-11-17 carried the same username — unknowable from
+the repository, and the window is at most two days on fictional data.
 
 ## Owner questions (unverifiable from the repo — answer before Phase 0 sign-off)
 

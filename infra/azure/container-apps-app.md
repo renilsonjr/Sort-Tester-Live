@@ -94,8 +94,13 @@ one proves the network, TLS and the user are fine:
 
 ```sh
 PGCONNECT_TIMEOUT=15 PGPASSWORD='wrong-on-purpose' psql \
-  "host=<server>.postgres.database.azure.com port=5432 dbname=sort_tester_app user=<admin> sslmode=verify-full" -c 'select 1'
+  "host=<server>.postgres.database.azure.com port=5432 dbname=sort_tester_app user=<admin> sslmode=verify-full sslrootcert=/etc/ssl/certs/ca-certificates.crt" -c 'select 1'
 ```
+
+`sslrootcert` is not optional for `psql`: without it, `verify-full` looks
+for `~/.postgresql/root.crt`, which does not exist, and the command fails
+before it ever reaches the server. That error looks nothing like a
+firewall problem, which is the point of running this check at all.
 
 `FATAL: password authentication failed` is the answer you want. A timeout
 means the firewall rule is wrong.
@@ -918,9 +923,44 @@ secret written into the vault on 2026-11-17 was built with the
 **migration owner's** username instead, which is the one thing §1d's note
 says never to deploy as the runtime secret.
 
-Whether earlier deployments did the same is not known from the
-repository: the runbook shows `<user>` as a placeholder, so what was
-typed is not recorded anywhere.
+**Confirmed and corrected — 2026-11-18.** The app was connecting as the
+administrator, proved from `pg_stat_activity` with `client_addr` showing
+an internal address. The vault secret was rewritten for `sort_app`, whose
+credential was tested first (it read the accounts table and was refused
+`CREATE TABLE`, which is the separation H-3 exists for), and a new
+revision put it in force. The app now connects as `sort_app`.
+
+Whether the deployments before 2026-11-17 did the same is still not
+known: the runbook showed `<user>` as a placeholder, so what was typed
+was never recorded. The window is at most 2026-11-16 to 2026-11-18, on a
+staging database holding fictional data only.
+
+One thing that misled us twice: there are **two** passwords, and the
+runbook used to ask for "the database password" without saying which.
+The admin's is 32 characters, `sort_app`'s is 11. Twice on 2026-11-17 a
+length check printed 11 where 32 was wanted, and both times it was read
+as a typo. It was the right password for the wrong role.
+
+Ask the database, not the container: `pg_stat_activity` shows which role
+the connections are actually open as, which is a fact rather than a
+reading of configuration. It needs the firewall open (§1c), so it costs
+nothing to do during a migration, which is when it is open anyway.
+
+The app opens a connection per request, so sample while it is being
+called:
+
+```sh
+URL=https://<app>; ( for i in $(seq 1 40); do curl -s -o /dev/null "$URL/api/ranked/season/notice"; done ) &
+PGPASSWORD="$PGPW" psql "host=<server>.postgres.database.azure.com port=5432 dbname=sort_tester_app user=<admin> sslmode=verify-full sslrootcert=/etc/ssl/certs/ca-certificates.crt" \
+  -c "DO \$\$ DECLARE r record; BEGIN FOR i IN 1..30 LOOP FOR r IN SELECT usename, client_addr FROM pg_stat_activity WHERE datname='sort_tester_app' AND pid <> pg_backend_pid() LOOP RAISE NOTICE 'usuario=% origem=%', r.usename, r.client_addr; END LOOP; PERFORM pg_sleep(0.3); END LOOP; END \$\$;" 2>&1 | sort -u; wait
+```
+
+Read `client_addr` as well as the user. The app comes from inside the
+network (an `fd40:` address through the private endpoint); your own
+session comes from your public address, so the two cannot be confused —
+a single sample without that column once looked like proof and was not.
+
+Away from a migration, this reads the configuration instead:
 
 ```sh
 az containerapp exec -n ca-sort-app-stg -g rg-sort-tester-staging \
@@ -981,6 +1021,30 @@ later.
    container keeps the value it started with, and a broken secret stays
    hidden until the next scale event — at which point the app stops with
    no change to explain it.
+
+   **A restart was not enough on 2026-11-18**, and this is worth knowing
+   before you trust one. The secret was rewritten, the revision was
+   restarted, the app answered 200 — and it was still connecting as the
+   old user. Microsoft's own page lists restarting a revision as a way to
+   pick up a changed secret, but never says a restart re-reads Key Vault;
+   the only timing it documents is that a **versionless** reference
+   retrieves the latest version *within 30 minutes*. Caching is not
+   documented at all.
+
+   What worked immediately was a new revision, which re-reads the whole
+   configuration:
+
+   ```sh
+   az containerapp update -n ca-sort-app-stg -g rg-sort-tester-staging \
+     --revision-suffix <a short word saying why>
+   ```
+
+   It changes nothing else; the revision is simply new. Use it whenever a
+   secret change has to take effect at a known moment rather than inside
+   a half-hour window.
+
+   And check the **effect**, not the restart: an app answering 200 proves
+   it started, not which credential it started with. §9a is the check.
 
 3. **Check it answers**: `/health` and `/api/ranked/season/notice` both
    200, and the second with real JSON, which is what proves it reached
