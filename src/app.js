@@ -1621,6 +1621,7 @@ async function playRankedAttempt(attempt, mode, tally) {
       <p class="rq-stake">${esc(mode === 'promotion'
         ? `◆ ${t('Promotion')} · ${tally.correctCount} ${t('of')} ${q.seq - 1} ${t('right so far')}`
         : `◆ ${t('Ranked')} · ${t('this attempt counts for points')}`)}</p>
+      <div class="rq-stage">${quizAvatar('thinking')}</div>
       <div id="rq-question"></div>
       <button id="rq-cancel" class="ghost">${esc(t('Cancel this attempt'))}</button>
     </section>
@@ -2359,12 +2360,14 @@ function leaveRun() {
 // The approved Blender avatar, rendered to stills. The animated model is
 // 2 MB with its viewer, so it stays out of the question screens, which
 // re-render once per question.
-const AVATAR_POSE = { thinking: 'thinking', happy: 'correct', sad: 'incorrect' };
+const AVATAR_POSE = { thinking: 'thinking', happy: 'correct', sad: 'incorrect', idle: 'idle' };
 
 function quizAvatar(mood) {
   const label = mood === 'thinking' ? 'Blue mascot thinking with a question mark'
-    : mood === 'happy' ? 'Happy blue mascot' : 'Sad blue mascot';
-  return `<img class="quiz-avatar" src="assets/avatar-${AVATAR_POSE[mood]}.jpg" alt="${esc(t(label))}">`;
+    : mood === 'happy' ? 'Happy blue mascot'
+    : mood === 'idle' ? 'Blue mascot'
+    : 'Sad blue mascot';
+  return `<img class="quiz-avatar" src="assets/avatar-${AVATAR_POSE[mood]}.png" alt="${esc(t(label))}">`;
 }
 
 function quizHeader(cardNumber, total, withTimer = false) {

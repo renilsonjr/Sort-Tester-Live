@@ -887,6 +887,17 @@
   .lab-language button { background: var(--glass-surface-sub); border: 1px solid var(--glass-border); color: var(--ink); backdrop-filter: var(--blur-md); -webkit-backdrop-filter: var(--blur-md); }
   .lab-language button[aria-pressed="true"] { border-color: var(--gold); color: var(--ink); }
 
+  /* Avatar now a transparent portrait PNG (was a landscape JPG): contain it */
+  .quiz-avatar { width: auto; max-width: 68%; height: auto; aspect-ratio: auto; object-fit: contain; display: block; margin: 0 auto; filter: drop-shadow(0 10px 18px rgba(0, 0, 0, 0.45)); }
+
+  /* Ranked quiz — avatar stage, belts and timer bar (match the mock) */
+  .rq-stage { height: 150px; margin: 2px 0 4px; border-radius: var(--r-md); border: 1px solid rgba(255, 255, 255, 0.08); background: radial-gradient(ellipse at center, rgba(244, 189, 56, 0.12), rgba(26, 17, 10, 0.12)); display: grid; place-items: center; overflow: hidden; }
+  .rq-stage .quiz-avatar { max-width: none; height: 138px; filter: drop-shadow(0 12px 22px rgba(0, 0, 0, 0.5)); }
+  .rq-stake { color: var(--muted); }
+  .tb-bar { background: rgba(255, 255, 255, 0.1); }
+  .tb-bar i { background: linear-gradient(90deg, var(--gold), #ffe08a); }
+  .belts .belt { border: 1px solid rgba(255, 255, 255, 0.16); }
+
 </style>
 </head>
 <body>
