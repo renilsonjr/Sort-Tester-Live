@@ -134,3 +134,31 @@ test('the rule that actually wins paints the gold gradient', () => {
   assert.match(effective, /linear-gradient\(135deg, var\(--gold\)/);
   assert.match(effective, /border: 1px solid rgba\(255, 255, 255/);
 });
+
+// --- nothing opaque may cover the ambient lighting ---
+
+test('the full-screen entry panel does not hide what is behind it', () => {
+  // `#auth-panel` is fixed, inset 0 and z-index 100, so it sits above the
+  // ambient canvas. An opaque fill there hides every orb and turns each
+  // frosted card into plain white: the design is applied, correct, and
+  // invisible. That is what happened on 2026-11-18, and it cost an
+  // afternoon of looking at caches and deployments.
+  const rule = page.match(/#auth-panel \{[^}]*\}/);
+  assert.ok(rule, '#auth-panel rule is missing');
+  const background = rule[0].match(/background:\s*([^;]+);/);
+  assert.ok(background, '#auth-panel declares no background');
+  assert.match(
+    background[1].trim(),
+    /^(transparent|rgba\()/,
+    'an opaque background here hides the ambient lighting behind it',
+  );
+});
+
+test('the ambient canvas sits below the panels, not above them', () => {
+  // Behind everything is the point: orbs painted over a card would be
+  // decoration on top rather than light coming through.
+  const rule = page.match(/\.ambient-canvas \{[^}]*\}/);
+  assert.ok(rule, '.ambient-canvas rule is missing');
+  assert.match(rule[0], /position:\s*fixed/);
+  assert.doesNotMatch(rule[0], /z-index:\s*[1-9]/);
+});

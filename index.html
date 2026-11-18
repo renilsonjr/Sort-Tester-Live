@@ -88,7 +88,12 @@
 
   #auth-panel {
     position: fixed; inset: 0; z-index: 100;
-    background: var(--bg); display: flex; flex-direction: column; align-items: center;
+    /* Transparent on purpose. This panel covers the whole viewport above
+       everything else, so an opaque fill here hides the ambient lighting
+       and makes every frosted surface on the entry screen read as plain
+       white -- the design was applied correctly and simply could not be
+       seen. The page keeps its own background behind it. */
+    background: transparent; display: flex; flex-direction: column; align-items: center;
     padding: 20px; overflow-y: auto;
   }
   .auth-screen { width: min(360px, 100%); margin-block: auto; flex-shrink: 0; display: flex; flex-direction: column; gap: 14px; }

@@ -84,7 +84,24 @@ def create_app() -> FastAPI:
 
     @application.get("/", include_in_schema=False)
     def home() -> FileResponse:
-        return FileResponse(index_page, media_type="text/html")
+        # `no-cache` means "ask me first", not "never store": the browser
+        # keeps the copy and revalidates, and FileResponse's ETag turns a
+        # match into a 304 that costs nothing.
+        #
+        # Without it there is no instruction at all, so each browser
+        # invents its own freshness window from the Last-Modified date.
+        # That is how a deployment can be live, verified from one machine
+        # and still invisible on another -- which happened on 2026-11-18
+        # and cost an afternoon of looking in the wrong place.
+        #
+        # The page carries the whole stylesheet inline, so a stale copy is
+        # a stale design. src/ and assets/ are fine on the default: their
+        # URLs carry a version tag when they change.
+        return FileResponse(
+            index_page,
+            media_type="text/html",
+            headers={"cache-control": "no-cache"},
+        )
 
     for folder in ("src", "assets"):
         application.mount(f"/{folder}", StaticFiles(directory=FRONTEND_ROOT / folder), name=folder)

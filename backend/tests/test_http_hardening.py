@@ -76,6 +76,22 @@ class SecurityHeaderTests(unittest.TestCase):
                 self.assertEqual(app.get(path).headers["cache-control"], "no-store")
         self.assertNotEqual(app.get("/src/app.js").headers.get("cache-control"), "no-store")
 
+    def test_the_page_is_revalidated_rather_than_assumed_fresh(self):
+        """A deployed design change must not stay invisible.
+
+        The page carries the whole stylesheet inline, so a cached copy is
+        a cached design. With no `cache-control` the browser invents a
+        freshness window from Last-Modified, which is how a deployment
+        can be live, verified from one machine, and still unseen on
+        another.
+
+        `no-cache` is "ask me first", not "do not store": the ETag turns
+        an unchanged page into a 304 that costs nothing.
+        """
+        response = client().get("/")
+        self.assertEqual(response.headers["cache-control"], "no-cache")
+        self.assertIn("etag", response.headers)
+
     def test_the_server_software_is_not_advertised(self):
         self.assertNotIn("uvicorn", client().get("/").headers.get("server", "").lower())
 
