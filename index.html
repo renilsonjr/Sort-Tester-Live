@@ -39,7 +39,7 @@
        this the browser's default 8px body margin overflows the 100dvh card
        screen and every card scrolls. */
     margin: 0;
-    background: radial-gradient(130% 90% at 50% -10%, #3a2516 0%, #1d120b 55%, #0d0805 100%) fixed;
+    background: radial-gradient(130% 90% at 50% -10%, #2b1b11 0%, #160d07 52%, #0a0504 100%) fixed;
     color: var(--ink);
     font-family: "DM Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
     font-size: 16px; line-height: 1.45; -webkit-text-size-adjust: 100%;
@@ -868,10 +868,11 @@
   .lab-choice small { color: var(--muted); }
   .lab-arrow { color: var(--gold); font-weight: 900; }
 
-  /* Primary CTA → gold gradient (mock .btn) */
+  /* Primary CTA → gold gradient with a light edge (mock .btn) */
   .primary {
     background: linear-gradient(135deg, var(--gold) 0%, #d89115 100%);
-    color: #2a1c10; box-shadow: 0 8px 20px -6px rgba(244, 189, 56, 0.5);
+    color: #2a1c10; border: 1px solid rgba(255, 255, 255, 0.45);
+    box-shadow: 0 8px 20px -6px rgba(244, 189, 56, 0.5);
   }
 
   /* Brand mark in gold (mock brandmark) */
@@ -897,6 +898,33 @@
   .tb-bar { background: rgba(255, 255, 255, 0.1); }
   .tb-bar i { background: linear-gradient(90deg, var(--gold), #ffe08a); }
   .belts .belt { border: 1px solid rgba(255, 255, 255, 0.16); }
+  .rq-stage-sm { height: 120px; }
+  .rq-stage-sm .quiz-avatar { height: 108px; }
+
+  /* Leaderboard — 3D-style podium (match the mock) */
+  .podium { display: flex; align-items: flex-end; justify-content: center; gap: 8px; margin: 6px 0 12px; }
+  .pslot { display: flex; flex-direction: column; align-items: center; gap: 5px; width: 33%; max-width: 112px; }
+  .pcrown { font-size: 16px; color: var(--gold); line-height: 1; }
+  .pdisc { width: 46px; height: 46px; border-radius: 50%; display: grid; place-items: center; font-weight: 900; font-size: 18px; color: var(--ink); background: var(--glass-surface-sub); border: 2px solid var(--glass-border); }
+  .pslot.p1 .pdisc { width: 56px; height: 56px; border-color: var(--gold); box-shadow: 0 0 18px rgba(244, 189, 56, 0.5); }
+  .pslot-you .pdisc { border-color: var(--gold); }
+  .pname { font-size: 11px; font-weight: 800; }
+  .ppts { font-size: 10.5px; color: var(--gold); font-weight: 800; }
+  .ppillar { width: 100%; border-radius: 12px 12px 0 0; display: grid; place-items: center; font-weight: 900; font-size: 22px; color: var(--ink); background: linear-gradient(180deg, rgba(244, 189, 56, 0.22), var(--glass-surface-sub)); border: 1px solid var(--glass-border-subtle); border-bottom: 0; }
+  .pslot.p1 .ppillar { height: 86px; } .pslot.p2 .ppillar { height: 66px; } .pslot.p3 .ppillar { height: 54px; }
+
+  /* The app screen is an opaque dark panel (like the mock's phone screen), so
+     the UI reads crisp and dark; the ambient orbs stay behind it and only peek
+     at the edges on wide screens. */
+  #app { background: radial-gradient(120% 80% at 50% 0%, #2e1d12 0%, #140d08 68%); border: 0; box-shadow: 0 16px 70px rgba(0,0,0,0.5); backdrop-filter: none; -webkit-backdrop-filter: none; }
+  .orb-gold { opacity: 0.30; }
+  .orb-amber { opacity: 0.24; }
+  .orb-blue { opacity: 0.2; }
+
+  /* Leaderboard rows: keep tied/hat/you rows on dark glass, gold accents */
+  .board li.board-tied, .board li.board-hat { background: var(--glass-surface-sub); border-color: rgba(244, 189, 56, 0.4); }
+  .board li.board-hat .board-place { color: var(--gold); }
+  .board li.board-you { border: 2px solid var(--gold); }
 
 </style>
 </head>

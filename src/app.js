@@ -1433,7 +1433,22 @@ async function fillLeaderboard(panel) {
     );
     return;
   }
-  const rows = board.rows.map((row) => `
+  // Top three get a 3D-style podium (mock); the rest stay in the list below.
+  const hasPodium = board.rows.length >= 3;
+  const top = board.rows.slice(0, 3);
+  const slot = (row, rank, cls) => !row ? '' : `
+    <div class="pslot ${cls}${row.you ? ' pslot-you' : ''}">
+      ${row.hat ? '<div class="pcrown" aria-hidden="true">♛</div>' : ''}
+      <div class="pdisc">${row.hat ? '♛' : esc(row.username.slice(0, 1).toUpperCase())}</div>
+      <div class="pname">${esc(row.username)}</div>
+      <div class="ppts">◆ ${row.points.toLocaleString()}</div>
+      <div class="ppillar">${rank}</div>
+    </div>`;
+  const podium = hasPodium ? `<div class="podium">
+    ${slot(top[1], 2, 'p2')}${slot(top[0], 1, 'p1')}${slot(top[2], 3, 'p3')}
+  </div>` : '';
+  const listRows = hasPodium ? board.rows.slice(3) : board.rows;
+  const rows = listRows.map((row) => `
     <li class="${row.you ? 'board-you' : ''}${row.hat ? ' board-hat' : (row.tied ? ' board-tied' : '')}">
       <span class="board-place">${row.hat ? '♛' : row.place}</span>
       <span class="board-who">
@@ -1460,6 +1475,7 @@ async function fillLeaderboard(panel) {
     : '';
   panel.innerHTML = `
     <p class="lab-intro">${esc(intro)}</p>
+    ${podium}
     <ol class="board">${rows}</ol>
     ${placeLine}
     ${board.eligible ? '' : boardNotice(
@@ -1689,6 +1705,7 @@ function showRankedFeedback(attempt, mode, q, chosen, response, tally) {
     : (response.outcome === 'timeout' ? t('Time ran out') : t('Review this route'));
   const view = labPage(`
     <section class="lab-screen">
+      <div class="rq-stage">${quizAvatar(right ? 'happy' : 'sad')}</div>
       <h1 class="lab-title rq-verdict ${right ? 'good' : 'bad'}">${esc(verdict)}</h1>
       ${mode === 'promotion'
         ? (promoCorrect
@@ -1790,6 +1807,7 @@ function showRankedResult(mode, result, tally, { quit = false, attemptId = null 
     && result.points_after < result.points_before;
   const view = labPage(`
     <section class="lab-screen">
+      <div class="rq-stage rq-stage-sm">${quizAvatar('idle')}</div>
       <p class="lab-eyebrow">${esc(t('Ranked'))} · ${esc(t(quit ? 'attempt ended' : 'attempt finished'))}</p>
       <h1 class="lab-title">${esc(tally.correctCount)} ${esc(t('of'))} 15 ${esc(t('correct'))}</h1>
       ${rankedSum(result, quit)}
