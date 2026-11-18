@@ -33,6 +33,9 @@ from psycopg.conninfo import make_conninfo
 from psycopg.rows import dict_row
 from psycopg_pool import ConnectionPool
 
+from backend.db import entra_token
+from backend.db import settings as db_settings
+
 # Eight is a request-path number, not a tuning result: the app is a quiz
 # whose queries are short, and the point of the cap is that a burst waits
 # instead of exhausting the server. Raising it without watching
@@ -52,21 +55,38 @@ def _conninfo_with_timeout(conninfo: str) -> str:
     return make_conninfo(conninfo, options=f"-c statement_timeout={STATEMENT_TIMEOUT_MS}")
 
 
-def init_pool(conninfo: str) -> None:
+def init_pool(
+    conninfo: str,
+    *,
+    auth_mode: str = db_settings.PASSWORD_MODE,
+    token_provider=entra_token.db_access_token,
+) -> None:
     """Build the pool if there is not one already.
 
     Idempotent on purpose: it is called at startup and defensively from
     `checkout`, and a second pool would be eight more connections that
     nothing tracks or closes.
+
+    In managed-identity mode the connection password is a fresh Entra token
+    resolved per physical connection via a callable `kwargs` (audit #84);
+    the conninfo carries no password. `psycopg_pool` 3.3.3 resolves a
+    callable `kwargs` on every connection attempt, so a replaced connection
+    fetches a current token. Password mode is unchanged.
     """
     global _pool
     if _pool is not None:
         return
+    if auth_mode == db_settings.MANAGED_IDENTITY_MODE:
+        def _kwargs():
+            return {"row_factory": dict_row, "password": token_provider()}
+        pool_kwargs = _kwargs
+    else:
+        pool_kwargs = {"row_factory": dict_row}
     _pool = ConnectionPool(
         conninfo=_conninfo_with_timeout(conninfo),
         min_size=1,
         max_size=MAX_SIZE,
-        kwargs={"row_factory": dict_row},
+        kwargs=pool_kwargs,
         # A pooled connection outlives the thing at the other end of it: a
         # restarted database, a dropped idle connection, a network blip
         # between the app and a private endpoint. Without this check the
