@@ -902,6 +902,10 @@
   .rq-stage .quiz-avatar { max-width: none; height: 138px; filter: drop-shadow(0 12px 22px rgba(0, 0, 0, 0.5)); }
   .rq-stage .quiz-avatar3d { height: 100%; }
   .rq-stake { color: var(--muted); }
+  /* Ring timer (mock): conic gold ring with the seconds on a dark disc */
+  .rq-ring { width: 46px; height: 46px; border-radius: 50%; display: grid; place-items: center; font-weight: 900; font-size: 14px; color: var(--gold); background: conic-gradient(var(--gold) calc(var(--pct, 100) * 1%), rgba(255, 255, 255, 0.12) 0); }
+  .rq-ring.low { color: var(--bad); background: conic-gradient(var(--bad) calc(var(--pct, 0) * 1%), rgba(255, 255, 255, 0.12) 0); }
+  .rq-ring span { width: 36px; height: 36px; border-radius: 50%; background: #1a110a; display: grid; place-items: center; }
   .tb-bar { background: rgba(255, 255, 255, 0.1); }
   .tb-bar i { background: linear-gradient(90deg, var(--gold), #ffe08a); }
   .belts .belt { border: 1px solid rgba(255, 255, 255, 0.18); box-shadow: inset 0 0 0 100px rgba(255, 255, 255, 0.04); }

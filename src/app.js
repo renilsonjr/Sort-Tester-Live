@@ -1631,7 +1631,7 @@ async function playRankedAttempt(attempt, mode, tally) {
     <section class="lab-screen" id="rq-play">
       <div class="tb-top">
         <span class="lab-eyebrow" id="rq-count">${esc(t('Question'))} ${q.seq} ${esc(t('of'))} 15</span>
-        <span class="lab-eyebrow" id="rq-clock"></span>
+        <div class="rq-ring" id="rq-clock" role="timer" aria-label="${esc(t('seconds'))}"><span id="rq-ring-num"></span></div>
       </div>
       <div class="tb-bar"><i id="rq-bar-fill"></i></div>
       <p class="rq-stake">${esc(mode === 'promotion'
@@ -1659,10 +1659,13 @@ async function playRankedAttempt(attempt, mode, tally) {
   function startCountdown(deadlineMs, totalMs) {
     const paint = () => {
       const left = deadlineMs - Date.now();
-      const el2 = view.querySelector('#rq-clock');
-      if (el2) el2.textContent = `${Math.max(0, Math.ceil(left / 1000))} ${t('seconds')}`;
+      const pct = Math.max(0, Math.min(100, (left / totalMs) * 100));
+      const ring = view.querySelector('#rq-clock');
+      const num = view.querySelector('#rq-ring-num');
+      if (num) num.textContent = Math.max(0, Math.ceil(left / 1000));
+      if (ring) { ring.style.setProperty('--pct', pct); ring.classList.toggle('low', left <= 3000); }
       const fill = view.querySelector('#rq-bar-fill');
-      if (fill) fill.style.width = `${Math.max(0, Math.min(100, (left / totalMs) * 100))}%`;
+      if (fill) fill.style.width = `${pct}%`;
       if (left <= 0) stopTimer();
     };
     paint();
