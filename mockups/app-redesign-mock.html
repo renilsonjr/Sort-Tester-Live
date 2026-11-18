@@ -1,0 +1,444 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sort Lab — Full app mock (glass redesign)</title>
+<style>
+@font-face{font-family:Nunito;src:url("../assets/nunito-variable.ttf") format("truetype");font-weight:200 1000;font-display:swap}
+
+:root{
+  --ink:#fffdf8; --muted:#c9bbab; --gold:#f4bd38; --gold-dark:#b47d15;
+  --good:#6cd39a; --bad:#f08a8a; --focus:#6db6ff;
+  --glass:rgba(38,26,18,.62); --glass-sub:rgba(56,38,27,.5);
+  --glass-brd:rgba(244,189,56,.32); --glass-brd-soft:rgba(255,255,255,.1);
+  --hi:rgba(255,255,255,.22);
+  --shadow:0 20px 50px -10px rgba(0,0,0,.6);
+  --blur:blur(20px); --blur-sm:blur(10px);
+  --r-sm:14px; --r-md:22px; --r-lg:30px; --pill:9999px;
+}
+/* belt colors (significado preservado) */
+:root{
+  --GOLD:#8a6400; --BLUE:#1f4e9c; --ORANGE:#b34d06; --BROWN:#5b3a21; --YELLOW:#c9a521;
+  --GREEN:#1e6b3a; --PINK:#a81f5e; --RED:#a81c1c; --PURPLE:#5b2d8e; --CHECK:#3a3a3a;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  font-family:Nunito,system-ui,sans-serif;color:var(--ink);
+  background:#120b07;min-height:100vh;padding:28px 18px 80px;overflow-x:hidden;
+}
+/* ambient twilight gradient + orbs */
+.bg{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden;
+  background:radial-gradient(130% 90% at 50% -10%,#3a2516 0%,#1d120b 55%,#0d0805 100%)}
+.orb{position:absolute;border-radius:50%;filter:blur(90px)}
+.orb.g{width:460px;height:460px;top:-80px;left:12%;opacity:.55;
+  background:radial-gradient(circle,#f4bd38,rgba(244,189,56,.02) 70%)}
+.orb.a{width:480px;height:480px;top:40%;right:6%;opacity:.4;
+  background:radial-gradient(circle,#c96b1b,rgba(201,107,27,.02) 70%)}
+.orb.b{width:380px;height:380px;bottom:-60px;left:24%;opacity:.3;
+  background:radial-gradient(circle,#175e94,rgba(23,94,148,.02) 70%)}
+
+.wrap{position:relative;z-index:1;max-width:1240px;margin:0 auto}
+.page-head{text-align:center;margin-bottom:10px}
+.page-head .eyebrow{font-size:12px;font-weight:900;letter-spacing:.16em;text-transform:uppercase;color:var(--gold)}
+.page-head h1{font-size:30px;margin:6px 0 4px}
+.page-head p{color:var(--muted);font-size:14px;max-width:640px;margin:0 auto}
+.legend{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin:16px 0 30px}
+.legend span{font-size:12px;color:var(--muted);background:var(--glass);border:1px solid var(--glass-brd-soft);
+  backdrop-filter:var(--blur-sm);padding:6px 11px;border-radius:var(--pill)}
+
+.gallery{display:flex;flex-wrap:wrap;gap:34px 30px;justify-content:center;align-items:flex-start}
+.frame{width:300px}
+.frame .cap{font-size:12.5px;font-weight:800;color:var(--muted);text-align:center;margin-bottom:9px}
+.frame .cap b{color:var(--ink);display:block;font-size:14px}
+
+/* phone */
+.phone{position:relative;width:300px;height:620px;border-radius:40px;padding:12px;
+  background:linear-gradient(160deg,#241811,#120b07);
+  box-shadow:var(--shadow),inset 0 0 0 1.5px rgba(244,189,56,.18);overflow:hidden}
+.screen{position:relative;width:100%;height:100%;border-radius:30px;overflow:hidden;
+  background:radial-gradient(120% 80% at 50% 0%,#3a2516,#1a110a 70%);
+  display:flex;flex-direction:column}
+.screen .s-orb{position:absolute;border-radius:50%;filter:blur(55px);pointer-events:none}
+.screen .s-orb.one{width:200px;height:200px;background:radial-gradient(circle,rgba(244,189,56,.5),transparent 70%);top:-50px;right:-40px}
+.screen .s-orb.two{width:180px;height:180px;background:radial-gradient(circle,rgba(23,94,148,.4),transparent 70%);bottom:40px;left:-50px}
+.statusbar{display:flex;justify-content:space-between;align-items:center;padding:12px 18px 2px;font-size:11px;color:var(--muted);font-weight:800;position:relative;z-index:2}
+.body{position:relative;z-index:2;flex:1;overflow:hidden;padding:6px 16px 14px;display:flex;flex-direction:column;gap:12px}
+
+/* glass primitives */
+.glass{background:var(--glass);backdrop-filter:var(--blur);-webkit-backdrop-filter:var(--blur);
+  border:1px solid var(--glass-brd-soft);border-radius:var(--r-md);box-shadow:var(--shadow);position:relative}
+.glass.lift{border-color:var(--glass-brd)}
+.row{display:flex;align-items:center;gap:10px}
+.spread{justify-content:space-between}
+.eyebrow{font-size:10px;font-weight:900;letter-spacing:.14em;text-transform:uppercase;color:var(--gold)}
+.muted{color:var(--muted)}
+.title{font-size:22px;font-weight:900;line-height:1.1}
+.sub{font-size:12.5px;color:var(--muted)}
+
+.avatar-chip{width:34px;height:34px;border-radius:50%;object-fit:cover;border:1.5px solid var(--glass-brd)}
+.pts-chip{font-weight:900;font-size:13px;color:var(--gold);background:rgba(244,189,56,.12);
+  border:1px solid var(--glass-brd);padding:5px 11px;border-radius:var(--pill)}
+
+.btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;border:0;cursor:default;
+  font-family:inherit;font-weight:900;font-size:15px;padding:14px;border-radius:var(--r-sm);color:#2a1c10;
+  background:linear-gradient(135deg,var(--gold),#d89115);box-shadow:0 8px 20px -6px rgba(244,189,56,.5)}
+.btn.ghost{background:var(--glass-sub);color:var(--ink);border:1px solid var(--glass-brd);box-shadow:none;backdrop-filter:var(--blur-sm)}
+.btn small{font-weight:700;opacity:.8}
+
+/* choice card (home/ranked) */
+.choice{display:flex;align-items:center;gap:12px;padding:14px;border-radius:var(--r-sm);
+  background:var(--glass-sub);border:1px solid var(--glass-brd-soft);backdrop-filter:var(--blur-sm)}
+.choice .ic{width:40px;height:40px;border-radius:12px;display:grid;place-content:center;font-size:19px;
+  background:rgba(244,189,56,.14);border:1px solid var(--glass-brd);color:var(--gold)}
+.choice .tx{flex:1}
+.choice .tx b{font-size:15px;display:block}
+.choice .tx small{font-size:11.5px;color:var(--muted)}
+.choice .arw{color:var(--gold);font-weight:900}
+.choice.lock .ic{color:var(--muted);background:rgba(255,255,255,.05);border-color:var(--glass-brd-soft)}
+
+/* dock */
+.dock{margin:auto 10px 10px;display:flex;justify-content:space-around;align-items:center;
+  padding:9px 6px;border-radius:var(--pill);background:rgba(28,19,13,.82);backdrop-filter:var(--blur);
+  border:1px solid var(--glass-brd-soft);box-shadow:var(--shadow);position:relative;z-index:3}
+.dock .d{display:flex;flex-direction:column;align-items:center;gap:3px;font-size:9.5px;font-weight:800;color:var(--muted);padding:6px 10px;border-radius:var(--pill)}
+.dock .d .gi{font-size:16px}
+.dock .d.on{color:#2a1c10;background:linear-gradient(135deg,var(--gold),#d89115);box-shadow:0 6px 16px -4px rgba(244,189,56,.6)}
+.dock .d.dim{opacity:.45}
+
+/* quiz */
+.q-top{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.q-bar{height:6px;border-radius:6px;background:rgba(255,255,255,.1);overflow:hidden;flex:1}
+.q-bar i{display:block;height:100%;width:62%;background:linear-gradient(90deg,var(--gold),#ffe08a)}
+.ring{width:44px;height:44px;border-radius:50%;display:grid;place-content:center;font-weight:900;font-size:14px;
+  color:var(--gold);background:conic-gradient(var(--gold) 62%,rgba(255,255,255,.12) 0);position:relative}
+.ring.low{color:var(--bad);background:conic-gradient(var(--bad) 18%,rgba(255,255,255,.12) 0)}
+.ring span{width:34px;height:34px;border-radius:50%;background:#1a110a;display:grid;place-content:center}
+.stage{height:150px;border-radius:var(--r-md);overflow:hidden;position:relative;
+  background:radial-gradient(ellipse at center,rgba(244,189,56,.14),rgba(26,17,10,.2));
+  border:1px solid var(--glass-brd-soft);display:grid;place-items:center}
+.stage img{height:148px;width:auto;object-fit:contain;filter:drop-shadow(0 12px 22px rgba(0,0,0,.5))}
+.stage iframe{width:100%;height:100%;border:0;display:block;background:transparent}
+.route{text-align:center}
+.route .svc{font-size:12px;color:var(--muted);font-weight:800}
+.route .code{font-size:34px;font-weight:900;letter-spacing:-1px;line-height:1.1}
+.cue{text-align:center;font-size:12px;color:var(--muted);font-weight:800}
+.belts{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.belt{padding:13px 8px;border-radius:var(--r-sm);font-weight:900;font-size:13px;text-align:center;color:#fff;
+  border:1px solid rgba(255,255,255,.18);position:relative;overflow:hidden;
+  box-shadow:inset 0 0 0 100px rgba(255,255,255,.04)}
+.belt.pick{outline:3px solid #fff;outline-offset:1px}
+.belt.correct{box-shadow:0 0 0 2px var(--good),0 0 22px rgba(108,211,154,.5)}
+.belt.wrong{box-shadow:0 0 0 2px var(--bad),0 0 22px rgba(240,138,138,.5)}
+
+/* feedback */
+.verdict{font-size:24px;font-weight:900;text-align:center}
+.verdict.good{color:var(--good)} .verdict.bad{color:var(--bad)}
+.worth{text-align:center;font-weight:900;font-size:13px}
+.worth.good{color:var(--good)} .worth.bad{color:var(--bad)}
+.cmp{display:flex;flex-direction:column;gap:2px}
+.cmp .r{display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid rgba(255,255,255,.08);font-size:12.5px;color:var(--muted)}
+.chip{padding:4px 10px;border-radius:8px;font-size:11px;font-weight:900;color:#fff}
+.why{font-size:12px;color:var(--muted);line-height:1.5;text-align:center}
+
+/* result sum */
+.sum .r{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.08);font-size:13px}
+.sum .r b{font-weight:900}
+.sum .r.lost{color:var(--bad)}
+.sum .r.total{border:0;font-size:16px;font-weight:900;color:var(--gold);padding-top:10px}
+
+/* podium */
+.podium{display:flex;align-items:flex-end;justify-content:center;gap:8px;margin-top:4px}
+.slot{display:flex;flex-direction:column;align-items:center;gap:6px;width:80px}
+.slot img{width:46px;height:46px;border-radius:50%;object-fit:cover;border:2px solid var(--glass-brd)}
+.slot.s1 img{width:56px;height:56px;border-color:var(--gold);box-shadow:0 0 18px rgba(244,189,56,.5)}
+.pill{width:100%;border-radius:12px 12px 0 0;display:grid;place-content:center;font-weight:900;font-size:22px;
+  background:linear-gradient(180deg,rgba(244,189,56,.25),var(--glass-sub));border:1px solid var(--glass-brd-soft);border-bottom:0}
+.slot.s1 .pill{height:92px} .slot.s2 .pill{height:70px} .slot.s3 .pill{height:58px}
+.slot .nm{font-size:11px;font-weight:800} .slot .pt{font-size:10.5px;color:var(--gold);font-weight:800}
+.lbrow{display:flex;align-items:center;gap:9px;padding:10px 12px;border-radius:12px;background:var(--glass-sub);border:1px solid var(--glass-brd-soft);font-size:12.5px}
+.lbrow .pl{font-weight:900;width:18px;color:var(--muted)}
+.lbrow .nm{flex:1;font-weight:800}
+.lbrow .pt{font-weight:900;color:var(--gold)}
+.lbrow.you{border-color:var(--gold);background:rgba(244,189,56,.1)}
+.lbrow.you .pl{color:var(--gold)}
+
+/* profile */
+.pf-head{display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center}
+.pf-badge{width:86px;height:86px;object-fit:contain;filter:drop-shadow(0 6px 16px rgba(0,0,0,.45)) drop-shadow(0 0 14px rgba(244,189,56,.25))}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.stat{padding:12px;border-radius:12px;text-align:center;background:var(--glass-sub);border:1px solid var(--glass-brd-soft)}
+.stat b{display:block;font-size:22px;font-weight:900} .stat small{font-size:10.5px;color:var(--muted)}
+.badges{display:flex;gap:8px;justify-content:space-between}
+.badges{gap:6px}
+.badges img{width:42px;height:42px;object-fit:contain;opacity:1;filter:drop-shadow(0 3px 7px rgba(0,0,0,.4))}
+.badges img.off{opacity:.3;filter:grayscale(1)}
+
+/* login */
+.brandmark{width:64px;height:64px;border-radius:20px;display:grid;place-content:center;font-size:26px;font-weight:900;color:#2a1c10;
+  background:linear-gradient(135deg,var(--gold),#d89115);box-shadow:0 10px 26px -6px rgba(244,189,56,.55)}
+.glass-input{width:100%;padding:13px 15px;border-radius:var(--r-sm);font-family:inherit;font-weight:800;font-size:14px;
+  color:var(--ink);background:var(--glass-sub);border:1px solid var(--glass-brd);outline:none}
+.hero-art{width:100%;border-radius:var(--r-md);object-fit:cover;border:1px solid var(--glass-brd-soft)}
+
+.note{margin:34px auto 0;max-width:720px;font-size:12.5px;color:var(--muted);line-height:1.6;
+  background:var(--glass);border:1px solid var(--glass-brd-soft);backdrop-filter:var(--blur-sm);border-radius:var(--r-md);padding:18px 20px}
+.note b{color:var(--ink)}
+</style>
+</head>
+<body>
+<div class="bg"><div class="orb g"></div><div class="orb a"></div><div class="orb b"></div></div>
+
+<div class="wrap">
+  <div class="page-head">
+    <div class="eyebrow">Sort Lab · redesign</div>
+    <h1>Full app mock — twilight glass</h1>
+    <p>Appearance and UX review. UPS brand kept (brown/gold, belt colors keep their real meaning). Fictional data, nothing is saved — the real app does not change.</p>
+  </div>
+  <div class="legend">
+    <span>◆ Frosted glass over a twilight gradient</span>
+    <span>⬟ Floating glass dock</span>
+    <span>⏱ Ring timer</span>
+    <span>🙂 Avatar in the quiz (Practice + Ranked)</span>
+    <span>♛ 3D podium on the leaderboard</span>
+  </div>
+
+  <div class="gallery">
+
+    <!-- 1. LOGIN / ENTRADA -->
+    <div class="frame">
+      <div class="cap"><b>1 · Entry</b>log in by ID or guest</div>
+      <div class="phone"><div class="screen"><div class="s-orb one"></div><div class="s-orb two"></div>
+        <div class="statusbar"><span>9:41</span><span>UPS Saddle Brook · Twilight</span></div>
+        <div class="body" style="justify-content:center;align-items:center;text-align:center;gap:16px">
+          <div class="brandmark">RJ</div>
+          <div><div class="title">Sort Lab</div><div class="sub">Learn the chart. Play Ranked. Climb the leaderboard.</div></div>
+          <div class="glass lift" style="width:100%;padding:16px;display:flex;flex-direction:column;gap:11px">
+            <div class="eyebrow" style="text-align:left">Log in</div>
+            <input class="glass-input" placeholder="Your login ID" value="••••-••••-••••">
+            <div class="btn">Log in with ID</div>
+            <div class="btn ghost">Continue as guest</div>
+            <div class="sub" style="text-align:center">Ranked needs a login. Guests get Practice only.</div>
+          </div>
+        </div>
+      </div></div>
+    </div>
+
+    <!-- 2. HOME (membro) -->
+    <div class="frame">
+      <div class="cap"><b>2 · Home</b>season + CTAs</div>
+      <div class="phone"><div class="screen"><div class="s-orb one"></div><div class="s-orb two"></div>
+        <div class="statusbar"><span>9:41</span><span>Twilight</span></div>
+        <div class="body">
+          <div class="row spread">
+            <div class="row"><div class="brandmark" style="width:36px;height:36px;border-radius:12px;font-size:15px">RJ</div>
+              <div><div style="font-weight:900;font-size:15px">Sort Lab</div><div class="sub">Hi, Riley #0427</div></div></div>
+            <span class="pts-chip">◆ 640</span>
+          </div>
+          <img class="hero-art" src="design-library/home-artwork/golden-hat-podium.png" alt="Win a UPS hat" style="height:150px">
+          <div class="choice"><div class="ic">✎</div><div class="tx"><b>Practice</b><small>Learn the chart, 15-second timer, no points.</small></div><div class="arw">→</div></div>
+          <div class="choice"><div class="ic">◆</div><div class="tx"><b>Ranked</b><small>15 questions, 10s each — counts for points.</small></div><div class="arw">→</div></div>
+          <div class="glass" style="padding:12px">
+            <div class="eyebrow">Sort changes</div>
+            <div class="row spread" style="margin-top:6px"><b style="font-size:15px">NY 140–147</b><span class="chip" style="background:var(--GOLD)">GOLD</span></div>
+            <div class="sub" style="margin-top:4px">Ground · 2 Day Air and 3 Day Select stay ORANGE.</div>
+          </div>
+        </div>
+        <div class="dock">
+          <div class="d on"><span class="gi">⌂</span>Home</div>
+          <div class="d"><span class="gi">✎</span>Practice</div>
+          <div class="d"><span class="gi">◆</span>Ranked</div>
+          <div class="d"><span class="gi">◉</span>Profile</div>
+        </div>
+      </div></div>
+    </div>
+
+    <!-- 3. PRÁTICA — QUIZ -->
+    <div class="frame">
+      <div class="cap"><b>3 · Practice · Quiz</b>avatar + glass belts</div>
+      <div class="phone"><div class="screen"><div class="s-orb one"></div><div class="s-orb two"></div>
+        <div class="statusbar"><span>9:41</span><span>Practice · Ground</span></div>
+        <div class="body">
+          <div class="q-top"><span class="eyebrow">Question 4 of 15</span>
+            <div class="ring"><span>9</span></div></div>
+          <div class="q-bar"><i></i></div>
+          <div class="stage"><iframe src="design-library/blender-avatar/embed.html?state=thinking" title="Avatar thinking"></iframe></div>
+          <div class="route"><div class="svc">NEXT DAY AIR · NJ</div><div class="code">070 – 089</div></div>
+          <div class="cue">Where does this go?</div>
+          <div class="belts">
+            <div class="belt pick" style="background:var(--BLUE)">BLUE</div>
+            <div class="belt" style="background:var(--ORANGE)">ORANGE</div>
+            <div class="belt" style="background:var(--GREEN)">GREEN</div>
+            <div class="belt" style="background:var(--PINK)">PINK</div>
+          </div>
+          <div class="btn ghost" style="margin-top:2px">Cancel</div>
+        </div>
+      </div></div>
+    </div>
+
+    <!-- 4. PRÁTICA — FEEDBACK -->
+    <div class="frame">
+      <div class="cap"><b>4 · Feedback</b>glow + avatar reacting</div>
+      <div class="phone"><div class="screen"><div class="s-orb one"></div><div class="s-orb two"></div>
+        <div class="statusbar"><span>9:41</span><span>Practice</span></div>
+        <div class="body">
+          <div class="stage"><iframe src="design-library/blender-avatar/embed.html?state=correct" title="Avatar happy"></iframe></div>
+          <div class="verdict good">Correct!</div>
+          <div class="worth good">Right belt · Medium question</div>
+          <div class="route"><div class="svc">NEXT DAY AIR · NJ</div><div class="code" style="font-size:28px">070 – 089</div></div>
+          <div class="glass" style="padding:12px">
+            <div class="cmp">
+              <div class="r"><span>Your choice</span><span class="chip" style="background:var(--BLUE)">BLUE</span></div>
+              <div class="r"><span>Correct belt</span><span class="chip" style="background:var(--BLUE)">BLUE</span></div>
+            </div>
+          </div>
+          <div class="why">This New Jersey ZIP range goes to the BLUE belt on Next Day Air.</div>
+          <div class="sub" style="text-align:center">Next question starts automatically…</div>
+        </div>
+      </div></div>
+    </div>
+
+    <!-- 5. RANKED — HOME -->
+    <div class="frame">
+      <div class="cap"><b>5 · Ranked · Home</b>balance + start</div>
+      <div class="phone"><div class="screen"><div class="s-orb one"></div><div class="s-orb two"></div>
+        <div class="statusbar"><span>9:41</span><span>Ranked</span></div>
+        <div class="body">
+          <div><div class="eyebrow">Ranked</div><div class="title">Season 1</div><div class="sub">The official season is open.</div></div>
+          <div class="glass lift" style="padding:14px">
+            <div class="row" style="gap:12px">
+              <img class="pf-badge" style="width:60px;height:60px" src="design-library/badges/iron-concept-v1.png" alt="Iron">
+              <div><div class="sub">Your balance</div><div style="font-size:24px;font-weight:900">640 <span style="font-size:13px;color:var(--muted)">points</span></div>
+                <div class="sub">Iron · 360 pts to the cap (1,000)</div></div>
+            </div>
+          </div>
+          <div class="choice"><div class="ic">◆</div><div class="tx"><b>Start Ranked</b><small>15 questions, 10 seconds each.</small></div><div class="arw">→</div></div>
+          <div class="choice"><div class="ic">#</div><div class="tx"><b>Leaderboard</b><small>See the standings.</small></div><div class="arw">→</div></div>
+          <div class="sub" style="text-align:center;margin-top:2px">Closes 11/30/2026</div>
+        </div>
+        <div class="dock">
+          <div class="d"><span class="gi">⌂</span>Home</div>
+          <div class="d"><span class="gi">✎</span>Practice</div>
+          <div class="d on"><span class="gi">◆</span>Ranked</div>
+          <div class="d"><span class="gi">◉</span>Profile</div>
+        </div>
+      </div></div>
+    </div>
+
+    <!-- 6. RANKED — QUIZ -->
+    <div class="frame">
+      <div class="cap"><b>6 · Ranked · Quiz</b>counts for points, 10s</div>
+      <div class="phone"><div class="screen"><div class="s-orb one"></div><div class="s-orb two"></div>
+        <div class="statusbar"><span>9:41</span><span>Ranked · counts for points</span></div>
+        <div class="body">
+          <div class="q-top"><span class="eyebrow">Question 1 of 15</span>
+            <div class="ring low"><span>2</span></div></div>
+          <div class="q-bar"><i style="width:18%;background:linear-gradient(90deg,var(--bad),#ffb3b3)"></i></div>
+          <div class="stage"><iframe src="design-library/blender-avatar/embed.html?state=thinking" title="Avatar thinking"></iframe></div>
+          <div class="route"><div class="svc">◆ Ranked · this attempt counts</div><div class="code">150 – 196</div></div>
+          <div class="cue">Where does this go?</div>
+          <div class="belts">
+            <div class="belt" style="background:var(--BLUE)">BLUE</div>
+            <div class="belt pick" style="background:var(--ORANGE)">ORANGE</div>
+            <div class="belt" style="background:var(--GREEN)">GREEN</div>
+            <div class="belt" style="background:var(--YELLOW);color:#1a1600">YELLOW</div>
+          </div>
+          <div class="btn ghost" style="margin-top:2px">Cancel this attempt</div>
+        </div>
+      </div></div>
+    </div>
+
+    <!-- 7. RANKED — RESULTADO -->
+    <div class="frame">
+      <div class="cap"><b>7 · Ranked · Result</b>balance line by line</div>
+      <div class="phone"><div class="screen"><div class="s-orb one"></div><div class="s-orb two"></div>
+        <div class="statusbar"><span>9:41</span><span>Ranked · attempt finished</span></div>
+        <div class="body">
+          <div class="stage" style="height:128px"><iframe src="design-library/blender-avatar/embed.html?state=idle" title="Avatar"></iframe></div>
+          <div style="text-align:center"><div class="eyebrow">Ranked · finished</div><div class="title" style="font-size:26px">12 of 15 correct</div></div>
+          <div class="glass" style="padding:14px">
+            <div class="sum">
+              <div class="r"><span class="muted">Before this attempt</span><b>640</b></div>
+              <div class="r"><span class="muted">This attempt</span><b style="color:var(--good)">+85</b></div>
+              <div class="r total"><span>Your balance now</span><b>725</b></div>
+            </div>
+          </div>
+          <div class="btn">See leaderboard</div>
+          <div class="btn ghost">Back to Ranked</div>
+        </div>
+      </div></div>
+    </div>
+
+    <!-- 8. LEADERBOARD -->
+    <div class="frame">
+      <div class="cap"><b>8 · Leaderboard</b>3D podium + your row</div>
+      <div class="phone"><div class="screen"><div class="s-orb one"></div><div class="s-orb two"></div>
+        <div class="statusbar"><span>9:41</span><span>Ranked</span></div>
+        <div class="body">
+          <div><div class="eyebrow">Ranked</div><div class="title">Leaderboard</div><div class="sub">Season 1 · hat winners ♛</div></div>
+          <div class="podium">
+            <div class="slot s2"><img src="../assets/avatar-idle.jpg" alt=""><div class="nm">Bruno</div><div class="pt">◆1.880</div><div class="pill">2</div></div>
+            <div class="slot s1"><div style="font-size:16px">♛</div><img src="../assets/avatar-correct.jpg" alt=""><div class="nm">Ana</div><div class="pt">◆2.310</div><div class="pill">1</div></div>
+            <div class="slot s3"><img src="../assets/avatar-thinking.jpg" alt=""><div class="nm">Carla</div><div class="pt">◆1.460</div><div class="pill">3</div></div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:7px;margin-top:4px">
+            <div class="lbrow"><span class="pl">4</span><span class="nm">Diego <small class="muted">· Iron</small></span><span class="pt">920</span></div>
+            <div class="lbrow"><span class="pl">4</span><span class="nm">Elisa <small class="muted">· tied</small></span><span class="pt">920</span></div>
+            <div class="lbrow you"><span class="pl">6</span><span class="nm">You · Iron</span><span class="pt">640</span></div>
+          </div>
+        </div>
+        <div class="dock">
+          <div class="d"><span class="gi">⌂</span>Home</div>
+          <div class="d"><span class="gi">✎</span>Practice</div>
+          <div class="d on"><span class="gi">◆</span>Ranked</div>
+          <div class="d"><span class="gi">◉</span>Profile</div>
+        </div>
+      </div></div>
+    </div>
+
+    <!-- 9. PERFIL -->
+    <div class="frame">
+      <div class="cap"><b>9 · Profile</b>badge, stats, history</div>
+      <div class="phone"><div class="screen"><div class="s-orb one"></div><div class="s-orb two"></div>
+        <div class="statusbar"><span>9:41</span><span>Profile</span></div>
+        <div class="body">
+          <div class="pf-head">
+            <img class="pf-badge" src="design-library/badges/iron-concept-v1.png" alt="Iron">
+            <div><div class="title" style="font-size:20px">Riley</div><div class="sub">Tag #0427 · Iron · 640 pts</div></div>
+          </div>
+          <div class="stats">
+            <div class="stat"><b>640</b><small>Points</small></div>
+            <div class="stat"><b>12/15</b><small>Best Ranked</small></div>
+            <div class="stat"><b>38</b><small>Practices</small></div>
+            <div class="stat"><b>6th</b><small>Place</small></div>
+          </div>
+          <div class="glass" style="padding:12px">
+            <div class="eyebrow">Your climb</div>
+            <div class="badges" style="margin-top:9px">
+              <img src="design-library/badges/iron-concept-v1.png" alt="Iron">
+              <img class="off" src="design-library/badges/bronze-concept-v1.png" alt="Bronze">
+              <img class="off" src="design-library/badges/silver-concept-v1.png" alt="Silver">
+              <img class="off" src="design-library/badges/gold-concept-v1.png" alt="Gold">
+              <img class="off" src="design-library/badges/challenger-concept-v1.png" alt="Challenger">
+            </div>
+          </div>
+          <div class="btn ghost">See history</div>
+        </div>
+        <div class="dock">
+          <div class="d"><span class="gi">⌂</span>Home</div>
+          <div class="d"><span class="gi">✎</span>Practice</div>
+          <div class="d"><span class="gi">◆</span>Ranked</div>
+          <div class="d on"><span class="gi">◉</span>Profile</div>
+        </div>
+      </div></div>
+    </div>
+
+  </div>
+
+  <div class="note">
+    <b>What this mock proposes (UX):</b> floating glass dock with a gold active state · single entry screen with login by ID or guest (Ranked locked for guests) · unified Practice/Ranked quiz with the avatar on a glass stage and a ring timer that turns red near the end · belts as frosted pills tinted with their real color (meaning preserved) · feedback with a green/red glow and the avatar reacting · home with a season banner and two CTAs · leaderboard with a 3D podium and your row highlighted.<br><br>
+    <b>Preserved:</b> UPS brand (brown/gold), belt color meaning, Ranked rules (15 questions, 10s, points/cap/promotion). <b>Fictional:</b> all names, points and routes. No change to the real app.
+  </div>
+</div>
+</body>
+</html>
