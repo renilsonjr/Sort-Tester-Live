@@ -834,6 +834,59 @@
     40%, 80% { box-shadow: 0 0 0 5px rgba(161, 45, 45, 0.4), 0 0 20px 4px var(--bad); transform: translateX(5px); filter: brightness(1.15); }
   }
 
+  /* ============================================================
+     Twilight glass — component port to match the approved mock
+     (mockups/app-redesign-mock.html). Appended last, so these are
+     the styles in force. Visual only; behaviour unchanged. Belt
+     colours (src/belts.js) are never restyled here.
+     ============================================================ */
+  :root { --r-md: 22px; --r-sm: 14px; }
+
+  /* Crisper glass cards with a soft top highlight */
+  .lab-change, .lab-choice, .auth-card, .quiz-card, .rq-cmp, .sum,
+  .profile-balance, .board li, .reauth-card, .owner-form, .cases li, .approved li {
+    background: rgba(48, 32, 22, 0.62);
+    border: 1px solid rgba(255, 255, 255, 0.11);
+    border-radius: var(--r-md);
+    box-shadow: 0 20px 45px -14px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  }
+
+  /* Hero art rounded like the mock */
+  .lab-campaign { margin: 0; }
+  .lab-campaign img { display: block; width: 100%; height: auto; border-radius: var(--r-md); border: 1px solid rgba(255, 255, 255, 0.08); }
+
+  /* Gold eyebrows / section headings */
+  .lab-change-kicker { color: var(--gold); text-transform: uppercase; letter-spacing: .14em; font-weight: 900; font-size: 11px; }
+  .lab-change-note { color: var(--muted); }
+
+  /* Choice cards — gold-tinted icon and gold arrow (mock .choice) */
+  .lab-choice { border-radius: var(--r-sm); padding: 14px; gap: 12px; box-shadow: 0 10px 26px -12px rgba(0,0,0,0.6); }
+  .lab-choice-icon, .lab-choice-quiz .lab-choice-icon {
+    background: rgba(244, 189, 56, 0.14); border: 1px solid rgba(244, 189, 56, 0.32);
+    color: var(--gold); border-radius: 12px; width: 44px; height: 44px; font-size: 16px; font-weight: 800;
+  }
+  .lab-choice small { color: var(--muted); }
+  .lab-arrow { color: var(--gold); font-weight: 900; }
+
+  /* Primary CTA → gold gradient (mock .btn) */
+  .primary {
+    background: linear-gradient(135deg, var(--gold) 0%, #d89115 100%);
+    color: #2a1c10; box-shadow: 0 8px 20px -6px rgba(244, 189, 56, 0.5);
+  }
+
+  /* Brand mark in gold (mock brandmark) */
+  .lab-mark {
+    background: linear-gradient(135deg, var(--gold), #d89115); color: #2a1c10;
+    border-radius: 12px;
+  }
+
+  /* Dock labels/icons readable on the dark glass dock */
+  .lab-nav button { color: var(--muted); }
+
+  /* Language toggle as glass */
+  .lab-language button { background: var(--glass-surface-sub); border: 1px solid var(--glass-border); color: var(--ink); backdrop-filter: var(--blur-md); -webkit-backdrop-filter: var(--blur-md); }
+  .lab-language button[aria-pressed="true"] { border-color: var(--gold); color: var(--ink); }
+
 </style>
 </head>
 <body>
