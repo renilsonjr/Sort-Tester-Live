@@ -388,7 +388,7 @@ async function apiSendOwner(method, path, body) {
 }
 
 function badgeArt(badge) {
-  return `assets/badge-${badge.toLowerCase()}.jpg`;
+  return `assets/badge-${badge.toLowerCase()}.png`;
 }
 
 function balanceLine(entry) {
