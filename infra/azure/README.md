@@ -31,6 +31,10 @@ the app template replaced it.
   observers; runbook §10 explains the two-terminal method.
 - `network.bicep` — the VNet, private DNS zone and private endpoint the
   database is reached through (audit H-4).
+- [[shared-resource-locks]] (+ `.bicep`) — independently deployable
+  `CanNotDelete` locks for the existing PostgreSQL, Application Insights
+  and Log Analytics resources; prepared for owner-reviewed what-if,
+  not evidence that locks are deployed.
 - `runtime-identity.bicep` (+ `.md`) — the app's identity and its two
   resource-scoped roles: pull from the registry, read from the vault.
 - `security-foundation.md` — how the registry and vault were created.
