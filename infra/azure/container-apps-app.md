@@ -34,6 +34,18 @@ grant.
    inventory differs until you understand why. This template must not change
    any of them.
 
+### 0a. Staging log ingestion decision
+
+Owner decision, 2026-11-18 (issue #196): keep zero ingestion while staging
+holds fictional data only, to limit collection and cost. The owner accepts
+that there is no centrally retained container-log history or log-based
+error/auth-flood alerting, limiting incident detection and investigation.
+Keep uvicorn access logs disabled. Reassess ingestion, retention, access
+and cost before the employee pilot under #13; this decision does not
+authorise employee data or a launch. It records risk acceptance, not a
+new live Azure verification or configuration change. See
+Task 21 in [[../../docs/superpowers/plans/2026-11-15-security-remediation]].
+
 ## 1. Prepare the database
 
 The app does not create its own tables. Done once, on 2026-11-13, against

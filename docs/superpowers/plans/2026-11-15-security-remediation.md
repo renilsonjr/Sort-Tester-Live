@@ -1204,6 +1204,18 @@ manages them.
 
 ### Task 21: Log ingestion + attack detection — `OPS` *(owner decision: privacy posture was "zero ingestion by design")*
 
+**Owner decision — 2026-11-18 (issue #196):** keep zero ingestion during
+fictional-data staging to limit collection and cost. The owner accepts the
+absence of centrally retained container logs and log-based error or
+auth-flood alerts, including the resulting limits on incident detection
+and investigation. Keep access logs disabled. The ingestion and alerting
+steps below are deferred proposals, not completion requirements for this
+staging decision. Reassess logging, retention, access and cost before the
+employee pilot under #13; this acceptance does not authorise employee data
+or pilot launch. This records a decision only: no Azure configuration or
+live ingestion check was performed. See
+[[../../../infra/azure/container-apps-app#0a. Staging log ingestion decision]].
+
 - Modify: `infra/azure/container-apps-app.bicep` — `appEnvironment.properties.appInsightsConfiguration` / Log Analytics wiring to the pre-existing workspace (confirm its retention and access policy with the owner first).
 - The app runs uvicorn with `--no-access-log` deliberately — do not turn access logs on. Ingest container stdout/stderr + platform metrics only.
 - Add two alert rules: 5xx-rate spike on the app; sustained 429s on `/api/auth/*` (rate-limit lockout storm = the H-2 signature).
@@ -1320,7 +1332,7 @@ that check. Fictional data, left in place.
 3. Backup/retention configuration on the server; does any backup hold the dropped `emails` data (0021) inside its retention window?
 4. Does `sort_tester_app` hold fictional data only, as the tags claim?
 5. Game-design decisions: are negative balances intended (drives Task 13 bounds)? Concurrent-session cap of 5 acceptable (Task 17)? List caps (Task 18)?
-6. Log ingestion posture (Task 21): accepted, or a documented "no ingestion" risk acceptance?
+6. **Answered 2026-11-18:** zero ingestion accepted for fictional-data staging only; reassess before the employee pilot (#13). See Task 21 and the accepted risks below. This answers this question, not the overall Phase 0 sign-off.
 7. VNet subnet CIDR + downtime window for Task 6; do the spike/staging apps retire?
 
 ## Deliberately accepted risks (documented decisions — revisit only if the threat model changes)
@@ -1329,6 +1341,7 @@ that check. Fictional data, left in place.
 2. **Tie-break options always include the correct belt** (¼ guess space) — an owner decision recorded in migration 0033 (audit I1).
 3. **`serialize_assignment` exports snapshots including answers** — internal/test-only today; the invariant is "never wire it to a router" (audit I2).
 4. **Registration limiter keyed by network address only** — the global 200/day cap is the owner's intended backstop; Task 3's `trustedProxies=1` restores per-address granularity.
+5. **Zero log ingestion during fictional-data staging** — owner accepted 2026-11-18; no centrally retained container logs or log-based error/auth-flood alerts. Review before the employee pilot (#13), even if the threat model has not otherwise changed. See Task 21.
 
 ## Definition of Done (final gate)
 
