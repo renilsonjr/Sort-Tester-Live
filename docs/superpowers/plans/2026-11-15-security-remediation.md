@@ -231,7 +231,7 @@ no-op upgrade-at-head test; no test migration was applied to staging.
 - [x] **Step 2: Publish path** — extend the publish workflow to push the same digest to ACR (repo settings: add an `ACR` environment or use the existing publish gate from Task 8; authenticate with a short-lived token via `az acr login` in the job, not a stored PAT). Manual interim: `az acr import --source ghcr.io/renilsonjr/sort-tester-live-app@sha256:<digest> ...`.
 - [x] **Step 3: Bicep changes** — after the identity bootstrap is approved: attach the dedicated user-assigned runtime identity to the container app and use its resource ID in the registry entry; remove both registry params and the secret entry.
 - [x] **Step 4: Bootstrap runtime read access** — after explicit approval of the identity and both scopes, register the ManagedIdentity provider if needed and deploy `runtime-identity.bicep`. Its resource-scoped AcrPull and Key Vault Secrets User assignments reference the new identity principal. Verify the resolved principal and exact direct assignments before later app association. No publisher or subscription-wide role belongs to the runtime.
-- [ ] **Step 5: Move the database secret into Key Vault (audit §3 P0-1)** — the dedicated vault already exists. Prepare a separately reviewed operator write path and transfer the limited-role DSN through an in-memory or protected-file method, never a command argument. The identity bootstrap grants read access only; it does not grant an operator secret-write access. Verify its existing vault read binding rather than adding a duplicate. In the app Bicep, replace the inline secret value with the Key Vault URI and runtime identity reference, then remove the `databaseUrl` parameter only after the tested transition/rollback path is ready.
+- [x] **Step 5: Move the database secret into Key Vault (audit §3 P0-1)** — the dedicated vault already exists. Prepare a separately reviewed operator write path and transfer the limited-role DSN through an in-memory or protected-file method, never a command argument. The identity bootstrap grants read access only; it does not grant an operator secret-write access. Verify its existing vault read binding rather than adding a duplicate. In the app Bicep, replace the inline secret value with the Key Vault URI and runtime identity reference, then remove the `databaseUrl` parameter only after the tested transition/rollback path is ready.
 - [x] **Step 6: Verify:** app pulls and boots; `az containerapp show` config contains no registry password and no inline DB secret; GHCR PAT is **revoked**.
 - [x] **Step 7: Update tests + runbook; commit** — `security: ACR + managed identity + Key Vault; PAT and inline DB secret retired (audit H-5, §3 P0-1)` — the identity half. The Key Vault half of the message belongs to Step 5, still open.
 
@@ -765,11 +765,11 @@ database.
 **Interfaces:**
 - Produces: `backend.db.pool`: `init_pool(conninfo: str) -> None` (idempotent, called at app startup / first use), `@contextmanager def checkout() -> psycopg.Connection` (commits on clean exit, rolls back on exception, returns to pool). Pool `max_size=8`, DSN gains `options=-c statement_timeout=5000`. Tests keep using `migrate.connect` directly — the pool is a router-layer concern only.
 
-- [ ] **Step 1: Failing test:** two concurrent `checkout()` calls reuse one connection object after release (identity check) — no pool today, so a fresh `connect` each time fails it.
-- [ ] **Step 2: Implement `pool.py`; swap both routers' `_db_connection` to `checkout()`.** Note the commit-on-exit semantics replace Task 1's explicit `conn.commit()` inside `_current_account` — keep the tests from Task 1 as the guard that semantics are unchanged.
-- [ ] **Step 3: Full suite green** (the app falls back to the test DSN in test environments — `settings.app_database_url()` already handles that).
+- [x] **Step 1: Failing test:** two concurrent `checkout()` calls reuse one connection object after release (identity check) — no pool today, so a fresh `connect` each time fails it.
+- [x] **Step 2: Implement `pool.py`; swap both routers' `_db_connection` to `checkout()`.** Note the commit-on-exit semantics replace Task 1's explicit `conn.commit()` inside `_current_account` — keep the tests from Task 1 as the guard that semantics are unchanged.
+- [x] **Step 3: Full suite green** (the app falls back to the test DSN in test environments — `settings.app_database_url()` already handles that).
 - [ ] **Step 4: Deploy; verify** under a burst (`for i in $(seq 1 50); do curl -s localhost:8000/api/ranked/season/notice & done` locally, or staging) that response times stay flat and `pg_stat_activity` shows ≤ 8 app connections.
-- [ ] **Step 5: Commit** — `security: pooled connections with statement timeout for the runtime (audit M-5)`
+- [x] **Step 5: Commit** — `security: pooled connections with statement timeout for the runtime (audit M-5)`
 
 Task 5 of this task's own list is the deploy; steps 1-3 and 5 are done.
 
@@ -881,9 +881,9 @@ superseded.
 8. `backend/db/upgrade_app.py:72-81` — `--confirm` must match `dbname@host:port` from `_target()` (not the database name alone), and also refuse the maintenance database `postgres` (audit L7).
 9. `backend/db/upgrade_app.py:53-55` — mask any `//user:password@` section in error output with a regex instead of the exact-string replace, so a reformatted DSN cannot leak into deploy logs (audit L8).
 
-- [ ] **Step 1: Failing tests** — one per change where testable: launch without recent reauth → 428 (mirror existing reauth tests); ticket description 2001 chars → 422; reviewer check with soft-deleted owner → 403; login race guard (monkeypatch `get_account_by_session` → None) → 401 not 500; origin guard: write with attacker Host+Origin and `app_origin` configured → 403; startup guard test for cookie_secure; `record_outage` from a non-owner connection → refused; `--confirm` with the right dbname but wrong host → refused; a percent-encoded DSN in an error message is still masked.
-- [ ] **Step 2: Implement all six. Step 3: Full suites green.**
-- [ ] **Step 4: Commit** — `security: auth hardening batch (launch reauth, cookie default, ticket cap, reviewer/deleted, login race, origin guard)`
+- [x] **Step 1: Failing tests** — one per change where testable: launch without recent reauth → 428 (mirror existing reauth tests); ticket description 2001 chars → 422; reviewer check with soft-deleted owner → 403; login race guard (monkeypatch `get_account_by_session` → None) → 401 not 500; origin guard: write with attacker Host+Origin and `app_origin` configured → 403; startup guard test for cookie_secure; `record_outage` from a non-owner connection → refused; `--confirm` with the right dbname but wrong host → refused; a percent-encoded DSN in an error message is still masked.
+- [x] **Step 2: Implement all six. Step 3: Full suites green.**
+- [x] **Step 4: Commit** — `security: auth hardening batch (launch reauth, cookie default, ticket cap, reviewer/deleted, login race, origin guard)`
 
 Task 16 applied — 2026-11-17. All nine, one PR, at the owner's choice
 after being shown which two could break the deployed app.
@@ -955,9 +955,9 @@ actually reach would show up -- as every write returning 403.
 - Modify: `backend/routers/ranked.py:76-78` (sweep chain gains `purge_expired_sessions` — `DELETE FROM sessions WHERE expires_at < now() - interval '1 day'`)
 - Test: `backend/tests/test_auth_sessions.py` (extend)
 
-- [ ] **Step 1: Failing tests:** 6th login on one account revokes the oldest; expired rows are deleted by the sweep; `ip_address`/`user_agent` populated on login (and never returned by any endpoint — grep response models).
-- [ ] **Step 2: Implement. Step 3: Suites green.**
-- [ ] **Step 4: Commit** — `security: session audit trail, per-account cap, expired-row cleanup`
+- [x] **Step 1: Failing tests:** 6th login on one account revokes the oldest; expired rows are deleted by the sweep; `ip_address`/`user_agent` populated on login (and never returned by any endpoint — grep response models).
+- [x] **Step 2: Implement. Step 3: Suites green.**
+- [x] **Step 4: Commit** — `security: session audit trail, per-account cap, expired-row cleanup`
 
 Task 17 applied — 2026-11-17, **two of three parts**.
 
@@ -1001,10 +1001,10 @@ only the expiry. The constraint was right and the test was fixed.
 **Files:**
 - Modify: `backend/ranked/history.py:36-38`, `backend/support/tickets.py:78-84`, `backend/ranked/standings.py:95-116`, `backend/ranked/flags.py:58-74`, `tickets.py` review queue (add `LIMIT`)
 
-- [ ] **Step 1:** Add a server-enforced `LIMIT` (500 rows history/tickets/standings, 100 for review queues) — no client parameter in this task (a client-set limit is a later, cursor-paginated step; caps first).
-- [ ] **Step 2: Failing tests:** insert 600 rows → response has exactly 500 and the newest win (each query already orders).
-- [ ] **Step 3: Implement. Step 4: Suites green; frontend list rendering spot-checked against a capped payload.**
-- [ ] **Step 5: Commit** — `security: server-side row caps on all list endpoints`
+- [x] **Step 1:** Add a server-enforced `LIMIT` (500 rows history/tickets/standings, 100 for review queues) — no client parameter in this task (a client-set limit is a later, cursor-paginated step; caps first).
+- [x] **Step 2: Failing tests:** insert 600 rows → response has exactly 500 and the newest win (each query already orders).
+- [x] **Step 3: Implement. Step 4: Suites green; frontend list rendering spot-checked against a capped payload.**
+- [x] **Step 5: Commit** — `security: server-side row caps on all list endpoints`
 
 Task 18 applied — 2026-11-17, with one change of placement that matters.
 
@@ -1044,17 +1044,17 @@ Mutation-checked both ways: removing a LIMIT fails, and adding one to
 - Create: `backend/migrations/versions/<next>_same_account_keys.py` (down_revision = the current head when you start — `0034`, or `0035` if Task 13 already landed; Phase 2 tasks may land in either order)
 - Test: extend the `test_db_*_schema.py` family
 
-- [ ] **Step 1: Migration content (order matters):**
+- [x] **Step 1: Migration content (order matters):**
   1. `ALTER TABLE settlements ADD COLUMN account_id uuid NOT NULL` — backfill `UPDATE settlements s SET account_id = a.account_id FROM attempts a WHERE a.id = s.attempt_id`, then `UNIQUE (attempt_id, account_id)`.
   2. `balance_history`: composite FK `(settlement_id, account_id) REFERENCES settlements (attempt_id, account_id)`.
   3. `assignments`: `UNIQUE (id, account_id)`; `attempts`: composite FK `(assignment_id, account_id) REFERENCES assignments (id, account_id)`.
   4. `tiebreak_attempts`: composite FK `(attempt_id, account_id) REFERENCES attempts (id, account_id)` (the `(id, account_id)` key already exists from 0023).
   5. `season_prizes`: add `place smallint NOT NULL CHECK (place BETWEEN 1 AND 3)` with `UNIQUE (season_id, place)` (data is fictional — safe to fix rows by hand if any violate).
   6. `DROP TABLE tooling_probe`; drop duplicate indexes `sessions_token_hash_idx`, `login_credentials_lookup_key_idx`.
-- [ ] **Step 2: Schema tests:** each composite FK rejects a cross-account insert; the dropped objects are gone; `place` cap enforced.
-- [ ] **Step 3: Verify exactly one head** (`current_revision` → the new head; the chain stays linear) and run the full suite (fictional staging data makes the backfill trivial).
+- [x] **Step 2: Schema tests:** each composite FK rejects a cross-account insert; the dropped objects are gone; `place` cap enforced.
+- [x] **Step 3: Verify exactly one head** (`current_revision` → the new head; the chain stays linear) and run the full suite (fictional staging data makes the backfill trivial).
 - [ ] **Step 4: Deploy migrations via the guarded admin path (runbook §1d).**
-- [ ] **Step 5: Commit** — `security: same-account composite keys across ledger, attempts, tiebreaks (audit M-10)`
+- [x] **Step 5: Commit** — `security: same-account composite keys across ledger, attempts, tiebreaks (audit M-10)`
 
 Task 19 applied — 2026-11-17 as migration `0037`, **four of the six steps
 in it**, with the two left out being the interesting part.
