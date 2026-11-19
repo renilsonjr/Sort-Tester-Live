@@ -78,11 +78,29 @@ jobs:
           backend/.venv/bin/python -m pip install -r backend/requirements.txt
           backend/.venv/bin/python -m pip check
 
+      - name: Pin the PostgreSQL client to the server's major (16)
+        run: |
+          set -euo pipefail
+          # Ubuntu's default pg_dump/pg_restore are the newest client major
+          # installed (17), which emits `SET transaction_timeout = 0;` -- a
+          # GUC that does not exist before 17. Restoring that into the 16
+          # service container errors, and pg_restore then exits non-zero, so
+          # the dump/restore test fails. Put the matching 16 client, shipped
+          # with the runner's own 16 server, ahead of it on PATH. $GITHUB_PATH
+          # prepends, so psql, pg_dump and pg_restore resolve to 16 below.
+          bindir=/usr/lib/postgresql/16/bin
+          test -x "$bindir/pg_restore" || {
+            echo "Expected the PostgreSQL 16 client at $bindir."; exit 1
+          }
+          echo "$bindir" >> "$GITHUB_PATH"
+
       - name: Confirm the loopback PostgreSQL cluster is reachable
         run: |
           set -euo pipefail
           # Existing role/dump/restore tests discover psql, pg_dump and
-          # pg_restore via PATH; the runner ships PostgreSQL 16 clients there.
+          # pg_restore via PATH; the step above pins them to the 16 client.
+          command -v pg_restore
+          pg_restore --version
           psql -h 127.0.0.1 -p 5433 -U postgres -d postgres --no-password -v ON_ERROR_STOP=1 -c 'SELECT version()'
 
       - name: Run backend unit tests
