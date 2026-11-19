@@ -104,7 +104,7 @@ class CatalogTests(unittest.TestCase):
         finally:
             os.chdir(previous)
         self.assertEqual(bank.revision, 'ranked-routes-v1')
-        self.assertEqual(len(bank.questions), 283)
+        self.assertEqual(len(bank.questions), 284)
 
     def test_catalog_has_no_mutable_nested_data(self):
         banks = [load_reviewed_bank()]
