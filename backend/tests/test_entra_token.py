@@ -3,6 +3,7 @@ import logging
 import time
 import unittest
 from contextlib import contextmanager
+from unittest import mock
 
 from backend.db import entra_token
 
@@ -101,3 +102,72 @@ class EntraTokenTests(unittest.TestCase):
         messages = "\n".join(record.getMessage() for record in records)
         self.assertIn("RuntimeError", messages)
         self.assertNotIn("secret-looking-detail", messages)
+
+
+class TokenEndpointSelectionTests(unittest.TestCase):
+    """Which identity endpoint the request targets, per hosting platform (#84)."""
+
+    def _headers(self, request):
+        return {key.lower(): value for key, value in request.header_items()}
+
+    def test_container_apps_endpoint_is_preferred_when_injected(self):
+        # Container Apps / App Service inject these; the request must go there,
+        # not to the VM IMDS address the app previously hard-coded.
+        env = {
+            entra_token.settings.DB_IDENTITY_CLIENT_ID_ENV_VAR: "client-123",
+            entra_token.IDENTITY_ENDPOINT_ENV_VAR: "http://localhost:42356/msi/token",
+            entra_token.IDENTITY_HEADER_ENV_VAR: "header-secret",
+        }
+        with mock.patch.dict(entra_token.os.environ, env, clear=True):
+            request = entra_token._token_request()
+        self.assertTrue(request.full_url.startswith("http://localhost:42356/msi/token?"))
+        self.assertIn("api-version=2019-08-01", request.full_url)
+        self.assertIn("client_id=client-123", request.full_url)
+        headers = self._headers(request)
+        self.assertEqual(headers.get("x-identity-header"), "header-secret")
+        self.assertNotIn("metadata", headers)
+
+    def test_falls_back_to_imds_without_an_identity_endpoint(self):
+        env = {entra_token.settings.DB_IDENTITY_CLIENT_ID_ENV_VAR: "client-123"}
+        with mock.patch.dict(entra_token.os.environ, env, clear=True):
+            request = entra_token._token_request()
+        self.assertTrue(request.full_url.startswith("http://169.254.169.254/"))
+        self.assertIn("api-version=2018-02-01", request.full_url)
+        headers = self._headers(request)
+        self.assertEqual(headers.get("metadata"), "true")
+        self.assertNotIn("x-identity-header", headers)
+
+    def test_a_blank_identity_header_is_not_treated_as_the_endpoint(self):
+        # Half-configured platform: endpoint present, header empty. Must not
+        # send a headerless MSI request; fall back to IMDS instead.
+        env = {
+            entra_token.settings.DB_IDENTITY_CLIENT_ID_ENV_VAR: "client-123",
+            entra_token.IDENTITY_ENDPOINT_ENV_VAR: "http://localhost:42356/msi/token",
+            entra_token.IDENTITY_HEADER_ENV_VAR: "",
+        }
+        with mock.patch.dict(entra_token.os.environ, env, clear=True):
+            request = entra_token._token_request()
+        self.assertTrue(request.full_url.startswith("http://169.254.169.254/"))
+
+    def test_missing_client_id_raises_token_unavailable(self):
+        with mock.patch.dict(entra_token.os.environ, {}, clear=True):
+            with self.assertRaises(entra_token.TokenUnavailable):
+                entra_token._token_request()
+
+
+class ExpiresOnParsingTests(unittest.TestCase):
+    """expires_on comes back in more than one shape across endpoints (#84)."""
+
+    def test_epoch_seconds_as_string_or_number(self):
+        self.assertEqual(entra_token._parse_expires_on("1700000000"), 1700000000.0)
+        self.assertEqual(entra_token._parse_expires_on(1700000000), 1700000000.0)
+
+    def test_a_formatted_datetime_is_parsed_to_epoch(self):
+        # An App Service build returns "MM/DD/YYYY h:mm:ss AM +00:00".
+        parsed = entra_token._parse_expires_on("11/19/2026 5:22:47 PM +00:00")
+        self.assertIsInstance(parsed, float)
+        self.assertGreater(parsed, 1_700_000_000)
+
+    def test_an_unreadable_expiry_raises_rather_than_never_expiring(self):
+        with self.assertRaises(entra_token.TokenUnavailable):
+            entra_token._parse_expires_on("not-a-date")
