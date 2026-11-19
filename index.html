@@ -770,23 +770,27 @@
     background: var(--glass-surface);
     border: 1px solid var(--glass-border);
   }
+  /* Static dock: pinned flush to the bottom of the app column (no longer a
+     floating pill that covers the tappable content). Content clears it with
+     the bottom padding added to .lab-main / .quiz-page below. */
   .lab-nav {
     position: fixed !important;
-    bottom: 20px !important;
+    bottom: 0 !important;
     left: 50% !important;
     transform: translateX(-50%) !important;
-    width: min(calc(100% - 32px), 430px) !important;
-    height: 64px !important;
+    width: min(100%, 430px) !important;
+    height: 60px !important;
     background: var(--dock-bg) !important;
-    backdrop-filter: blur(28px) !important;
-    -webkit-backdrop-filter: blur(28px) !important;
-    border: 1px solid var(--glass-border) !important;
-    border-radius: 32px !important;
-    box-shadow: 0 14px 34px -4px rgba(0,0,0,0.18) !important;
+    backdrop-filter: blur(18px) !important;
+    -webkit-backdrop-filter: blur(18px) !important;
+    border: 0 !important;
+    border-top: 1px solid var(--glass-border) !important;
+    border-radius: 0 !important;
+    box-shadow: 0 -8px 24px -8px rgba(0,0,0,0.28) !important;
     z-index: 50 !important;
     display: grid !important;
     align-items: center !important;
-    padding: 0 8px !important;
+    padding: 0 6px max(0px, env(safe-area-inset-bottom)) !important;
   }
   .lab-nav button {
     border-radius: 24px !important;
@@ -895,12 +899,19 @@
   .quiz-avatar { width: auto; max-width: 68%; height: auto; aspect-ratio: auto; object-fit: contain; display: block; margin: 0 auto; filter: drop-shadow(0 10px 18px rgba(0, 0, 0, 0.45)); }
 
   /* Animated 3D avatar viewer (transparent iframe) */
-  .quiz-avatar3d { width: 100%; height: 190px; border: 0; display: block; background: transparent; }
+  .quiz-avatar3d { width: 100%; height: 104px; border: 0; display: block; background: transparent; }
 
   /* Ranked quiz — avatar stage, belts and timer bar (match the mock) */
-  .rq-stage { height: 160px; margin: 2px 0 4px; border-radius: var(--r-md); border: 1px solid rgba(255, 255, 255, 0.08); background: radial-gradient(ellipse at center, rgba(244, 189, 56, 0.12), rgba(26, 17, 10, 0.12)); display: grid; place-items: center; overflow: hidden; }
-  .rq-stage .quiz-avatar { max-width: none; height: 138px; filter: drop-shadow(0 12px 22px rgba(0, 0, 0, 0.5)); }
+  .rq-stage { height: 104px; margin: 2px 0 4px; border-radius: var(--r-md); border: 1px solid rgba(255, 255, 255, 0.08); background: radial-gradient(ellipse at center, rgba(244, 189, 56, 0.12), rgba(26, 17, 10, 0.12)); display: grid; place-items: center; overflow: hidden; }
+  .rq-stage .quiz-avatar { max-width: none; height: 96px; filter: drop-shadow(0 12px 22px rgba(0, 0, 0, 0.5)); }
   .rq-stage .quiz-avatar3d { height: 100%; }
+  /* Avatar stage: a 2D still sits behind the transparent 3D canvas, so the
+     character is always visible — even where WebGL/3D fails (iOS Safari). The
+     3D draws over the still when it works; the still shows through when it does
+     not. */
+  .rq-ava { position: relative; width: 100%; height: 100%; display: grid; place-items: center; }
+  .rq-ava .rq-ava-still { position: absolute; inset: 0; margin: auto; height: 94px; width: auto; object-fit: contain; filter: drop-shadow(0 10px 18px rgba(0, 0, 0, 0.45)); }
+  .rq-ava .quiz-avatar3d { position: absolute; inset: 0; }
   .rq-stake { color: var(--muted); }
   /* Ring timer (mock): conic gold ring with the seconds on a dark disc */
   .rq-ring { width: 46px; height: 46px; border-radius: 50%; display: grid; place-items: center; font-weight: 900; font-size: 14px; color: var(--gold); background: conic-gradient(var(--gold) calc(var(--pct, 100) * 1%), rgba(255, 255, 255, 0.12) 0); }
@@ -924,8 +935,8 @@
   .pf-badges img { width: 46px; height: 46px; object-fit: contain; filter: drop-shadow(0 3px 7px rgba(0, 0, 0, 0.4)); }
   .pf-badges img.off { opacity: 0.32; filter: grayscale(1); }
   .belts .belt { border: 1px solid rgba(255, 255, 255, 0.18); box-shadow: inset 0 0 0 100px rgba(255, 255, 255, 0.04); }
-  .rq-stage-sm { height: 120px; }
-  .rq-stage-sm .quiz-avatar { height: 108px; }
+  .rq-stage-sm { height: 92px; }
+  .rq-stage-sm .quiz-avatar { height: 84px; }
 
   /* Leaderboard — 3D-style podium (match the mock) */
   .podium { display: flex; align-items: flex-end; justify-content: center; gap: 8px; margin: 6px 0 12px; }
@@ -964,6 +975,76 @@
   .board li.board-tied, .board li.board-hat { background: var(--glass-surface-sub); border-color: rgba(244, 189, 56, 0.4); }
   .board li.board-hat .board-place { color: var(--gold); }
   .board li.board-you { border: 2px solid var(--gold); }
+
+  /* ============================================================
+     Redesign v2 — static dock spacing, Home identity block,
+     theme toggle, and the Day (light) theme.
+     ============================================================ */
+
+  /* Content clears the static bottom dock (60px + safe area). */
+  .lab-main { padding-bottom: calc(76px + env(safe-area-inset-bottom)); }
+  #app.quiz-page { padding-bottom: calc(80px + env(safe-area-inset-bottom)); }
+
+  /* Theme toggle button in the header (sun/moon), matching the glass language
+     buttons. */
+  .lab-top-actions { display: flex; align-items: center; gap: 7px; }
+  .lab-theme-btn { background: var(--glass-surface-sub); border: 1px solid var(--glass-border); color: var(--gold); border-radius: var(--r-sm); padding: 8px 11px; font-size: 16px; line-height: 1; cursor: pointer; backdrop-filter: var(--blur-md); -webkit-backdrop-filter: var(--blur-md); }
+
+  /* Home identity block (below the banner) — badge + name + points when signed
+     in; a dashed "sign in to compete" invite for guests. */
+  .home-ident { display: flex; align-items: center; gap: 11px; background: var(--glass-surface-sub); border: 1px solid var(--glass-border); border-radius: var(--r-sm); padding: 11px 13px; }
+  .home-ident img { width: 44px; height: 44px; object-fit: contain; flex: none; }
+  .home-ident .home-ident-name { font-weight: 800; font-size: 15px; }
+  .home-ident .home-ident-sub { font-size: 12px; color: var(--muted); margin-top: 1px; }
+  .home-ident .home-ident-pts { margin-left: auto; text-align: right; }
+  .home-ident .home-ident-pts b { font-size: 16px; color: var(--gold); display: block; }
+  .home-ident .home-ident-pts span { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; }
+  .home-invite { display: flex; align-items: center; gap: 11px; background: var(--glass-surface-sub); border: 1px dashed var(--gold); border-radius: var(--r-sm); padding: 12px 13px; width: 100%; text-align: left; color: var(--ink); }
+  .home-ident .home-ident-name, .home-ident .home-ident-sub,
+  .home-invite .home-ident-name, .home-invite .home-ident-sub { display: block; }
+  .home-invite .home-invite-ic { width: 38px; height: 38px; border-radius: 11px; background: var(--soft); display: grid; place-items: center; font-size: 18px; flex: none; }
+  .home-invite .home-ident-name { font-weight: 800; font-size: 14px; }
+  .home-invite .home-ident-sub { font-size: 11.5px; color: var(--muted); margin-top: 1px; }
+  .home-invite .home-invite-go { margin-left: auto; font-size: 12px; font-weight: 800; color: var(--gold); white-space: nowrap; }
+
+  /* ===== DAY (light) THEME — overrides tokens, plus the few hard-coded
+     surfaces the twilight port set directly. Night stays the default. ===== */
+  html[data-theme="day"] {
+    --bg: #fbf4e8; --panel: #fffaf2; --sunk: #f1e4d1;
+    --ink: #2b1c10; --muted: #7a6650; --line: rgba(120, 90, 50, 0.18);
+    --accent: #f3e7d3; --accent-ink: #2b1c10;
+    --gold: #c98a10; --gold-line: #a9740d;
+    --soft: rgba(201, 138, 16, 0.14); --soft-line: rgba(201, 138, 16, 0.32);
+    --good: #2f9e6b; --bad: #c9524a;
+    --glass-surface: rgba(255, 255, 255, 0.74); --glass-surface-sub: rgba(255, 252, 246, 0.92);
+    --glass-border: rgba(120, 90, 50, 0.18); --glass-border-subtle: rgba(120, 90, 50, 0.1);
+    --glass-highlight: rgba(255, 255, 255, 0.6);
+    --glass-shadow: 0 16px 40px -8px rgba(90, 60, 25, 0.18), 0 4px 12px rgba(90, 60, 25, 0.08);
+    --dock-bg: rgba(255, 250, 242, 0.92);
+  }
+  html[data-theme="day"] body { background: radial-gradient(130% 90% at 50% -10%, #fef8ee 0%, #f4e7d3 52%, #ecdcc4 100%) fixed; }
+  html[data-theme="day"] #app { background: radial-gradient(120% 80% at 50% 0%, #fffaf2 0%, #f3e6d2 68%); box-shadow: 0 16px 60px rgba(120, 90, 40, 0.18); }
+  html[data-theme="day"] .orb-gold { opacity: 0.12; }
+  html[data-theme="day"] .orb-amber { opacity: 0.1; }
+  html[data-theme="day"] .orb-blue { opacity: 0.08; }
+  /* Hard-coded card surfaces from the port → light for day */
+  html[data-theme="day"] .lab-change, html[data-theme="day"] .lab-choice,
+  html[data-theme="day"] .auth-card, html[data-theme="day"] .quiz-card,
+  html[data-theme="day"] .rq-cmp, html[data-theme="day"] .sum,
+  html[data-theme="day"] .profile-balance, html[data-theme="day"] .board li,
+  html[data-theme="day"] .reauth-card, html[data-theme="day"] .owner-form,
+  html[data-theme="day"] .cases li, html[data-theme="day"] .approved li {
+    background: rgba(255, 252, 246, 0.92);
+    border: 1px solid rgba(120, 90, 50, 0.16);
+    box-shadow: 0 16px 36px -16px rgba(90, 60, 25, 0.22), inset 0 1px 0 rgba(255, 255, 255, 0.6);
+  }
+  html[data-theme="day"] .rq-stage { border-color: rgba(120, 90, 50, 0.16); background: radial-gradient(ellipse at center, rgba(201, 138, 16, 0.14), rgba(255, 250, 242, 0.5)); }
+  html[data-theme="day"] .rq-ring span { background: var(--sunk); }
+  html[data-theme="day"] .tb-bar, html[data-theme="day"] .profile-bar { background: rgba(120, 90, 50, 0.16); }
+  html[data-theme="day"] .lab-campaign img { border-color: rgba(120, 90, 50, 0.14); }
+  html[data-theme="day"] .belts .belt { border-color: rgba(120, 90, 50, 0.18); box-shadow: inset 0 0 0 100px rgba(255, 255, 255, 0.04); }
+  html[data-theme="day"] #auth-panel { background: rgba(255, 250, 242, 0.9); }
+  html[data-theme="day"] .lab-choice-icon, html[data-theme="day"] .lab-choice-quiz .lab-choice-icon { background: rgba(201, 138, 16, 0.16); border-color: rgba(201, 138, 16, 0.34); color: var(--gold); }
 
 </style>
 </head>

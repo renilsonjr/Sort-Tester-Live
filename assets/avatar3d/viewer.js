@@ -1,7 +1,16 @@
 import * as THREE from './vendor/three.module.min.js';
 import {GLTFLoader} from './vendor/GLTFLoader.js';
 const canvas=document.querySelector('#mascot'),stage=document.querySelector('#stage');
-const renderer=new THREE.WebGLRenderer({canvas,antialias:true,alpha:true});renderer.setPixelRatio(Math.min(devicePixelRatio,2));renderer.shadowMap.enabled=false;renderer.shadowMap.type=THREE.PCFSoftShadowMap;renderer.toneMapping=THREE.ACESFilmicToneMapping;
+let renderer;
+try{renderer=new THREE.WebGLRenderer({canvas,antialias:true,alpha:true});}
+catch(err){
+  // No WebGL (seen on some iOS Safari / Low Power Mode). Hide this frame's own
+  // loading text and leave the canvas transparent so the 2D still placed behind
+  // the iframe by the host shows through. Nothing else runs.
+  const fb=document.querySelector('#fallback');if(fb)fb.hidden=true;
+  canvas.style.display='none';throw err;
+}
+renderer.setPixelRatio(Math.min(devicePixelRatio,2));renderer.shadowMap.enabled=false;renderer.shadowMap.type=THREE.PCFSoftShadowMap;renderer.toneMapping=THREE.ACESFilmicToneMapping;
 const scene=new THREE.Scene(),camera=new THREE.PerspectiveCamera(34,1,.1,100);camera.position.set(0,2.55,8.5);camera.lookAt(0,1.55,0);if(location.pathname.endsWith('/embed.html')){camera.zoom=1.25;camera.updateProjectionMatrix();}
 scene.add(new THREE.HemisphereLight(0xe9f0ff,0x977e69,2));
 for(const [x,y,z,color,power] of [[-3,6,5,0xffe6d2,3],[4,3,3,0xc7d6ff,2],[-2,4,-3,0xffe1ba,3]]){const l=new THREE.DirectionalLight(color,power);l.position.set(x,y,z);l.castShadow=true;l.shadow.mapSize.set(1024,1024);l.shadow.camera.left=-4;l.shadow.camera.right=4;l.shadow.camera.top=5;l.shadow.camera.bottom=-3;scene.add(l);}
