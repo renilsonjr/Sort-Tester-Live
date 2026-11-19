@@ -26,6 +26,7 @@ from backend.ranked import belt_options, modes, ranks, seasons
 from backend.ranked.capability import hash_token
 from backend.ranked.versions import materialize_question_version
 from backend.ranked_bank.identity import question_content_digest
+from backend.ranked_bank.display import routing_code_for
 from backend.ranked_bank.selection import select_assignment
 
 HEARTBEAT_LOSS_SECONDS = 3
@@ -349,7 +350,7 @@ def current_question(conn, attempt_id, *, clock, bank) -> QuestionView | None:
         prompt_es=question.text.es.prompt,
         service=question.context.service,
         mode=question.context.mode,
-        routing_code=question.presentation.routing_code,
+        routing_code=routing_code_for(question, attempt_id=attempt_id, seq=row["seq"]),
         region_label=question.presentation.region_label,
         named_destination=question.presentation.named_destination,
         options=options,
