@@ -1,6 +1,6 @@
 export const BELTS = [
   'GOLD', 'BLUE', 'ORANGE', 'BROWN', 'YELLOW',
-  'GREEN', 'PINK', 'RED', 'PURPLE', 'CHECK',
+  'GREEN', 'PINK', 'RED', 'PURPLE', 'BLACK', 'CHECK',
 ];
 
 export const BELT_STYLE = {
@@ -13,5 +13,6 @@ export const BELT_STYLE = {
   PINK:   { bg: '#a81f5e', fg: '#ffffff' },
   RED:    { bg: '#a81c1c', fg: '#ffffff' },
   PURPLE: { bg: '#5b2d8e', fg: '#ffffff' },
+  BLACK:  { bg: '#000000', fg: '#ffffff' },
   CHECK:  { bg: '#333333', fg: '#ffffff' },
 };

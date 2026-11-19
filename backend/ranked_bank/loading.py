@@ -70,7 +70,7 @@ def load_bank(path: Path, *, expected_revision: str, expected_sha256: str) -> Ba
         if not isinstance(er,list) or any(not isinstance(r,str) or not r.strip() for r in er): invalid(p+'.exclusion_refs','expected string array')
         if len(set(er))!=len(er): raise BankValidationError('invalid_reference',p+'.exclusion_refs','duplicate references')
         if q['difficulty'] not in ('Easy','Medium','Hard'): invalid(p+'.difficulty','unknown difficulty')
-        if q['correct_belt'] not in ('GOLD','BLUE','ORANGE','PINK','GREEN','YELLOW','BROWN','RED','PURPLE'): invalid(p+'.correct_belt','unknown belt')
+        if q['correct_belt'] not in ('GOLD','BLUE','ORANGE','PINK','GREEN','YELLOW','BROWN','RED','PURPLE','BLACK'): invalid(p+'.correct_belt','unknown belt')
         copy=_fields(q['copy'],'en es',p+'.copy'); texts={}
         for lang in ('en','es'):
             text=_fields(copy[lang],'prompt explanation',p+'.copy.'+lang); _strings(text,p+'.copy.'+lang); texts[lang]=CopyText(**text)

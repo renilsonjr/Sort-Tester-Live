@@ -38,15 +38,17 @@ test('2DA Georgia uses the owner-selected reference', () => {
 for (const [service, state, lower, upper, belt] of [
   ['2 Day Air', 'GA', '300', '319', 'BLUE'],
   ['2 Day Air', 'IN', '460', '479', 'ORANGE'],
-  ['2 Day Air', 'IL', '600', '608', 'YELLOW'],
-  ['2 Day Air', 'IL', '609', '629', 'ORANGE'],
+  ['2 Day Air', 'IL', '600', '619', 'PURPLE'],
+  ['2 Day Air', 'IL', '620', '629', 'ORANGE'],
   ['3 Day Select', 'TX', '750', '768', 'BLUE'],
-  ['3 Day Select', 'TX', '770', '784', 'BLUE'],
+  ['3 Day Select', 'TX', '770', '779', 'BLACK'],
+  ['3 Day Select', 'TX', '780', '784', 'BLUE'],
+  ['Ground', 'TX', '750', '779', 'BLACK'],
   ['3 Day Select', 'TX', '785', '799', 'PURPLE'],
   ['3 Day Select', '', '811', '999', 'PURPLE'],
   ['Ground', 'NY', '128', '147', 'GOLD'],
-  ['2 Day Air', 'NY', '140', '147', 'ORANGE'],
-  ['3 Day Select', 'NY', '140', '147', 'ORANGE'],
+  ['2 Day Air', 'NY', '140', '147', 'GOLD'],
+  ['3 Day Select', 'NY', '140', '147', 'GOLD'],
 ]) {
   for (const endpoint of [lower, upper]) test(`${service} ${state} ${endpoint} boundary`, () => {
     assert.ok(searchChart(service, `${state} ${endpoint}`.trim()).main.some(row => row[2] === belt));
@@ -92,7 +94,7 @@ for (const deck of DECKS) {
 test('Mixed replaces the ambiguous Illinois span and keeps 16-question runs', () => {
   const deck = DECKS.find(deck => deck.id === 'mixed-missorts');
   assert.ok(!deck.cards.some(card => card.id === 'mixed-il-600-619-2da'));
-  for (const [id, belt] of [['mixed-il-600-608-2da', 'YELLOW'], ['mixed-il-609-619-2da', 'ORANGE']]) {
+  for (const [id, belt] of [['mixed-il-600-608-2da', 'PURPLE'], ['mixed-il-609-619-2da', 'PURPLE']]) {
     assert.equal(deck.cards.find(card => card.id === id)?.belt, belt);
   }
   assert.equal(deck.cards.length, 17);
