@@ -29,17 +29,14 @@ jobs:
       - name: Check browser security and development API requests
         run: node --test tests/*.test.mjs
 
-  backend-windows:
-    name: Windows backend tests
-    runs-on: windows-latest
-    timeout-minutes: 15
+  backend-linux:
+    name: Backend tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
     env:
       # A new loopback-only cluster belongs to this job, not Azure. Missing
       # configuration or skipped tests must fail backend.ci_tests.
       SORT_TESTER_TEST_DATABASE_URL: postgresql://postgres@127.0.0.1:5433/sort_tester_unittest_scratch
-    defaults:
-      run:
-        shell: pwsh
     steps:
       - name: Check out the proposed changes
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -54,81 +51,79 @@ jobs:
       - name: Create fresh environment and record Python version
         run: |
           python -m venv backend/.venv
-          $python = 'backend/.venv/Scripts/python.exe'
-          $version = & $python -VV
-          Write-Output $version
-          "Python used: $version" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
+          version="$(backend/.venv/bin/python -VV)"
+          echo "$version"
+          echo "Python used: $version" >> "$GITHUB_STEP_SUMMARY"
 
       - name: Install and check backend dependencies
         run: |
-          $python = 'backend/.venv/Scripts/python.exe'
-          & $python -m pip install -r backend/requirements.txt
-          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          & $python -m pip check
-          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          backend/.venv/bin/python -m pip install -r backend/requirements.txt
+          backend/.venv/bin/python -m pip check
 
       - name: Start an isolated loopback PostgreSQL cluster
         run: |
-          if (-not $env:PGBIN -or -not (Test-Path (Join-Path $env:PGBIN 'initdb.exe'))) {
-            throw 'The hosted runner must provide PostgreSQL binaries in PGBIN.'
-          }
-          # Existing role/dump/restore tests discover these tools via PATH.
-          $env:PGBIN | Out-File -FilePath $env:GITHUB_PATH -Append -Encoding utf8
-          $postgresData = Join-Path $env:RUNNER_TEMP 'sort-tester-ci-postgres'
-          $postgresLog = Join-Path $env:RUNNER_TEMP 'sort-tester-ci-postgres.log'
-          if (Test-Path $postgresData) { throw 'Expected a fresh PostgreSQL data directory.' }
+          # The runner ships server binaries outside PATH. Highest version
+          # wins, so a runner image upgrade does not pin this job to an old
+          # cluster. Existing role/dump/restore tests discover these tools
+          # via PATH, so the directory is exported for later steps.
+          pgbin="$(ls -d /usr/lib/postgresql/*/bin 2>/dev/null | sort -V | tail -1)"
+          if [ -z "$pgbin" ] || [ ! -x "$pgbin/initdb" ]; then
+            echo 'The hosted runner must provide PostgreSQL server binaries.' >&2
+            exit 1
+          fi
+          echo "$pgbin" >> "$GITHUB_PATH"
+          data="$RUNNER_TEMP/sort-tester-ci-postgres"
+          log="$RUNNER_TEMP/sort-tester-ci-postgres.log"
+          if [ -e "$data" ]; then
+            echo 'Expected a fresh PostgreSQL data directory.' >&2
+            exit 1
+          fi
           # Trust is restricted to this disposable job's loopback listener.
           # No credential or connection to the staging database is used.
-          & (Join-Path $env:PGBIN 'initdb.exe') -D $postgresData -U postgres --auth=trust --encoding=UTF8 --locale=C
-          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          "SORT_TESTER_CI_PGDATA=$postgresData" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
-          & (Join-Path $env:PGBIN 'pg_ctl.exe') -D $postgresData -l $postgresLog -o '-h 127.0.0.1 -p 5433 -c timezone=UTC' -w -t 60 start
-          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          & (Join-Path $env:PGBIN 'psql.exe') -h 127.0.0.1 -p 5433 -U postgres -d postgres --no-password -v ON_ERROR_STOP=1 -c 'SELECT version()'
-          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          "$pgbin/initdb" -D "$data" -U postgres --auth=trust --encoding=UTF8 --locale=C
+          echo "SORT_TESTER_CI_PGDATA=$data" >> "$GITHUB_ENV"
+          "$pgbin/pg_ctl" -D "$data" -l "$log" -o '-h 127.0.0.1 -p 5433 -c timezone=UTC' -w -t 60 start
+          "$pgbin/psql" -h 127.0.0.1 -p 5433 -U postgres -d postgres --no-password -v ON_ERROR_STOP=1 -c 'SELECT version()'
 
       - name: Run backend unit tests
-        run: |
-          & backend/.venv/Scripts/python.exe -m backend.ci_tests
-          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+        run: backend/.venv/bin/python -m backend.ci_tests
 
       - name: Check live health response on loopback
         run: |
-          $listener = [System.Net.Sockets.TcpListener]::new([System.Net.IPAddress]::Loopback, 0)
-          $listener.Start()
-          $port = $listener.LocalEndpoint.Port
-          $listener.Stop()
-          $python = (Resolve-Path 'backend/.venv/Scripts/python.exe').Path
-          $stdout = Join-Path $env:RUNNER_TEMP 'uvicorn-stdout.log'
-          $stderr = Join-Path $env:RUNNER_TEMP 'uvicorn-stderr.log'
-          $server = Start-Process -FilePath $python -ArgumentList @('-m', 'uvicorn', 'backend.main:app', '--host', '127.0.0.1', '--port', "$port") -PassThru -WindowStyle Hidden -RedirectStandardOutput $stdout -RedirectStandardError $stderr
-          try {
-            $response = $null
-            for ($attempt = 0; $attempt -lt 30; $attempt++) {
-              if ($server.HasExited) { throw 'Uvicorn exited before responding.' }
-              try {
-                $response = Invoke-WebRequest "http://127.0.0.1:$port/health" -TimeoutSec 2
-                break
-              } catch {
-                Start-Sleep -Milliseconds 500
-              }
-            }
-            if ($null -eq $response) { throw 'Uvicorn did not respond within 15 seconds.' }
-            if ($response.StatusCode -ne 200) { throw "Expected HTTP 200, got $($response.StatusCode)." }
-            if ($response.Content.Trim() -ne '{"status":"ok"}') { throw "Unexpected health response: $($response.Content)" }
-            Write-Output "GET /health returned HTTP 200 and $($response.Content)"
-          } finally {
-            if (-not $server.HasExited) {
-              Stop-Process -Id $server.Id -Force
-              Wait-Process -Id $server.Id -ErrorAction SilentlyContinue
-            }
-            Get-Content $stdout, $stderr -ErrorAction SilentlyContinue
-          }
+          port="$(backend/.venv/bin/python -c 'import socket;s=socket.socket();s.bind(("127.0.0.1",0));print(s.getsockname()[1]);s.close()')"
+          stdout="$RUNNER_TEMP/uvicorn-stdout.log"
+          stderr="$RUNNER_TEMP/uvicorn-stderr.log"
+          backend/.venv/bin/python -m uvicorn backend.main:app \
+            --host 127.0.0.1 --port "$port" >"$stdout" 2>"$stderr" &
+          server=$!
+          # Always report what the server said and never leave it running,
+          # however this step ends.
+          trap 'kill "$server" 2>/dev/null || true; wait "$server" 2>/dev/null || true; cat "$stdout" "$stderr" 2>/dev/null || true' EXIT
+          body=''
+          for _ in $(seq 30); do
+            if ! kill -0 "$server" 2>/dev/null; then
+              echo 'Uvicorn exited before responding.' >&2
+              exit 1
+            fi
+            if body="$(curl --silent --fail --max-time 2 "http://127.0.0.1:$port/health")"; then
+              break
+            fi
+            body=''
+            sleep 0.5
+          done
+          if [ -z "$body" ]; then
+            echo 'Uvicorn did not respond within 15 seconds.' >&2
+            exit 1
+          fi
+          if [ "$body" != '{"status":"ok"}' ]; then
+            echo "Unexpected health response: $body" >&2
+            exit 1
+          fi
+          echo "GET /health returned HTTP 200 and $body"
 
       - name: Stop the job PostgreSQL cluster
         if: always()
         run: |
-          if ($env:SORT_TESTER_CI_PGDATA -and (Test-Path (Join-Path $env:SORT_TESTER_CI_PGDATA 'postmaster.pid'))) {
-            & (Join-Path $env:PGBIN 'pg_ctl.exe') -D $env:SORT_TESTER_CI_PGDATA -m fast -w -t 60 stop
-            if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          }
+          if [ -n "${SORT_TESTER_CI_PGDATA:-}" ] && [ -f "$SORT_TESTER_CI_PGDATA/postmaster.pid" ]; then
+            pg_ctl -D "$SORT_TESTER_CI_PGDATA" -m fast -w -t 60 stop
+          fi
