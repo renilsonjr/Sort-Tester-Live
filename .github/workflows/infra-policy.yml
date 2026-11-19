@@ -1,0 +1,97 @@
+name: Infra policy
+
+# The additional offline policy validation of issue #205, the piece the audit
+# follow-up (#196 Task 20) tracked separately from the plain Bicep compile that
+# Security gates already does.
+#
+# It is deliberately NOT a live `az deployment group what-if`. Everything here
+# runs on the compiled templates alone: no `az login`, no federated credential,
+# no subscription, no secret. A pull request from any branch -- including a
+# fork -- can therefore run it without being granted a shred of Azure access or
+# deployment authority (issue #205 item 4). Deployment stays a separate,
+# owner-reviewed, manual step; nothing here deploys anything.
+#
+# What it enforces and why those checks, in infra/azure/policy/check.py and
+# docs in infra/azure/policy-validation.md.
+#
+# Every third-party action is pinned to a commit SHA: a tag can be moved to
+# different code by whoever owns the action, and these run against the repo.
+on:
+  push:
+    branches: [main, codex/ranked-mode]
+    paths:
+      - 'infra/**'
+      - '.github/workflows/infra-policy.yml'
+  pull_request:
+    paths:
+      - 'infra/**'
+      - '.github/workflows/infra-policy.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: infra-policy-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  policy:
+    name: Offline infra policy validation
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up Python
+        uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: '3.14'
+
+      # Layer 1: prove the rules on crafted fixtures -- the reviewed baseline
+      # passes, a representative unsafe change fails on every rule. Pure stdlib,
+      # no Azure, deterministic.
+      - name: Run the policy rule tests
+        run: python -m unittest infra.azure.policy.test_check -v
+
+      # Layer 2: run the exact same rules over the real templates, as Azure
+      # would receive them. `az bicep build` turns each Bicep into ARM JSON;
+      # the Azure CLI is preinstalled on the runner and needs no login to
+      # compile. A warning here is Security gates' job, not this one -- we only
+      # need the compiled artefact, so the exit code alone gates the compile.
+      - name: Compile every template to ARM JSON
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+          out="$RUNNER_TEMP/arm"
+          mkdir -p "$out"
+          templates=(infra/azure/*.bicep)
+          if [ ${#templates[@]} -eq 0 ]; then
+            echo 'No templates found: this job is looking in the wrong place.' >&2
+            exit 1
+          fi
+          for template in "${templates[@]}"; do
+            name="$(basename "${template%.bicep}")"
+            echo "::group::compile $template"
+            az bicep build --file "$template" --outfile "$out/$name.json"
+            echo "::endgroup::"
+          done
+          echo "ARM_DIR=$out" >> "$GITHUB_ENV"
+
+      - name: Validate the compiled baseline (must pass)
+        run: python infra/azure/policy/check.py "$ARM_DIR"/*.json
+
+      # Independent, Azure-free demonstration that the gate bites: the committed
+      # representative unsafe template must make the checker exit non-zero. If a
+      # future edit neuters the rules, this step turns red.
+      - name: Demonstrate the gate fails on a representative unsafe change
+        run: |
+          set -euo pipefail
+          if python infra/azure/policy/check.py infra/azure/policy/fixtures/unsafe.arm.json; then
+            echo 'The unsafe fixture passed the policy check; the gate is not biting.' >&2
+            exit 1
+          fi
+          echo 'Confirmed: the representative unsafe change is rejected.'
