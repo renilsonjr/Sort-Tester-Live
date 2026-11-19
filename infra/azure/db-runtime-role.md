@@ -126,26 +126,46 @@ employee rollout remain separate checks under #13 and [[security-foundation]].
 Removed agent-created secret parameter/deployment-result files from Cloud Shell.
 [Image publication evidence](https://github.com/renilsonjr/Sort-Tester-Live/actions/runs/43831986133).
 
-## Managed-identity mode (#84) — procedure, NOT YET APPLIED
+## Managed-identity mode (#84) — applied to staging, password NOT yet removed
 
-Status: **not applied.** This records the reviewed procedure to replace the
-runtime password with a short-lived Entra token. No Azure write, grant change,
-deployment or server-wide `passwordAuth` change follows from documenting it.
-Prepare and test opt-in identity authentication locally and in CI first,
-preserving password mode for local development, and review the role, grants,
-runtime configuration and rollback before any live Azure change.
+Status: **applied to fictional-data Azure staging on 2026-11-19.** The Entra
+role `id-sort-app-stg` was mapped with runtime-only grants (DDL denied,
+verified), and the app was cut over to `managed_identity` on a new revision.
+Hosted login, token refresh across the token lifetime, the clean-503 failure
+path and a tested rollback were all verified. The runtime **password reference
+has deliberately NOT been removed**: the `database-url` secret stays as the
+rollback credential, and server-wide `passwordAuth` stays enabled, pending the
+owner's separate approval. The procedure below records what was done and what
+remains gated.
 
 ### What the code does
 
 The app selects its mode with `SORT_TESTER_DB_AUTH` (`password`, the default,
 or `managed_identity`). In managed-identity mode the connection password is a
-fresh Entra token the app fetches from IMDS per physical connection and caches
-until near expiry; the DSN carries **no password**, the database user is the
-Entra role, and TLS stays `verify-full` where the image's CA bundle is
-confirmed (Task 7 step 3), else `require`. The app reuses the existing
-user-assigned managed identity; its client id is supplied as
-`SORT_TESTER_DB_IDENTITY_CLIENT_ID`. Token or connection failure returns a
-clean HTTP 503 with no secret logged.
+fresh Entra token the app fetches per physical connection and caches until near
+expiry; the DSN carries **no password**, the database user is the Entra role,
+and TLS stays `verify-full` where the image's CA bundle is confirmed (Task 7
+step 3), else `require`. The app reuses the existing user-assigned managed
+identity; its client id is supplied as `SORT_TESTER_DB_IDENTITY_CLIENT_ID`.
+Token or connection failure returns a clean HTTP 503 with no secret logged.
+
+The token is fetched at the **hosting platform's identity endpoint**: Azure
+Container Apps (and App Service) inject `IDENTITY_ENDPOINT` and
+`IDENTITY_HEADER`, used with api-version `2019-08-01` and the
+`X-IDENTITY-HEADER` header. The app falls back to the VM IMDS address only when
+those are absent. Container Apps does **not** expose the VM IMDS endpoint
+(`169.254.169.254`); an earlier build that only knew IMDS failed there with a
+`URLError` (fixed in PR #231).
+
+**The passwordless DSN must set `sslrootcert=system`.** With `sslmode=verify-full`
+and no `sslrootcert`, libpq looks for `~/.postgresql/root.crt`, which is not in
+the image, and every connection fails with `root certificate file ... does not
+exist`. The password-mode secret DSN already carries `sslrootcert=system`; the
+managed-identity DSN must too. The working runtime value is:
+
+```
+postgresql://id-sort-app-stg@<server>.postgres.database.azure.com:5432/<app_database>?sslmode=verify-full&sslrootcert=system
+```
 
 ### Map the identity to a least-privilege Entra role — reviewed, not applied
 
@@ -195,7 +215,8 @@ on the password credential before the forward cutover is trusted.
 None of these is run as part of preparing this work:
 
 1. Deploy with `SORT_TESTER_DB_AUTH=managed_identity` and the identity client
-   id set; the runtime DSN carries no password.
+   id set; the runtime DSN carries no password but **must keep
+   `sslmode=verify-full&sslrootcert=system`** (see "What the code does").
 2. Verify hosted identity login, reconnect after an idle period, and a token
    refresh across the token lifetime; database-dependent requests return 503
    only when no connection can be made, never a logged secret.
