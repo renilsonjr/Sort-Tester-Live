@@ -23,6 +23,7 @@ from backend.ranked import standings as ranked_standings
 from backend.ranked import tiebreaks as ranked_tiebreaks
 from backend.ranked import history as ranked_history
 from backend.ranked import flags as ranked_flags
+from backend.ranked import profile_stats as ranked_profile_stats
 from backend.support import retention as support_retention
 from backend.support import tickets as support_tickets
 from backend.ranked.clock import system_clock
@@ -209,6 +210,20 @@ def entry(account: dict = Depends(_current_account), conn=Depends(get_db)):
         "points": entry_status.points,
         "badge": entry_status.badge,
         "mode": entry_status.mode,
+    }
+
+
+@router.get("/profile/stats")
+def profile_stats(account: dict = Depends(_current_account), conn=Depends(get_readonly_db)):
+    """The signed-in account's Profile stats: best Ranked correct-count and
+    current leaderboard place. Read-only and private to the account; opening
+    it starts no attempt and reveals nothing about anyone else."""
+    correct = ranked_profile_stats.best_ranked_correct(conn, account["id"])
+    place = ranked_profile_stats.leaderboard_place(conn, account["id"])
+    return {
+        "best_ranked": None if correct is None
+        else {"correct": correct, "total": ranked_profile_stats.RANKED_QUIZ_LENGTH},
+        "place": place,
     }
 
 
