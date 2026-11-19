@@ -61,8 +61,7 @@ class RankedRouterTests(unittest.TestCase):
             raise unittest.SkipTest(str(exc)) from None
 
     def setUp(self):
-        migrate.recreate_scratch_database(self.admin, settings.SCRATCH_DB_NAME)
-        migrate.upgrade_to_head(self.conninfo)
+        migrate.reset_scratch_to_head(self.admin, settings.SCRATCH_DB_NAME)
         conn = migrate.connect(self.conninfo)
         migrate.execute(
             conn, "INSERT INTO seasons (phase, label) VALUES ('pre_season', 'test-season')"

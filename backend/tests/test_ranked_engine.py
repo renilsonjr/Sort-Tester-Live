@@ -33,8 +33,7 @@ class RankedEngineTests(unittest.TestCase):
         # a fresh migrated database per test keeps the one-active-attempt lock
         # and committed rows from leaking between tests
         try:
-            migrate.recreate_scratch_database(self.admin, settings.SCRATCH_DB_NAME)
-            migrate.upgrade_to_head(self.conninfo)
+            migrate.reset_scratch_to_head(self.admin, settings.SCRATCH_DB_NAME)
         except settings.DatabaseConfigError as exc:
             raise unittest.SkipTest(str(exc)) from None
         self.conn = migrate.connect(self.conninfo)

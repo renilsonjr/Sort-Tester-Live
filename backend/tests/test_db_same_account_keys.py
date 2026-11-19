@@ -35,8 +35,7 @@ class SameAccountKeyTests(unittest.TestCase):
             raise unittest.SkipTest(str(exc)) from None
 
     def setUp(self):
-        migrate.recreate_scratch_database(self.admin, settings.SCRATCH_DB_NAME)
-        migrate.upgrade_to_head(self.conninfo)
+        migrate.reset_scratch_to_head(self.admin, settings.SCRATCH_DB_NAME)
         self.conn = migrate.connect(self.conninfo)
         self.addCleanup(self.conn.close)
         self.alice = self._account("alice_key", "ALICE1")

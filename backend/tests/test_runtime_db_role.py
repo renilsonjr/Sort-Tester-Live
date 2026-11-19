@@ -23,8 +23,7 @@ class RuntimeRoleTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.url = settings.test_database_url()
-        migrate.recreate_scratch_database(settings.admin_url(), settings.SCRATCH_DB_NAME)
-        migrate.upgrade_to_head(cls.url)
+        migrate.reset_scratch_to_head(settings.admin_url(), settings.SCRATCH_DB_NAME)
 
     def setUp(self):
         self.role = "sort_runtime_test_" + uuid4().hex[:12]

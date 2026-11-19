@@ -18,8 +18,7 @@ class AuthRouterTests(unittest.TestCase):
         try:
             cls.conninfo = settings.test_database_url()
             cls.admin = settings.admin_url()
-            migrate.recreate_scratch_database(cls.admin, settings.SCRATCH_DB_NAME)
-            migrate.upgrade_to_head(cls.conninfo)
+            migrate.reset_scratch_to_head(cls.admin, settings.SCRATCH_DB_NAME)
         except settings.DatabaseConfigError as exc:
             raise unittest.SkipTest(str(exc)) from None
 
@@ -111,8 +110,7 @@ class SessionWritePersistenceTests(unittest.TestCase):
         try:
             cls.conninfo = settings.test_database_url()
             cls.admin = settings.admin_url()
-            migrate.recreate_scratch_database(cls.admin, settings.SCRATCH_DB_NAME)
-            migrate.upgrade_to_head(cls.conninfo)
+            migrate.reset_scratch_to_head(cls.admin, settings.SCRATCH_DB_NAME)
         except settings.DatabaseConfigError as exc:
             raise unittest.SkipTest(str(exc)) from None
 

@@ -97,8 +97,7 @@ class UsernameAnswerTests(unittest.TestCase):
             raise unittest.SkipTest(str(exc)) from None
 
     def setUp(self):
-        migrate.recreate_scratch_database(self.admin, settings.SCRATCH_DB_NAME)
-        migrate.upgrade_to_head(self.conninfo)
+        migrate.reset_scratch_to_head(self.admin, settings.SCRATCH_DB_NAME)
         self.client = TestClient(create_app(), headers=BROWSER)
 
     def _accounts(self):
@@ -203,8 +202,7 @@ class RegistrationLimitHttpTests(unittest.TestCase):
             raise unittest.SkipTest(str(exc)) from None
 
     def setUp(self):
-        migrate.recreate_scratch_database(self.admin, settings.SCRATCH_DB_NAME)
-        migrate.upgrade_to_head(self.conninfo)
+        migrate.reset_scratch_to_head(self.admin, settings.SCRATCH_DB_NAME)
         app = create_app()
         # small caps keep the test quick; the owner's 30/200 are checked above
         app.state.registration_limiter = RegistrationLimiter(per_client=3, total=5)
