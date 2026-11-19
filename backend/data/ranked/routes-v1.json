@@ -740,47 +740,6 @@
       }
     },
     {
-      "canonical_id": "rq-2da-prefix_range-627dfe2d9e9be37e747e164641b41a42c12641bb2b9315ff40a38f86e15649a3",
-      "question_revision": 1,
-      "source": {
-        "review_ref": "H2",
-        "row_id": "2dayair-main-il-609-629",
-        "row_kind": "main",
-        "state_label": "IL",
-        "code_label": "609–629",
-        "provenance": "photo"
-      },
-      "context": {
-        "service": "2DA",
-        "mode": "ordinary"
-      },
-      "rule": {
-        "kind": "prefix_range",
-        "parts": [
-          "609",
-          "629"
-        ]
-      },
-      "exclusion_refs": [],
-      "difficulty": "Hard",
-      "correct_belt": "ORANGE",
-      "copy": {
-        "en": {
-          "prompt": "Which belt does this go to?",
-          "explanation": "2 Day Air IL609–629 goes ORANGE. The preceding range600–608 goes YELLOW."
-        },
-        "es": {
-          "prompt": "¿A qué color va?",
-          "explanation": "En Aéreo 2 días, IL 609–629 va a ORANGE. El rango anterior, 600–608, va a YELLOW."
-        }
-      },
-      "presentation": {
-        "routing_code": "609",
-        "region_label": "IL",
-        "named_destination": null
-      }
-    },
-    {
       "canonical_id": "rq-2da-prefix_range-64dbb63295d16b27f78b05bbe0bb023740e6e7a226fc4140f33a42afd40b5f61",
       "question_revision": 1,
       "source": {
@@ -1314,6 +1273,47 @@
       }
     },
     {
+      "canonical_id": "rq-2da-prefix_range-b02fae540ff4fcb4bc50954a3a7b77183ecfd0a1942b4a8d4c09daef01a16cba",
+      "question_revision": 1,
+      "source": {
+        "review_ref": "H2",
+        "row_id": "2dayair-main-il-620-629",
+        "row_kind": "main",
+        "state_label": "IL",
+        "code_label": "620–629",
+        "provenance": "owner-override-10"
+      },
+      "context": {
+        "service": "2DA",
+        "mode": "ordinary"
+      },
+      "rule": {
+        "kind": "prefix_range",
+        "parts": [
+          "620",
+          "629"
+        ]
+      },
+      "exclusion_refs": [],
+      "difficulty": "Hard",
+      "correct_belt": "ORANGE",
+      "copy": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "2 Day Air IL 620–629 goes to ORANGE."
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Aéreo 2 días, IL 620–629 va a ORANGE."
+        }
+      },
+      "presentation": {
+        "routing_code": "620",
+        "region_label": "IL",
+        "named_destination": null
+      }
+    },
+    {
       "canonical_id": "rq-2da-prefix_range-b02fcfc16061b76ce20f69547388d1304eb14b05cd7ab0f87cde202d17eb6d43",
       "question_revision": 1,
       "source": {
@@ -1478,15 +1478,15 @@
       }
     },
     {
-      "canonical_id": "rq-2da-prefix_range-c61838836bc9880d648818d405e01e84031c6ab506711279d9b249828f0b87f4",
+      "canonical_id": "rq-2da-prefix_range-c64eb49308148f38a4e81a239f88e3a51b222d100dd2577d64dc36579dbac13e",
       "question_revision": 1,
       "source": {
         "review_ref": "H1",
-        "row_id": "2dayair-main-il-600-608",
+        "row_id": "2dayair-main-il-600-619",
         "row_kind": "main",
         "state_label": "IL",
-        "code_label": "600–608",
-        "provenance": "photo"
+        "code_label": "600–619",
+        "provenance": "owner-override-10"
       },
       "context": {
         "service": "2DA",
@@ -1496,20 +1496,20 @@
         "kind": "prefix_range",
         "parts": [
           "600",
-          "608"
+          "619"
         ]
       },
       "exclusion_refs": [],
       "difficulty": "Hard",
-      "correct_belt": "YELLOW",
+      "correct_belt": "PURPLE",
       "copy": {
         "en": {
           "prompt": "Which belt does this go to?",
-          "explanation": "2 Day Air IL600–608 goes YELLOW. The next range609–629 goes ORANGE."
+          "explanation": "2 Day Air IL 600–619 goes to PURPLE."
         },
         "es": {
           "prompt": "¿A qué color va?",
-          "explanation": "En Aéreo 2 días, IL 600–608 va a YELLOW. El siguiente rango, 609–629, va a ORANGE."
+          "explanation": "En Aéreo 2 días, IL 600–619 va a PURPLE."
         }
       },
       "presentation": {
@@ -1691,7 +1691,7 @@
         "row_kind": "main",
         "state_label": "NY",
         "code_label": "140–147",
-        "provenance": "photo"
+        "provenance": "owner-override-10"
       },
       "context": {
         "service": "2DA",
@@ -1706,15 +1706,15 @@
       },
       "exclusion_refs": [],
       "difficulty": "Medium",
-      "correct_belt": "ORANGE",
+      "correct_belt": "GOLD",
       "copy": {
         "en": {
           "prompt": "Which belt does this go to?",
-          "explanation": "2 Day Air NY140–147 goes ORANGE. The GOLD change applies to Ground, not this service."
+          "explanation": "2 Day Air NY 140–147 goes to GOLD."
         },
         "es": {
           "prompt": "¿A qué color va?",
-          "explanation": "En Aéreo 2 días, NY 140–147 va a ORANGE. El cambio a GOLD se aplica solo a Terrestre."
+          "explanation": "En Aéreo 2 días, NY 140–147 va a GOLD."
         }
       },
       "presentation": {
@@ -3046,7 +3046,7 @@
         "row_kind": "main",
         "state_label": "NY",
         "code_label": "140–147",
-        "provenance": "photo"
+        "provenance": "owner-override-10"
       },
       "context": {
         "service": "3DS",
@@ -3061,15 +3061,15 @@
       },
       "exclusion_refs": [],
       "difficulty": "Medium",
-      "correct_belt": "ORANGE",
+      "correct_belt": "GOLD",
       "copy": {
         "en": {
           "prompt": "Which belt does this go to?",
-          "explanation": "3 Day Select NY 140–147 goes to ORANGE."
+          "explanation": "3 Day Select NY 140–147 goes to GOLD."
         },
         "es": {
           "prompt": "¿A qué color va?",
-          "explanation": "En Select 3 días, NY 140–147 va a ORANGE."
+          "explanation": "En Select 3 días, NY 140–147 va a GOLD."
         }
       },
       "presentation": {
@@ -3368,6 +3368,47 @@
       }
     },
     {
+      "canonical_id": "rq-3ds-prefix_range-54b139f162f4a306851d80c0edb4bc08bc241ca4307f880645b11154654c3ca8",
+      "question_revision": 1,
+      "source": {
+        "review_ref": "M1",
+        "row_id": "3dayselect-main-tx-770-779",
+        "row_kind": "main",
+        "state_label": "TX",
+        "code_label": "770–779",
+        "provenance": "owner-override-10"
+      },
+      "context": {
+        "service": "3DS",
+        "mode": "ordinary"
+      },
+      "rule": {
+        "kind": "prefix_range",
+        "parts": [
+          "770",
+          "779"
+        ]
+      },
+      "exclusion_refs": [],
+      "difficulty": "Medium",
+      "correct_belt": "BLACK",
+      "copy": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "3 Day Select TX 770–779 goes to BLACK."
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Select 3 días, TX 770–779 va a BLACK."
+        }
+      },
+      "presentation": {
+        "routing_code": "770",
+        "region_label": "TX",
+        "named_destination": null
+      }
+    },
+    {
       "canonical_id": "rq-3ds-prefix_range-5974dc53cb773b776206e5ece29c6427c0fdae1cb5f69b1882592afcc7878504",
       "question_revision": 1,
       "source": {
@@ -3571,6 +3612,47 @@
       "presentation": {
         "routing_code": "149",
         "region_label": "NY",
+        "named_destination": null
+      }
+    },
+    {
+      "canonical_id": "rq-3ds-prefix_range-6b3ee9736041f39908211e1da2205ed419ef4d71695da1425daffd4e773dee42",
+      "question_revision": 1,
+      "source": {
+        "review_ref": "S83",
+        "row_id": "3dayselect-main-tx-780-784",
+        "row_kind": "main",
+        "state_label": "TX",
+        "code_label": "780–784",
+        "provenance": "owner-override-10"
+      },
+      "context": {
+        "service": "3DS",
+        "mode": "ordinary"
+      },
+      "rule": {
+        "kind": "prefix_range",
+        "parts": [
+          "780",
+          "784"
+        ]
+      },
+      "exclusion_refs": [],
+      "difficulty": "Medium",
+      "correct_belt": "BLUE",
+      "copy": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "3 Day Select TX 780–784 goes to BLUE."
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Select 3 días, TX 780–784 va a BLUE."
+        }
+      },
+      "presentation": {
+        "routing_code": "780",
+        "region_label": "TX",
         "named_destination": null
       }
     },
@@ -3788,47 +3870,6 @@
       "presentation": {
         "routing_code": "190",
         "region_label": "PA",
-        "named_destination": null
-      }
-    },
-    {
-      "canonical_id": "rq-3ds-prefix_range-9676d20645c274cba4ff752d140407975af7a75ede3b4889f3da445d4339d1bc",
-      "question_revision": 1,
-      "source": {
-        "review_ref": "M1",
-        "row_id": "3dayselect-main-tx-770-784",
-        "row_kind": "main",
-        "state_label": "TX",
-        "code_label": "770–784",
-        "provenance": "photo"
-      },
-      "context": {
-        "service": "3DS",
-        "mode": "ordinary"
-      },
-      "rule": {
-        "kind": "prefix_range",
-        "parts": [
-          "770",
-          "784"
-        ]
-      },
-      "exclusion_refs": [],
-      "difficulty": "Medium",
-      "correct_belt": "BLUE",
-      "copy": {
-        "en": {
-          "prompt": "Which belt does this go to?",
-          "explanation": "3 Day Select TX770–784 goes BLUE. The separately listed TX769 0 and the next range785–799 go PURPLE."
-        },
-        "es": {
-          "prompt": "¿A qué color va?",
-          "explanation": "En Select 3 días, TX 770–784 va a BLUE. El código cercano TX 769 0 y el rango 785–799 van a PURPLE."
-        }
-      },
-      "presentation": {
-        "routing_code": "770",
-        "region_label": "TX",
         "named_destination": null
       }
     },
@@ -7939,7 +7980,7 @@
         "row_kind": "main",
         "state_label": "TX",
         "code_label": "750–779",
-        "provenance": "photo"
+        "provenance": "owner-override-10"
       },
       "context": {
         "service": "GND",
@@ -7954,15 +7995,15 @@
       },
       "exclusion_refs": [],
       "difficulty": "Easy",
-      "correct_belt": "BLUE",
+      "correct_belt": "BLACK",
       "copy": {
         "en": {
           "prompt": "Which belt does this go to?",
-          "explanation": "Ground TX 750–779 goes to BLUE."
+          "explanation": "Ground TX 750–779 goes to BLACK."
         },
         "es": {
           "prompt": "¿A qué color va?",
-          "explanation": "En Terrestre, TX 750–779 va a BLUE."
+          "explanation": "En Terrestre, TX 750–779 va a BLACK."
         }
       },
       "presentation": {

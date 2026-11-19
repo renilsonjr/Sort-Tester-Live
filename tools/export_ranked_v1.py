@@ -66,13 +66,13 @@ def export_reviewed_bank(output_dir: Path, *, repo_root: Path=REPO_ROOT) -> Expo
     output_dir=Path(output_dir)
     if output_dir.exists():raise FileExistsError(output_dir)
     raw=json.loads((repo_root/SOURCE).read_text(encoding='utf-8')); entries=raw['entries']
-    if len(entries)!=283 or raw['contentReviewStatus']['status']!='owner-approved-review-content':raise ValueError('unapproved/incomplete source')
+    if len(entries)!=284 or raw['contentReviewStatus']['status']!='owner-approved-review-content':raise ValueError('unapproved/incomplete source')
     for e in entries:
         if e['difficultyStatus']!='owner-approved' or e['wordingStatus'] not in ('owner-approved-bilingual','owner-approved-in-initial-sheet'):raise ValueError('unapproved content '+e['id'])
         if e['wordingStatus']=='owner-approved-bilingual' and any(e['wording'][lang]['approvalStatus']!='owner-approved' for lang in ('en','es')):raise ValueError('unapproved translation')
     initial=_initial_copy((repo_root/SHEET).read_text(encoding='utf-8'))
     meaning={e['approvedReview']:_meaning(e) for e in entries}
-    if len(meaning)!=283:raise ValueError('duplicate review ref')
+    if len(meaning)!=284:raise ValueError('duplicate review ref')
     questions=[]
     for e in entries:
         ref=e['approvedReview'];ctx,rule=meaning[ref]; exclusions=[]
