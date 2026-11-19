@@ -152,13 +152,16 @@ test('bilingual modifier explanations precede generic and routing-ending branche
   assert.match(language.explanation({ ...ordinary, code: '150 1S' }), /1S.*PURPLE/);
 });
 
-test('Home renders Ground-only NY GOLD and correct air-service guidance in both languages', () => {
+test('Home (guest) shows the sign-in invite and practice actions in both languages', () => {
   const app = appHarness(); app.evaluate('showStart();');
-  assert.match(app.markup, /<p>Ground<\/p>/);
-  assert.match(app.markup, /2 Day Air and 3 Day Select.*ORANGE.*Next Day Air.*PURPLE/);
+  // The redesign dropped the "Recent sort changes" and "Where to start" blocks;
+  // a guest now sees an invite to sign in for Ranked plus the practice actions.
+  assert.match(app.markup, /Playing as guest/);
+  assert.match(app.markup, /Sign in to compete in Ranked/);
+  assert.match(app.markup, /Know the chart/);
   app.view.languages[1].click();
-  assert.match(app.markup, /<p>Terrestre<\/p>/);
-  assert.match(app.markup, /Aéreo 2 días y Select 3 días.*ORANGE.*Aéreo 1 día.*PURPLE/);
+  assert.match(app.markup, /Jugando como invitado/);
+  assert.match(app.markup, /Conoce la tabla/);
 });
 
 test('ordinary picker shows selected run sizes without changing deck grouping', () => {

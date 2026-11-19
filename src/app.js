@@ -158,6 +158,35 @@ function wireLanguageButtons(view, rerender) {
   }));
 }
 
+// Day / Night theme. Manual only (does not follow the system): the choice is
+// kept per device and defaults to Night (the twilight look). The CSS reacts to
+// `data-theme` on <html>, so a toggle needs no re-render.
+function currentTheme() {
+  try { return localStorage.getItem('sortlab-theme') === 'day' ? 'day' : 'night'; } catch { return 'night'; }
+}
+function applyTheme(theme) {
+  const next = theme === 'day' ? 'day' : 'night';
+  const root = (typeof document !== 'undefined') ? document.documentElement : null;
+  if (root && typeof root.setAttribute === 'function') root.setAttribute('data-theme', next);
+  try { localStorage.setItem('sortlab-theme', next); } catch { /* private mode: live with the default */ }
+}
+function themeIcon(theme) { return theme === 'day' ? '☀️' : '🌙'; }
+function themeButton() {
+  const day = currentTheme() === 'day';
+  return `<button type="button" class="lab-theme-btn" data-theme-toggle aria-label="${esc(t('Switch between day and night'))}" aria-pressed="${day}">${themeIcon(day ? 'day' : 'night')}</button>`;
+}
+function wireThemeButton(view) {
+  const button = view.querySelector('[data-theme-toggle]');
+  if (!button) return;
+  button.addEventListener('click', () => {
+    const next = currentTheme() === 'day' ? 'night' : 'day';
+    applyTheme(next);
+    button.textContent = themeIcon(next);
+    button.setAttribute('aria-pressed', String(next === 'day'));
+  });
+}
+if (typeof document !== 'undefined') applyTheme(currentTheme());
+
 // Who is using the app: null until the auth panel says. A guest gets Home
 // and Practice; a signed-in player also gets Ranked and Profile (#10, from
 // the navigation approved in #15).
@@ -188,7 +217,7 @@ function labPage(content, active = 'home', rerender = showStart) {
       <header class="lab-top">
         <div class="lab-top-row">
           <div class="lab-brand"><span class="lab-mark">RJ</span> Sort Lab</div>
-          ${languageButtons()}
+          <div class="lab-top-actions">${languageButtons()}${themeButton()}</div>
         </div>
         <div class="lab-site">UPS Saddle Brook <span aria-hidden="true">·</span> Twilight</div>
       </header>
@@ -201,6 +230,7 @@ function labPage(content, active = 'home', rerender = showStart) {
   `);
   render(view);
   wireLanguageButtons(view, rerender);
+  wireThemeButton(view);
   view.querySelectorAll('[data-nav]').forEach((button) => button.addEventListener('click', () => {
     if (button.dataset.nav === active) return;
     if (button.dataset.nav === 'practice') showPractice();
@@ -2062,28 +2092,19 @@ function showStart() {
           <p id="launch-text"></p>
         </div>
       </section>
-      <section class="lab-change" aria-labelledby="sort-change-title">
-        <p class="lab-change-kicker">${esc(t('Recent sort changes'))}</p>
-        <div class="lab-change-row">
-          <div>
-            <h2 id="sort-change-title">NY 140–147</h2>
-            <p>${esc(language.service('Ground'))}</p>
-          </div>
-          ${beltChip('GOLD', 'lab-belt-chip')}
-        </div>
-        <p class="lab-change-note">${esc(t('For NY 140–147, 2 Day Air and 3 Day Select stay ORANGE; Next Day Air stays PURPLE. NY 148–149 stays ORANGE on Ground, 2 Day Air and 3 Day Select, except 148 1 goes GOLD.'))}</p>
-      </section>
-      <h2 class="lab-section-heading">${esc(t('Where do you want to start?'))}</h2>
-      <button id="study" class="lab-choice" type="button">
-        <span class="lab-choice-icon">01</span>
-        <span><strong>${esc(t('Know the chart'))}</strong><small>${esc(t('Browse every service by state and ZIP range.'))}</small></span>
-        <span class="lab-arrow" aria-hidden="true">→</span>
-      </button>
-      <button id="quiz" class="lab-choice lab-choice-quiz" type="button">
-        <span class="lab-choice-icon">02</span>
-        <span><strong>${esc(t('Take a quiz'))}</strong><small>${esc(t('Start with Ground, then build up to the full chart.'))}</small></span>
-        <span class="lab-arrow" aria-hidden="true">→</span>
-      </button>
+      <div id="home-ident">${signedIn() ? '' : `
+        <button class="home-invite" id="home-signin" type="button">
+          <span class="home-invite-ic" aria-hidden="true">🏅</span>
+          <span><span class="home-ident-name">${esc(t('Playing as guest'))}</span><span class="home-ident-sub">${esc(t('Sign in to compete in Ranked'))}</span></span>
+          <span class="home-invite-go">${esc(t('Sign in'))} →</span>
+        </button>`}</div>
+      ${signedIn() ? `
+      <button id="home-ranked" class="primary" type="button">${esc(t('Play Ranked'))}</button>
+      <button id="home-study" class="ghost" type="button">${esc(t('Know the chart'))}</button>
+      ` : `
+      <button id="home-study" class="ghost" type="button">${esc(t('Know the chart'))}</button>
+      <button id="home-practice" class="ghost" type="button">${esc(t('Practice'))}</button>
+      `}
       <button id="viewlog" class="lab-log-link" type="button">${esc(t('Shift log'))}${entries.length ? ` <span>(${entries.length})</span>` : ''} <span aria-hidden="true">→</span></button>
       ${log.available ? '' : `<p class="warn">${esc(t('This phone is not saving results. Each score is shown once and then gone.'))}</p>`}
       <aside class="lab-disclaimer" aria-label="${esc(t('Independent practice'))}">
@@ -2091,10 +2112,38 @@ function showStart() {
       </aside>
     </section>
   `, 'home');
-  view.querySelector('#study').addEventListener('click', showStudy);
-  view.querySelector('#quiz').addEventListener('click', () => showNameEntry());
+  if (signedIn()) {
+    view.querySelector('#home-ranked').addEventListener('click', showRanked);
+    view.querySelector('#home-study').addEventListener('click', showStudy);
+    fillHomeIdentity(view);
+  } else {
+    view.querySelector('#home-study').addEventListener('click', showStudy);
+    view.querySelector('#home-practice').addEventListener('click', showPractice);
+    view.querySelector('#home-signin').addEventListener('click', () => {
+      if (typeof window !== 'undefined' && typeof window.showSortLabEntry === 'function') {
+        window.showSortLabEntry('');
+      }
+    });
+  }
   view.querySelector('#viewlog').addEventListener('click', showLog);
   fillLaunchCallout(view);
+}
+
+// Signed-in Home identity block: badge + name + points, read from the same
+// ledger endpoint the Profile uses. A guest never reaches here (they see the
+// sign-in invite rendered synchronously instead).
+async function fillHomeIdentity(view) {
+  const box = view.querySelector('#home-ident');
+  if (!box) return;
+  const entry = await api('/ranked/entry');
+  if (!entry) return;
+  const name = session && session.username ? `${session.username}#${session.tag}` : t('Your profile');
+  box.innerHTML = `
+    <div class="home-ident">
+      <img src="${badgeArt(entry.badge)}" alt="${esc(entry.badge)}">
+      <div><div class="home-ident-name">${esc(name)}</div><div class="home-ident-sub">${esc(entry.badge)}</div></div>
+      <div class="home-ident-pts"><b>◆ ${entry.points.toLocaleString()}</b><span>${esc(t('points'))}</span></div>
+    </div>`;
 }
 
 // The season-start notice (Decision 15, placement settled 2026-11-15). It
@@ -2381,16 +2430,23 @@ function leaveRun() {
 // 2 MB with its viewer, so it stays out of the question screens, which
 // re-render once per question.
 const AVATAR_POSE = { thinking: 'thinking', happy: 'correct', sad: 'incorrect', idle: 'idle' };
+const AVATAR_STILL = { thinking: 'thinking', happy: 'correct', sad: 'incorrect', idle: 'idle' };
 
 function quizAvatar(mood) {
   const label = mood === 'thinking' ? 'Blue mascot thinking with a question mark'
     : mood === 'happy' ? 'Happy blue mascot'
     : mood === 'idle' ? 'Blue mascot'
     : 'Sad blue mascot';
-  // The approved animated Blender avatar (Three.js viewer), transparent
-  // background, driven by the ?state= pose. Heavier than a still but clean.
-  return `<iframe class="quiz-avatar3d" title="${esc(t(label))}" scrolling="no"
-    src="assets/avatar3d/embed.html?state=${AVATAR_POSE[mood]}"></iframe>`;
+  // The approved animated Blender avatar (Three.js viewer) over a transparent
+  // background, driven by the ?state= pose. A matching 2D still sits behind it:
+  // where the 3D renders (desktop, most phones) it draws over the still; where
+  // WebGL/3D fails to start (seen on some iOS Safari), the transparent canvas
+  // leaves the still showing, so the character is never a blank box.
+  return `<div class="rq-ava">
+    <img class="rq-ava-still" src="assets/avatar-${AVATAR_STILL[mood]}.png" alt="${esc(t(label))}">
+    <iframe class="quiz-avatar3d" title="${esc(t(label))}" scrolling="no"
+      src="assets/avatar3d/embed.html?state=${AVATAR_POSE[mood]}"></iframe>
+  </div>`;
 }
 
 function quizHeader(cardNumber, total, withTimer = false) {
