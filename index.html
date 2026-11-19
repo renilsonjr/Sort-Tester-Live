@@ -238,7 +238,6 @@
   .quiz-step { color: var(--muted); font-size: 12px; font-weight: 800; letter-spacing: .07em; text-transform: uppercase; }
   .quiz-timer { width: 48px; height: 48px; border: 4px solid var(--ink); border-radius: 50%; display: grid; place-items: center; background: var(--panel); font-size: 20px; font-weight: 800; font-variant-numeric: tabular-nums; }
   .quiz-timer.urgent { border-color: var(--bad); color: var(--bad); }
-  .quiz-avatar { display: block; width: 100%; height: auto; aspect-ratio: 1712 / 1152; object-fit: cover; }
   .quiz-route { display: flex; flex-direction: column; align-items: center; text-align: center; }
   .quiz-route .p-line { font-size: clamp(16px, 2.4dvh, 21px); }
   .quiz-route .p-code { font-size: clamp(48px, 10dvh, 72px); font-weight: 800; letter-spacing: -.04em; }
@@ -525,7 +524,6 @@
   .lab-hero .lab-eyebrow { color: var(--ink); margin-bottom: 10px; }
   .lab-hero h1 { font: 800 35px/1.02 Arial, Helvetica, sans-serif; letter-spacing: -.065em; margin: 0; }
   .lab-hero p:not(.lab-eyebrow) { margin: 12px 0 0; color: var(--ink); font-size: 14px; }
-  .lab-mascot { display: block; width: 100%; height: 225px; object-fit: cover; object-position: 50% 46%; }
   /* The home poster, unlike the mascot, is never cropped: its own
      words are part of the picture, so any crop cuts the message. */
   .lab-campaign { margin: 0; }
@@ -641,7 +639,6 @@
   .lab-hero .lab-eyebrow { color: var(--accent); }
   .lab-hero h1 { font: 900 clamp(34px, 9vw, 43px)/1.06 Nunito, "Trebuchet MS", sans-serif; letter-spacing: -.055em; }
   .lab-hero p:not(.lab-eyebrow) { color: #54412f; font-size: 15px; }
-  .lab-mascot { height: 209px; object-position: center 52%; }
   .lab-campaign img { border-radius: 0 0 26px 26px; }
   .lab-change { margin-top: 16px; padding: 15px 16px; border: 1px solid #e4d3a8; border-radius: 19px; background: #fbf3e1; }
   .lab-change-kicker { margin: 0 0 8px; color: var(--accent); font-size: 11px; font-weight: 900; letter-spacing: .09em; text-transform: uppercase; }
@@ -685,7 +682,6 @@
     color: var(--ink); border: 1px solid rgba(255, 255, 255, 0.5);
   }
   .quiz-card, .quiz-feedback { color: var(--ink); }
-  .quiz-card .quiz-avatar, .quiz-feedback .quiz-avatar { border-radius: 17px; }
   .quiz-actions .stopbtn { color: var(--accent); border-color: var(--line); font-family: inherit; }
   .quiz-timer { border-color: var(--accent); font-weight: 900; }
   .quiz-route .p-code { font-weight: 900; }
@@ -895,23 +891,9 @@
   .lab-language button { background: var(--glass-surface-sub); border: 1px solid var(--glass-border); color: var(--ink); backdrop-filter: var(--blur-md); -webkit-backdrop-filter: var(--blur-md); }
   .lab-language button[aria-pressed="true"] { border-color: var(--gold); color: var(--ink); }
 
-  /* Avatar now a transparent portrait PNG (was a landscape JPG): contain it */
-  .quiz-avatar { width: auto; max-width: 68%; height: auto; aspect-ratio: auto; object-fit: contain; display: block; margin: 0 auto; filter: drop-shadow(0 10px 18px rgba(0, 0, 0, 0.45)); }
 
-  /* Animated 3D avatar viewer (transparent iframe) */
-  .quiz-avatar3d { width: 100%; height: 104px; border: 0; display: block; background: transparent; }
 
-  /* Ranked quiz — avatar stage, belts and timer bar (match the mock) */
-  .rq-stage { height: 104px; margin: 2px 0 4px; border-radius: var(--r-md); border: 1px solid rgba(255, 255, 255, 0.08); background: radial-gradient(ellipse at center, rgba(244, 189, 56, 0.12), rgba(26, 17, 10, 0.12)); display: grid; place-items: center; overflow: hidden; }
-  .rq-stage .quiz-avatar { max-width: none; height: 96px; filter: drop-shadow(0 12px 22px rgba(0, 0, 0, 0.5)); }
-  .rq-stage .quiz-avatar3d { height: 100%; }
-  /* Avatar stage: a 2D still sits behind the transparent 3D canvas, so the
-     character is always visible — even where WebGL/3D fails (iOS Safari). The
-     3D draws over the still when it works; the still shows through when it does
-     not. */
-  .rq-ava { position: relative; width: 100%; height: 100%; display: grid; place-items: center; }
-  .rq-ava .rq-ava-still { position: absolute; inset: 0; margin: auto; height: 94px; width: auto; object-fit: contain; filter: drop-shadow(0 10px 18px rgba(0, 0, 0, 0.45)); }
-  .rq-ava .quiz-avatar3d { position: absolute; inset: 0; }
+  /* Ranked quiz — belts and timer bar */
   .rq-stake { color: var(--muted); }
   /* Ring timer (mock): conic gold ring with the seconds on a dark disc */
   .rq-ring { width: 46px; height: 46px; border-radius: 50%; display: grid; place-items: center; font-weight: 900; font-size: 14px; color: var(--gold); background: conic-gradient(var(--gold) calc(var(--pct, 100) * 1%), rgba(255, 255, 255, 0.12) 0); }
@@ -935,8 +917,6 @@
   .pf-badges img { width: 46px; height: 46px; object-fit: contain; filter: drop-shadow(0 3px 7px rgba(0, 0, 0, 0.4)); }
   .pf-badges img.off { opacity: 0.32; filter: grayscale(1); }
   .belts .belt { border: 1px solid rgba(255, 255, 255, 0.18); box-shadow: inset 0 0 0 100px rgba(255, 255, 255, 0.04); }
-  .rq-stage-sm { height: 92px; }
-  .rq-stage-sm .quiz-avatar { height: 84px; }
 
   /* Leaderboard — 3D-style podium (match the mock) */
   .podium { display: flex; align-items: flex-end; justify-content: center; gap: 8px; margin: 6px 0 12px; }
@@ -1038,13 +1018,89 @@
     border: 1px solid rgba(120, 90, 50, 0.16);
     box-shadow: 0 16px 36px -16px rgba(90, 60, 25, 0.22), inset 0 1px 0 rgba(255, 255, 255, 0.6);
   }
-  html[data-theme="day"] .rq-stage { border-color: rgba(120, 90, 50, 0.16); background: radial-gradient(ellipse at center, rgba(201, 138, 16, 0.14), rgba(255, 250, 242, 0.5)); }
   html[data-theme="day"] .rq-ring span { background: var(--sunk); }
   html[data-theme="day"] .tb-bar, html[data-theme="day"] .profile-bar { background: rgba(120, 90, 50, 0.16); }
   html[data-theme="day"] .lab-campaign img { border-color: rgba(120, 90, 50, 0.14); }
   html[data-theme="day"] .belts .belt { border-color: rgba(120, 90, 50, 0.18); box-shadow: inset 0 0 0 100px rgba(255, 255, 255, 0.04); }
   html[data-theme="day"] #auth-panel { background: rgba(255, 250, 242, 0.9); }
   html[data-theme="day"] .lab-choice-icon, html[data-theme="day"] .lab-choice-quiz .lab-choice-icon { background: rgba(201, 138, 16, 0.16); border-color: rgba(201, 138, 16, 0.34); color: var(--gold); }
+
+  /* ============================================================
+     Redesign v3 — the quiz avatar is gone (the prompt and belts use
+     the space), Profile actions moved, and a refinement pass.
+     ============================================================ */
+
+  /* Small labels were dark-on-dark / cream-on-cream; gold reads in both themes */
+  .lab-eyebrow { color: var(--gold); font-size: 11px; font-weight: 900; letter-spacing: .16em; }
+
+  /* Header: equal-sized controls, and a row under them for the site line
+     (+ Settings on the Profile screen) */
+  .lab-top { padding: 18px 20px 12px; gap: 8px; }
+  .lab-language { gap: 6px; }
+  .lab-language button, .lab-theme-btn { width: 44px; min-height: 44px; border-radius: 13px; }
+  .lab-theme-btn { padding: 0; display: grid; place-items: center; }
+  .lab-site-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+  .lab-site-row .lab-site { margin-left: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 10.5px; letter-spacing: .08em; }
+  .lab-settings-btn { flex: none; display: inline-flex; align-items: center; gap: 6px; padding: 7px 13px; border-radius: 999px; background: var(--glass-surface-sub); border: 1px solid var(--glass-border); color: var(--ink); font-size: 12px; font-weight: 800; white-space: nowrap; }
+  .lab-settings-btn span { color: var(--gold); font-size: 14px; line-height: 1; }
+
+  /* Ranked question: the route is the hero now */
+  .tb-top { align-items: center; }
+  .tb-bar { height: 6px; margin: 8px 0 12px; }
+  .rq-stake { margin: 0; font-size: 12px; }
+  .rq-prompt { margin: clamp(10px, 2.4dvh, 28px) 0 clamp(8px, 2dvh, 22px); }
+  .rq-service { margin: 0; font-size: clamp(13px, 2dvh, 16px); font-weight: 800; letter-spacing: .14em; }
+  .rq-code { margin: 8px 0 0; font: 900 clamp(60px, 12dvh, 92px)/1 Nunito, "Trebuchet MS", sans-serif; letter-spacing: -.03em; font-variant-numeric: tabular-nums; }
+  #rq-question .lab-study-meta { margin: 0; text-align: center; letter-spacing: .14em; font-weight: 800; }
+  .belts { gap: 10px; margin: 10px 0; }
+  .belts .belt { min-height: clamp(66px, 10.5dvh, 100px); border-radius: 16px; letter-spacing: .06em; box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.22), 0 10px 20px -12px rgba(0, 0, 0, 0.6); }
+  .belts .belt:active { transform: scale(.97); }
+
+  /* Ranked feedback: a verdict mark where the avatar used to be */
+  .rq-mark { width: 56px; height: 56px; margin: 4px auto 0; border-radius: 50%; display: grid; place-items: center; font-size: 26px; font-weight: 900; line-height: 1; }
+  .rq-mark.good { color: var(--good); background: rgba(108, 211, 154, 0.14); border: 1px solid rgba(108, 211, 154, 0.45); }
+  .rq-mark.bad { color: var(--bad); background: rgba(240, 138, 138, 0.14); border: 1px solid rgba(240, 138, 138, 0.45); }
+  .rq-verdict, .rq-worth { text-align: center; }
+  .rq-worth { margin: 0 0 4px; }
+  .rq-verdict { font-size: clamp(26px, 7vw, 32px); }
+  /* On feedback the route is a reminder, not the hero: keep Continue in view */
+  .rq-mark ~ .rq-prompt { margin: 4px 0 2px; }
+  .rq-mark ~ .rq-prompt .rq-code { margin-top: 4px; font-size: clamp(38px, 7dvh, 56px); }
+  .rq-mark ~ .rq-why { margin: 2px 0 4px; }
+
+  /* Practice quiz: same idea — bigger route, no avatar */
+  .quiz-route { margin: clamp(8px, 2.4dvh, 22px) 0; }
+  .quiz-route .p-code { font-size: clamp(48px, min(12.5dvh, 19vw), 92px); }
+  .quiz-actions .stopbtn { background: var(--glass-surface-sub); border: 1px solid var(--glass-border); color: var(--ink); font-weight: 800; }
+  .quiz-timer { border-color: var(--gold); background: var(--sunk); color: var(--ink); }
+  .quiz-cue { text-align: center; letter-spacing: .14em; color: var(--muted); }
+
+  /* Profile: even rhythm, stats read as figures, history centred under the climb */
+  #profile-panel { display: flex; flex-direction: column; gap: 12px; }
+  .pf-stat { padding: 16px 12px; }
+  .pf-stat b { font-size: 26px; letter-spacing: -.02em; font-variant-numeric: tabular-nums; }
+  .pf-stat small { display: block; margin-top: 3px; font-size: 10px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; }
+  .pf-climb { padding: 14px 16px 16px; }
+  .pf-history { align-self: center; min-width: 62%; padding: 13px 28px; border-radius: 999px; }
+
+  /* Home: the notice, shift log and disclaimer follow the theme */
+  .lab-launch { margin-top: 0; border-radius: var(--r-sm); background: var(--soft); border-color: var(--soft-line); }
+  .lab-launch i { background: var(--gold); color: #2a1c10; }
+  .lab-launch p { color: var(--muted); }
+  .lab-log-link { color: var(--ink); padding: 12px 4px; }
+  .lab-log-link span:last-child { color: var(--gold); }
+  .lab-disclaimer { background: transparent; border: 1px solid var(--glass-border-subtle); border-radius: var(--r-sm); color: var(--muted); font-size: 11.5px; }
+  .lab-disclaimer strong { color: var(--ink); }
+
+  /* Dock: the active pill sits inside the bar instead of spilling over it */
+  .lab-nav { height: calc(62px + env(safe-area-inset-bottom)) !important; padding: 0 10px env(safe-area-inset-bottom) !important; gap: 4px !important; }
+  .lab-nav button { min-height: 0 !important; height: 46px; padding: 0 !important; border-radius: 15px !important; font-size: 11px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; }
+  .lab-nav i { margin: 0; font-size: 17px; line-height: 1; }
+  .lab-nav button[aria-current="page"] { box-shadow: 0 6px 16px -6px rgba(244, 189, 56, 0.6) !important; }
+
+  html[data-theme="day"] .rq-mark.good { background: rgba(47, 158, 107, 0.12); border-color: rgba(47, 158, 107, 0.4); }
+  html[data-theme="day"] .rq-mark.bad { background: rgba(201, 82, 74, 0.1); border-color: rgba(201, 82, 74, 0.4); }
+  html[data-theme="day"] .belts .belt { box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.28), 0 10px 18px -12px rgba(90, 60, 25, 0.5); }
 
 </style>
 </head>

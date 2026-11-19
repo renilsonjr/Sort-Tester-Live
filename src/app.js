@@ -219,7 +219,10 @@ function labPage(content, active = 'home', rerender = showStart) {
           <div class="lab-brand"><span class="lab-mark">RJ</span> Sort Lab</div>
           <div class="lab-top-actions">${languageButtons()}${themeButton()}</div>
         </div>
-        <div class="lab-site">UPS Saddle Brook <span aria-hidden="true">·</span> Twilight</div>
+        <div class="lab-site-row">
+          <div class="lab-site">UPS Saddle Brook <span aria-hidden="true">·</span> Twilight</div>
+          ${active === 'profile' ? `<button type="button" class="lab-settings-btn" id="top-settings"><span aria-hidden="true">\u2699</span> ${esc(t('Settings'))}</button>` : ''}
+        </div>
       </header>
       <main class="lab-main">${content}</main>
       <nav class="lab-nav" style="grid-template-columns: repeat(${navTabs().length}, 1fr)" aria-label="${esc(t('Main navigation'))}">
@@ -231,6 +234,7 @@ function labPage(content, active = 'home', rerender = showStart) {
   render(view);
   wireLanguageButtons(view, rerender);
   wireThemeButton(view);
+  view.querySelector('#top-settings')?.addEventListener('click', () => showProfile('settings'));
   view.querySelectorAll('[data-nav]').forEach((button) => button.addEventListener('click', () => {
     if (button.dataset.nav === active) return;
     if (button.dataset.nav === 'practice') showPractice();
@@ -500,11 +504,9 @@ async function fillOverview(panel) {
         ${[...BADGES].reverse().map(([name]) => `<img class="${name === entry.badge ? '' : 'off'}" src="${badgeArt(name)}" alt="${esc(name)}">`).join('')}
       </div>
     </div>
-    <button id="pf-history" class="ghost" type="button">${esc(t('See history'))}</button>
-    <button id="pf-settings" class="auth-link" type="button">${esc(t('Settings'))}</button>
+    <button id="pf-history" class="ghost pf-history" type="button">${esc(t('See history'))}</button>
   `;
   panel.querySelector('#pf-history').addEventListener('click', () => showProfile('history'));
-  panel.querySelector('#pf-settings').addEventListener('click', () => showProfile('settings'));
 }
 
 async function fillHistory(panel) {
@@ -1666,7 +1668,6 @@ async function playRankedAttempt(attempt, mode, tally) {
       <p class="rq-stake">${esc(mode === 'promotion'
         ? `◆ ${t('Promotion')} · ${tally.correctCount} ${t('of')} ${q.seq - 1} ${t('right so far')}`
         : `◆ ${t('Ranked')} · ${t('this attempt counts for points')}`)}</p>
-      <div class="rq-stage">${quizAvatar('thinking')}</div>
       <div id="rq-question"></div>
       <button id="rq-cancel" class="ghost">${esc(t('Cancel this attempt'))}</button>
     </section>
@@ -1737,7 +1738,7 @@ function showRankedFeedback(attempt, mode, q, chosen, response, tally) {
     : (response.outcome === 'timeout' ? t('Time ran out') : t('Review this route'));
   const view = labPage(`
     <section class="lab-screen">
-      <div class="rq-stage">${quizAvatar(right ? 'happy' : 'sad')}</div>
+      <div class="rq-mark ${right ? 'good' : 'bad'}" aria-hidden="true">${right ? '\u2713' : '\u2715'}</div>
       <h1 class="lab-title rq-verdict ${right ? 'good' : 'bad'}">${esc(verdict)}</h1>
       ${mode === 'promotion'
         ? (promoCorrect
@@ -1839,7 +1840,6 @@ function showRankedResult(mode, result, tally, { quit = false, attemptId = null 
     && result.points_after < result.points_before;
   const view = labPage(`
     <section class="lab-screen">
-      <div class="rq-stage rq-stage-sm">${quizAvatar('idle')}</div>
       <p class="lab-eyebrow">${esc(t('Ranked'))} · ${esc(t(quit ? 'attempt ended' : 'attempt finished'))}</p>
       <h1 class="lab-title">${esc(tally.correctCount)} ${esc(t('of'))} 15 ${esc(t('correct'))}</h1>
       ${rankedSum(result, quit)}
@@ -2426,29 +2426,6 @@ function leaveRun() {
   activeDeck = null;
 }
 
-// The approved Blender avatar, rendered to stills. The animated model is
-// 2 MB with its viewer, so it stays out of the question screens, which
-// re-render once per question.
-const AVATAR_POSE = { thinking: 'thinking', happy: 'correct', sad: 'incorrect', idle: 'idle' };
-const AVATAR_STILL = { thinking: 'thinking', happy: 'correct', sad: 'incorrect', idle: 'idle' };
-
-function quizAvatar(mood) {
-  const label = mood === 'thinking' ? 'Blue mascot thinking with a question mark'
-    : mood === 'happy' ? 'Happy blue mascot'
-    : mood === 'idle' ? 'Blue mascot'
-    : 'Sad blue mascot';
-  // The approved animated Blender avatar (Three.js viewer) over a transparent
-  // background, driven by the ?state= pose. A matching 2D still sits behind it:
-  // where the 3D renders (desktop, most phones) it draws over the still; where
-  // WebGL/3D fails to start (seen on some iOS Safari), the transparent canvas
-  // leaves the still showing, so the character is never a blank box.
-  return `<div class="rq-ava">
-    <img class="rq-ava-still" src="assets/avatar-${AVATAR_STILL[mood]}.png" alt="${esc(t(label))}">
-    <iframe class="quiz-avatar3d" title="${esc(t(label))}" scrolling="no"
-      src="assets/avatar3d/embed.html?state=${AVATAR_POSE[mood]}"></iframe>
-  </div>`;
-}
-
 function quizHeader(cardNumber, total, withTimer = false) {
   return `<div class="quiz-top">
     <div class="quiz-topline"><span class="progress">${activeDeck ? esc(activeDeck.sort) : 'Twilight'}</span>${languageButtons()}</div>
@@ -2535,7 +2512,6 @@ function showCard() {
   const view = el(`
     <section class="screen quiz-card">
       ${quizHeader(cardIndex + 1, run.cards.length, true)}
-      ${quizAvatar('thinking')}
       <div class="quiz-route">
         <div class="p-line">${esc(serviceName(card.svc, card.destinationModifier))} &middot; ${esc(card.state)}</div>
         <div class="p-code">${renderRoutingCode(card.code)}</div>
@@ -2561,7 +2537,6 @@ function showCard() {
     view.querySelector('#cancel').textContent = t('Cancel');
     view.querySelector('.p-line').textContent = `${serviceName(card.svc, card.destinationModifier)} · ${card.state}`;
     view.querySelector('.quiz-cue').textContent = t('Where does this go?');
-    view.querySelector('.quiz-avatar').alt = t('Blue mascot thinking with a question mark');
     view.querySelector('#ring').setAttribute('aria-label', `${t('Time to choose')}: ${Math.ceil(clock.remaining() / 1000)}`);
     view.querySelector('#bail h1').textContent = t('Test stopped');
     view.querySelector('#bail .sub').textContent = t('Nothing is saved until a test is finished, so leaving now records nothing.');
@@ -2642,7 +2617,6 @@ function showFeedback(response) {
   const view = el(`
     <section class="screen quiz-feedback ${right ? 'good' : 'bad'}">
       ${quizHeader(run.index, run.cards.length)}
-      ${quizAvatar(right ? 'happy' : 'sad')}
       <h1 class="verdict" id="verdict" tabindex="-1">${esc(t(verdict))}</h1>
       <div class="quiz-route">
         <div class="p-line">${esc(serviceName(response.svc, response.destinationModifier))} &middot; ${esc(response.state)}</div>
