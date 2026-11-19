@@ -41,12 +41,28 @@ class PoolTests(unittest.TestCase):
         self.addCleanup(pool.close_pool)
 
     def test_a_released_connection_is_handed_out_again(self):
-        # the point of the whole thing: without a pool these are two
-        # different objects, because each one opened its own connection
-        with pool.checkout() as first:
-            first_id = id(first)
-        with pool.checkout() as second:
-            self.assertEqual(id(second), first_id)
+        # The point of the whole thing: without a pool, each checkout
+        # opens its own connection, so twenty of them would be twenty
+        # different objects. With one, they come from a fixed set.
+        #
+        # This used to compare two consecutive checkouts and require the
+        # same object back, which the pool does not promise: it takes
+        # from the left of its queue and returns to the right, so with
+        # two connections in hand, consecutive checkouts are *different*
+        # objects by construction. The pool opens its minimum connection
+        # on a background thread, and the assertion only held while that
+        # thread had not got there yet -- it was winning a race, not
+        # guarding a contract. Moving this job to Linux lost the race and
+        # said so, on a test that had been green for months.
+        borrowed = []
+        for _ in range(20):
+            with pool.checkout() as conn:
+                # Kept referenced, so no id() can be reused by a later
+                # object and quietly undercount the distinct connections.
+                borrowed.append(conn)
+        distinct = {id(conn) for conn in borrowed}
+        self.assertLessEqual(len(distinct), pool.MAX_SIZE)
+        self.assertLess(len(distinct), len(borrowed))
 
     def test_init_pool_twice_does_not_build_a_second_pool(self):
         # it is called from app startup and defensively from checkout, so

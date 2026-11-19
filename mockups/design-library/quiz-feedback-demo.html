@@ -176,9 +176,6 @@
       <div id="progress-fill" style="width: 27%;"></div>
     </div>
 
-    <div class="avatar-stage">
-      <iframe id="avatar" src="blender-avatar/embed.html?state=thinking" title="Avatar oficial animado" tabindex="-1"></iframe>
-    </div>
 
     <div class="quiz-content" id="quiz-content">
       <!-- Injetado via script -->
@@ -313,20 +310,10 @@ $('#toggle-bgm').onclick = () => {
   }
 };
 
-function sendAvatar(state, extra = {}) {
-  $('#avatar').contentWindow?.postMessage({
-    type: 'quiz-avatar',
-    state: state,
-    still: $('#still').checked,
-    ...extra
-  }, '*');
-}
-
 const chip = b => `<span class="chip" style="background:${BELT_STYLE[b].bg};color:${BELT_STYLE[b].fg}">${b}</span>`;
 const route = () => '<div class="route-service">Ground · SÃO PAULO</div><div class="route-code">000–009</div><div class="sample-label">Fictional route · Appearance review only</div>';
 
 function renderQuestion() {
-  sendAvatar('thinking');
   $('#step').textContent = 'Question 4 of 15';
   $('#timer').textContent = '15';
   $('#timer').classList.remove('expired');
@@ -363,11 +350,9 @@ function handleAnswer(buttonEl, chosenBelt) {
   if (isCorrect) {
     buttonEl.classList.add('belt-correct');
     playCorrectSfx();
-    sendAvatar('correct');
   } else {
     buttonEl.classList.add('belt-incorrect');
     playIncorrectSfx();
-    sendAvatar('incorrect');
   }
 
   // Avança para tela de feedback
@@ -400,10 +385,8 @@ function renderFeedback(good, chosenBelt) {
 }
 
 // Inicialização
-$('#avatar').addEventListener('load', () => sendAvatar('thinking'));
 const media = matchMedia('(prefers-reduced-motion: reduce)');
 $('#still').checked = media.matches;
-$('#still').onchange = () => sendAvatar('thinking');
 
 // Renderiza a pergunta
 renderQuestion();

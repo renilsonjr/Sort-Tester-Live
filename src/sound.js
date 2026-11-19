@@ -55,11 +55,48 @@ export function getAudioContext() {
       audioCtx = new AudioContextClass();
     }
   }
-  if (audioCtx && audioCtx.state === 'suspended') {
-    audioCtx.resume().catch(() => {});
+  // 'suspended' is how a context starts; iOS also parks it as 'interrupted'
+  // after a call or an app switch. Anything but 'running' needs a resume.
+  if (audioCtx && audioCtx.state !== 'running' && typeof audioCtx.resume === 'function') {
+    try {
+      audioCtx.resume()?.catch?.(() => {});
+    } catch {
+      // Nothing to do: the next tap tries again.
+    }
   }
   return audioCtx;
 }
+
+// iOS Safari starts (and resumes) audio only inside a user gesture. The quiz
+// plays its feedback sound after the tap is over — Ranked waits for the server
+// to say whether the answer was right — so a context first touched there stays
+// silent for ever. Every tap therefore opens the audio itself, synchronously:
+// create/resume the context and start a one-sample silent buffer, which is
+// what iOS takes as "this page plays sound". Once it is running a tap costs
+// one comparison.
+export function unlockAudio() {
+  if (!soundEnabled) return;
+  if (audioCtx && audioCtx.state === 'running') return;
+  const ctx = getAudioContext();
+  if (!ctx) return;
+  try {
+    const source = ctx.createBufferSource();
+    source.buffer = ctx.createBuffer(1, 1, 22050);
+    source.connect(ctx.destination);
+    source.start(0);
+  } catch {
+    // Graceful degrade if audio is unavailable
+  }
+}
+
+export function installAudioUnlock(target) {
+  if (!target || typeof target.addEventListener !== 'function') return;
+  for (const type of ['pointerdown', 'touchend', 'keydown']) {
+    target.addEventListener(type, unlockAudio, { capture: true, passive: true });
+  }
+}
+
+if (typeof document !== 'undefined') installAudioUnlock(document);
 
 export function playTone(freq, type = 'sine', duration = 0.15, delay = 0, gainLevel = 0.15) {
   if (!soundEnabled) return;
