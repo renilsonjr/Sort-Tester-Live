@@ -444,6 +444,10 @@
   .rq-cmp { display: flex; flex-direction: column; gap: 8px; margin: 10px 0; }
   .rq-cmp > div { display: flex; justify-content: space-between; align-items: center; gap: 10px; border: 1px solid var(--line); border-radius: 12px; padding: 8px 12px; font-size: 13px; }
   .rq-cmp .chip { padding: 5px 10px; border-radius: 999px; font-weight: 900; font-size: 12px; letter-spacing: .03em; }
+  /* The BLACK belt is pure #000 and vanishes on the dark app background;
+     give it a light ring so the chip reads as a swatch, not a hole. */
+  [data-belt="BLACK"] { box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.55); }
+  html[data-theme="day"] [data-belt="BLACK"] { box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.25); }
   .rq-why { color: var(--muted); font-size: 13px; line-height: 1.5; margin: 6px 0 14px; }
   .sum { display: flex; flex-direction: column; gap: 8px; margin: 10px 0; border: 1px solid var(--line); border-radius: 15px; padding: 12px 14px; background: var(--panel); }
   .sum > div { display: flex; justify-content: space-between; font-size: 14px; }

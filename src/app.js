@@ -252,7 +252,7 @@ function stopTick() {
 
 function beltChip(belt, className) {
   const style = BELT_STYLE[belt];
-  return `<div class="${className}" style="background:${style.bg};color:${style.fg}">${belt}</div>`;
+  return `<div class="${className}" data-belt="${esc(belt)}" style="background:${style.bg};color:${style.fg}">${belt}</div>`;
 }
 
 // Practice: the two ways of practising, together under one tab. Neither
@@ -1797,7 +1797,7 @@ function rankedSum(result, quit) {
 
 function rqChip(belt) {
   const style = BELT_STYLE[belt] || { bg: '#333', fg: '#fff' };
-  return `<span class="chip" style="background:${style.bg};color:${style.fg}">${esc(belt)}</span>`;
+  return `<span class="chip" data-belt="${esc(belt)}" style="background:${style.bg};color:${style.fg}">${esc(belt)}</span>`;
 }
 
 // Quit (built to the screens approved in #17). Quitting costs the partial
