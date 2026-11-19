@@ -78,19 +78,22 @@ jobs:
           backend/.venv/bin/python -m pip install -r backend/requirements.txt
           backend/.venv/bin/python -m pip check
 
-      - name: Pin the PostgreSQL client to the server's major (16)
+      - name: Install the PostgreSQL 16 client to match the server
         run: |
           set -euo pipefail
-          # Ubuntu's default pg_dump/pg_restore are the newest client major
-          # installed (17), which emits `SET transaction_timeout = 0;` -- a
-          # GUC that does not exist before 17. Restoring that into the 16
-          # service container errors, and pg_restore then exits non-zero, so
-          # the dump/restore test fails. Put the matching 16 client, shipped
-          # with the runner's own 16 server, ahead of it on PATH. $GITHUB_PATH
-          # prepends, so psql, pg_dump and pg_restore resolve to 16 below.
+          # The runner's default pg_dump/pg_restore is a newer client major
+          # (17), which emits `SET transaction_timeout = 0;` -- a GUC that
+          # does not exist before 17. Restoring that into the 16 service
+          # container errors; pg_restore then exits non-zero and the
+          # dump/restore round-trip test fails. The 16 client is not on the
+          # image, so install it (from the PGDG repo the runner already has)
+          # and put it ahead on PATH. $GITHUB_PATH prepends, so psql, pg_dump
+          # and pg_restore all resolve to 16 for the steps below.
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends postgresql-client-16
           bindir=/usr/lib/postgresql/16/bin
           test -x "$bindir/pg_restore" || {
-            echo "Expected the PostgreSQL 16 client at $bindir."; exit 1
+            echo "Expected the PostgreSQL 16 client at $bindir after install."; exit 1
           }
           echo "$bindir" >> "$GITHUB_PATH"
 
