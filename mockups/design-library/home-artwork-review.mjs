@@ -2,7 +2,6 @@ const $ = selector => document.querySelector(selector);
 function update() {
  const guest = $('#visitor').value === 'guest';
  $('#campaign').hidden = $('#visual').value !== 'art';
- $('#original-avatar').hidden = $('#visual').value !== 'avatar';
  $('#home-eyebrow').textContent = guest ? 'Guest practice' : 'Welcome back, parcel_fox';
  document.querySelectorAll('[data-member]').forEach(el => el.hidden = guest);
  document.querySelectorAll('[data-guest]').forEach(el => el.hidden = !guest);
