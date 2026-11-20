@@ -5,8 +5,10 @@ including "re-apply deletions". On 2026-11-20 a third restore was re-applied
 from the **real deletion list**: the command in step 4 named the one account
 deleted after the restore point, and that id and time alone were enough to
 erase it again. The same day a fourth restore was served by the staging app
-(step 5) and then rolled back. The steps have **not** been run together as one
-recovery, and never on the pilot environment. Not approved for a pilot with
+(step 5) and then rolled back. A fifth run did steps 1 to 5 **in sequence**
+as one recovery, in 17 min 33 s, with the deletion re-applied from the real
+list before the app was switched. Nothing has been run on the pilot
+environment. Not approved for a pilot with
 employee data until the items under "Still open" are done.
 Related: [[db-runtime-role]], [[shared-resource-locks]],
 [[../../docs/superpowers/specs/2026-11-07-ranked-decision-record]].
@@ -32,11 +34,19 @@ promise made to players (Decision 14).
 | Restore duration, run 4 | 7 min 08 s |
 | Restore-point lag accepted by Azure | 98 s |
 | Run 4: restore start to app confirmed on the restored data | 20 min 06 s |
+| Restore duration, run 5 | 7 min 08 s |
+| **Run 5: steps 1 to 5 in sequence, restore start to app confirmed** | **17 min 33 s** |
 
 Near-empty staging database. A third restore (2026-11-20, real-list rehearsal)
 succeeded but its end time was not captured. The 20 minutes include the
 operator pasting each command by hand and **exclude** steps 2 to 4, which run
-4 skipped. Durations will grow with data. The owner approved the targets on
+4 skipped.
+
+Run 5 by stage: restore 7 min 08 s; open to the operator, check, read the list
+2 min 28 s; re-apply and verify 3 min 31 s; close, endpoint, DNS, new revision
+3 min 47 s; new revision answering 39 s. One deletion to re-apply, commands
+pasted by hand as three prepared blocks. Durations will grow with data and
+with the number of deletions. The owner approved the targets on
 2026-11-20: at most 15 minutes of accepted data loss, at most 1 hour to
 restore. They are rollout targets, not guarantees: the 1 hour has not been
 measured end to end, and never with pilot-sized data.
@@ -163,19 +173,26 @@ Limits of this step, stated plainly:
 
 ## Step 5 — only then, let the app use it
 
-Rehearsed on staging on 2026-11-20 (run 4), without steps 2 to 4 before it.
+Rehearsed on staging on 2026-11-20: run 4 without steps 2 to 4 before it,
+run 5 after them.
 
-**5a. Close what step 2 opened.** Not rehearsed together with the rest of
-this step. Remove the operator firewall rule, set public access back to
-`Disabled`, and read both back before going on:
+**5a. Close what step 2 opened.** Remove the operator firewall rule and read
+the rule list **while public access is still on**, then set public access
+back to `Disabled` and read that back:
 
 ```sh
 unset PGPASSWORD
 az postgres flexible-server firewall-rule delete -g $RG -s $T --name operator-temp --yes
-az postgres flexible-server update -g $RG -n $T --public-access Disabled -o none
 az postgres flexible-server firewall-rule list -g $RG -s $T -o table
+az postgres flexible-server update -g $RG -n $T --public-access Disabled -o none
 az postgres flexible-server show -g $RG -n $T --query "network.publicNetworkAccess" -o tsv
 ```
+
+The order matters. Azure refuses to list firewall rules once public access is
+off (`Firewall rule operations are not supported for a server without public
+access enabled`), so a list run afterwards prints an error and proves
+nothing. Run 5 ran them in the wrong order: `Disabled` was read back, the
+rule's removal was not. The order above has not been run.
 
 **5b. Give the restored server a private endpoint and a private name.** The
 existing endpoint and DNS record of the source server are not touched.
@@ -304,7 +321,8 @@ is still reachable, check each listed account there before re-applying.
 ## Still open
 
 - Deletion list: watch one note expire. The emergency read procedure has never been run.
-- One recovery with steps 1 to 5 in sequence, timed end to end (step 5a has not been run after a real step 2).
+- Step 5a in the corrected order (rule list read before public access is turned off).
+- A recovery with more than one deletion to re-apply, and with realistic data size.
 - Bringing the templates back in line after a real recovery.
 - Run the whole runbook on the separate pilot environment.
 - Geo-redundant backup (only settable when a server is created).
