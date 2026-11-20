@@ -98,37 +98,66 @@ class SingleOriginAppTemplateTests(unittest.TestCase):
         self.assertNotRegex(self.code, r"param imageSha256 string\s*=")
         self.assertNotRegex(self.code, r"image:\s*'[^']*:latest'")
 
-    def test_secrets_are_secure_parameters_never_literals(self):
-        self.assertRegex(self.code, r"@secure\(\)\s*\nparam databaseUrl string")
-        # Secrets reach the container by reference, not as plain values.
-        self.assertIn("secretRef: 'database-url'", self.code)
-        self.assertNotIn("postgresql://", self.code)
+    def test_the_app_signs_in_to_the_database_as_its_identity(self):
+        # issue #84: no database password exists, so the template has none
+        # to carry. The app fetches a token as the runtime identity.
+        for fragment in (
+            "name: 'SORT_TESTER_DB_AUTH'\n              value: 'managed_identity'",
+            "name: 'SORT_TESTER_DB_IDENTITY_CLIENT_ID'",
+            "value: runtimeIdentityClientId",
+            "param runtimeIdentityClientId string",
+        ):
+            self.assertIn(fragment, self.code)
 
-    def test_the_database_url_can_come_from_the_vault(self):
-        # audit §3 P0-1: stored in the app's own configuration, the URL is
-        # readable by anyone with Contributor on the resource group. Held in
-        # the vault, the configuration carries only the address, and seeing
-        # the URL needs data access to the vault -- a separate grant.
-        self.assertIn("param databaseUrlSecretUri string = ''", self.code)
-        self.assertIn("keyVaultUrl: databaseUrlSecretUri", self.code)
-        # fetched as the runtime identity, which already holds Secrets User
-        self.assertRegex(
+    def test_the_database_url_is_built_here_and_holds_no_password(self):
+        # One fixed shape, written once: user@host, never user:password@host.
+        # Read from the source: stripping `//` comments would cut the URL.
+        self.assertIn(
+            "var databaseUrl = 'postgresql://${runtimeIdentityName}@"
+            "${databaseServerName}.postgres.database.azure.com:5432/${databaseName}"
+            "?sslmode=verify-full&sslrootcert=system'",
+            self.source,
+        )
+        self.assertEqual(self.source.count("postgresql://"), 1)
+        self.assertNotRegex(self.source, r"postgresql://[^@'\s]*:[^@'\s]*@")
+        # the role is named after the identity, so the user is derived from it
+        self.assertIn(
+            "var runtimeIdentityName = last(split(runtimeIdentityId, '/'))", self.code
+        )
+        self.assertIn(
+            "name: 'SORT_TESTER_DATABASE_URL'\n              value: databaseUrl",
             self.code,
-            r"keyVaultUrl: databaseUrlSecretUri\s*\n\s*identity: runtimeIdentityId",
         )
 
-    def test_the_vault_path_and_the_inline_path_are_exclusive(self):
-        # one secret, filled one way or the other. Two entries of the same
-        # name, or a vault URI alongside a value, is a deployment whose
-        # behaviour depends on which Azure happens to prefer.
-        self.assertIn("empty(databaseUrlSecretUri) ?", self.code)
-        self.assertEqual(self.code.count("name: 'database-url'"), 2)
-        self.assertEqual(self.code.count("value: databaseUrl"), 1)
+    def test_certificate_checking_cannot_be_dropped_from_the_url(self):
+        # #84: without sslrootcert=system libpq looks for a file the image
+        # does not have and every connection fails.
+        self.assertIn("sslmode=verify-full&sslrootcert=system", self.source)
 
-    def test_the_inline_url_is_optional_so_it_need_not_be_deployed_at_all(self):
-        # the point of the vault path: on a vault deployment the URL is not
-        # a parameter, so it is in no deployment history and no params file
-        self.assertIn("param databaseUrl string = ''", self.code)
+    def test_the_old_password_path_is_gone(self):
+        # the way back was removed by owner decision on 2026-11-20: the
+        # database role it needs can no longer log in.
+        for gone in (
+            "@secure()",
+            "secrets:",
+            "secretRef",
+            "keyVaultUrl",
+            "databaseUrlSecretUri",
+            "param databaseUrl",
+            "database-url",
+        ):
+            self.assertNotIn(gone, self.code)
+
+    def test_the_deletion_list_is_required(self):
+        # issue #13: signing in as an identity, the app refuses to start
+        # without the list. A parameter with no default makes forgetting it
+        # a failed deployment instead of a crashed app.
+        self.assertRegex(self.code, r"param deletionListUrl string\s*\n")
+        self.assertNotRegex(self.code, r"param deletionListUrl string\s*=")
+        self.assertIn(
+            "name: 'SORT_TESTER_DELETION_LIST_URL'\n              value: deletionListUrl",
+            self.code,
+        )
 
     def test_the_image_is_pulled_by_identity_and_not_by_a_token(self):
         # audit H-5: the old GHCR token was account-scoped, so it could read

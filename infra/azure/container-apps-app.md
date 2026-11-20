@@ -375,8 +375,22 @@ az deployment group what-if \
                imageSha256=<digest from step 2> \
                registryServer=<acr-name>.azurecr.io \
                runtimeIdentityId=<runtimeIdentityId from runtime-identity.bicep> \
-               databaseUrl=<url from step 1>
+               runtimeIdentityClientId=<runtimeClientId from runtime-identity.bicep> \
+               databaseServerName=<server, without the domain> \
+               deletionListUrl=<deletionListUrl from deletion-list-storage.bicep> \
+               appOrigin=<the app's own https origin> \
+               appSubnetId=<appSubnetId from network.bicep>
 ```
+
+**Parameters changed on 2026-11-20.** The template now describes what staging
+actually runs since #84: the app signs in to its database as its managed
+identity, so there is no database password and no secret. The template builds
+the connection string itself from `databaseServerName` and `databaseName`
+(default `sort_tester_app`), and `deletionListUrl` is required. The old
+`databaseUrl` and `databaseUrlSecretUri` parameters **no longer exist**; the
+commands in §5b, §5c and §9b that pass them are the record of how staging got
+here, not something to run again. A second environment adds
+`environmentSuffix=pilot` and `dataClassification=employee-pilot`.
 
 On a **re**deployment the summary is `2 to modify` instead: the app (image and
 settings) and the environment, whose two `-` lines (`mtls.enabled: false`,
@@ -586,6 +600,9 @@ force and what that means for the next migration.
 
 ### 5b. Create the app
 
+> **Historical since 2026-11-20.** This section passes `databaseUrl`, which the
+> template no longer accepts. Use the parameter list in §4.
+
 ```sh
 az deployment group create \
   --name sort-tester-app-staging \
@@ -677,6 +694,9 @@ previous template — which is why §3 says to revoke the token *after* step 6
 and not before.
 
 ### 5c. Move the database URL into the vault (audit §3 P0-1)
+
+> **Historical since 2026-11-20.** The URL no longer holds a password (#84)
+> and the template has no vault path. Kept as the record of what was done.
 
 Until this is done the URL, password and all, is stored in the container
 app's own configuration. Anyone with Contributor on the resource group can
@@ -809,8 +829,9 @@ fails with `unrecognized arguments`, and the role stays in place.
 Chain the confirmation with `&&`, not `;`: a `;` runs the "removed" message
 even when the delete failed.
 
-Rollback: redeploy passing `databaseUrl` and leaving `databaseUrlSecretUri`
-empty. That is the whole reason the inline path is still in the template, and
+Rollback (historical; the template no longer has either parameter, and the
+password role can no longer log in): redeploy passing `databaseUrl` and
+leaving `databaseUrlSecretUri` empty. That is the whole reason the inline path is still in the template, and
 it is why the write role comes off last — rebuilding the secret needs it.
 
 ## 6. Check what was deployed
