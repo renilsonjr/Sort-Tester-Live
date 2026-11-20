@@ -36,8 +36,10 @@ promise made to players (Decision 14).
 Near-empty staging database. A third restore (2026-11-20, real-list rehearsal)
 succeeded but its end time was not captured. The 20 minutes include the
 operator pasting each command by hand and **exclude** steps 2 to 4, which run
-4 skipped. Durations will grow with data. The proposed targets (≤15 min data loss, ≤1 h
-restore) are still unapproved.
+4 skipped. Durations will grow with data. The owner approved the targets on
+2026-11-20: at most 15 minutes of accepted data loss, at most 1 hour to
+restore. They are rollout targets, not guarantees: the 1 hour has not been
+measured end to end, and never with pilot-sized data.
 
 ## Before you start
 
@@ -306,5 +308,4 @@ is still reachable, check each listed account there before re-applying.
 - Bringing the templates back in line after a real recovery.
 - Run the whole runbook on the separate pilot environment.
 - Geo-redundant backup (only settable when a server is created).
-- Owner approval of the data-loss and restore-time targets.
 - Player-facing wording about the 7-day completion delay.
