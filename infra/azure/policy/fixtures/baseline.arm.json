@@ -34,7 +34,9 @@
       "properties": {
         "issuer": "https://token.actions.githubusercontent.com",
         "subject": "[parameters('federatedSubject')]",
-        "audiences": ["api://AzureADTokenExchange"]
+        "audiences": [
+          "api://AzureADTokenExchange"
+        ]
       }
     },
     {
@@ -64,6 +66,30 @@
               "image": "[format('{0}/{1}@sha256:{2}', parameters('registryServer'), parameters('imageRepository'), parameters('imageSha256'))]"
             }
           ]
+        }
+      }
+    },
+    {
+      "type": "Microsoft.Storage/storageAccounts",
+      "apiVersion": "2024-01-01",
+      "name": "[format('stsortdel{0}', uniqueString(resourceGroup().id))]",
+      "properties": {
+        "allowSharedKeyAccess": false,
+        "allowBlobPublicAccess": false,
+        "publicNetworkAccess": "Disabled"
+      }
+    },
+    {
+      "type": "Microsoft.Storage/storageAccounts/blobServices",
+      "apiVersion": "2024-01-01",
+      "name": "[format('{0}/{1}', format('stsortdel{0}', uniqueString(resourceGroup().id)), 'default')]",
+      "properties": {
+        "isVersioningEnabled": false,
+        "deleteRetentionPolicy": {
+          "enabled": false
+        },
+        "containerDeleteRetentionPolicy": {
+          "enabled": false
         }
       }
     }

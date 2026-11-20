@@ -52,6 +52,10 @@ class UnsafeFixture(unittest.TestCase):
                 "keyvault-soft-delete",
                 "no-broad-role",
                 "oidc-issuer",
+                "storage-shared-key-off",
+                "storage-anon-access-off",
+                "storage-public-network-off",
+                "blob-no-retained-copies",
             },
         )
 
@@ -160,6 +164,58 @@ class IndividualInvariants(unittest.TestCase):
         self.assertEqual(_rules(vault(True, True)), set())
         self.assertIn("keyvault-rbac", _rules(vault(False, True)))
         self.assertIn("keyvault-soft-delete", _rules(vault(True, False)))
+
+    def test_storage_account_keys_anonymous_and_network(self):
+        def account(**props):
+            safe = {
+                "allowSharedKeyAccess": False,
+                "allowBlobPublicAccess": False,
+                "publicNetworkAccess": "Disabled",
+            }
+            safe.update(props)
+            properties = {key: value for key, value in safe.items() if value is not None}
+            return {
+                "resources": [
+                    {"type": "Microsoft.Storage/storageAccounts", "name": "st", "properties": properties}
+                ]
+            }
+
+        self.assertEqual(_rules(account()), set())
+        self.assertEqual(_rules(account(allowSharedKeyAccess=True)), {"storage-shared-key-off"})
+        self.assertEqual(_rules(account(allowBlobPublicAccess=True)), {"storage-anon-access-off"})
+        self.assertEqual(_rules(account(publicNetworkAccess="Enabled")), {"storage-public-network-off"})
+        # absence is a platform default nobody reviewed
+        self.assertEqual(_rules(account(allowSharedKeyAccess=None)), {"storage-shared-key-off"})
+        self.assertEqual(_rules(account(allowBlobPublicAccess=None)), {"storage-anon-access-off"})
+        self.assertEqual(_rules(account(publicNetworkAccess=None)), {"storage-public-network-off"})
+
+    def test_blob_service_keeps_no_recoverable_copies(self):
+        def service(properties):
+            return {
+                "resources": [
+                    {
+                        "type": "Microsoft.Storage/storageAccounts/blobServices",
+                        "name": "st/default",
+                        "properties": properties,
+                    }
+                ]
+            }
+
+        off = {
+            "isVersioningEnabled": False,
+            "deleteRetentionPolicy": {"enabled": False},
+            "containerDeleteRetentionPolicy": {"enabled": False},
+        }
+        self.assertEqual(_rules(service(off)), set())
+        for key, unsafe in (
+            ("isVersioningEnabled", True),
+            ("deleteRetentionPolicy", {"enabled": True, "days": 7}),
+            ("containerDeleteRetentionPolicy", {"enabled": True, "days": 7}),
+        ):
+            with self.subTest(key=key):
+                self.assertEqual(_rules(service({**off, key: unsafe})), {"blob-no-retained-copies"})
+                missing = {name: value for name, value in off.items() if name != key}
+                self.assertEqual(_rules(service(missing)), {"blob-no-retained-copies"})
 
     def test_broad_role_assignment_rejected(self):
         def assignment(guid):
