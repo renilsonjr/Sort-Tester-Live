@@ -1,9 +1,10 @@
 // Single-origin app on Azure Container Apps (issue #41).
 //
 // One container serves the frontend and /api (see backend/main.py) and
-// connects to the PostgreSQL Flexible Server that already exists in this
-// resource group. The template creates NOTHING else: no database server,
-// no Log Analytics, no networking. Fictional data only.
+// connects to a PostgreSQL Flexible Server that already exists, signing in
+// as its own managed identity (issue #84). The template creates NOTHING
+// else: no database server, no Log Analytics, no networking. The defaults
+// describe the fictional-data staging.
 //
 // The database schema is NOT created here. Run the guarded migration
 // first: python -m backend.db.upgrade_app --confirm <database>
@@ -41,12 +42,20 @@ param imageRepository string = 'sort-tester-live-app'
 @description('Resource id of the user-assigned identity that pulls the image, from runtime-identity.bicep. It holds AcrPull on that registry and nothing wider (audit H-5).')
 param runtimeIdentityId string
 
-@description('postgresql:// URL of the application database, already migrated. Leave empty and give databaseUrlSecretUri instead: the URL is then never part of a deployment at all. Kept only as the way back while the vault path is being proven (audit §3 P0-1).')
-@secure()
-param databaseUrl string = ''
+@description('Client id of that same identity, from runtime-identity.bicep\'s runtimeClientId output. The app signs in to its database as this identity (issue #84): there is no database password anywhere in this template.')
+@minLength(36)
+@maxLength(36)
+param runtimeIdentityClientId string
 
-@description('Versionless Key Vault URI of the secret holding that URL, such as https://<vault>.vault.azure.net/secrets/database-url. Given, the app reads the URL from the vault as the runtime identity, and its own configuration holds only this address (audit §3 P0-1). Versionless so a rotated secret is picked up without a redeployment.')
-param databaseUrlSecretUri string = ''
+@description('Name of the PostgreSQL Flexible Server, without the domain. The server must already hold a role named after the runtime identity (db-runtime-role.md).')
+param databaseServerName string
+
+@description('Name of the application database on that server, already migrated.')
+param databaseName string = 'sort_tester_app'
+
+@description('Container URL of the deletion list, from deletion-list-storage.bicep\'s deletionListUrl output. Required: signing in as an identity, the app refuses to start without it, so that a restore can never silently lose a player\'s deletion (issue #13).')
+@minLength(8)
+param deletionListUrl string
 
 @description('Public origin, such as https://example.com, once it is known. Empty is correct on the first deployment: writes are then checked against the app own ingress host.')
 param appOrigin string = ''
@@ -66,6 +75,14 @@ param minReplicas int = 1
 
 // The tag kept its long form for staging so existing resources do not change.
 var environmentTag = environmentSuffix == 'stg' ? 'staging' : environmentSuffix
+
+// The database role is named after the identity, so the user in the URL is the
+// identity's own name. The URL holds no password: the app fetches a short-lived
+// token as that identity and presents it instead. `sslrootcert=system` is not
+// optional -- without it libpq looks for a certificate file the image does not
+// have and every connection fails (found the hard way in #84).
+var runtimeIdentityName = last(split(runtimeIdentityId, '/'))
+var databaseUrl = 'postgresql://${runtimeIdentityName}@${databaseServerName}.postgres.database.azure.com:5432/${databaseName}?sslmode=verify-full&sslrootcert=system'
 
 var appTags = {
   project: 'sort-tester-live'
@@ -125,26 +142,8 @@ resource app 'Microsoft.App/containerApps@2025-01-01' = {
         targetPort: 8000
         transport: 'auto'
       }
-      // One secret, two ways of filling it. With a vault URI the app's own
-      // configuration holds only that address, so reading the configuration
-      // reveals nothing: seeing the URL then needs data access to the vault,
-      // which is a separate grant (audit §3 P0-1). Without one the URL is
-      // stored in the configuration as before -- the way back, kept until
-      // the vault path has been through a deployment.
-      //
-      // Both empty is an operator mistake the template cannot refuse: the
-      // app starts with no database URL and exits on its own configuration
-      // check. §5c says to read the what-if's secrets block before deploying.
-      secrets: [
-        empty(databaseUrlSecretUri) ? {
-          name: 'database-url'
-          value: databaseUrl
-        } : {
-          name: 'database-url'
-          keyVaultUrl: databaseUrlSecretUri
-          identity: runtimeIdentityId
-        }
-      ]
+      // No secrets block: nothing here is secret. The database URL carries
+      // no password, and the image is pulled by identity.
       registries: [
         {
           server: registryServer
@@ -164,7 +163,7 @@ resource app 'Microsoft.App/containerApps@2025-01-01' = {
           env: [
             {
               name: 'SORT_TESTER_DATABASE_URL'
-              secretRef: 'database-url'
+              value: databaseUrl
             }
             {
               // The ingress terminates TLS, so the session cookie is Secure.
@@ -178,6 +177,20 @@ resource app 'Microsoft.App/containerApps@2025-01-01' = {
             {
               name: 'SORT_TEST_TRUST_PROXY'
               value: trustedProxies
+            }
+            {
+              name: 'SORT_TESTER_DB_AUTH'
+              value: 'managed_identity'
+            }
+            {
+              // Which identity to ask a token for; the container could hold
+              // more than one.
+              name: 'SORT_TESTER_DB_IDENTITY_CLIENT_ID'
+              value: runtimeIdentityClientId
+            }
+            {
+              name: 'SORT_TESTER_DELETION_LIST_URL'
+              value: deletionListUrl
             }
           ]
           probes: [
