@@ -60,6 +60,12 @@ param deletionListUrl string
 @description('Public origin, such as https://example.com, once it is known. Empty is correct on the first deployment: writes are then checked against the app own ingress host.')
 param appOrigin string = ''
 
+@description('Custom host name already bound to this app, such as play.example.com. Empty means none. Once a domain is bound it MUST be passed on every deployment together with customDomainCertificateName: a deployment that leaves it out removes the domain from the app (seen on staging, 2026-11-20).')
+param customDomainName string = ''
+
+@description('Name of the managed certificate that already exists in this environment for that host name, as `az containerapp env certificate list` shows it. The first binding is done by command line, which creates the certificate; this template only keeps the binding in place.')
+param customDomainCertificateName string = ''
+
 @description('Resource id of the subnet the environment is injected into, from network.bicep\'s appSubnetId output (audit H-4). Empty keeps the old public-only environment, which can reach the database only through a public firewall rule.')
 param appSubnetId string = ''
 
@@ -141,6 +147,16 @@ resource app 'Microsoft.App/containerApps@2025-01-01' = {
         allowInsecure: false
         targetPort: 8000
         transport: 'auto'
+        // Azure replaces this whole block on every deployment, so a domain
+        // that is not written here is unbound. The certificate itself is a
+        // separate resource and survives; only the binding is lost.
+        customDomains: empty(customDomainName) ? [] : [
+          {
+            name: customDomainName
+            bindingType: 'SniEnabled'
+            certificateId: '${appEnvironment.id}/managedCertificates/${customDomainCertificateName}'
+          }
+        ]
       }
       // No secrets block: nothing here is secret. The database URL carries
       // no password, and the image is pulled by identity.
@@ -224,4 +240,5 @@ resource app 'Microsoft.App/containerApps@2025-01-01' = {
 output appId string = app.id
 output appEnvironmentId string = appEnvironment.id
 output appUrl string = 'https://${app.properties.configuration.ingress.fqdn}'
-output appOriginToConfigure string = 'https://${app.properties.configuration.ingress.fqdn}'
+@description('What to pass as appOrigin: the custom domain when one is bound, otherwise the address Azure assigned. Only this one address can then log in and play.')
+output appOriginToConfigure string = empty(customDomainName) ? 'https://${app.properties.configuration.ingress.fqdn}' : 'https://${customDomainName}'

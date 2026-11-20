@@ -159,6 +159,35 @@ class SingleOriginAppTemplateTests(unittest.TestCase):
             self.code,
         )
 
+    def test_a_bound_custom_domain_is_kept_by_a_deployment(self):
+        # Seen on staging on 2026-11-20: a deployment whose ingress block
+        # does not list the domain unbinds it. The what-if could not tell
+        # that apart from its usual noise, so the template has to carry it.
+        self.assertIn("param customDomainName string = ''", self.code)
+        self.assertIn("param customDomainCertificateName string = ''", self.code)
+        self.assertIn("customDomains: empty(customDomainName) ? [] : [", self.code)
+        self.assertRegex(
+            self.code,
+            r"name: customDomainName\s*\n\s*bindingType: 'SniEnabled'\s*\n\s*"
+            r"certificateId: '\$\{appEnvironment\.id\}/managedCertificates/"
+            r"\$\{customDomainCertificateName\}'",
+        )
+
+    def test_the_certificate_is_referenced_never_created_here(self):
+        # The first binding creates the certificate by command line, after
+        # DNS is in place. A certificate resource here would try to issue
+        # one before the domain can be validated.
+        self.assertNotRegex(self.code, r"^resource\s+\w+\s+'[^']*managedCertificates")
+        self.assertNotIn("Microsoft.App/managedEnvironments/managedCertificates@", self.code)
+
+    def test_the_origin_to_configure_follows_the_custom_domain(self):
+        # Only one address may write (backend/origin_guard.py). Printing
+        # Azure's address while a custom domain is bound invites the wrong one.
+        self.assertIn(
+            "output appOriginToConfigure string = empty(customDomainName) ? ", self.source
+        )
+        self.assertIn(": 'https://${customDomainName}'", self.source)
+
     def test_the_image_is_pulled_by_identity_and_not_by_a_token(self):
         # audit H-5: the old GHCR token was account-scoped, so it could read
         # every private package the account can see, and it had to be typed

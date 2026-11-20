@@ -905,6 +905,58 @@ verified setting. Local tests and Bicep compilation check the emitted default,
 allowed values and runtime environment variable. This repository change does
 not redeploy or re-verify the running Azure revision.
 
+### 6b. A custom domain
+
+Rehearsed on staging on 2026-11-20 with `stg.sortquiz.app`. The steps are
+Microsoft's (Container Apps, "Custom domain names and free managed
+certificates"); what is written here is what ran.
+
+**Order matters, and the template comes last.**
+
+1. **DNS first**, at the registrar, pointing straight at Azure with no proxy
+   in between. For a subdomain: a `CNAME` from the name to the app's own
+   address, and a `TXT` named `asuid.<name>` holding the app's verification
+   id:
+
+   ```sh
+   az containerapp show -g <rg> -n <app> \
+     --query "{address:properties.configuration.ingress.fqdn, verification:properties.customDomainVerificationId}" -o json
+   ```
+
+   A bare domain (no subdomain) uses an `A` record to the environment's
+   static IP and a `TXT` named `asuid`, with `--validation-method HTTP`
+   below. **Not rehearsed.**
+
+2. **Bind it by command line.** This creates the managed certificate; it took
+   a little over five minutes. No new revision is created.
+
+   ```sh
+   az containerapp hostname add  -g <rg> -n <app> --hostname <name>
+   az containerapp hostname bind -g <rg> -n <app> --hostname <name> \
+     --environment <environment> --validation-method CNAME
+   az containerapp hostname list -g <rg> -n <app> -o table
+   ```
+
+   Expected: binding type `SniEnabled` and a certificate id ending in the
+   certificate's name. Keep that name.
+
+3. **From then on, pass it on every deployment:**
+   `customDomainName=<name> customDomainCertificateName=<certificate name>`.
+
+**Why step 3 is not optional.** On 2026-11-20 the template was applied to
+staging with unchanged values and no domain parameters: the deployment
+succeeded, created no new revision, and **removed the domain from the app**.
+The certificate survived. The what-if had listed the domain as a deletion,
+but among five other lines that Azure does not actually delete, so the
+what-if cannot be trusted to answer this.
+
+**The app still decides who may write.** Binding a domain makes pages load
+there, but login and play answer 403 until `appOrigin` is that address, and
+then Azure's own address answers 403 instead (`backend/origin_guard.py`).
+One address at a time; the template's `appOriginToConfigure` output names it.
+
+The app must stay running for the certificate to be issued and renewed.
+
 ## 7. Read the real cost
 
 Billing data lags, usually 8 to 24 hours.
