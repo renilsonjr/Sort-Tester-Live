@@ -170,8 +170,33 @@ class LeaderboardPlaceTests(_StatsBase):
         # attempt in the season (it must have played), so give it one
         self._settled_attempt(account_id, season_id, correct=0)
 
-    def test_none_before_official_launch(self):
+    def test_none_in_pre_season_without_a_completed_quiz(self):
+        self._season()
         acc = self._account()
+        self.assertIsNone(profile_stats.leaderboard_place(self.conn, acc))
+
+    def test_matches_the_pre_season_board_before_launch(self):
+        """Same place the Pre-Season leaderboard shows (#247): everyone with
+        a completed Ranked quiz, no owner approval."""
+        season = self._season()
+        top = self._account("top")
+        second = self._account("second")
+        for account, points in ((top, 700), (second, 300)):
+            migrate.execute(
+                self.conn,
+                "INSERT INTO balances (account_id, current_points) VALUES (%s, %s)",
+                (account, points),
+            )
+            self._settled_attempt(account, season, correct=5)
+        self.assertEqual(profile_stats.leaderboard_place(self.conn, top), 1)
+        self.assertEqual(profile_stats.leaderboard_place(self.conn, second), 2)
+
+    def test_a_pre_season_place_does_not_survive_the_launch(self):
+        pre = self._season()
+        acc = self._account()
+        self._settled_attempt(acc, pre, correct=5)
+        self.assertEqual(profile_stats.leaderboard_place(self.conn, acc), 1)
+        self._official_season()
         self.assertIsNone(profile_stats.leaderboard_place(self.conn, acc))
 
     def test_matches_standings_place_after_launch(self):

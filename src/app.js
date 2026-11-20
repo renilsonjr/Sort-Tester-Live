@@ -1455,12 +1455,21 @@ async function fillLeaderboard(panel) {
     );
     return;
   }
+  // Pre-Season has a board of its own (#247): everyone with one completed
+  // Ranked quiz, no approval. It wins no prize and the launch resets it, and
+  // the screen says so every time, even when the board is still empty.
+  const preSeason = board.phase === 'pre_season';
+  const preSeasonLine = preSeason
+    ? `<p class="lab-intro"><strong>${esc(t('Pre-Season'))}.</strong> ${esc(t('These standings win no prize. Everyone goes back to 0 points and Iron when the official season starts.'))}</p>`
+    : '';
   if (board.rows.length === 0) {
-    panel.innerHTML = boardNotice(
+    panel.innerHTML = preSeasonLine + boardNotice(
       t('No standings yet'),
       board.season_label
         ? t('Nobody has completed a Ranked quiz in this season yet, so there is nothing to rank.')
-        : t('The official season has not started, so there is nothing to rank yet.'),
+        : (preSeason
+          ? t('Nobody has completed a Ranked quiz in Pre-Season yet, so there is nothing to rank.')
+          : t('The official season has not started, so there is nothing to rank yet.')),
     );
     return;
   }
@@ -1504,15 +1513,24 @@ async function fillLeaderboard(panel) {
     ? `<p class="board-your-place">${esc(t('Your place'))}: <b>${board.your_place}</b>${
         esc(t(' — beyond the rows shown above.'))}</p>`
     : '';
+  // In Pre-Season nobody needs approval, so a player who is missing has
+  // simply not completed a quiz yet. The approval sentence would be wrong.
+  const notInStandings = preSeason
+    ? boardNotice(
+      t('You are not in the standings yet'),
+      t('Complete one Ranked quiz and you will appear here. Pre-Season needs no approval.'),
+    )
+    : boardNotice(
+      t('You are not in the standings'),
+      t('Your points and badge count as usual and are on your profile. The competition is for Primary Sort on the Twilight shift, approved by the owner. Ask the owner if that should be you.'),
+    );
   panel.innerHTML = `
+    ${preSeasonLine}
     <p class="lab-intro">${esc(intro)}</p>
     ${podium}
     <ol class="board">${rows}</ol>
     ${placeLine}
-    ${board.eligible ? '' : boardNotice(
-      t('You are not in the standings'),
-      t('Your points and badge count as usual and are on your profile. The competition is for Primary Sort on the Twilight shift, approved by the owner. Ask the owner if that should be you.'),
-    )}
+    ${board.eligible ? '' : notInStandings}
   `;
 }
 

@@ -133,6 +133,20 @@ def official_launch(conn) -> LaunchFact | None:
     return LaunchFact(season_id=row["id"], label=row["label"], launched_at=row["opened_at"])
 
 
+def pre_season_id(conn):
+    """The Pre-Season's id, or ``None`` when there is none.
+
+    Used only for the Pre-Season leaderboard (#247), which exists while no
+    official season has been launched.
+    """
+    row = migrate.fetch_one(
+        conn,
+        "SELECT id FROM seasons WHERE phase = 'pre_season'"
+        " ORDER BY opened_at DESC LIMIT 1",
+    )
+    return None if row is None else row["id"]
+
+
 def _status(row, now) -> str:
     if row["frozen_at"] is not None:
         return "frozen"

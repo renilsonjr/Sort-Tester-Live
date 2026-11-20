@@ -132,3 +132,40 @@ test('the place line is not shown to a player who is in the list', () => {
 test('the place line has a style of its own', () => {
   assert.match(page, /\.board-your-place\s*\{/);
 });
+
+// Pre-Season board (#247, owner decision 2026-11-20).
+const i18n = readFileSync(new URL('../src/i18n.js', import.meta.url), 'utf8');
+
+test('the Pre-Season board says it wins no prize and is reset at launch', () => {
+  const body = screen();
+  assert.match(body, /board\.phase === 'pre_season'/);
+  assert.match(body, /These standings win no prize/);
+  assert.match(body, /back to 0 points and Iron when the official season starts/);
+  // said above an empty board too, not only above a full one
+  const empty = body.slice(body.indexOf('board.rows.length === 0'));
+  assert.match(empty.slice(0, empty.indexOf('return;')), /preSeasonLine \+ boardNotice/);
+});
+
+test('an empty Pre-Season board names Pre-Season, not the official season', () => {
+  assert.match(screen(), /Nobody has completed a Ranked quiz in Pre-Season yet/);
+});
+
+test('a player missing from the Pre-Season board is not told about approval', () => {
+  const body = screen();
+  const notice = body.slice(body.indexOf('const notInStandings'));
+  const preSeasonBranch = notice.slice(0, notice.indexOf(': boardNotice('));
+  assert.match(preSeasonBranch, /Complete one Ranked quiz and you will appear here/);
+  assert.doesNotMatch(preSeasonBranch, /Twilight|approved by the owner/);
+});
+
+test('every Pre-Season board sentence has a Spanish translation', () => {
+  for (const sentence of [
+    'These standings win no prize. Everyone goes back to 0 points and Iron when the official season starts.',
+    'Nobody has completed a Ranked quiz in Pre-Season yet, so there is nothing to rank.',
+    'You are not in the standings yet',
+    'Complete one Ranked quiz and you will appear here. Pre-Season needs no approval.',
+  ]) {
+    assert.ok(app.includes(`'${sentence}'`), `app.js does not use: ${sentence}`);
+    assert.ok(i18n.includes(`'${sentence}': '`), `no Spanish for: ${sentence}`);
+  }
+});
