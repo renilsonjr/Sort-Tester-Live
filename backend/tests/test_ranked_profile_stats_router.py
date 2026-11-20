@@ -111,7 +111,9 @@ class ProfileStatsRouterTests(unittest.TestCase):
         self.assertEqual(response.status_code, 200, response.text)
         body = response.json()
         self.assertEqual(body["best_ranked"], {"correct": 11, "total": 15})
-        self.assertIsNone(body["place"])
+        # A completed Pre-Season quiz puts the player on the Pre-Season
+        # board (#247), so the profile shows that place.
+        self.assertEqual(body["place"], 1)
 
     def test_carries_only_the_callers_own_best(self):
         season = self._season()
