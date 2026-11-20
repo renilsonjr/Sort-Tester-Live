@@ -3,6 +3,7 @@ import os
 import unittest
 from datetime import datetime, timezone
 from unittest import mock
+from xml.sax.saxutils import escape
 
 from backend.auth import deletion_list
 from backend.db import entra_token, settings
@@ -210,6 +211,200 @@ class ForgetTests(DeletionListCase):
             with self.assertLogs(deletion_list.logger, level="ERROR") as logs:
                 deletion_list.forget(ACCOUNT)
         self.assertIn(ACCOUNT, "\n".join(logs.output))
+
+
+OTHER = "3e9cacdb-eb99-4fe6-ab9c-d5987e91e81b"
+LIST_URL = CONTAINER + "?restype=container&comp=list"
+
+
+def _listing(*names, marker=""):
+    blobs = "".join(f"<Blob><Name>{name}</Name><Properties/></Blob>" for name in names)
+    return (
+        '<?xml version="1.0" encoding="utf-8"?><EnumerationResults>'
+        f"<Blobs>{blobs}</Blobs><NextMarker>{escape(marker)}</NextMarker></EnumerationResults>"
+    ).encode()
+
+
+class FakeReader:
+    """Answers GETs from a {url: (status, body)} table and records them."""
+
+    def __init__(self, table):
+        self.table = table
+        self.calls = []
+
+    def __call__(self, url, headers):
+        self.calls.append((url, dict(headers)))
+        answer = self.table[url]
+        if isinstance(answer, Exception):
+            raise answer
+        return answer
+
+
+class ReadNotesTests(DeletionListCase):
+    def _read(self, table):
+        reader = FakeReader(table)
+        deletion_list.set_reader(reader)
+        self.addCleanup(deletion_list.set_reader, None)
+        with _env(**{deletion_list.ENV_VAR: CONTAINER}):
+            return deletion_list.notes(), reader
+
+    def test_every_note_comes_back_with_its_time(self):
+        (notes, unreadable), reader = self._read({
+            LIST_URL: (200, _listing(ACCOUNT, OTHER)),
+            f"{CONTAINER}/{ACCOUNT}": (200, b"2026-11-19T21:51:04+00:00"),
+            f"{CONTAINER}/{OTHER}": (200, b"2026-11-20T06:16:52.123456+00:00"),
+        })
+        self.assertEqual(unreadable, [])
+        self.assertEqual(
+            [(str(note.account_id), note.deleted_at) for note in notes],
+            [
+                (ACCOUNT, WHEN),
+                (OTHER, datetime(2026, 11, 20, 6, 16, 52, 123456, tzinfo=timezone.utc)),
+            ],
+        )
+        for _url, headers in reader.calls:
+            self.assertEqual(headers["Authorization"], "Bearer storage-secret-token")
+            self.assertIn("x-ms-version", headers)
+
+    def test_an_empty_list_is_empty_not_an_error(self):
+        (notes, unreadable), _ = self._read({LIST_URL: (200, _listing())})
+        self.assertEqual((notes, unreadable), ([], []))
+
+    def test_a_long_list_is_read_page_by_page(self):
+        (notes, _), reader = self._read({
+            LIST_URL: (200, _listing(ACCOUNT, marker="page 2&x")),
+            LIST_URL + "&marker=page+2%26x": (200, _listing(OTHER)),
+            f"{CONTAINER}/{ACCOUNT}": (200, b"2026-11-19T21:51:04+00:00"),
+            f"{CONTAINER}/{OTHER}": (200, b"2026-11-19T21:51:04+00:00"),
+        })
+        self.assertEqual({str(note.account_id) for note in notes}, {ACCOUNT, OTHER})
+
+    def test_what_cannot_be_understood_is_reported_not_dropped(self):
+        (notes, unreadable), _ = self._read({
+            LIST_URL: (200, _listing(ACCOUNT, "not-a-uuid", OTHER)),
+            f"{CONTAINER}/{ACCOUNT}": (200, b"2026-11-19T21:51:04+00:00"),
+            f"{CONTAINER}/{OTHER}": (200, b"yesterday-ish"),
+        })
+        self.assertEqual([str(note.account_id) for note in notes], [ACCOUNT])
+        self.assertEqual(unreadable, ["not-a-uuid", OTHER])
+
+    def test_a_time_without_a_timezone_is_unreadable(self):
+        (notes, unreadable), _ = self._read({
+            LIST_URL: (200, _listing(ACCOUNT)),
+            f"{CONTAINER}/{ACCOUNT}": (200, b"2026-11-19T21:51:04"),
+        })
+        self.assertEqual((notes, unreadable), ([], [ACCOUNT]))
+
+    def test_a_note_that_expired_between_listing_and_reading_is_skipped(self):
+        # the lifecycle rule may remove a blob in that instant; it was older
+        # than the backup window, so no restore point needs it
+        (notes, unreadable), _ = self._read({
+            LIST_URL: (200, _listing(ACCOUNT, OTHER)),
+            f"{CONTAINER}/{ACCOUNT}": (404, b""),
+            f"{CONTAINER}/{OTHER}": (200, b"2026-11-19T21:51:04+00:00"),
+        })
+        self.assertEqual([str(note.account_id) for note in notes], [OTHER])
+        self.assertEqual(unreadable, [])
+
+    def test_a_failed_listing_or_read_is_unavailable_never_a_short_list(self):
+        for table in (
+            {LIST_URL: (403, b"")},
+            {LIST_URL: OSError("down")},
+            {LIST_URL: (200, b"<not xml")},
+            {LIST_URL: (200, _listing(ACCOUNT)), f"{CONTAINER}/{ACCOUNT}": (500, b"")},
+            {LIST_URL: (200, _listing(ACCOUNT)), f"{CONTAINER}/{ACCOUNT}": OSError("down")},
+        ):
+            with self.subTest(table=list(table)):
+                reader = FakeReader(table)
+                deletion_list.set_reader(reader)
+                self.addCleanup(deletion_list.set_reader, None)
+                with _env(**{deletion_list.ENV_VAR: CONTAINER}):
+                    with self.assertRaises(deletion_list.DeletionListUnavailable):
+                        deletion_list.notes()
+
+    def test_reading_a_list_that_is_off_is_an_error(self):
+        deletion_list.set_reader(FakeReader({}))
+        self.addCleanup(deletion_list.set_reader, None)
+        with _env():
+            with self.assertRaises(deletion_list.DeletionListConfigError):
+                deletion_list.notes()
+
+
+class CommandTests(DeletionListCase):
+    """`python -m backend.auth.deletion_list_cli --after <restore point>`"""
+
+    TABLE = {
+        LIST_URL: (200, _listing(ACCOUNT, OTHER)),
+        f"{CONTAINER}/{ACCOUNT}": (200, b"2026-11-19T21:51:04+00:00"),
+        f"{CONTAINER}/{OTHER}": (200, b"2026-11-20T06:16:52+00:00"),
+    }
+
+    def _run(self, argv, table=None, env=None):
+        import contextlib
+        import io
+
+        from backend.auth import deletion_list_cli
+
+        deletion_list.set_reader(FakeReader(self.TABLE if table is None else table))
+        self.addCleanup(deletion_list.set_reader, None)
+        out, err = io.StringIO(), io.StringIO()
+        values = {deletion_list.ENV_VAR: CONTAINER} if env is None else env
+        with _env(**values), contextlib.redirect_stdout(out), contextlib.redirect_stderr(err):
+            code = deletion_list_cli.main(argv)
+        return code, out.getvalue(), err.getvalue()
+
+    def test_prints_only_deletions_after_the_restore_point_oldest_first(self):
+        code, out, err = self._run(["--after", "2026-11-19T21:50:00Z"])
+        self.assertEqual(code, 0, err)
+        self.assertEqual(
+            out.splitlines(),
+            [
+                f"{ACCOUNT}\t2026-11-19T21:51:04+00:00",
+                f"{OTHER}\t2026-11-20T06:16:52+00:00",
+            ],
+        )
+        self.assertIn("2 of 2", err)
+
+    def test_a_deletion_before_the_restore_point_is_left_out(self):
+        code, out, err = self._run(["--after", "2026-11-20T00:00:00+00:00"])
+        self.assertEqual(code, 0, err)
+        self.assertEqual(out.splitlines(), [f"{OTHER}\t2026-11-20T06:16:52+00:00"])
+        self.assertIn("1 of 2", err)
+
+    def test_a_deletion_exactly_at_the_restore_point_is_kept(self):
+        # the backup may or may not hold it; re-applying twice is harmless,
+        # missing one is not
+        code, out, _ = self._run(["--after", "2026-11-20T06:16:52Z"])
+        self.assertEqual(out.splitlines(), [f"{OTHER}\t2026-11-20T06:16:52+00:00"])
+
+    def test_the_restore_point_must_carry_a_timezone(self):
+        code, out, err = self._run(["--after", "2026-11-19T21:50:00"])
+        self.assertEqual((code, out), (2, ""))
+        self.assertIn("timezone", err)
+
+    def test_nothing_after_the_restore_point_says_so_and_succeeds(self):
+        code, out, err = self._run(["--after", "2026-12-01T00:00:00Z"])
+        self.assertEqual((code, out), (0, ""))
+        self.assertIn("0 of 2", err)
+
+    def test_a_list_that_is_off_fails_loudly(self):
+        code, out, err = self._run(["--after", "2026-11-19T21:50:00Z"], env={})
+        self.assertEqual((code, out), (1, ""))
+        self.assertIn(deletion_list.ENV_VAR, err)
+
+    def test_an_unreachable_list_fails_with_no_partial_output(self):
+        code, out, err = self._run(
+            ["--after", "2026-11-19T21:50:00Z"], table={LIST_URL: (403, b"")}
+        )
+        self.assertEqual((code, out), (1, ""))
+
+    def test_unreadable_notes_fail_the_command_but_still_print_the_rest(self):
+        table = dict(self.TABLE)
+        table[f"{CONTAINER}/{OTHER}"] = (200, b"garbage")
+        code, out, err = self._run(["--after", "2026-11-19T21:50:00Z"], table=table)
+        self.assertEqual(code, 3)
+        self.assertEqual(out.splitlines(), [f"{ACCOUNT}\t2026-11-19T21:51:04+00:00"])
+        self.assertIn(OTHER, err)
 
 
 if __name__ == "__main__":

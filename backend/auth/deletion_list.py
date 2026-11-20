@@ -23,8 +23,10 @@ import logging
 import os
 import urllib.error
 import urllib.request
+import xml.etree.ElementTree as ElementTree
+from dataclasses import dataclass
 from datetime import datetime
-from urllib.parse import urlsplit
+from urllib.parse import quote_plus, urlsplit
 from uuid import UUID
 
 from backend.db import entra_token, settings
@@ -39,6 +41,7 @@ _API_VERSION = "2021-08-06"
 _TIMEOUT_SECONDS = 5
 
 _transport = None  # None -> real HTTP call; tests inject a fake with set_transport
+_reader = None  # same, for the read path; see set_reader
 
 
 class DeletionListConfigError(Exception):
@@ -54,6 +57,21 @@ def set_transport(transport) -> None:
     or reset to the real HTTP call with None."""
     global _transport
     _transport = transport
+
+
+def set_reader(reader) -> None:
+    """Inject ``reader(url, headers) -> (status, body)`` (tests), or reset to
+    the real HTTP call with None."""
+    global _reader
+    _reader = reader
+
+
+@dataclass(frozen=True)
+class Note:
+    """One accepted deletion: which account, and when."""
+
+    account_id: UUID
+    deleted_at: datetime
 
 
 def container_url() -> str | None:
@@ -173,3 +191,87 @@ def forget(account_id) -> None:
             account_id,
             status,
         )
+
+
+def _get(url: str, headers: dict) -> tuple[int, bytes]:
+    request = urllib.request.Request(url, headers=headers, method="GET")
+    try:
+        with urllib.request.urlopen(request, timeout=_TIMEOUT_SECONDS) as response:
+            return response.status, response.read()
+    except urllib.error.HTTPError as error:
+        return error.code, b""
+
+
+def _read(url: str) -> tuple[int, bytes]:
+    try:
+        token = entra_token.access_token(entra_token.STORAGE_TOKEN_RESOURCE)
+        headers = {"Authorization": f"Bearer {token}", "x-ms-version": _API_VERSION}
+        return (_reader or _get)(url, headers)
+    except Exception as error:  # noqa: BLE001 - broad on purpose; no token in the message
+        logger.warning("deletion list read failed: %s", type(error).__name__)
+        raise DeletionListUnavailable("the deletion list could not be read") from None
+
+
+def _blob_names(container: str) -> list[str]:
+    names: list[str] = []
+    marker = ""
+    while True:
+        url = f"{container}?restype=container&comp=list"
+        if marker:
+            url += f"&marker={quote_plus(marker)}"
+        status, body = _read(url)
+        if status != 200:
+            logger.warning("deletion list listing refused: HTTP %s", status)
+            raise DeletionListUnavailable("the deletion list could not be read")
+        try:
+            root = ElementTree.fromstring(body)
+        except ElementTree.ParseError:
+            raise DeletionListUnavailable("the deletion list could not be read") from None
+        names.extend(node.text or "" for node in root.findall("./Blobs/Blob/Name"))
+        marker = (root.findtext("NextMarker") or "").strip()
+        if not marker:
+            return names
+
+
+def notes() -> tuple[list[Note], list[str]]:
+    """Read the whole list, for the restore runbook. Read-only.
+
+    Returns ``(notes, unreadable)``. ``unreadable`` names every blob that is
+    not a well-formed note; they are reported, never dropped in silence,
+    because each could be a deletion a restore must re-apply.
+
+    Any failure raises :class:`DeletionListUnavailable`: a short list that
+    looks complete would let a restore skip deletions. A list that is off
+    raises :class:`DeletionListConfigError` for the same reason.
+    """
+    container = container_url()
+    if container is None:
+        raise DeletionListConfigError(
+            f"{ENV_VAR} names no container here; there is no deletion list to read."
+        )
+    found: list[Note] = []
+    unreadable: list[str] = []
+    for name in _blob_names(container):
+        try:
+            account_id = UUID(name)
+        except ValueError:
+            unreadable.append(name)
+            continue
+        status, body = _read(f"{container}/{account_id}")
+        if status == 404:
+            # expired between the listing and this read: it was older than
+            # the backup window, so no restore point can need it
+            continue
+        if status != 200:
+            logger.warning("deletion list note refused: HTTP %s", status)
+            raise DeletionListUnavailable("the deletion list could not be read")
+        try:
+            deleted_at = datetime.fromisoformat(body.decode("ascii").strip())
+        except (ValueError, UnicodeDecodeError):
+            unreadable.append(name)
+            continue
+        if deleted_at.tzinfo is None:
+            unreadable.append(name)
+            continue
+        found.append(Note(account_id, deleted_at))
+    return found, unreadable

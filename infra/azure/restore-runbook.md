@@ -2,9 +2,10 @@
 
 Status: rehearsed on fictional-data Azure staging on 2026-11-19/20 up to and
 including "re-apply deletions". Repointing the app at a restored server is
-**not rehearsed**. The deletion list this runbook depends on is **coded but
-not deployed**: no storage account exists and no environment writes to it.
-Not approved for a pilot with employee data until both are done.
+**not rehearsed**. The deletion list is **live on staging** (a real deletion
+wrote a real note on 2026-11-20); reading it with the command in step 4 is
+**not yet rehearsed against Azure**. Not approved for a pilot with employee
+data until both are done.
 Related: [[db-runtime-role]], [[shared-resource-locks]],
 [[../../docs/superpowers/specs/2026-11-07-ranked-decision-record]].
 
@@ -82,9 +83,30 @@ this is not the restore you asked for.
 
 ## Step 4 — re-apply deletions (mandatory)
 
-Take from the deletion list every entry whose deletion time is **after the
-restore point**. For each one, run the block below with its account id and
-deletion time. It repeats what `backend/auth/deletion.py` does, minus the
+First read the deletion list. The storage account has no public network
+access, so the list is read from inside the app's container, which sits in
+the private network and already holds the identity allowed to read it:
+
+```sh
+az containerapp exec -g $RG -n <container-app> \
+  --command "python -m backend.auth.deletion_list_cli --after $RESTORE_POINT"
+```
+
+It prints one line per accepted deletion at or after the restore point,
+oldest first: the account id, a tab, the deletion time. It only reads; it
+does not touch the database, so it works while the database is down.
+
+Read the last lines, not only the list:
+
+- `N of M readable notes are at or after ...` — the count you must re-apply.
+- `error: ...` and no list — the list could **not** be read. This is not an
+  empty list. Stop and use the emergency procedure below.
+- `WARNING: ... malformed note(s)` — some notes could not be understood.
+  Each may be a deletion. Do not let the restored database serve anyone
+  until every one of them has been looked at by hand.
+
+For each line printed, run the block below with its account id and deletion
+time. It repeats what `backend/auth/deletion.py` does, minus the
 login-ID check, which the player already passed.
 
 ```sh
@@ -152,7 +174,7 @@ az postgres flexible-server list -g $RG --query "[].{name:name, state:state, pub
 existed. **Always run the `list` and read it**: only the expected servers,
 each `Ready` with public access `Disabled`.
 
-## The deletion list (coded, not deployed)
+## The deletion list
 
 Step 4 depends on a list that lives **outside the database**, because a
 restore rewinds everything inside it. Owner decision on #13:
@@ -166,13 +188,31 @@ restore rewinds everything inside it. Owner decision on #13:
 The app side is `backend/auth/deletion_list.py` (design:
 `docs/superpowers/specs/2026-11-20-deletion-list-design.md`): one blob per
 accepted deletion, named by the account id, containing the deletion time. A
-deletion is refused when the note cannot be written.
+deletion is refused when the note cannot be written. The storage is
+`deletion-list-storage.bicep`; see [[deletion-list-storage]].
 
-Until a storage account exists and an environment is configured to use it, a
-real restore cannot honour deletions, and this runbook is a rehearsal
-procedure only. Reading the list for step 4 will be one `az storage blob`
-command; it is not written here because it has not been run against a real
-container yet.
+On staging this is deployed and a real deletion has written a real note
+(issue #13, 2026-11-20). The read command in step 4 has unit tests only.
+
+### Emergency: the app's container is not running
+
+`az containerapp exec` needs a running container. If the whole app is down,
+the list can only be read by opening the storage account, as was done for the
+database. **This procedure has never been run**; treat every line as
+unverified.
+
+1. Give the operator's own account *Storage Blob Data Reader* on the
+   `deletions` container (being subscription Owner does not grant data
+   access).
+2. Enable public network access on the account with default action `Deny`
+   and one IP rule for the operator. Note that storage IP rules may not
+   apply to callers inside the same Azure region; if Cloud Shell is refused,
+   use a machine outside Azure.
+3. `az storage blob list --auth-mode login` on the container, then
+   `az storage blob download` for each name; the body is the deletion time.
+4. Remove the IP rule, disable public network access, remove the role
+   assignment, and **read back all three** before moving on. A cleanup
+   command that printed nothing has not been shown to work.
 
 A note can exist for an account that was never deleted (the app crashed
 between writing the note and confirming the deletion). When the live database
@@ -180,7 +220,7 @@ is still reachable, check each listed account there before re-applying.
 
 ## Still open
 
-- Deletion list: storage account, enable on staging, prove with a real deletion.
+- Deletion list: rehearse step 4's read command on staging, then a restore that re-applies from the real list; watch one note expire.
 - Step 5 rehearsal and end-to-end recovery time.
 - Run the whole runbook on the separate pilot environment.
 - Geo-redundant backup (only settable when a server is created).

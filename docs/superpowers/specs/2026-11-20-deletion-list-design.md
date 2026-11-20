@@ -79,6 +79,21 @@ up in configuration, and the value is never echoed in the error.
 managed-identity mode, so without an explicit opt-out the next image deploy
 would not start until the storage account exists.
 
+### Reading the list
+
+Owner decision, 2026-11-20: the list is read from inside the app's container
+(`python -m backend.auth.deletion_list_cli --after <restore point>`, run with
+`az containerapp exec`). The storage account stays closed to the internet,
+no new role or resource is needed, and the command does not touch the
+database, so it works while the database is being restored. Opening the
+storage account is documented in the runbook as an untested emergency path
+for when the container itself is down. A screen in the app was rejected: the
+owner's login depends on the database that is being restored.
+
+The command fails rather than print a short list: an unreadable list exits
+non-zero with no output, and a malformed note is named and fails the command
+while the readable ones are still printed.
+
 ## Residual risks
 
 - **Crash between note and commit.** If the process dies after step 2 and
