@@ -2,8 +2,9 @@
 
 Status: rehearsed on fictional-data Azure staging on 2026-11-19/20 up to and
 including "re-apply deletions". Repointing the app at a restored server is
-**not rehearsed**. The deletion list this runbook depends on is **not built
-yet**. Not approved for a pilot with employee data until both exist.
+**not rehearsed**. The deletion list this runbook depends on is **coded but
+not deployed**: no storage account exists and no environment writes to it.
+Not approved for a pilot with employee data until both are done.
 Related: [[db-runtime-role]], [[shared-resource-locks]],
 [[../../docs/superpowers/specs/2026-11-07-ranked-decision-record]].
 
@@ -151,7 +152,7 @@ az postgres flexible-server list -g $RG --query "[].{name:name, state:state, pub
 existed. **Always run the `list` and read it**: only the expected servers,
 each `Ready` with public access `Disabled`.
 
-## The deletion list (not built yet)
+## The deletion list (coded, not deployed)
 
 Step 4 depends on a list that lives **outside the database**, because a
 restore rewinds everything inside it. Owner decision on #13:
@@ -162,12 +163,24 @@ restore rewinds everything inside it. Owner decision on #13:
 - A deletion is only "completed" for the player after those 7 days.
 - This is an approved, minimal exception to Decision 14.
 
-Until it exists, a real restore cannot honour deletions, and this runbook is a
-rehearsal procedure only.
+The app side is `backend/auth/deletion_list.py` (design:
+`docs/superpowers/specs/2026-11-20-deletion-list-design.md`): one blob per
+accepted deletion, named by the account id, containing the deletion time. A
+deletion is refused when the note cannot be written.
+
+Until a storage account exists and an environment is configured to use it, a
+real restore cannot honour deletions, and this runbook is a rehearsal
+procedure only. Reading the list for step 4 will be one `az storage blob`
+command; it is not written here because it has not been run against a real
+container yet.
+
+A note can exist for an account that was never deleted (the app crashed
+between writing the note and confirming the deletion). When the live database
+is still reachable, check each listed account there before re-applying.
 
 ## Still open
 
-- Deletion list: design, build, test.
+- Deletion list: storage account, enable on staging, prove with a real deletion.
 - Step 5 rehearsal and end-to-end recovery time.
 - Run the whole runbook on the separate pilot environment.
 - Geo-redundant backup (only settable when a server is created).

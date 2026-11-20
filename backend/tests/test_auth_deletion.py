@@ -162,6 +162,111 @@ class DeletionRequestTests(DeletionTestCase):
         self.assertEqual(self._one("SELECT COUNT(*) AS n FROM season_markers")["n"], 0)
 
 
+class DeletionListWiringTests(DeletionTestCase):
+    """The out-of-database note is written before the deletion is confirmed
+    (issue #13): a restore must be able to re-apply every accepted deletion."""
+
+    CONTAINER = "https://stsortdel.blob.core.windows.net/deletions"
+
+    def setUp(self):
+        super().setUp()
+        from backend.auth import deletion_list
+        from backend.db import entra_token
+
+        self.deletion_list = deletion_list
+        entra_token.reset_cache()
+        entra_token.set_token_fetcher(
+            lambda: {"access_token": "tok", "expires_on": "9999999999"}
+        )
+        self.addCleanup(entra_token.set_token_fetcher, None)
+        self.addCleanup(entra_token.reset_cache)
+        self.addCleanup(deletion_list.set_transport, None)
+        patcher = mock.patch.dict(os.environ, {deletion_list.ENV_VAR: self.CONTAINER})
+        patcher.start()
+        self.addCleanup(patcher.stop)
+
+    def _deleted_at(self, account_id):
+        row = self._one("SELECT deleted_at FROM accounts WHERE id = %s", (account_id,))
+        return None if row is None else row["deleted_at"]
+
+    def test_the_note_is_written_before_the_database_confirms(self):
+        client, login_id, account_id = self._player("noted_player")
+        seen = []
+
+        def blob(method, url, headers, body):
+            # what another connection sees while the note is being written
+            seen.append((method, url, body, self._deleted_at(account_id)))
+            return 201
+
+        self.deletion_list.set_transport(blob)
+        self.assertEqual(self._delete(client, login_id).status_code, 202)
+        (method, url, body, deleted_at_then), = seen
+        self.assertEqual((method, url), ("PUT", f"{self.CONTAINER}/{account_id}"))
+        self.assertIsNone(deleted_at_then)  # not yet committed
+        from datetime import datetime
+
+        self.assertIsNotNone(datetime.fromisoformat(body.decode()).tzinfo)
+
+    def test_a_failed_note_refuses_the_deletion_and_changes_nothing(self):
+        client, login_id, account_id = self._player("unlucky_player")
+        self._start(client)
+        self.deletion_list.set_transport(lambda *a: 503)
+        res = self._delete(client, login_id)
+        self.assertEqual(res.status_code, 503, res.text)
+        self.assertEqual(client.get("/api/auth/me").status_code, 200)
+        self.assertIsNone(self._deleted_at(account_id))
+        row = self._one(
+            "SELECT (SELECT COUNT(*) FROM attempts WHERE account_id = %(a)s) AS attempts,"
+            " (SELECT COUNT(*) FROM login_credentials WHERE account_id = %(a)s"
+            "   AND revoked_at IS NULL) AS live_credentials",
+            {"a": account_id},
+        )
+        self.assertEqual((row["attempts"], row["live_credentials"]), (1, 1))
+        # and the player can simply try again
+        self.deletion_list.set_transport(lambda *a: 201)
+        self.assertEqual(self._delete(client, login_id).status_code, 202)
+
+    def test_a_refused_request_writes_no_note(self):
+        client, login_id, account_id = self._player("refused_player")
+        other, other_login_id, _ = self._player("bystander")
+        calls = []
+        self.deletion_list.set_transport(lambda *a: calls.append(a) or 201)
+        self.assertEqual(self._delete(client, other_login_id).status_code, 403)
+        self._exec("UPDATE accounts SET is_owner = true WHERE id = %s", (account_id,))
+        self.assertEqual(self._delete(client, login_id).status_code, 409)
+        self.assertEqual(calls, [])
+
+    def test_a_database_failure_after_the_note_removes_the_note(self):
+        from backend.auth import deletion
+
+        client, login_id, account_id = self._player("half_done_player")
+        calls = []
+        self.deletion_list.set_transport(lambda m, u, h, b: calls.append((m, u)) or 201)
+        conn = migrate.connect(self.conninfo)
+        self.addCleanup(conn.close)
+        real_execute = migrate.execute
+
+        def failing_execute(connection, sql, params=()):
+            if sql.startswith("UPDATE accounts SET deleted_at"):
+                raise RuntimeError("database went away")
+            return real_execute(connection, sql, params)
+
+        with mock.patch.object(deletion.migrate, "execute", failing_execute):
+            with self.assertRaises(RuntimeError):
+                deletion.request_deletion(conn, account_id, login_id)
+        blob = f"{self.CONTAINER}/{account_id}"
+        self.assertEqual(calls, [("PUT", blob), ("DELETE", blob)])
+        self.assertIsNone(self._deleted_at(account_id))
+
+    def test_with_the_list_off_deletion_works_as_before(self):
+        client, login_id, account_id = self._player("local_player")
+        calls = []
+        self.deletion_list.set_transport(lambda *a: calls.append(a) or 201)
+        with mock.patch.dict(os.environ, {self.deletion_list.ENV_VAR: ""}):
+            self.assertEqual(self._delete(client, login_id).status_code, 202)
+        self.assertEqual(calls, [])
+
+
 class PurgeTests(DeletionTestCase):
     def _played_and_scored(self, client):
         attempt_id = self._start(client)

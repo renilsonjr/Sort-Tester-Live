@@ -35,6 +35,8 @@ from backend.db import settings
 logger = logging.getLogger(__name__)
 
 DB_TOKEN_RESOURCE = "https://ossrdbms-aad.database.windows.net"
+# The same identity also writes the out-of-database deletion list (#13).
+STORAGE_TOKEN_RESOURCE = "https://storage.azure.com"
 
 # VM / VMSS Instance Metadata Service.
 _IMDS_URL = "http://169.254.169.254/metadata/identity/oauth2/token"
@@ -50,7 +52,7 @@ EXPIRY_SKEW_SECONDS = 300
 _IMDS_TIMEOUT_SECONDS = 5
 
 _fetcher = None  # None -> real endpoint call; tests inject a fake with set_token_fetcher
-_cache = None  # (token, expires_at) or None
+_cache = {}  # resource -> (token, expires_at)
 
 
 class TokenUnavailable(Exception):
@@ -65,11 +67,10 @@ def set_token_fetcher(fetcher) -> None:
 
 def reset_cache() -> None:
     """Forget any cached token. For tests and for a deliberate refresh."""
-    global _cache
-    _cache = None
+    _cache.clear()
 
 
-def _token_request() -> urllib.request.Request:
+def _token_request(resource: str = DB_TOKEN_RESOURCE) -> urllib.request.Request:
     """Build the token request for whichever identity endpoint this host has.
 
     Container Apps / App Service inject ``IDENTITY_ENDPOINT`` and
@@ -89,7 +90,7 @@ def _token_request() -> urllib.request.Request:
         query = urllib.parse.urlencode(
             {
                 "api-version": _MSI_API_VERSION,
-                "resource": DB_TOKEN_RESOURCE,
+                "resource": resource,
                 "client_id": client_id,
             }
         )
@@ -101,15 +102,15 @@ def _token_request() -> urllib.request.Request:
     query = urllib.parse.urlencode(
         {
             "api-version": _IMDS_API_VERSION,
-            "resource": DB_TOKEN_RESOURCE,
+            "resource": resource,
             "client_id": client_id,
         }
     )
     return urllib.request.Request(f"{_IMDS_URL}?{query}", headers={"Metadata": "true"})
 
 
-def _fetch_token() -> dict:
-    request = _token_request()
+def _fetch_token(resource: str = DB_TOKEN_RESOURCE) -> dict:
+    request = _token_request(resource)
     with urllib.request.urlopen(request, timeout=_IMDS_TIMEOUT_SECONDS) as response:
         return json.loads(response.read().decode("utf-8"))
 
@@ -135,27 +136,31 @@ def _parse_expires_on(value) -> float:
     raise TokenUnavailable("the token response carried no readable expiry")
 
 
-def db_access_token() -> str:
-    """Return a valid Entra token for the PostgreSQL resource.
+def access_token(resource: str) -> str:
+    """Return a valid Entra token for ``resource``.
 
     Reuses a cached token until it is within ``EXPIRY_SKEW_SECONDS`` of
-    expiry, then refetches. Never logs the token. On any failure raises
-    :class:`TokenUnavailable` with no token material in the message.
+    expiry, then refetches; each resource has its own token. Never logs the
+    token. On any failure raises :class:`TokenUnavailable` with no token
+    material in the message.
     """
-    global _cache
     now = time.time()
-    if _cache is not None and now < _cache[1] - EXPIRY_SKEW_SECONDS:
-        return _cache[0]
+    cached = _cache.get(resource)
+    if cached is not None and now < cached[1] - EXPIRY_SKEW_SECONDS:
+        return cached[0]
     try:
-        payload = (_fetcher or _fetch_token)()
+        payload = _fetcher() if _fetcher is not None else _fetch_token(resource)
         token = payload["access_token"]
         expires_at = _parse_expires_on(payload["expires_on"])
     except TokenUnavailable:
         raise
     except Exception as error:  # noqa: BLE001 - broad on purpose; no token in the message
         logger.warning("Entra token acquisition failed: %s", type(error).__name__)
-        raise TokenUnavailable(
-            "could not obtain an Entra token for the database"
-        ) from error
-    _cache = (token, expires_at)
+        raise TokenUnavailable("could not obtain an Entra token") from error
+    _cache[resource] = (token, expires_at)
     return token
+
+
+def db_access_token() -> str:
+    """Return a valid Entra token for the PostgreSQL resource."""
+    return access_token(DB_TOKEN_RESOURCE)

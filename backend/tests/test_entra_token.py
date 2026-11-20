@@ -155,6 +155,47 @@ class TokenEndpointSelectionTests(unittest.TestCase):
                 entra_token._token_request()
 
 
+class TokenResourceTests(unittest.TestCase):
+    """One identity, more than one resource: the database and blob storage (#13)."""
+
+    def setUp(self):
+        entra_token.set_token_fetcher(None)
+        entra_token.reset_cache()
+        self.addCleanup(entra_token.set_token_fetcher, None)
+        self.addCleanup(entra_token.reset_cache)
+
+    def test_the_request_asks_for_the_named_resource(self):
+        env = {
+            entra_token.settings.DB_IDENTITY_CLIENT_ID_ENV_VAR: "client-123",
+            entra_token.IDENTITY_ENDPOINT_ENV_VAR: "http://localhost:42356/msi/token",
+            entra_token.IDENTITY_HEADER_ENV_VAR: "header-secret",
+        }
+        with mock.patch.dict(entra_token.os.environ, env, clear=True):
+            storage = entra_token._token_request(entra_token.STORAGE_TOKEN_RESOURCE)
+            database = entra_token._token_request()
+        self.assertIn("resource=https%3A%2F%2Fstorage.azure.com", storage.full_url)
+        self.assertIn("resource=https%3A%2F%2Fossrdbms-aad.database.windows.net", database.full_url)
+
+    def test_each_resource_gets_and_caches_its_own_token(self):
+        asked = []
+
+        def fetch(resource):
+            asked.append(resource)
+            return {"access_token": f"tok-for-{resource}", "expires_on": "9999999999"}
+
+        with mock.patch.object(entra_token, "_fetch_token", fetch):
+            db_first = entra_token.db_access_token()
+            storage = entra_token.access_token(entra_token.STORAGE_TOKEN_RESOURCE)
+            db_again = entra_token.db_access_token()
+            storage_again = entra_token.access_token(entra_token.STORAGE_TOKEN_RESOURCE)
+        self.assertEqual(db_first, db_again)
+        self.assertEqual(storage, storage_again)
+        self.assertNotEqual(db_first, storage)
+        self.assertEqual(
+            asked, [entra_token.DB_TOKEN_RESOURCE, entra_token.STORAGE_TOKEN_RESOURCE]
+        )
+
+
 class ExpiresOnParsingTests(unittest.TestCase):
     """expires_on comes back in more than one shape across endpoints (#84)."""
 

@@ -12,6 +12,7 @@ backups and outside providers, which do not exist yet (#13, #41).
 """
 from datetime import datetime, timezone
 
+from backend.auth import deletion_list
 from backend.auth.credentials import normalize_login_id, verify_login_id
 from backend.db import migrate
 
@@ -40,6 +41,12 @@ def request_deletion(conn, account_id, login_id: str, *, clock=None) -> None:
     the account pending purge, revokes its sessions and login credentials,
     removes its unfinished attempts without fabricating a score, and keeps a
     season marker if the account has a participant link.
+
+    Before any of that, the deletion is noted outside the database
+    (``deletion_list``), so a later restore can re-apply it. If the note
+    cannot be written the deletion is refused with
+    ``DeletionListUnavailable`` and nothing changes; if the database then
+    fails, the note is removed again.
     """
     now = (clock or _SystemClock()).now()
     account = migrate.fetch_one(
@@ -57,43 +64,53 @@ def request_deletion(conn, account_id, login_id: str, *, clock=None) -> None:
         conn.rollback()
         raise WrongLoginIdError("the login ID does not match this account")
 
-    migrate.execute(
-        conn, "UPDATE accounts SET deleted_at = %s WHERE id = %s", (now, account_id)
-    )
-    migrate.execute(
-        conn,
-        "UPDATE sessions SET revoked_at = %s WHERE account_id = %s AND revoked_at IS NULL",
-        (now, account_id),
-    )
-    migrate.execute(
-        conn,
-        "UPDATE login_credentials SET revoked_at = %s"
-        " WHERE account_id = %s AND revoked_at IS NULL",
-        (now, account_id),
-    )
-    # the attempt in progress ends without a score: it is removed, not scored
-    migrate.execute(
-        conn,
-        "DELETE FROM attempts WHERE account_id = %s AND state <> 'finalized'",
-        (account_id,),
-    )
-    link = migrate.fetch_one(
-        conn,
-        "SELECT roster_reference FROM participant_links WHERE account_id = %s",
-        (account_id,),
-    )
-    season = migrate.fetch_one(
-        conn, "SELECT id FROM seasons ORDER BY opened_at DESC LIMIT 1"
-    )
-    if link is not None and season is not None:
+    try:
+        deletion_list.record(account_id, now)
+    except deletion_list.DeletionListUnavailable:
+        conn.rollback()
+        raise
+    try:
+        migrate.execute(
+            conn, "UPDATE accounts SET deleted_at = %s WHERE id = %s", (now, account_id)
+        )
         migrate.execute(
             conn,
-            "INSERT INTO season_markers (roster_reference, season, ineligible)"
-            " VALUES (%s, %s, true)"
-            " ON CONFLICT (roster_reference, season) DO UPDATE SET ineligible = true",
-            (link["roster_reference"], str(season["id"])),
+            "UPDATE sessions SET revoked_at = %s WHERE account_id = %s AND revoked_at IS NULL",
+            (now, account_id),
         )
-    conn.commit()
+        migrate.execute(
+            conn,
+            "UPDATE login_credentials SET revoked_at = %s"
+            " WHERE account_id = %s AND revoked_at IS NULL",
+            (now, account_id),
+        )
+        # the attempt in progress ends without a score: it is removed, not scored
+        migrate.execute(
+            conn,
+            "DELETE FROM attempts WHERE account_id = %s AND state <> 'finalized'",
+            (account_id,),
+        )
+        link = migrate.fetch_one(
+            conn,
+            "SELECT roster_reference FROM participant_links WHERE account_id = %s",
+            (account_id,),
+        )
+        season = migrate.fetch_one(
+            conn, "SELECT id FROM seasons ORDER BY opened_at DESC LIMIT 1"
+        )
+        if link is not None and season is not None:
+            migrate.execute(
+                conn,
+                "INSERT INTO season_markers (roster_reference, season, ineligible)"
+                " VALUES (%s, %s, true)"
+                " ON CONFLICT (roster_reference, season) DO UPDATE SET ineligible = true",
+                (link["roster_reference"], str(season["id"])),
+            )
+        conn.commit()
+    except BaseException:
+        conn.rollback()
+        deletion_list.forget(account_id)
+        raise
 
 
 def _login_id_matches(conn, account_id, login_id) -> bool:
