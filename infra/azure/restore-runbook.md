@@ -4,8 +4,10 @@ Status: rehearsed on fictional-data Azure staging on 2026-11-19/20 up to and
 including "re-apply deletions". On 2026-11-20 a third restore was re-applied
 from the **real deletion list**: the command in step 4 named the one account
 deleted after the restore point, and that id and time alone were enough to
-erase it again. Repointing the app at a restored server is **not rehearsed**.
-Not approved for a pilot with employee data until that is done.
+erase it again. The same day a fourth restore was served by the staging app
+(step 5) and then rolled back. The steps have **not** been run together as one
+recovery, and never on the pilot environment. Not approved for a pilot with
+employee data until the items under "Still open" are done.
 Related: [[db-runtime-role]], [[shared-resource-locks]],
 [[../../docs/superpowers/specs/2026-11-07-ranked-decision-record]].
 
@@ -27,12 +29,17 @@ promise made to players (Decision 14).
 |---|---|
 | Restore duration, run 1 | 9 min 06 s |
 | Restore duration, run 2 | 10 min 10 s |
+| Restore duration, run 4 | 7 min 08 s |
 | Restore-point lag accepted by Azure | 98 s |
+| Run 4: restore start to app confirmed on the restored data | 20 min 06 s |
 
 Near-empty staging database. A third restore (2026-11-20, real-list rehearsal)
-succeeded but its end time was not captured. Time to repoint the app is not included and the
-duration will grow with data. The proposed targets (≤15 min data loss, ≤1 h
-restore) are still unapproved.
+succeeded but its end time was not captured. The 20 minutes include the
+operator pasting each command by hand and **exclude** steps 2 to 4, which run
+4 skipped. Durations will grow with data. The owner approved the targets on
+2026-11-20: at most 15 minutes of accepted data loss, at most 1 hour to
+restore. They are rollout targets, not guarantees: the 1 hour has not been
+measured end to end, and never with pilot-sized data.
 
 ## Before you start
 
@@ -156,12 +163,76 @@ Limits of this step, stated plainly:
 
 ## Step 5 — only then, let the app use it
 
-Not rehearsed. Before the restored database serves players it needs, at
-least: a private endpoint, public access back to `Disabled`, the firewall rule
-removed, the app's managed-identity role present (roles are restored with the
-server; verify with a login from the app), and the app's
-`SORT_TESTER_DATABASE_URL` pointed at the new host. Write and rehearse this
-before the pilot.
+Rehearsed on staging on 2026-11-20 (run 4), without steps 2 to 4 before it.
+
+**5a. Close what step 2 opened.** Not rehearsed together with the rest of
+this step. Remove the operator firewall rule, set public access back to
+`Disabled`, and read both back before going on:
+
+```sh
+unset PGPASSWORD
+az postgres flexible-server firewall-rule delete -g $RG -s $T --name operator-temp --yes
+az postgres flexible-server update -g $RG -n $T --public-access Disabled -o none
+az postgres flexible-server firewall-rule list -g $RG -s $T -o table
+az postgres flexible-server show -g $RG -n $T --query "network.publicNetworkAccess" -o tsv
+```
+
+**5b. Give the restored server a private endpoint and a private name.** The
+existing endpoint and DNS record of the source server are not touched.
+
+```sh
+VNET=<vnet>; PE=pe-$T
+LOC=$(az network vnet show -g $RG -n $VNET --query location -o tsv)
+SID=$(az postgres flexible-server show -g $RG -n $T --query id -o tsv)
+az network private-endpoint create -g $RG -n $PE -l $LOC --vnet-name $VNET --subnet snet-data \
+  --private-connection-resource-id $SID --group-id postgresqlServer --connection-name postgres -o none
+az network private-endpoint show -g $RG -n $PE --query "{state:provisioningState, link:privateLinkServiceConnections[0].privateLinkServiceConnectionState.status, ip:customDnsConfigs[0].ipAddresses[0]}" -o table
+az network private-endpoint dns-zone-group create -g $RG --endpoint-name $PE -n default \
+  --private-dns-zone privatelink.postgres.database.azure.com --zone-name postgres -o none
+az network private-dns record-set a list -g $RG -z privatelink.postgres.database.azure.com --query "[].{name:name, ip:aRecords[0].ipv4Address}" -o table
+```
+
+Expected: `Succeeded`, `Approved`, an address in the data subnet; then one
+DNS record per server, the new one carrying that address. Add the resource
+group's required tags with `--tags` on the `create`.
+
+**5c. Point a new app revision at the restored server.** The block reads the
+current connection string, swaps only the host name, shows both, and stops
+if the current value is not what it expects. The string holds no password in
+managed-identity mode.
+
+```sh
+APP=<container-app>; SRC=<source-server>
+CUR=$(az containerapp show -g $RG -n $APP --query "properties.template.containers[0].env[?name=='SORT_TESTER_DATABASE_URL'].value | [0]" -o tsv)
+NEW=${CUR/$SRC/$T}
+echo "BEFORE $CUR"; echo "AFTER  $NEW"
+if [ -z "$CUR" ] || [ "$CUR" = "$NEW" ]; then echo "STOP: unexpected current value, nothing changed"; else
+az containerapp update -g $RG -n $APP --revision-suffix <suffix> --set-env-vars "SORT_TESTER_DATABASE_URL=$NEW" -o none
+az containerapp revision list -g $RG -n $APP --query "[].{rev:name, active:properties.active, health:properties.healthState, traffic:properties.trafficWeight}" -o table
+fi
+```
+
+**5d. Prove which database the app is serving.** A `200` from a health or
+notice route right after the update proves nothing: the old revision can
+still be answering. Use data that differs between the two databases. In the
+rehearsal an account created after the restore point logged in before the
+switch (`200`), was refused after it (`401`) while an older account still
+logged in, and logged in again after the rollback.
+
+What the rehearsal showed: the app's managed-identity role and its grants
+come back with the restore; nobody had to recreate them.
+
+Limits, stated plainly:
+
+- **Rollback** is `az containerapp revision copy -g $RG -n $APP
+  --from-revision <previous-revision> --revision-suffix <suffix>`. It was
+  rehearsed. In a real recovery there is nothing to roll back to.
+- Anything written while the app serves the restored server lives only there.
+- After a real recovery the endpoint and the connection string were made by
+  hand and no longer match the templates (`network.bicep` names one server).
+  Reconciling them is not written or rehearsed.
+- The source server's delete lock, backups settings and diagnostic settings
+  were not checked on the restored server.
 
 ## Step 6 — clean up
 
@@ -169,9 +240,18 @@ For a rehearsal, or once the restored server is no longer needed:
 
 ```sh
 unset PGPASSWORD
+az network private-endpoint delete -g $RG -n pe-$T
 az postgres flexible-server delete -g $RG -n $T --yes
+az network private-endpoint list -g $RG --query "[].{name:name, state:provisioningState}" -o table
+az network private-dns record-set a list -g $RG -z privatelink.postgres.database.azure.com --query "[].{name:name, ip:aRecords[0].ipv4Address}" -o table
 az postgres flexible-server list -g $RG --query "[].{name:name, state:state, public:network.publicNetworkAccess}" -o table
+az containerapp revision list -g $RG -n <container-app> --query "[].{rev:name, active:properties.active, traffic:properties.trafficWeight}" -o table
 ```
+
+If the app was pointed at the restored server, roll it back and prove it
+(step 5d) **before** deleting anything, so it never points at a server that
+is gone. Deleting the endpoint removes its DNS record (seen in run 4). No
+active revision may still name the deleted server.
 
 `delete` prints nothing on success, and also nothing if the server never
 existed. **Always run the `list` and read it**: only the expected servers,
@@ -224,8 +304,8 @@ is still reachable, check each listed account there before re-applying.
 ## Still open
 
 - Deletion list: watch one note expire. The emergency read procedure has never been run.
-- Step 5 rehearsal and end-to-end recovery time.
+- One recovery with steps 1 to 5 in sequence, timed end to end (step 5a has not been run after a real step 2).
+- Bringing the templates back in line after a real recovery.
 - Run the whole runbook on the separate pilot environment.
 - Geo-redundant backup (only settable when a server is created).
-- Owner approval of the data-loss and restore-time targets.
 - Player-facing wording about the 7-day completion delay.
