@@ -957,6 +957,22 @@ One address at a time; the template's `appOriginToConfigure` output names it.
 
 The app must stay running for the certificate to be issued and renewed.
 
+**What the rehearsal proved (staging, 2026-11-20, template at `370b276`):**
+
+- A deployment *with* the two parameters, run while the domain was unbound,
+  **bound it again by itself** using the existing certificate; no
+  `hostname add` was needed. So a deployment that forgot the parameters is
+  repaired by the next one that has them.
+- A second deployment with them kept the domain. Neither created a revision.
+- A third changed only `appOrigin` to `https://stg.sortquiz.app`: one new
+  revision; login and a session then worked on the custom domain (cookie
+  bound to that host) and login on Azure's address answered 403.
+
+Staging's address is therefore `https://stg.sortquiz.app`, and every staging
+deployment must pass `customDomainName`, `customDomainCertificateName` and
+that `appOrigin`. Not rehearsed: the bare domain, certificate renewal, and
+removing a domain.
+
 ## 7. Read the real cost
 
 Billing data lags, usually 8 to 24 hours.
