@@ -1,11 +1,11 @@
 # Database restore runbook — issue #13, Fatia B
 
 Status: rehearsed on fictional-data Azure staging on 2026-11-19/20 up to and
-including "re-apply deletions". Repointing the app at a restored server is
-**not rehearsed**. The deletion list is **live on staging** (a real deletion
-wrote a real note on 2026-11-20); reading it with the command in step 4 is
-**not yet rehearsed against Azure**. Not approved for a pilot with employee
-data until both are done.
+including "re-apply deletions". On 2026-11-20 a third restore was re-applied
+from the **real deletion list**: the command in step 4 named the one account
+deleted after the restore point, and that id and time alone were enough to
+erase it again. Repointing the app at a restored server is **not rehearsed**.
+Not approved for a pilot with employee data until that is done.
 Related: [[db-runtime-role]], [[shared-resource-locks]],
 [[../../docs/superpowers/specs/2026-11-07-ranked-decision-record]].
 
@@ -29,7 +29,8 @@ promise made to players (Decision 14).
 | Restore duration, run 2 | 10 min 10 s |
 | Restore-point lag accepted by Azure | 98 s |
 
-Near-empty staging database. Time to repoint the app is not included and the
+Near-empty staging database. A third restore (2026-11-20, real-list rehearsal)
+succeeded but its end time was not captured. Time to repoint the app is not included and the
 duration will grow with data. The proposed targets (≤15 min data loss, ≤1 h
 restore) are still unapproved.
 
@@ -144,6 +145,8 @@ point; purging them is correct.
 
 Limits of this step, stated plainly:
 
+- Revoking a live session was **not** exercised in the real-list rehearsal
+  (the test account had no active session at the restore point).
 - The `season_markers` insert was **not** exercised in the rehearsal (the test
   account had no participant link). It also uses the newest season in the
   restored data, which is wrong if a season changed between the deletion and
@@ -220,7 +223,7 @@ is still reachable, check each listed account there before re-applying.
 
 ## Still open
 
-- Deletion list: rehearse step 4's read command on staging, then a restore that re-applies from the real list; watch one note expire.
+- Deletion list: watch one note expire. The emergency read procedure has never been run.
 - Step 5 rehearsal and end-to-end recovery time.
 - Run the whole runbook on the separate pilot environment.
 - Geo-redundant backup (only settable when a server is created).
