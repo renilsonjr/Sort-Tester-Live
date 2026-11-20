@@ -78,7 +78,9 @@ class PrivateNetworkTemplateTests(unittest.TestCase):
         self.assertLessEqual(int(prefix.group(2)), 27)
 
     def test_it_carries_the_fictional_only_tag(self):
-        self.assertIn("'data-classification': 'fictional-only'", self.code)
+        # By default: the tag is a parameter whose default is fictional-only.
+        self.assertIn("'data-classification': dataClassification", self.code)
+        self.assertIn("param dataClassification string = 'fictional-only'", self.code)
 
     def test_the_subnet_id_it_outputs_is_what_the_app_template_takes(self):
         self.assertIn("output appSubnetId string =", self.code)

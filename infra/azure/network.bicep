@@ -24,6 +24,14 @@ param location string = 'northcentralus'
 @maxLength(10)
 param expiresOn string
 
+@description('Which environment this deployment is. It sets the resource names and the environment tag. The default is the staging that already exists: leave it out there and nothing changes.')
+@allowed(['stg', 'pilot'])
+param environmentSuffix string = 'stg'
+
+@description('What kind of data the environment holds, recorded as a tag. Staging holds fictional data only. The pilot value marks real employee data.')
+@allowed(['fictional-only', 'employee-pilot'])
+param dataClassification string = 'fictional-only'
+
 @description('Name of the PostgreSQL Flexible Server that already exists in this resource group. It is not created or modified here; the private endpoint points at it.')
 param postgresServerName string
 
@@ -36,10 +44,13 @@ param appSubnetPrefix string = '10.20.1.0/27'
 @description('Subnet holding the database private endpoint. It is not delegated and holds no compute.')
 param dataSubnetPrefix string = '10.20.2.0/28'
 
+// The tag kept its long form for staging so existing resources do not change.
+var environmentTag = environmentSuffix == 'stg' ? 'staging' : environmentSuffix
+
 var tags = {
   project: 'sort-tester-live'
-  environment: 'staging'
-  'data-classification': 'fictional-only'
+  environment: environmentTag
+  'data-classification': dataClassification
   purpose: 'private-network'
   'expires-on': expiresOn
 }
@@ -51,7 +62,7 @@ var tags = {
 var postgresPrivateDnsZoneName = 'privatelink.postgres.database.azure.com'
 
 resource vnet 'Microsoft.Network/virtualNetworks@2024-05-01' = {
-  name: 'vnet-sort-stg'
+  name: 'vnet-sort-${environmentSuffix}'
   location: location
   tags: tags
   properties: {
@@ -96,7 +107,7 @@ resource postgresPrivateDnsZone 'Microsoft.Network/privateDnsZones@2020-06-01' =
 // so the server name still resolves to its public address.
 resource postgresZoneLink 'Microsoft.Network/privateDnsZones/virtualNetworkLinks@2020-06-01' = {
   parent: postgresPrivateDnsZone
-  name: 'link-vnet-sort-stg'
+  name: 'link-vnet-sort-${environmentSuffix}'
   location: 'global'
   tags: tags
   properties: {

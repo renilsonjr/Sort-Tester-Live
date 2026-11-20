@@ -27,10 +27,21 @@ param location string = 'northcentralus'
 @maxLength(10)
 param expiresOn string
 
+@description('Which environment this deployment is. It sets the resource names and the environment tag. The default is the staging that already exists: leave it out there and nothing changes.')
+@allowed(['stg', 'pilot'])
+param environmentSuffix string = 'stg'
+
+@description('What kind of data the environment holds, recorded as a tag. Staging holds fictional data only. The pilot value marks real employee data.')
+@allowed(['fictional-only', 'employee-pilot'])
+param dataClassification string = 'fictional-only'
+
+// The tag kept its long form for staging so existing resources do not change.
+var environmentTag = environmentSuffix == 'stg' ? 'staging' : environmentSuffix
+
 var tags = {
   project: 'sort-tester-live'
-  environment: 'staging'
-  'data-classification': 'fictional-only'
+  environment: environmentTag
+  'data-classification': dataClassification
   purpose: 'deletion-list'
   'expires-on': expiresOn
 }
@@ -45,11 +56,11 @@ var blobPrivateDnsZoneName = 'privatelink.blob.${environment().suffixes.storage}
 
 // Both pre-exist (runtime-identity.bicep, network.bicep); references only.
 resource runtimeIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2024-11-30' existing = {
-  name: 'id-sort-app-stg'
+  name: 'id-sort-app-${environmentSuffix}'
 }
 
 resource vnet 'Microsoft.Network/virtualNetworks@2024-05-01' existing = {
-  name: 'vnet-sort-stg'
+  name: 'vnet-sort-${environmentSuffix}'
 }
 
 resource account 'Microsoft.Storage/storageAccounts@2024-01-01' = {
@@ -162,7 +173,7 @@ resource blobPrivateDnsZone 'Microsoft.Network/privateDnsZones@2020-06-01' = {
 // and the account name resolves to a public address that refuses the app.
 resource blobZoneLink 'Microsoft.Network/privateDnsZones/virtualNetworkLinks@2020-06-01' = {
   parent: blobPrivateDnsZone
-  name: 'link-vnet-sort-stg'
+  name: 'link-vnet-sort-${environmentSuffix}'
   location: 'global'
   tags: tags
   properties: {

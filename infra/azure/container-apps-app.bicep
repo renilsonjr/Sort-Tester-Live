@@ -19,6 +19,14 @@ param location string = 'northcentralus'
 @maxLength(10)
 param expiresOn string
 
+@description('Which environment this deployment is. It sets the resource names and the environment tag. The default is the staging that already exists: leave it out there and nothing changes.')
+@allowed(['stg', 'pilot'])
+param environmentSuffix string = 'stg'
+
+@description('What kind of data the environment holds, recorded as a tag. Staging holds fictional data only. The pilot value marks real employee data.')
+@allowed(['fictional-only', 'employee-pilot'])
+param dataClassification string = 'fictional-only'
+
 @description('Image digest to deploy, without the sha256: prefix. Built and published by the App image publish workflow; a mutable tag is never accepted.')
 @minLength(64)
 @maxLength(64)
@@ -52,16 +60,23 @@ param appSubnetId string = ''
 ])
 param trustedProxies string = '1'
 
+@description('1 keeps one replica always on (the default, and what staging runs). 0 lets the app stop when idle, which costs less but gives up both reasons for always-on: the sign-up rate limiter counts in memory and is forgotten on every stop, and the first request after a stop waits for a cold start.')
+@allowed([0, 1])
+param minReplicas int = 1
+
+// The tag kept its long form for staging so existing resources do not change.
+var environmentTag = environmentSuffix == 'stg' ? 'staging' : environmentSuffix
+
 var appTags = {
   project: 'sort-tester-live'
-  environment: 'staging'
-  'data-classification': 'fictional-only'
+  environment: environmentTag
+  'data-classification': dataClassification
   purpose: 'single-origin-app-container-apps'
   'expires-on': expiresOn
 }
 
 resource appEnvironment 'Microsoft.App/managedEnvironments@2025-01-01' = {
-  name: 'cae-sort-app-stg'
+  name: 'cae-sort-app-${environmentSuffix}'
   location: location
   tags: appTags
   properties: {
@@ -85,7 +100,7 @@ resource appEnvironment 'Microsoft.App/managedEnvironments@2025-01-01' = {
 }
 
 resource app 'Microsoft.App/containerApps@2025-01-01' = {
-  name: 'ca-sort-app-stg'
+  name: 'ca-sort-app-${environmentSuffix}'
   location: location
   tags: appTags
   // The app pulls as itself. Before this it used an account-scoped GHCR
@@ -184,7 +199,9 @@ resource app 'Microsoft.App/containerApps@2025-01-01' = {
         // limiter counts in memory per instance, and a cold start would eat
         // into the ten-second ranked question clock. This is the "always on"
         // cost in the estimate; it is not free-grant-only usage.
-        minReplicas: 1
+        // minReplicas may be set to 0 by an explicit owner decision only: see
+        // the parameter's description for what that gives up.
+        minReplicas: minReplicas
         maxReplicas: 1
       }
     }

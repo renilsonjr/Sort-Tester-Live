@@ -27,8 +27,13 @@ class SingleOriginAppTemplateTests(unittest.TestCase):
                 "Microsoft.App/containerApps@2025-01-01",
             ],
         )
-        self.assertIn("name: 'cae-sort-app-stg'", self.code)
-        self.assertIn("name: 'ca-sort-app-stg'", self.code)
+        # Names follow the environment, and the environment defaults to the
+        # staging that already exists, so a deployment that says nothing
+        # still names `cae-sort-app-stg` and `ca-sort-app-stg`.
+        self.assertIn("name: 'cae-sort-app-${environmentSuffix}'", self.code)
+        self.assertIn("name: 'ca-sort-app-${environmentSuffix}'", self.code)
+        self.assertIn("param environmentSuffix string = 'stg'", self.code)
+        self.assertIn("@allowed(['stg', 'pilot'])", self.code)
 
     def test_creates_no_database_network_or_monitoring_resource(self):
         for forbidden in (
@@ -46,7 +51,11 @@ class SingleOriginAppTemplateTests(unittest.TestCase):
             self.assertNotIn(existing, self.code)
 
     def test_exactly_one_always_on_replica(self):
-        self.assertIn("minReplicas: 1", self.code)
+        # Always on unless a deployment asks otherwise, and never more than
+        # one replica either way.
+        self.assertIn("minReplicas: minReplicas", self.code)
+        self.assertIn("param minReplicas int = 1", self.code)
+        self.assertIn("@allowed([0, 1])", self.code)
         self.assertIn("maxReplicas: 1", self.code)
         # More than one replica would split the in-memory sign-up limiter.
         self.assertNotIn("minReplicas: 0", self.code)
@@ -61,9 +70,12 @@ class SingleOriginAppTemplateTests(unittest.TestCase):
         self.assertIn("memory: '0.5Gi'", self.code)
         for line in (
             "project: 'sort-tester-live'",
-            "environment: 'staging'",
-            "'data-classification': 'fictional-only'",
+            "environment: environmentTag",
+            "'data-classification': dataClassification",
             "purpose: 'single-origin-app-container-apps'",
+            # The defaults are what staging carries today.
+            "var environmentTag = environmentSuffix == 'stg' ? 'staging' : environmentSuffix",
+            "param dataClassification string = 'fictional-only'",
         ):
             self.assertIn(line, self.code)
         self.assertIn("'expires-on': expiresOn", self.code)
