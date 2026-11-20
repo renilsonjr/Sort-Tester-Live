@@ -1,7 +1,9 @@
 # Deletion-list storage — issue #13, Fatia B
 
-Status: **template only, not deployed.** Compiled by CI; never sent to Azure,
-not even as a what-if. Fictional-data staging.
+Status: **deployed to fictional-data staging on 2026-11-20** (what-if: 9 to
+create, nothing modified or deleted; read-back matched the template). A real
+deletion through the app wrote one note (`PutBlob` success in the account's
+metrics). Not yet observed: a note expiring, and the list being read back.
 Related: [[restore-runbook]], [[runtime-identity]], [[policy-validation]],
 [[../../docs/superpowers/specs/2026-11-20-deletion-list-design]].
 
@@ -65,9 +67,10 @@ already uses the private-endpoint pattern. It is the owner's call.
 ## Consequences to know before deploying
 
 - **The operator cannot read the list from Cloud Shell** while public network
-  access is off, exactly as with the database. Reading it during a restore
-  will need a temporary, deliberate network change, or a jump point inside
-  the network. This is not solved yet and must be before the pilot.
+  access is off, exactly as with the database. The list is read from inside
+  the app's container instead (`az containerapp exec`, see
+  [[restore-runbook]] step 4), which needs the container to be running. The
+  fallback for a fully down app is in the runbook and has never been run.
 - **The resource group's `CanNotDelete` locks do not cover this account**, and
   none is added here. Note that a lock would not stop the lifecycle rule
   (that is data-plane), but decide deliberately whether to lock it.
@@ -76,7 +79,7 @@ already uses the private-endpoint pattern. It is the owner's call.
   as working behind the firewall; confirm on staging by watching one note
   expire.
 
-## Steps (each needs owner approval; none has been run)
+## Steps (each needs owner approval; 1 to 3 done on staging 2026-11-20, first half of 4 done)
 
 1. **Preview.** In Cloud Shell, with the repository checked out:
 
