@@ -10,8 +10,9 @@ from fastapi.staticfiles import StaticFiles
 from psycopg_pool import PoolTimeout
 
 from backend import http_hardening, origin_guard
+from backend.db import settings as db_settings
 from backend.db.entra_token import TokenUnavailable
-from backend.auth import settings as auth_settings
+from backend.auth import deletion_list, settings as auth_settings
 from backend.auth.rate_limit import RegistrationLimiter
 from backend.routers import auth, ranked
 
@@ -49,6 +50,10 @@ def create_app() -> FastAPI:
         cookie_secure=auth_settings.get_auth_settings().cookie_secure,
         app_origin=app_origin,
     )
+
+    # A hosted deployment that forgot the deletion list would accept
+    # deletions a restore silently undoes; it fails to start instead (#13).
+    deletion_list.check_policy(db_auth_mode=db_settings.db_auth_mode())
 
     # Added first so it sits innermost: CORS still answers preflight, and the
     # guard only ever sees a real write.

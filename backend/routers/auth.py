@@ -11,6 +11,7 @@ from backend.auth.service import (
     login_with_id,
     register_account,
 )
+from backend.auth.deletion_list import DeletionListUnavailable
 from backend.auth.deletion import (
     OwnerAccountError,
     WrongLoginIdError,
@@ -301,6 +302,13 @@ def delete_account(
             raise HTTPException(
                 status_code=status.HTTP_409_CONFLICT,
                 detail="The owner account cannot be deleted",
+            ) from None
+        except DeletionListUnavailable:
+            # the deletion could not be made restore-proof, so it was not
+            # accepted: nothing changed and the player can try again (#13)
+            raise HTTPException(
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                detail="Deletion is temporarily unavailable. Nothing was changed; try again shortly.",
             ) from None
     response.delete_cookie(key="sort_tester_session", path="/")
     return {"status": "accepted"}
