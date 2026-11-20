@@ -41,6 +41,20 @@ deletion. An operator with lock-delete permission can remove them. See
 [Azure management-lock semantics](https://learn.microsoft.com/en-us/azure/azure-resource-manager/management/lock-resources)
 and the [lock resource reference](https://learn.microsoft.com/en-us/azure/templates/microsoft.authorization/2020-05-01/locks).
 
+## 0. The deletion-list lock (added 2026-11-20)
+
+The template takes an optional `deletionListStorageAccountName`. Given, it
+adds a fourth `CanNotDelete` lock, on the storage account that holds the
+deletion list (issue #13). Left empty, the template is exactly what it was.
+
+The lock stops the account and its `deletions` container from being deleted
+through Azure's management side. It does **not** stop the app or the 7-day
+lifecycle rule from deleting notes; those are data operations. After applying
+it, confirm that a note still expires.
+
+The steps below are unchanged: preview, owner approval, apply, read back.
+Expect one *Create* for the new lock and no change to the other three.
+
 ## 1. Read-only preflight
 
 Use the merged, reviewed commit of `codex/ranked-mode` in Cloud Shell.
