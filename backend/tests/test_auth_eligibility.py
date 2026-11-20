@@ -55,7 +55,12 @@ class EligibilityTests(unittest.TestCase):
         self._accounts = 0
 
     def _account(self, name, *, owner=False):
-        tag = f"{name[:3].upper()}{abs(hash(name)) % 1000:03d}"
+        # A counter, not hash(name): Python salts str hashes per process, so
+        # two names sharing three letters ("dock_owl", "dock_owl_two") drew
+        # the same tag about once in a thousand runs and failed CI on the
+        # unique constraint with nothing wrong in the code under test.
+        self._tag_seq = getattr(self, "_tag_seq", 0) + 1
+        tag = f"{name[:3].upper()}{self._tag_seq:03d}"
         return migrate.fetch_one(
             self.conn,
             "INSERT INTO accounts (username, username_lower, tag, is_owner)"
