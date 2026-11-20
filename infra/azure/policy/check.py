@@ -21,7 +21,9 @@ evidence in `final-verification-2026-11-18.md` already does by hand. Instead it
 asserts a fixed set of security *invariants* that the reviewed baseline holds
 and that must keep holding: HTTPS-only ingress, images pinned by digest, no
 plaintext database credential in a template, a registry with admin and
-anonymous pull off, a Key Vault on RBAC with soft delete, the GitHub OIDC
+anonymous pull off, a Key Vault on RBAC with soft delete, a storage account
+with no keys, no anonymous or public-network access and no retained blob
+copies, the GitHub OIDC
 issuer unchanged, and no broad Azure role (Owner / Contributor / User Access
 Administrator) handed out by a role assignment.
 
@@ -189,6 +191,49 @@ def _check_key_vault(resource: dict[str, Any], findings: list[Finding]) -> None:
         ))
 
 
+def _check_storage_account(resource: dict[str, Any], findings: list[Finding]) -> None:
+    # The only storage account holds the deletion list (issue #13): account
+    # ids of players who asked to be erased. Each property must be stated;
+    # absence would fall back to a platform default nobody reviewed.
+    props = resource.get("properties") or {}
+    if not _is_false(props.get("allowSharedKeyAccess")):
+        findings.append(Finding(
+            "storage-shared-key-off", _name(resource),
+            f"properties.allowSharedKeyAccess is {props.get('allowSharedKeyAccess')!r}, must be false",
+        ))
+    if not _is_false(props.get("allowBlobPublicAccess")):
+        findings.append(Finding(
+            "storage-anon-access-off", _name(resource),
+            f"properties.allowBlobPublicAccess is {props.get('allowBlobPublicAccess')!r}, must be false",
+        ))
+    if props.get("publicNetworkAccess") != "Disabled":
+        findings.append(Finding(
+            "storage-public-network-off", _name(resource),
+            f"properties.publicNetworkAccess is {props.get('publicNetworkAccess')!r}, must be 'Disabled'",
+        ))
+
+
+def _check_blob_service(resource: dict[str, Any], findings: list[Finding]) -> None:
+    # Soft delete and versioning keep a recoverable copy of a "deleted" blob,
+    # silently stretching a deletion note past the 7 days the owner approved.
+    # They look like safety features, so each must be explicitly off.
+    props = resource.get("properties") or {}
+    kept = [
+        label
+        for label, value in (
+            ("isVersioningEnabled", props.get("isVersioningEnabled")),
+            ("deleteRetentionPolicy.enabled", (props.get("deleteRetentionPolicy") or {}).get("enabled")),
+            ("containerDeleteRetentionPolicy.enabled", (props.get("containerDeleteRetentionPolicy") or {}).get("enabled")),
+        )
+        if not _is_false(value)
+    ]
+    if kept:
+        findings.append(Finding(
+            "blob-no-retained-copies", _name(resource),
+            f"{', '.join(kept)} must be explicitly false; retained copies outlive the 7-day deletion-note window",
+        ))
+
+
 def _check_role_assignment(resource: dict[str, Any], findings: list[Finding]) -> None:
     props = resource.get("properties") or {}
     role = _as_text(props.get("roleDefinitionId", "")).lower()
@@ -224,6 +269,10 @@ def evaluate(template: dict[str, Any]) -> list[Finding]:
             _check_registry(resource, findings)
         elif resource_type == "microsoft.keyvault/vaults":
             _check_key_vault(resource, findings)
+        elif resource_type == "microsoft.storage/storageaccounts":
+            _check_storage_account(resource, findings)
+        elif resource_type == "microsoft.storage/storageaccounts/blobservices":
+            _check_blob_service(resource, findings)
         elif resource_type == "microsoft.authorization/roleassignments":
             _check_role_assignment(resource, findings)
         elif resource_type == "microsoft.managedidentity/userassignedidentities/federatedidentitycredentials":

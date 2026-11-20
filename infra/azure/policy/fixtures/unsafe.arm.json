@@ -34,7 +34,9 @@
       "properties": {
         "issuer": "https://evil.example.com",
         "subject": "[parameters('federatedSubject')]",
-        "audiences": ["api://AzureADTokenExchange"]
+        "audiences": [
+          "api://AzureADTokenExchange"
+        ]
       }
     },
     {
@@ -63,6 +65,30 @@
               "image": "ghcr.io/renilsonjr/sort-tester-live-app:latest"
             }
           ]
+        }
+      }
+    },
+    {
+      "type": "Microsoft.Storage/storageAccounts",
+      "apiVersion": "2024-01-01",
+      "name": "[format('stsortdel{0}', uniqueString(resourceGroup().id))]",
+      "properties": {
+        "allowSharedKeyAccess": true,
+        "allowBlobPublicAccess": true,
+        "publicNetworkAccess": "Enabled"
+      }
+    },
+    {
+      "type": "Microsoft.Storage/storageAccounts/blobServices",
+      "apiVersion": "2024-01-01",
+      "name": "[format('{0}/{1}', format('stsortdel{0}', uniqueString(resourceGroup().id)), 'default')]",
+      "properties": {
+        "isVersioningEnabled": false,
+        "deleteRetentionPolicy": {
+          "enabled": true
+        },
+        "containerDeleteRetentionPolicy": {
+          "enabled": false
         }
       }
     }

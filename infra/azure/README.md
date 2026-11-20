@@ -44,6 +44,11 @@ the app template replaced it.
 - `runtime-identity.bicep` (+ `.md`) — the app's identity and its two
   resource-scoped roles: pull from the registry, read from the vault.
 - `security-foundation.md` — how the registry and vault were created.
+- `deletion-list-storage.bicep` (+ `.md`) — private blob storage for the
+  deletion list (#13): notes of accepted deletions that a database restore
+  must re-apply. Template only; **not deployed**.
+- `restore-runbook.md` — database restore with the mandatory "re-apply
+  deletions" step; rehearsed on staging 2026-11-19/20.
 - `container-apps-spike.bicep` — disposable spike template (validated
   2026-11-10; app and environment deleted after the test).
 - `container-apps-staging.bicep` — guarded API-only staging template, pinned to
