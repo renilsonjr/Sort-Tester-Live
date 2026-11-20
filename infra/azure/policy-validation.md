@@ -67,6 +67,8 @@ arrived: a Modify that flips a flag, a Delete-and-recreate, or a new resource.
 | `storage-anon-access-off` | `allowBlobPublicAccess` is explicitly `false` | `Microsoft.Storage/storageAccounts` |
 | `storage-public-network-off` | `publicNetworkAccess` is `Disabled` | `Microsoft.Storage/storageAccounts` |
 | `blob-no-retained-copies` | versioning, blob soft delete and container soft delete are each explicitly `false`, so a deletion note cannot outlive its 7-day window (#13) | `…/storageAccounts/blobServices` |
+| `postgres-public-network-off` | `network.publicNetworkAccess` is the literal `Disabled` | `Microsoft.DBforPostgreSQL/flexibleServers` |
+| `postgres-backup-matches-deletion-list` | `backupRetentionDays` is the literal `7` and `geoRedundantBackup` is `Disabled`, so no backup can outlive or outreach the deletion list (#13) | `Microsoft.DBforPostgreSQL/flexibleServers` |
 | `no-broad-role` | no role assignment references Owner, Contributor, User Access Administrator or RBAC Administrator | `Microsoft.Authorization/roleAssignments` |
 | `oidc-issuer` | a federated credential's `issuer` is the GitHub Actions OIDC issuer and nothing else | `…/federatedIdentityCredentials` |
 

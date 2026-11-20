@@ -47,6 +47,10 @@ the app template replaced it.
 - `deletion-list-storage.bicep` (+ `.md`) — private blob storage for the
   deletion list (#13): notes of accepted deletions that a database restore
   must re-apply. Template only; **not deployed**.
+- `postgres-server.bicep` — the PostgreSQL server of a **new** environment
+  (#13): closed to the internet from creation, 7-day single-region backups to
+  match the deletion list, Entra and password sign-in. Staging's server was
+  made by hand and is not managed by it. Template only; **not deployed**.
 - `restore-runbook.md` — database restore with the mandatory "re-apply
   deletions" step; rehearsed on staging 2026-11-19/20.
 - `container-apps-spike.bicep` — disposable spike template (validated
