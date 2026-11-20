@@ -924,8 +924,12 @@ certificates"); what is written here is what ran.
    ```
 
    A bare domain (no subdomain) uses an `A` record to the environment's
-   static IP and a `TXT` named `asuid`, with `--validation-method HTTP`
-   below. **Not rehearsed.**
+   static IP (`az containerapp env show -g <rg> -n <environment> --query
+   properties.staticIp -o tsv`) and a `TXT` named `asuid`, with
+   `--validation-method HTTP` below. Done on 2026-11-20 for `sortquiz.app`.
+   Check the registrar has no parking records on the bare name first, and
+   query the registrar's own name server if a public resolver still shows
+   nothing: it may be repeating an older "no such record" answer.
 
 2. **Bind it by command line.** This creates the managed certificate; it took
    a little over five minutes. No new revision is created.
@@ -968,10 +972,21 @@ The app must stay running for the certificate to be issued and renewed.
   revision; login and a session then worked on the custom domain (cookie
   bound to that host) and login on Azure's address answered 403.
 
-Staging's address is therefore `https://stg.sortquiz.app`, and every staging
-deployment must pass `customDomainName`, `customDomainCertificateName` and
-that `appOrigin`. Not rehearsed: the bare domain, certificate renewal, and
-removing a domain.
+**The bare domain, later the same day.** `sortquiz.app` was bound by command
+line with HTTP validation while `stg.sortquiz.app` was still bound, so the
+app briefly had two domains. A deployment naming only `sortquiz.app`, its
+certificate and `appOrigin=https://sortquiz.app` then unbound the `stg` name
+and created one new revision. From outside: login and a session work on
+`https://sortquiz.app` (cookie bound to that host), plain `http://` redirects
+to `https://`, and login on Azure's own address answers 403.
+
+**The app's address is `https://sortquiz.app`.** Every deployment must pass
+`customDomainName=sortquiz.app`, `customDomainCertificateName` (the managed
+certificate for that name) and `appOrigin=https://sortquiz.app`. The template
+carries one domain: naming a different one unbinds the current one.
+
+Not rehearsed: certificate renewal (the certificates run to 2027-05-20), and
+deleting a certificate that is no longer bound.
 
 ## 7. Read the real cost
 
