@@ -213,6 +213,32 @@ def _check_storage_account(resource: dict[str, Any], findings: list[Finding]) ->
         ))
 
 
+def _check_postgres_server(resource: dict[str, Any], findings: list[Finding]) -> None:
+    # A server created from a template holds real accounts. Each value must
+    # be a literal in the template, so a parameter cannot quietly change it.
+    props = resource.get("properties") or {}
+    public = (props.get("network") or {}).get("publicNetworkAccess")
+    if public != "Disabled":
+        findings.append(Finding(
+            "postgres-public-network-off", _name(resource),
+            f"properties.network.publicNetworkAccess is {public!r}, must be 'Disabled'",
+        ))
+    # The deletion list covers 7 days in one region (issue #13). A longer
+    # backup window, or a geo copy, can restore an erased account after its
+    # note is gone or where the list does not exist.
+    backup = props.get("backup") or {}
+    wrong = []
+    if backup.get("backupRetentionDays") != 7:
+        wrong.append(f"backupRetentionDays is {backup.get('backupRetentionDays')!r}, must be 7")
+    if backup.get("geoRedundantBackup") != "Disabled":
+        wrong.append(f"geoRedundantBackup is {backup.get('geoRedundantBackup')!r}, must be 'Disabled'")
+    if wrong:
+        findings.append(Finding(
+            "postgres-backup-matches-deletion-list", _name(resource),
+            "; ".join(wrong),
+        ))
+
+
 def _check_blob_service(resource: dict[str, Any], findings: list[Finding]) -> None:
     # Soft delete and versioning keep a recoverable copy of a "deleted" blob,
     # silently stretching a deletion note past the 7 days the owner approved.
@@ -273,6 +299,8 @@ def evaluate(template: dict[str, Any]) -> list[Finding]:
             _check_storage_account(resource, findings)
         elif resource_type == "microsoft.storage/storageaccounts/blobservices":
             _check_blob_service(resource, findings)
+        elif resource_type == "microsoft.dbforpostgresql/flexibleservers":
+            _check_postgres_server(resource, findings)
         elif resource_type == "microsoft.authorization/roleassignments":
             _check_role_assignment(resource, findings)
         elif resource_type == "microsoft.managedidentity/userassignedidentities/federatedidentitycredentials":

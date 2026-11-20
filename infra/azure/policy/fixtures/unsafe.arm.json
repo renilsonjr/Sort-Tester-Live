@@ -91,6 +91,20 @@
           "enabled": false
         }
       }
+    },
+    {
+      "type": "Microsoft.DBforPostgreSQL/flexibleServers",
+      "apiVersion": "2024-08-01",
+      "name": "[parameters('serverName')]",
+      "properties": {
+        "network": {
+          "publicNetworkAccess": "Enabled"
+        },
+        "backup": {
+          "backupRetentionDays": 35,
+          "geoRedundantBackup": "Enabled"
+        }
+      }
     }
   ]
 }

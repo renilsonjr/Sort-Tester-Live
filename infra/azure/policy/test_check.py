@@ -56,6 +56,8 @@ class UnsafeFixture(unittest.TestCase):
                 "storage-anon-access-off",
                 "storage-public-network-off",
                 "blob-no-retained-copies",
+                "postgres-public-network-off",
+                "postgres-backup-matches-deletion-list",
             },
         )
 
@@ -188,6 +190,41 @@ class IndividualInvariants(unittest.TestCase):
         self.assertEqual(_rules(account(allowSharedKeyAccess=None)), {"storage-shared-key-off"})
         self.assertEqual(_rules(account(allowBlobPublicAccess=None)), {"storage-anon-access-off"})
         self.assertEqual(_rules(account(publicNetworkAccess=None)), {"storage-public-network-off"})
+
+    def test_postgres_server_is_closed_and_backed_up_like_the_deletion_list(self):
+        def server(network="Disabled", days=7, geo="Disabled"):
+            properties = {}
+            if network is not None:
+                properties["network"] = {"publicNetworkAccess": network}
+            backup = {}
+            if days is not None:
+                backup["backupRetentionDays"] = days
+            if geo is not None:
+                backup["geoRedundantBackup"] = geo
+            properties["backup"] = backup
+            return {
+                "resources": [
+                    {
+                        "type": "Microsoft.DBforPostgreSQL/flexibleServers",
+                        "name": "pg",
+                        "properties": properties,
+                    }
+                ]
+            }
+
+        self.assertEqual(_rules(server()), set())
+        self.assertEqual(_rules(server(network="Enabled")), {"postgres-public-network-off"})
+        self.assertEqual(_rules(server(network=None)), {"postgres-public-network-off"})
+        backup = {"postgres-backup-matches-deletion-list"}
+        self.assertEqual(_rules(server(days=35)), backup)
+        self.assertEqual(_rules(server(days=6)), backup)
+        self.assertEqual(_rules(server(geo="Enabled")), backup)
+        # absence is a platform default nobody reviewed
+        self.assertEqual(_rules(server(days=None)), backup)
+        self.assertEqual(_rules(server(geo=None)), backup)
+        # a parameter is not a literal: the value could be anything
+        self.assertEqual(_rules(server(days="[parameters('days')]")), backup)
+        self.assertEqual(_rules(server(network="[parameters('net')]")), {"postgres-public-network-off"})
 
     def test_blob_service_keeps_no_recoverable_copies(self):
         def service(properties):
