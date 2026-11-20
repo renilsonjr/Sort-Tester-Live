@@ -33,7 +33,7 @@ from dataclasses import dataclass
 from uuid import UUID
 
 from backend.db import migrate
-from backend.ranked import ranks
+from backend.ranked import ranks, seasons
 
 # The attempt outcomes that satisfy the one-completed-quiz minimum. Only
 # 'completed' is a completed quiz: 'season_close' is an attempt the close
@@ -86,35 +86,87 @@ def eligible_accounts(conn, season_id) -> list[UUID]:
     return [row["id"] for row in rows]
 
 
+# One listing, two boards. The official board joins the owner's approval
+# (``participant_links``); the Pre-Season board does not, because no prize
+# depends on it. Everything else -- not deleted, one completed Ranked quiz
+# in that season, the order -- is the same on purpose.
+_BOARD_SQL = """
+    SELECT a.id, a.username, a.tag, COALESCE(b.current_points, 0) AS points
+    FROM accounts a
+    {approval_join}
+    LEFT JOIN balances b ON b.account_id = a.id
+    WHERE a.deleted_at IS NULL
+      AND EXISTS (
+        SELECT 1 FROM attempts at
+        WHERE at.account_id = a.id
+          AND at.season_id = %s
+          AND at.state = 'finalized'
+          AND at.final_outcome = %s
+          AND at.mode = ANY(%s)
+      )
+    -- username only steadies the listing when points are equal; it is
+    -- not a ranking, and the two rows carry the same place number.
+    ORDER BY points DESC, a.username ASC
+"""
+_OFFICIAL_SQL = _BOARD_SQL.format(
+    approval_join="JOIN participant_links pl ON pl.account_id = a.id"
+)
+_PRE_SEASON_SQL = _BOARD_SQL.format(approval_join="")
+
+
 def standings(conn, season_id) -> list[Standing]:
-    """The board, best first, with shared places for equal points.
+    """The official board, best first, with shared places for equal points.
 
     A player with no balance row has not scored yet and stands at 0, which
     is what the rest of the app shows them too.
     """
     rows = migrate.fetch_all(
-        conn,
-        """
-        SELECT a.id, a.username, a.tag, COALESCE(b.current_points, 0) AS points
-        FROM accounts a
-        JOIN participant_links pl ON pl.account_id = a.id
-        LEFT JOIN balances b ON b.account_id = a.id
-        WHERE a.deleted_at IS NULL
-          AND EXISTS (
-            SELECT 1 FROM attempts at
-            WHERE at.account_id = a.id
-              AND at.season_id = %s
-              AND at.state = 'finalized'
-              AND at.final_outcome = %s
-              AND at.mode = ANY(%s)
-          )
-        -- username only steadies the listing when points are equal; it is
-        -- not a ranking, and the two rows carry the same place number.
-        ORDER BY points DESC, a.username ASC
-        """,
-        (season_id, QUALIFYING_OUTCOME, list(QUALIFYING_MODES)),
+        conn, _OFFICIAL_SQL, (season_id, QUALIFYING_OUTCOME, list(QUALIFYING_MODES))
     )
     return place_rows(rows)
+
+
+def pre_season_standings(conn, season_id) -> list[Standing]:
+    """The Pre-Season board (#247, owner decision 2026-11-20).
+
+    Every account, approved or not, with at least one completed Ranked quiz
+    in the Pre-Season. It decides nothing: no prize, hat, tie-break or
+    eligibility is ever worked out from it, and the prize logic must keep
+    calling :func:`standings`. Points are the current balance, which the
+    launch resets to 0, so this board ends when the official season starts.
+    """
+    rows = migrate.fetch_all(
+        conn, _PRE_SEASON_SQL, (season_id, QUALIFYING_OUTCOME, list(QUALIFYING_MODES))
+    )
+    return place_rows(rows)
+
+
+@dataclass(frozen=True)
+class Board:
+    """What the leaderboard shows right now, and for which phase."""
+
+    phase: str                 # 'pre_season' or 'official'
+    season_id: UUID
+    season_label: str | None   # the official season's label; None in Pre-Season
+    rows: list[Standing]
+
+
+def current_board(conn) -> Board | None:
+    """The board for the phase the app is in, or ``None`` with no season.
+
+    Once an official season exists it is the only board, whatever state it
+    is in; before that it is the Pre-Season board. The leaderboard endpoint
+    and the profile's "place" both read this, so they cannot disagree.
+    """
+    launch = seasons.official_launch(conn)
+    if launch is not None:
+        return Board("official", launch.season_id, launch.label,
+                     standings(conn, launch.season_id))
+    pre_season = seasons.pre_season_id(conn)
+    if pre_season is None:
+        return None
+    return Board("pre_season", pre_season, None,
+                 pre_season_standings(conn, pre_season))
 
 
 def place_rows(rows) -> list[Standing]:

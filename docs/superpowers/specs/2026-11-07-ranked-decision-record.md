@@ -197,6 +197,24 @@ Leaderboard requires login; guests retain Practice/study. Update canonical stand
 
 Logged-in Ranked landing page is the main season display: Pre-Season with no invented countdown; launch countdown when a start is confirmed; ending countdown while active; settlement/tie-break status when closed; then final results. Keep sort-change announcements on the main home page. Display capability does not authorize an automatic launch mechanism/date.
 
+**Pre-Season leaderboard (owner decision 2026-11-20, issue #247).** The
+leaderboard is also available during Pre-Season, with login as above.
+
+- It lists every account with at least one **completed** Ranked quiz in the
+  Pre-Season. Quit, disconnected, voided and unfinished attempts do not
+  count, the same as the official rule. No owner approval is needed, because
+  no prize depends on this board.
+- It decides nothing: no prize, hat, tie-break or eligibility is taken from
+  it. The screen says, in English and Spanish, that it wins no prize and is
+  reset when the official season starts.
+- At the owner's manual launch the Pre-Season board disappears. Points reset
+  to 0/Iron as Decision 12 says and the official leaderboard starts empty.
+  No public final Pre-Season standings are kept; Pre-Season history stays
+  private to each player (Decision 12).
+- The official competition leaderboard (settled Q5: owner approval plus one
+  completed official quiz) is unchanged. The Season 1 start date is still
+  not chosen and launch stays manual (Decision 11).
+
 ## Explicitly superseded / deferred
 
 | Earlier proposal | Final disposition |

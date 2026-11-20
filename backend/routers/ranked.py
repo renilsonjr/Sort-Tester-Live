@@ -543,7 +543,7 @@ def season(account: dict = Depends(_current_account), conn=Depends(get_db)):
 
 @router.get("/leaderboard")
 def leaderboard(account: dict = Depends(_current_account), conn=Depends(get_db)):
-    """The official standings. Login is required to see them (settled Q5).
+    """The leaderboard. Login is required to see it (settled Q5).
 
     Read-only, and it carries only what the approved screen shows: place,
     username, tag, points and badge. ``your_place`` is null for a player
@@ -551,22 +551,27 @@ def leaderboard(account: dict = Depends(_current_account), conn=Depends(get_db))
     mockup draws; their own points and badge are unaffected and stay on
     their profile.
 
-    During Pre-Season there is no official season to rank, so the board is
-    empty rather than invented. ``points_final`` repeats what /season says:
-    once the season is frozen the points no longer move, while prize
-    places stay provisional until the tie-breaks in #24 resolve them.
+    Before the official launch this is the Pre-Season board (#247, owner
+    decision 2026-11-20): everyone with one completed Pre-Season Ranked
+    quiz, no owner approval, and never a hat or a final state. ``phase``
+    says which board it is. The launch resets every balance, so the
+    Pre-Season board ends there and the official one starts empty.
+    ``points_final`` repeats what /season says: once the season is frozen
+    the points no longer move, while prize places stay provisional until
+    the tie-breaks in #24 resolve them.
     """
-    launch_fact = seasons.official_launch(conn)
-    if launch_fact is None:
+    board = ranked_standings.current_board(conn)
+    if board is None:
         return {
+            "phase": None,
             "season_label": None,
             "points_final": False,
+            "prizes_final": False,
             "rows": [],
             "your_place": None,
             "eligible": False,
         }
-    rows = ranked_standings.standings(conn, launch_fact.season_id)
-    current = seasons.current_season_status(conn, _CLOCK.now())
+    rows = board.rows
     # Worked out over the whole leaderboard, before the cap below, so a
     # player past the cut still learns where they stand.
     place = ranked_standings.place_of(rows, account["id"])
@@ -575,22 +580,17 @@ def leaderboard(account: dict = Depends(_current_account), conn=Depends(get_db))
     # a truncated leaderboard -- harmless while there are fewer players
     # than the cap, and invisible on the day there are not.
     rows = rows[:STANDINGS_ROWS_SHOWN]
-    season_row = migrate.fetch_one(
-        conn, "SELECT prizes_final_at FROM seasons WHERE id = %s", (launch_fact.season_id,)
-    )
-    prizes_final = season_row is not None and season_row["prizes_final_at"] is not None
+    points_final = False
+    prizes_final = False
     winners = set()
-    if prizes_final:
-        winners = {
-            r["account_id"]
-            for r in migrate.fetch_all(
-                conn, "SELECT account_id FROM season_prizes WHERE season_id = %s",
-                (launch_fact.season_id,),
-            )
-        }
+    if board.phase == "official":
+        current = seasons.current_season_status(conn, _CLOCK.now())
+        points_final = current is not None and current.status == "frozen"
+        prizes_final, winners = _prize_state(conn, board.season_id)
     return {
-        "season_label": launch_fact.label,
-        "points_final": current is not None and current.status == "frozen",
+        "phase": board.phase,
+        "season_label": board.season_label,
+        "points_final": points_final,
         # prize places stay provisional until every tie-break and selection
         # is resolved; only then does a row carry a hat
         "prizes_final": prizes_final,
@@ -610,6 +610,24 @@ def leaderboard(account: dict = Depends(_current_account), conn=Depends(get_db))
         "your_place": place,
         "eligible": place is not None,
     }
+
+
+def _prize_state(conn, season_id):
+    """Whether the official season's prizes are final, and who holds a hat."""
+    season_row = migrate.fetch_one(
+        conn, "SELECT prizes_final_at FROM seasons WHERE id = %s", (season_id,)
+    )
+    prizes_final = season_row is not None and season_row["prizes_final_at"] is not None
+    winners = set()
+    if prizes_final:
+        winners = {
+            r["account_id"]
+            for r in migrate.fetch_all(
+                conn, "SELECT account_id FROM season_prizes WHERE season_id = %s",
+                (season_id,),
+            )
+        }
+    return prizes_final, winners
 
 
 # Recent login-ID reauthentication (#11 box 5). The owner's eligibility

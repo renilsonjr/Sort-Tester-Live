@@ -5,7 +5,6 @@ in one settled Ranked attempt, and the account's current leaderboard place.
 Pure data access -- no HTTP, no clock. One account id in, never another.
 """
 from backend.db import migrate
-from backend.ranked import seasons
 from backend.ranked import standings as ranked_standings
 
 # A Ranked quiz is fifteen questions; the profile tile shows correct/15.
@@ -45,14 +44,14 @@ def best_ranked_correct(conn, account_id) -> int | None:
 
 
 def leaderboard_place(conn, account_id) -> int | None:
-    """The account's current official-standings place, or None.
+    """The account's place on the current leaderboard, or None.
 
-    None in Pre-Season (no official launch) or when the account is not in
-    the standings. Identical to ``/ranked/leaderboard``'s ``your_place``:
-    computed over the full, uncapped standings.
+    The Pre-Season board before the official launch, the official standings
+    after it (#247). None when the account is not on that board. Identical
+    to ``/ranked/leaderboard``'s ``your_place``: computed over the full,
+    uncapped board.
     """
-    launch = seasons.official_launch(conn)
-    if launch is None:
+    board = ranked_standings.current_board(conn)
+    if board is None:
         return None
-    rows = ranked_standings.standings(conn, launch.season_id)
-    return ranked_standings.place_of(rows, account_id)
+    return ranked_standings.place_of(board.rows, account_id)

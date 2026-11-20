@@ -113,6 +113,7 @@ class LeaderboardRouterTests(unittest.TestCase):
         self.assertEqual(body["your_place"], 1)
         self.assertTrue(body["eligible"])
         self.assertEqual(body["season_label"], "Peak Season")
+        self.assertEqual(body["phase"], "official")
 
     def test_your_own_row_is_marked(self):
         season_id = self._official_season()
@@ -134,18 +135,135 @@ class LeaderboardRouterTests(unittest.TestCase):
         self.assertEqual(len(body["rows"]), 1)
         self.assertFalse(body["rows"][0]["you"])
 
-    def test_before_the_official_launch_the_board_is_empty(self):
-        """Pre-Season ranks nobody, and no season is invented."""
+    # --- Pre-Season board (#247, owner decision 2026-11-20) ---
+
+    def _pre_season(self):
+        season_id = migrate.fetch_one(
+            self.conn,
+            "INSERT INTO seasons (phase, label) VALUES ('pre_season', 'Pre-Season')"
+            " RETURNING id",
+        )["id"]
+        self.conn.commit()
+        return season_id
+
+    def _played(self, account_id, season_id, points, outcome="completed"):
+        """A finalized Ranked attempt and a balance, with no owner approval."""
         migrate.execute(
             self.conn,
-            "INSERT INTO seasons (phase, label) VALUES ('pre_season', 'Pre-Season')",
+            "INSERT INTO balances (account_id, current_points) VALUES (%s, %s)"
+            " ON CONFLICT (account_id) DO UPDATE SET current_points = EXCLUDED.current_points",
+            (account_id, points),
+        )
+        assignment_id = migrate.fetch_one(
+            self.conn,
+            "INSERT INTO assignments (account_id, mode, season_id)"
+            " VALUES (%s, 'normal', %s) RETURNING id",
+            (account_id, season_id),
+        )["id"]
+        migrate.execute(
+            self.conn,
+            "INSERT INTO attempts (account_id, assignment_id, mode, season_id,"
+            " state, final_outcome, settled_at)"
+            " VALUES (%s, %s, 'normal', %s, 'finalized', %s, now())",
+            (account_id, assignment_id, season_id, outcome),
         )
         self.conn.commit()
+
+    def _other_pre_season_player(self, username, season_id, points, outcome="completed"):
+        other = TestClient(create_app(), headers=BROWSER)
+        account_id = self._sign_in(other, username)
+        self._played(account_id, season_id, points, outcome)
+        return account_id
+
+    def test_a_pre_season_with_no_completed_quiz_has_an_empty_board(self):
+        """Nobody is invented, and no official season is named."""
+        self._pre_season()
         self._sign_in(self.client, "dock_owl")
         body = self.client.get("/api/ranked/leaderboard").json()
         self.assertEqual(body["rows"], [])
+        self.assertEqual(body["phase"], "pre_season")
         self.assertIsNone(body["season_label"])
         self.assertFalse(body["points_final"])
+        self.assertFalse(body["prizes_final"])
+
+    def test_with_no_season_at_all_the_board_is_empty(self):
+        self._sign_in(self.client, "dock_owl")
+        body = self.client.get("/api/ranked/leaderboard").json()
+        self.assertEqual(body["rows"], [])
+        self.assertIsNone(body["phase"])
+
+    def test_pre_season_lists_everyone_who_completed_a_quiz_without_approval(self):
+        season_id = self._pre_season()
+        me = self._sign_in(self.client, "dock_owl")
+        self._played(me, season_id, 300)
+        self._other_pre_season_player("belt_runner", season_id, 700)
+
+        body = self.client.get("/api/ranked/leaderboard").json()
+        self.assertEqual(
+            [(row["place"], row["username"], row["points"]) for row in body["rows"]],
+            [(1, "belt_runner", 700), (2, "dock_owl", 300)],
+        )
+        self.assertEqual(body["phase"], "pre_season")
+        self.assertEqual(body["your_place"], 2)
+        self.assertTrue(body["eligible"])
+
+    def test_pre_season_counts_only_a_completed_quiz(self):
+        """Quit, disconnected and voided attempts do not put a player on it."""
+        season_id = self._pre_season()
+        me = self._sign_in(self.client, "dock_owl")
+        self._played(me, season_id, 40, outcome="quit")
+        self._other_pre_season_player("belt_runner", season_id, 10, outcome="disconnect")
+        self._other_pre_season_player("tape_gull", season_id, 0, outcome="outage_void")
+        self._other_pre_season_player("ramp_fox", season_id, -30)
+
+        body = self.client.get("/api/ranked/leaderboard").json()
+        self.assertEqual([row["username"] for row in body["rows"]], ["ramp_fox"])
+        self.assertIsNone(body["your_place"])
+        self.assertFalse(body["eligible"])
+
+    def test_pre_season_still_needs_a_session(self):
+        self._pre_season()
+        self.assertEqual(self.client.get("/api/ranked/leaderboard").status_code, 401)
+
+    def test_pre_season_shows_no_hat_and_no_final_state(self):
+        season_id = self._pre_season()
+        me = self._sign_in(self.client, "dock_owl")
+        self._played(me, season_id, 300)
+        body = self.client.get("/api/ranked/leaderboard").json()
+        self.assertFalse(body["points_final"])
+        self.assertFalse(body["prizes_final"])
+        self.assertEqual([row["hat"] for row in body["rows"]], [False])
+        self.assertEqual(
+            set(body["rows"][0]),
+            {"place", "username", "tag", "points", "badge", "tied", "you", "hat"},
+        )
+
+    def test_pre_season_hides_a_deleted_player(self):
+        season_id = self._pre_season()
+        me = self._sign_in(self.client, "dock_owl")
+        self._played(me, season_id, 300)
+        gone = self._other_pre_season_player("belt_runner", season_id, 900)
+        migrate.execute(
+            self.conn, "UPDATE accounts SET deleted_at = now() WHERE id = %s", (gone,)
+        )
+        self.conn.commit()
+        body = self.client.get("/api/ranked/leaderboard").json()
+        self.assertEqual([row["username"] for row in body["rows"]], ["dock_owl"])
+
+    def test_after_launch_the_pre_season_board_is_gone(self):
+        """The official board follows its own rules: approval plus one
+        completed official quiz. A Pre-Season quiz puts nobody on it."""
+        pre = self._pre_season()
+        me = self._sign_in(self.client, "dock_owl")
+        self._played(me, pre, 300)
+        self._other_pre_season_player("belt_runner", pre, 700)
+        self._official_season()
+
+        body = self.client.get("/api/ranked/leaderboard").json()
+        self.assertEqual(body["phase"], "official")
+        self.assertEqual(body["season_label"], "Peak Season")
+        self.assertEqual(body["rows"], [])
+        self.assertIsNone(body["your_place"])
 
     def test_a_tied_pair_shares_a_place_over_http(self):
         season_id = self._official_season()
