@@ -60,7 +60,7 @@ test('a dead server never tells the player their login ID is wrong', async () =>
 
 test('app.js returns null for a dead server so screens show their notice', () => {
   const source = readFileSync(new URL('../src/app.js', import.meta.url), 'utf8');
-  const helper = source.slice(source.indexOf('async function api(path)'));
+  const helper = source.slice(source.indexOf('async function apiRead(path)'));
   const body = helper.slice(0, helper.indexOf('\n}\n'));
   assert.match(body, /try \{/);
   assert.match(body, /catch \{\s*\n\s*return null;/);
