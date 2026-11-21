@@ -39,7 +39,11 @@ shown once. Nothing here changes that.
   whether any account matches what was typed: nothing is looked up at all.
 - A 429 shows a fixed "too many messages, find the owner in person" sentence;
   an unreachable server shows the app's usual could-not-send sentence.
-- Copy in **English and Spanish** through `src/i18n.js`. No Portuguese.
+- Copy in **English and Spanish**. No Portuguese. The sign-in panel
+  (`src/auth.js`) is English-only today and imports nothing, so the new
+  sentences carry their Spanish in a small table inside that file, keyed off
+  the language choice `src/i18n.js` stores. The owner screen uses `src/i18n.js`.
+  Translating the rest of the sign-in panel is out of scope.
 
 ### 2. Public endpoint
 
