@@ -305,14 +305,16 @@ function showPractice() {
 // Ranked and Profile exist as tabs for signed-in players from this slice on;
 // their screens are the next slices of #10. A placeholder that says so is
 // better than a tab that does nothing when pressed.
-function comingSoon(eyebrow, title, note, active) {
-  labPage(`
+function comingSoon(eyebrow, title, note, active, back = null) {
+  const view = labPage(`
     <section class="lab-screen">
       <p class="lab-eyebrow">${esc(eyebrow)}</p>
       <h1 class="lab-title">${esc(title)}</h1>
       <p class="lab-intro">${esc(note)}</p>
+      ${back ? `<button id="soon-back" class="ghost" type="button">${esc(t(back.label))}</button>` : ''}
     </section>
-  `, active, () => comingSoon(eyebrow, title, note, active));
+  `, active, () => comingSoon(eyebrow, title, note, active, back));
+  if (back) view.querySelector('#soon-back').addEventListener('click', back.go);
 }
 
 // Profile (#10, slice 2). Everything here is the signed-in account's own:
@@ -1737,7 +1739,10 @@ async function fillRanked(panel, title) {
   }
   title.textContent = season.phase === 'pre_season' ? t('Pre-Season') : season.label;
   const closes = season.closes_at ? new Date(season.closes_at).toLocaleString() : null;
-  const atCap = entry.mode === 'promotion';
+  // A new quiz is offered only while the season admits one. Closing and
+  // frozen seasons keep the balance and the leaderboard on the screen.
+  const open = season.status === 'open';
+  const atCap = open && entry.mode === 'promotion';
   panel.innerHTML = `
     <p class="lab-intro">${esc(t(seasonLine(season)))}</p>
     <div class="profile-balance">
@@ -1748,18 +1753,19 @@ async function fillRanked(panel, title) {
         <p class="lab-study-meta">${esc(balanceLine(entry))}</p>
       </div>
     </div>
-    ${closes ? `<p class="lab-intro">${esc(t('Closes'))}: ${esc(closes)}</p>` : ''}
+    ${closes ? `<p class="lab-intro">${esc(t(open ? 'Closes' : 'Closed'))}: ${esc(closes)}</p>` : ''}
     ${atCap ? `
     <div class="profile-promo">
       <h2>${esc(t('Promotion available'))}</h2>
       <p>${esc(t('You are at the cap, so promotion is the only Ranked quiz available. It needs a perfect 15 out of 15. Practice is available as usual and never changes these points.'))}</p>
     </div>` : ''}
     <div id="tiebreak-callout" hidden></div>
+    ${open ? `
     <button id="ranked-start" class="lab-choice lab-choice-quiz" type="button">
       <span class="lab-choice-icon">\u25c6</span>
       <span><strong>${esc(atCap ? t('Start promotion') : t('Start Ranked quiz'))}</strong><small>${esc(t('15 questions, ten seconds each.'))}</small></span>
       <span class="lab-arrow" aria-hidden="true">\u2192</span>
-    </button>
+    </button>` : ''}
     <button id="ranked-board" class="lab-choice" type="button">
       <span class="lab-choice-icon">#</span>
       <span><strong>${esc(t('Leaderboard'))}</strong><small>${esc(t('See the standings.'))}</small></span>
@@ -1768,7 +1774,7 @@ async function fillRanked(panel, title) {
   `;
   fillTiebreakCallout(panel.querySelector('#tiebreak-callout'));
   panel.querySelector('#ranked-board').addEventListener('click', showLeaderboard);
-  panel.querySelector('#ranked-start').addEventListener('click', () => {
+  panel.querySelector('#ranked-start')?.addEventListener('click', () => {
     if (atCap) showPromotionOffer(entry);
     else startRankedAttempt('normal');
   });
@@ -1803,10 +1809,15 @@ async function startRankedAttempt(mode) {
   const attempt = createAttemptClient({ fetchFn: attemptFetch });
   const started = await attempt.start('/ranked/attempts', { mode });
   if (!started.ok) {
-    const reason = started.status === 409
-      ? (started.data?.detail || t('That did not work. Nothing has started.'))
-      : t('Could not reach the server. Nothing has started.');
-    comingSoon(t('Ranked'), t('Could not start'), reason, 'ranked');
+    // The season can close between this screen loading and the tap.
+    const closed = started.status === 409 && started.data?.detail === 'No open season';
+    const reason = closed
+      ? t('The season is closed, so no new Ranked quiz can start.')
+      : started.status === 409
+        ? (started.data?.detail || t('That did not work. Nothing has started.'))
+        : t('Could not reach the server. Nothing has started.');
+    comingSoon(t('Ranked'), t('Could not start'), reason, 'ranked',
+      { label: 'Back to Ranked', go: showRanked });
     return;
   }
   attempt.startHeartbeat();
@@ -1850,6 +1861,11 @@ async function playRankedAttempt(attempt, mode, tally) {
     </div>
   `;
   view.querySelector('#rq-cancel').addEventListener('click', () => showQuitConfirm(attempt, mode, q.seq, tally));
+  // The attempt can end while this question is on screen (the season
+  // launches, the server's clock ends it). Reading it again then leads to
+  // the result. Only while this screen is the one showing: feedback for a
+  // last answer is also seen after the attempt ended, and waits for Next.
+  attempt.onGone(() => { if (view.isConnected) playRankedAttempt(attempt, mode, tally); });
   let timer = null;
   const stopTimer = () => { if (timer) clearInterval(timer); timer = null; };
   function startCountdown(deadlineMs, totalMs) {
@@ -1998,6 +2014,10 @@ function showRankedResult(mode, result, tally, { quit = false, attemptId = null 
     comingSoon(t('Ranked'), t('Could not load the result'), t('Your points are safe. Check your history from Profile.'), 'ranked');
     return;
   }
+  if (result.final_outcome === 'launch_reset') {
+    showEndedAtLaunch();
+    return;
+  }
   if (mode === 'promotion') {
     showPromotionResult(result, tally, { quit, attemptId });
     return;
@@ -2016,6 +2036,25 @@ function showRankedResult(mode, result, tally, { quit = false, attemptId = null 
       <button id="rq-done" class="ghost">${esc(t('Back to Ranked'))}</button>
     </section>
   `, 'ranked', () => showRankedResult(mode, result, tally, { quit, attemptId }));
+  view.querySelector('#rq-done').addEventListener('click', showRanked);
+  return view;
+}
+
+// An attempt that was in progress when the official season launched. It
+// was ended with no score, and the launch then reset every balance, so the
+// usual breakdown would show a balance that no longer exists.
+function showEndedAtLaunch() {
+  stopTick();
+  clock = null;
+  const view = labPage(`
+    <section class="lab-screen">
+      <p class="lab-eyebrow">${esc(t('Ranked'))} · ${esc(t('attempt ended'))}</p>
+      <h1 class="lab-title">${esc(t('The official season has started'))}</h1>
+      <p class="lab-intro">${esc(t('This attempt ended when the season started. No score was applied.'))}</p>
+      <p class="lab-intro">${esc(t('Everyone began again at 0 points and Iron.'))}</p>
+      <button id="rq-done" class="ghost">${esc(t('Back to Ranked'))}</button>
+    </section>
+  `, 'ranked', showEndedAtLaunch);
   view.querySelector('#rq-done').addEventListener('click', showRanked);
   return view;
 }

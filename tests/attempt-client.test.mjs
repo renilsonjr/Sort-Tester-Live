@@ -93,3 +93,43 @@ test('the capability lives only in memory, never in storage or the URL', () => {
   assert.doesNotMatch(source, /localStorage|sessionStorage|location\.|history\./);
   assert.match(source, /never storage, never the URL/);
 });
+
+// An attempt can end while the page only watches a question: the season
+// launches, or the server's own clock ends it. The heartbeat is the one
+// request still going, so its 410 is how the page finds out.
+test('a heartbeat answered 410 tells the page once that the attempt is gone', async () => {
+  const { fetchFn } = fakeFetch([
+    { status: 201, body: { attempt_id: 'a', capability: 'c' } },
+    { status: 204, body: null },
+    { status: 410, body: { detail: 'Gone' } },
+    { status: 410, body: { detail: 'Gone' } },
+  ]);
+  const client = createAttemptClient({ fetchFn });
+  await client.start('/x');
+  const timers = [];
+  client.startHeartbeat((fn) => { timers.push(fn); return 1; });
+  let gone = 0;
+  client.onGone(() => { gone += 1; });
+  await timers[0]();
+  assert.equal(gone, 0, 'a live attempt is not reported gone');
+  await timers[0]();
+  assert.equal(gone, 1);
+  await timers[0]();
+  assert.equal(gone, 1, 'the page is told once, not every second');
+});
+
+test('stopping the attempt forgets who to tell', async () => {
+  const { fetchFn } = fakeFetch([
+    { status: 201, body: { attempt_id: 'a', capability: 'c' } },
+    { status: 410, body: { detail: 'Gone' } },
+  ]);
+  const client = createAttemptClient({ fetchFn });
+  await client.start('/x');
+  const timers = [];
+  client.startHeartbeat((fn) => { timers.push(fn); return 1; });
+  let gone = 0;
+  client.onGone(() => { gone += 1; });
+  client.stop(() => {});
+  await timers[0]();
+  assert.equal(gone, 0);
+});
