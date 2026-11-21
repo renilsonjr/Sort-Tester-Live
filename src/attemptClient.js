@@ -21,6 +21,7 @@ export function createAttemptClient({ fetchFn = (...a) => fetch(...a), base = '/
   let attemptId = null;
   let capability = null;
   let beat = null;
+  let goneHandler = null;
 
   async function send(method, path, body) {
     const headers = { 'Content-Type': 'application/json' };
@@ -87,7 +88,23 @@ export function createAttemptClient({ fetchFn = (...a) => fetch(...a), base = '/
     },
 
     startHeartbeat(setIntervalFn = setInterval) {
-      if (beat === null) beat = setIntervalFn(() => { this.heartbeat(); }, HEARTBEAT_MS);
+      if (beat !== null) return;
+      beat = setIntervalFn(async () => {
+        const answer = await this.heartbeat();
+        if (answer.status !== 410 || !goneHandler) return;
+        const tell = goneHandler;
+        goneHandler = null;  // told once; the next screen asks again if it cares
+        tell();
+      }, HEARTBEAT_MS);
+    },
+
+    // Who to tell when the server says the attempt is gone (410) while the
+    // page is only watching a question: the season launched, or the server's
+    // clock ended the attempt. The heartbeat is the one request still going
+    // then, so without this the question stays on screen with nothing behind
+    // it. One handler, called once; the screen showing sets it again.
+    onGone(handler) {
+      goneHandler = handler;
     },
 
     // Forget everything: the attempt cannot be resumed from this object.
@@ -95,6 +112,7 @@ export function createAttemptClient({ fetchFn = (...a) => fetch(...a), base = '/
       if (beat !== null) clearIntervalFn(beat);
       beat = null;
       capability = null;
+      goneHandler = null;
     },
   };
 }
