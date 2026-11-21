@@ -330,7 +330,34 @@ const BADGE_CAP = { Iron: 1000, Bronze: 2000, Silver: 3000, Gold: 4000 };
 // answer is null. An unreachable server (stopped, no network, a phone that
 // lost signal mid-sort) throws instead of answering, so without this catch
 // the promise rejected and the screen sat on "Loading..." for ever.
+//
+// The balance and the season are read by Home, Ranked and Profile alike, so
+// moving between those screens asked the same question again each time and
+// sat on "Loading..." for the answer. These two reads are kept for a few
+// seconds and shared while in flight. Nothing here is trusted for play: the
+// server decides every attempt, and anything that can change the answer
+// (a write, an attempt request, a change of session) empties the cache.
+const CACHED_READS = new Set(['/ranked/entry', '/ranked/season']);
+const CACHED_READ_MS = 15000;
+const readCache = new Map();
+
+function clearReadCache() {
+  readCache.clear();
+}
+
 async function api(path) {
+  if (!CACHED_READS.has(path)) return apiRead(path);
+  const kept = readCache.get(path);
+  if (kept && Date.now() - kept.at < CACHED_READ_MS) return kept.answer;
+  const record = { at: Date.now(), answer: apiRead(path) };
+  readCache.set(path, record);
+  const body = await record.answer;
+  // A failure is never kept: the next screen should ask again.
+  if (body === null && readCache.get(path) === record) readCache.delete(path);
+  return body;
+}
+
+async function apiRead(path) {
   let response;
   try {
     response = await fetch(`/api${path}`, { credentials: 'same-origin' });
@@ -365,10 +392,15 @@ async function apiSend(method, path, body) {
   };
   if (body !== undefined) options.body = JSON.stringify(body);
   let response;
+  // Emptied before and after: a read that started while the write was on
+  // its way may hold the old answer.
+  clearReadCache();
   try {
     response = await fetch(`/api${path}`, options);
   } catch {
     return { ok: false, status: 0, data: null, reason: t('Could not reach the server. Nothing has been changed.') };
+  } finally {
+    clearReadCache();
   }
   if (response.status === 204) return { ok: true, status: 204, data: null };
   let data = null;
@@ -461,8 +493,8 @@ function showProfile(tab = 'overview') {
   const view = labPage(`
     <section class="lab-screen">
       <p class="lab-eyebrow">${esc(t('Profile'))}</p>
-      <h1 class="lab-title" id="profile-name">\u2026</h1>
-      <p class="lab-intro" id="profile-tag"></p>
+      <h1 class="lab-title" id="profile-name">${esc(session?.username ?? '\u2026')}</h1>
+      <p class="lab-intro" id="profile-tag">${session?.tag ? esc(`${t('Tag')} #${session.tag}`) : ''}</p>
       <div id="profile-panel"><p class="lab-intro">${esc(t('Loading\u2026'))}</p></div>
     </section>
   `, 'profile', () => showProfile(tab));
@@ -472,11 +504,16 @@ function showProfile(tab = 'overview') {
   return view;
 }
 
+// The name and tag come from the session the page already holds, so the
+// panel's own request starts at once instead of waiting behind /auth/me.
+// Only a session without them (which no entry path produces) asks the server.
 async function fillProfile(view, panel, tab) {
-  const me = await api('/auth/me');
-  if (me) {
-    view.querySelector('#profile-name').textContent = me.username;
-    view.querySelector('#profile-tag').textContent = `${t('Tag')} #${me.tag}`;
+  if (!session?.username || !session?.tag) {
+    api('/auth/me').then((me) => {
+      if (!me) return;
+      view.querySelector('#profile-name').textContent = me.username;
+      view.querySelector('#profile-tag').textContent = `${t('Tag')} #${me.tag}`;
+    });
   }
   if (tab === 'overview') return fillOverview(panel);
   if (tab === 'history') await fillHistory(panel);
@@ -752,6 +789,7 @@ async function deleteAccount(loginId) {
 
 function showDeletionAccepted() {
   session = null;
+  clearReadCache();
   labPage(`
     <section class="lab-screen">
       <p class="lab-eyebrow">${esc(t('Account'))}</p>
@@ -989,7 +1027,7 @@ function showTiebreakInvite(tie) {
 async function playTiebreak(round) {
   stopTick();
   clock = null;
-  const attempt = createAttemptClient();
+  const attempt = createAttemptClient({ fetchFn: attemptFetch });
   const started = await attempt.start(`/ranked/tiebreak/rounds/${round.id}/attempts`);
   if (!started.ok) {
     showRanked();
@@ -1672,8 +1710,19 @@ function nextBadgeName(badge) {
   return i >= 0 && i < BADGE_ORDER.length - 1 ? BADGE_ORDER[i + 1] : null;
 }
 
+// Every request an attempt makes may settle points, so each one empties the
+// kept balance; the screen after the quiz then reads it fresh.
+async function attemptFetch(...args) {
+  clearReadCache();
+  try {
+    return await fetch(...args);
+  } finally {
+    clearReadCache();
+  }
+}
+
 async function startRankedAttempt(mode) {
-  const attempt = createAttemptClient();
+  const attempt = createAttemptClient({ fetchFn: attemptFetch });
   const started = await attempt.start('/ranked/attempts', { mode });
   if (!started.ok) {
     const reason = started.status === 409
@@ -2217,6 +2266,7 @@ async function fillLaunchCallout(view) {
 // makes the navigation change shape.
 function setSession(account) {
   session = account;
+  clearReadCache();
   if (signedIn()) startIdleWatch();
   else stopIdleWatch();
   showStart();
@@ -2233,6 +2283,7 @@ async function signOut(notice = '') {
   stopTick();
   clock = null;
   session = null;
+  clearReadCache();
   try {
     await logout();
   } catch {
