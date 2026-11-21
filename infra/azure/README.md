@@ -30,6 +30,10 @@ the app template replaced it.
   performance validation remains open in #13.
 - `diagnostics/` — bounded HTTP burst generator and read-only pool/CPU
   observers; runbook §10 explains the two-terminal method.
+  `ranked-load-sim.py` plays Ranked quizzes as N logged-in players and
+  checks leaks, deadline resets and double counting; it refuses a target
+  that is not this machine unless told otherwise. Local result of
+  2026-11-21 (30 players, 15 minutes) is recorded on #13.
 - [[final-verification-2026-11-18]] — H-1/H-2, Ranked/owner/recovery,
   runtime-role and bounded mixed-traffic evidence; full app-template preview
   and its seven omissions. Final audit and pilot acceptance remain open.
