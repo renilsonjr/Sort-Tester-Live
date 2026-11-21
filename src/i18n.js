@@ -51,6 +51,13 @@ const ES = {
   'Profile': 'Perfil',
   'Profile sections': 'Secciones del perfil',
   'Overview': 'Resumen',
+  // Profile overview stat tiles (#218)
+  'Points': 'Puntos',
+  'Best Ranked': 'Mejor Clasificatorio',
+  'Practices': 'Prácticas',
+  'Place': 'Puesto',
+  'Your climb': 'Tu ascenso',
+  'See history': 'Ver historial',
   'Settings': 'Ajustes',
   'Loading…': 'Cargando…',
   'Tag': 'Etiqueta',
