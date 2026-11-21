@@ -26,7 +26,9 @@ WORKFLOW = (
     / "app-image-publish.yml"
 )
 
-ALLOWED_REFS = ("refs/heads/main", "refs/heads/codex/ranked-mode")
+ALLOWED_REFS = ("refs/heads/main",)
+# The work branch must not publish: players see what is on main.
+REFUSED_REFS = ("refs/heads/codex/ranked-mode",)
 
 
 class PublishGateTests(unittest.TestCase):
@@ -47,6 +49,8 @@ class PublishGateTests(unittest.TestCase):
     def test_the_job_refuses_a_ref_outside_the_allowed_branches(self):
         for ref in ALLOWED_REFS:
             self.assertIn(ref.removeprefix("refs/heads/"), self.code)
+        for ref in REFUSED_REFS:
+            self.assertNotIn(ref, self.code)
         # the refusal is a failure, not a warning
         self.assertIn("is not allowed. Nothing was published.", self.code)
         self.assertRegex(self.code, r"\*\)[^\n]*exit 1")
