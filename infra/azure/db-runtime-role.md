@@ -196,6 +196,11 @@ GRANT USAGE ON ALL SEQUENCES IN SCHEMA public TO :"mi_role";
 REVOKE ALL ON alembic_version, tooling_probe FROM :"mi_role";
 ```
 
+These grants cover the tables that exist when they are run and **nothing
+created afterwards**: unlike `db-role.sql`, this mapping sets no default
+privileges. Every later migration that creates a table must grant it to the
+role by hand before the new image is deployed — [[container-apps-app]] §1d-i.
+
 Then **verify the actual mapping and grants against the live server** —
 existing registry and Key Vault access the identity already holds is not
 database access and must not be assumed to grant it. Confirm the role cannot
