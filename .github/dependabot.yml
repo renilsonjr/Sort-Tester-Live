@@ -6,10 +6,16 @@
 # here is pinned to a commit SHA, nothing updates those pins except this.
 # Without it the SHAs would quietly age into unpatched versions while
 # looking deliberate.
+#
+# Pull requests go to codex/ranked-mode, where day-to-day work happens and
+# CI runs; that branch reaches main through its own pull request. Dependabot
+# reads this file from the default branch (main), so a change here only
+# takes effect once it is on main.
 version: 2
 updates:
   - package-ecosystem: pip
     directory: /backend
+    target-branch: codex/ranked-mode
     schedule:
       interval: weekly
       day: monday
@@ -30,6 +36,7 @@ updates:
 
   - package-ecosystem: github-actions
     directory: /
+    target-branch: codex/ranked-mode
     schedule:
       interval: weekly
       day: monday

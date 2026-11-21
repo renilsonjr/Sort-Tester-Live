@@ -4,13 +4,13 @@ Phone-friendly sorting practice for UPS Saddle Brook Twilight routes. The curren
 
 This is an independent training aid. Verify routes against the current approved sort chart.
 
-**Live website:** [Sort Tester Live](https://renilsonjr.github.io/Sort-Tester-Live/).
+**Live website:** [sortquiz.app](https://sortquiz.app).
 
 ## Current status
 
-This is the repository serving the running application and the owner's chosen home for future development and issue tracking. The current app is static HTML, CSS, and browser JavaScript. There is no account server or central database. Results stay in this browser on this device; they do not synchronize between employees or phones.
+The app is a single FastAPI service that serves both the browser app and its `/api`, backed by PostgreSQL, running on Azure Container Apps at https://sortquiz.app. Accounts, Ranked Mode and the Pre-Season leaderboard are live, and the database holds real employee accounts. Practice and the study chart still work for guests.
 
-Accounts, PostgreSQL, Ranked Mode, promotions, profiles, and the leaderboard are **planned work**, not existing features. Develop the expansion on a dedicated branch in this repository.
+`main` is the source of truth. Day-to-day work happens on `codex/ranked-mode` and reaches `main` through a pull request. The old static site on GitHub Pages is switched off.
 
 ## Run locally
 
@@ -61,7 +61,7 @@ origin. Practice remains independent of the API. GitHub Pages does not host
 Python; committed development resources are public but the test page refuses
 to make requests when opened there.
 
-GitHub Pages currently serves the root of the `main` branch. A push to a feature branch does not publish that branch. Review and verify changes before merging to `main`, because that merge updates the website. A new backend will need its own hosting; GitHub Pages serves static files.
+Merging to `main` does not change the live site. Production changes only when the owner publishes an app image (the manual **App image publish** workflow, which waits for the owner's approval) and then points the Container App at that image's digest. Review and verify changes before publishing, because players use the live site.
 
 The current practice questions and answers are browser-visible. Do not place credentials, database connection details, employee records, or private reference documents in this public repository or in browser assets. Future ranked answers and point adjustments must be validated by the backend.
 
