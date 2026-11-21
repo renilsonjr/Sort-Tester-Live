@@ -132,6 +132,27 @@ class AllowedRequestsTests(unittest.TestCase):
         )
         self.assertEqual(response.status_code, 403)
 
+    def test_plain_http_origin_of_the_https_app_host_is_rejected(self):
+        # Same host, wrong scheme: a page served over plain http can be
+        # written by anyone on the network path, so it is not our origin.
+        response = client(app_origin="https://sortlab.example.com").post(
+            "/api/auth/login", json={}, headers={"Origin": "http://sortlab.example.com"}
+        )
+        self.assertEqual(response.status_code, 403)
+
+    def test_plain_http_referer_of_the_https_app_host_is_rejected(self):
+        response = client(app_origin="https://sortlab.example.com").post(
+            "/api/auth/login", json={}, headers={"Referer": "http://sortlab.example.com/"}
+        )
+        self.assertEqual(response.status_code, 403)
+
+    def test_https_referer_of_the_app_host_is_allowed(self):
+        self.assertAllowed(
+            client(app_origin="https://sortlab.example.com").post(
+                "/api/auth/login", json={}, headers={"Referer": "https://sortlab.example.com/"}
+            )
+        )
+
     def test_reads_are_never_blocked(self):
         foreign = {"Origin": "https://evil.example"}
         for path in ("/health", "/", "/src/auth.js"):
