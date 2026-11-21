@@ -251,8 +251,11 @@ decision for a reviewed change, not something to slip into a deploy.
 > revision. Afterwards the public site served the new sign-in script and the
 > owner route answered 401 where the previous image answered 404. The admin
 > password rotated on 2026-11-20 was first used, and proven, by this
-> migration. Not shown by this record: a message actually written through the
-> hosted app.
+> migration. The owner then ran the end-to-end check on the hosted app the
+> same day and reported it working: a message left from the sign-in screen
+> reached the owner's Recovery messages screen, which is the grant being used
+> for a write and a read by the runtime role. That check was the owner's own;
+> its output was not captured here.
 
 ### 1e. Close the firewall again
 
