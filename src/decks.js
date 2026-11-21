@@ -51,7 +51,7 @@ const NEW_YORK = [
     svc: 'GND', state: 'NY', code: '140-147',
     belt: 'GOLD',
     confusions: ['ORANGE', 'PURPLE', 'PINK'],
-    why: 'The owner correction sends 140-147 to GOLD on Ground. On 2 Day Air and 3 Day Select this range is ORANGE. The next block, 148-149, is ORANGE except 148 1.',
+    why: 'The sort change sends 140-147 to GOLD on Ground, 2 Day Air and 3 Day Select. The next block, 148-149, is ORANGE except 148 1.',
     tags: ['sort-change', 'boundary'],
   },
   {
@@ -59,7 +59,7 @@ const NEW_YORK = [
     svc: 'GND', state: 'NY', code: '148-149',
     belt: 'ORANGE',
     confusions: ['GOLD', 'PURPLE', 'PINK'],
-    why: 'ORANGE on Ground, 2 Day Air and 3 Day Select. The preceding 140-147 block is GOLD on Ground and ORANGE on 2 Day Air and 3 Day Select. The single code 148 1 is GOLD on all three.',
+    why: 'ORANGE on Ground, 2 Day Air and 3 Day Select. The preceding 140-147 block is GOLD on Ground, 2 Day Air and 3 Day Select. The single code 148 1 is GOLD on all three.',
     tags: ['boundary'],
   },
   {
@@ -67,7 +67,7 @@ const NEW_YORK = [
     svc: 'GND', state: 'NY', code: '148 1',
     belt: 'GOLD',
     confusions: ['ORANGE', 'PURPLE', 'PINK'],
-    why: 'This single code remains GOLD inside the ORANGE 148-149 block. The preceding 140-147 block is GOLD on Ground and ORANGE on 2 Day Air and 3 Day Select.',
+    why: 'This single code remains GOLD inside the ORANGE 148-149 block. The preceding 140-147 block is GOLD on Ground, 2 Day Air and 3 Day Select.',
     tags: ['sort-change', 'exception'],
   },
   {
@@ -83,7 +83,7 @@ const NEW_YORK = [
     svc: 'NDA', state: 'NY', code: '140-149',
     belt: 'PURPLE',
     confusions: ['ORANGE', 'GOLD', 'PINK'],
-    why: 'Next Day Air keeps the whole 140-149 range PURPLE. Ground sends 140-147 to GOLD; 2 Day Air and 3 Day Select send it to ORANGE. On those three services, 148-149 is ORANGE except 148 1 GOLD.',
+    why: 'Next Day Air keeps the whole 140-149 range PURPLE. Ground, 2 Day Air and 3 Day Select send 140-147 to GOLD. On those three services, 148-149 is ORANGE except 148 1 GOLD.',
     tags: ['service-split'],
   },
 ];
