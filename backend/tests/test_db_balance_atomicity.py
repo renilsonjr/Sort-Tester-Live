@@ -15,8 +15,7 @@ class BalanceAtomicityTests(unittest.TestCase):
         try:
             cls.conninfo = settings.test_database_url()
             cls.admin = settings.admin_url()
-            migrate.recreate_scratch_database(cls.admin, settings.SCRATCH_DB_NAME)
-            migrate.upgrade_to_head(cls.conninfo)
+            migrate.reset_scratch_to_head(cls.admin, settings.SCRATCH_DB_NAME)
         except settings.DatabaseConfigError as exc:
             raise unittest.SkipTest(str(exc)) from None
 
@@ -119,10 +118,10 @@ class BalanceAtomicityTests(unittest.TestCase):
         attempt_id = self._make_attempt(account_id, season_id)
         row = migrate.fetch_one(
             self.setup,
-            "INSERT INTO settlements (attempt_id, season_id, raw_score,"
+            "INSERT INTO settlements (attempt_id, account_id, season_id, raw_score,"
             " adjustment, final_outcome)"
-            " VALUES (%s, %s, 0, 0, 'quit') RETURNING attempt_id",
-            (attempt_id, season_id),
+            " VALUES (%s, (SELECT account_id FROM attempts WHERE id = %s), %s, 0, 0, 'quit') RETURNING attempt_id",
+            (attempt_id, attempt_id, season_id),
         )
         settlement_id = row["attempt_id"]
         self.setup.commit()

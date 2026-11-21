@@ -65,6 +65,19 @@ class DevelopmentCorsTests(unittest.TestCase):
                     self.assertEqual(response.headers["access-control-allow-methods"], "GET, POST")
                     self.assertEqual(response.headers["access-control-allow-credentials"], "true")
 
+    def test_preflight_allows_the_attempt_capability_header(self) -> None:
+        # the ranked page sends its capability in this header on every request
+        with self.client(self.origin) as client:
+            response = client.options("/health", headers={
+                "Origin": self.origin, "Access-Control-Request-Method": "POST",
+                "Access-Control-Request-Headers": "X-Attempt-Capability",
+            })
+        self.assertEqual(response.status_code, 200)
+        self.assertIn(
+            "x-attempt-capability",
+            response.headers["access-control-allow-headers"].lower(),
+        )
+
     def test_preflight_denies_other_origin(self) -> None:
         with self.client(self.origin) as client:
             response = client.options("/health", headers={
@@ -94,3 +107,26 @@ class DevelopmentCorsTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class DeletionListStartupTests(unittest.TestCase):
+    """A hosted deployment must say where the deletion list is (#13)."""
+
+    def _create(self, **env):
+        with patch.dict(os.environ, env):
+            return main.create_app()
+
+    def test_managed_identity_without_a_deletion_list_refuses_to_start(self) -> None:
+        from backend.auth import deletion_list
+
+        with self.assertRaises(deletion_list.DeletionListConfigError):
+            self._create(SORT_TESTER_DB_AUTH="managed_identity", SORT_TESTER_DELETION_LIST_URL="")
+
+    def test_managed_identity_with_a_deletion_list_starts(self) -> None:
+        self._create(
+            SORT_TESTER_DB_AUTH="managed_identity",
+            SORT_TESTER_DELETION_LIST_URL="https://stsortdel.blob.core.windows.net/deletions",
+        )
+
+    def test_password_mode_starts_without_one(self) -> None:
+        self._create(SORT_TESTER_DB_AUTH="", SORT_TESTER_DELETION_LIST_URL="")

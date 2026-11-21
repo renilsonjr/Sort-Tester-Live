@@ -1,0 +1,1947 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Sort Lab — entry and navigation mock</title>
+  <style>
+    /* Design mock for issue #15. Fictional data only; nothing is sent anywhere.
+       Colors, type and shapes are copied from the live index.html. */
+    @font-face {
+      font-family: Nunito;
+      src: url("../assets/nunito-variable.ttf") format("truetype");
+      font-style: normal; font-weight: 200 1000; font-display: swap;
+    }
+    /* Tokens from mockups/design-library (the approved brown, gold and warm
+       white refresh). Belt colours are routing information and never change. */
+    :root {
+      --bg: #fffdf8; --panel: #fffdf8; --ink: #35271e; --muted: #6e5c4d;
+      --line: #ded4c5; --accent: #38261b; --accent-ink: #fffdf8;
+      --soft: #f7eac7; --soft-line: #d6bc75;
+      --gold: #f4bd38; --gold-line: #b47d15; --focus: #175e94;
+      --success: #226442; --danger: #a12d2d;
+    }
+    * { box-sizing: border-box; }
+    [hidden] { display: none !important; }
+    body { margin: 0; min-width: 320px; background: #f7f3ec; color: var(--ink); font: 600 16px/1.45 Nunito, "Trebuchet MS", sans-serif; -webkit-text-size-adjust: 100%; }
+    button, input { font: inherit; color: inherit; }
+    button { cursor: pointer; border: 0; }
+    button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible,
+    summary:focus-visible, label:focus-within, h1:focus-visible { outline: 3px solid var(--focus); outline-offset: 4px; }
+    h1, h2, p { margin: 0; }
+    .shell { width: min(100%, 430px); min-height: 100dvh; margin: 0 auto; background: var(--bg); box-shadow: 0 20px 80px #38261b22; display: flex; flex-direction: column; }
+
+    .top { display: flex; align-items: center; gap: 10px; padding: 20px 20px 16px; }
+    .brand { display: flex; align-items: center; gap: 10px; font-size: 21px; font-weight: 900; letter-spacing: -.05em; white-space: nowrap; }
+    .mark { display: grid; place-items: center; width: 37px; height: 37px; flex: none; border-radius: 13px; background: var(--accent); color: #fffdf8; font-size: 13px; transform: rotate(-5deg); }
+    .mock-tag { border-radius: 99px; padding: 5px 9px; background: var(--soft); color: var(--accent); font-size: 10px; font-weight: 900; letter-spacing: .04em; text-transform: uppercase; }
+    .top-login { margin-left: auto; min-height: 44px; padding: 0 14px; border: 2px solid var(--accent); border-radius: 14px; background: #fffdf8; color: var(--accent); font-size: 14px; font-weight: 900; }
+
+    main { flex: 1; padding: 0 20px 28px; }
+    .view { display: flex; flex-direction: column; gap: 12px; }
+    .eyebrow { color: var(--accent); font-size: 11px; font-weight: 900; letter-spacing: .13em; text-transform: uppercase; }
+    h1 { font-size: clamp(30px, 8.5vw, 38px); font-weight: 900; line-height: 1.08; letter-spacing: -.055em; }
+    h2 { font-size: 20px; font-weight: 900; letter-spacing: -.035em; }
+    .lead { color: var(--muted); font-size: 15px; }
+    .small { color: var(--muted); font-size: 12px; line-height: 1.5; }
+
+    /* The announcement sits on the plain surface with a gold edge, so it does
+       not read as another tinted card next to the Ranked one. */
+    .change { padding: 15px 16px; border: 1px solid var(--line); border-left: 5px solid var(--gold); border-radius: 19px; background: var(--panel); }
+    .change-row { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-top: 6px; }
+    .change-row p { color: #54412f; font-size: 12px; font-weight: 800; }
+    .belt-chip { flex: none; min-width: 72px; padding: 9px 11px; border-radius: 11px; background: #1f4e9c; color: #fffdf8; text-align: center; font-size: 12px; font-weight: 800; letter-spacing: .05em; }
+
+    .mode-card { border-radius: 26px; padding: 20px; background: #f7eac7; display: flex; flex-direction: column; gap: 8px; box-shadow: 0 12px 30px #38261b12; }
+    .mode-card.practice { background: #e8efdf; }
+    .mode-card p:not(.eyebrow) { color: #54412f; font-size: 14px; }
+    .mode-card button { margin-top: 6px; }
+
+    .primary, .ghost { width: 100%; min-height: 52px; padding: 14px; border-radius: 14px; font-size: 16px; font-weight: 900; }
+    .primary { background: var(--gold); color: var(--ink); border: 1px solid var(--gold-line); }
+    .ghost { background: #fffdf8; border: 1px solid #cdbfae; }
+    .link { align-self: flex-start; min-height: 44px; padding: 8px 2px; background: none; color: var(--accent); font-size: 14px; font-weight: 900; text-align: left; }
+
+    .field { display: flex; flex-direction: column; gap: 6px; }
+    .field span { color: var(--muted); font-size: 12px; font-weight: 900; letter-spacing: .1em; text-transform: uppercase; }
+    input { width: 100%; padding: 15px; border: 1px solid #cdbfae; border-radius: 14px; background: #fffdf8; font-size: 18px; }
+
+    .choice { width: 100%; display: flex; align-items: center; gap: 14px; text-align: left; border: 1px solid var(--line); border-radius: 20px; background: #fffdf8; padding: 15px; box-shadow: 0 5px 18px #38261b0d; }
+    .choice-icon { display: grid; place-items: center; width: 49px; height: 49px; flex: none; border-radius: 16px; background: #e8efdf; font-size: 18px; font-weight: 900; }
+    .choice.alt .choice-icon { background: #f6e2c6; }
+    .choice strong, .choice small { display: block; }
+    .choice strong { font-size: 17px; font-weight: 900; }
+    .choice small { color: var(--muted); margin-top: 3px; font-size: 12px; line-height: 1.35; }
+    .arrow { margin-left: auto; color: var(--accent); font-size: 22px; }
+
+    .panel { border: 1px solid var(--line); border-radius: 20px; background: #fffdf8; padding: 16px; }
+    .stat { font-size: 30px; font-weight: 900; letter-spacing: -.04em; line-height: 1.1; }
+    .board { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+    .board li { display: grid; grid-template-columns: 34px 1fr auto; align-items: center; gap: 10px; border: 1px solid var(--line); border-radius: 17px; background: #fffdf8; padding: 12px 14px; }
+    .board li.me { border: 2px solid var(--accent); }
+    .board b { font-weight: 900; }
+    .board small { display: block; color: var(--muted); font-size: 12px; }
+    .note { border-radius: 17px; background: #f3ece0; color: #6e5c4d; padding: 13px 14px; font-size: 12px; line-height: 1.5; }
+    .note strong { color: var(--ink); }
+
+    .nav { position: sticky; bottom: 0; display: grid; gap: 5px; padding: 7px 12px max(8px, env(safe-area-inset-bottom)); background: #fffdf8f2; backdrop-filter: blur(12px); border-top: 1px solid var(--line); }
+    .nav button { min-height: 54px; border-radius: 13px; background: transparent; color: #79634e; padding: 6px 4px; font-size: 12px; font-weight: 900; }
+    .nav button[aria-current="page"] { background: var(--soft); color: var(--accent); box-shadow: inset 0 -3px var(--gold-line); }
+    .nav i { display: block; margin: 0 auto 2px; font-style: normal; font-size: 19px; }
+
+    /* Season-start callout on the home page (Decision 15, 2026-11-14) */
+    .launch { display: flex; gap: 11px; padding: 14px 15px; border: 1px solid #d6bc75; border-radius: 19px; background: var(--soft); }
+    .launch i { display: grid; place-items: center; width: 34px; height: 34px; flex: none; border-radius: 50%; background: var(--accent); color: #fffdf8; font-style: normal; font-size: 17px; font-weight: 900; }
+    .launch h2 { font-size: 17px; }
+    .launch p { margin-top: 3px; color: #54412f; font-size: 13px; }
+    .launch b { font-weight: 900; }
+
+    /* Announced to screen readers, not drawn: the question number is already
+       visible in the header above. */
+    .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
+
+    /* Same rule as the app: on quiz and promotion screens the primary action
+       is brown, never gold. The library's gold (#f4bd38) and the YELLOW belt
+       (#f6d33c) are nearly the same colour, and GOLD is a belt too, so on
+       these screens yellow must mean a belt and never a button. Settled with
+       the owner 2026-11-14 — do not "fix" it back to gold. */
+    [data-view="rquiz"] .primary, [data-view="promo"] .primary {
+      background: var(--accent); color: var(--accent-ink); border-color: var(--accent);
+    }
+
+    /* Prize tie-breaks (issue #17, slice 4). The timer is a bar, not a
+       number: at three seconds, looking away to read a digit costs the
+       answer. */
+    .tb-bar { height: 8px; border-radius: 99px; background: #ede3d2; overflow: hidden; }
+    .tb-bar i { display: block; height: 100%; width: 42%; background: var(--danger); }
+    .tb-ask { font-size: 22px; font-weight: 900; letter-spacing: -.03em; line-height: 1.2; }
+    .tb-opts { display: grid; gap: 8px; }
+    .tb-opts button { min-height: 56px; padding: 12px 14px; border: 1px solid var(--line); border-radius: 14px; background: var(--panel); color: var(--ink); font-size: 15px; font-weight: 700; text-align: left; }
+    .tb-recap { list-style: none; margin: 0; padding: 0 14px; border: 1px solid var(--line); border-radius: 17px; background: var(--panel); }
+    .tb-recap li { display: flex; justify-content: space-between; gap: 10px; padding: 11px 0; border-bottom: 1px solid #ebe2d4; font-size: 14px; }
+    .tb-recap li:last-child { border: 0; }
+    .tb-state { color: var(--muted); font-weight: 700; }
+
+    /* Quitting and lost connection (issue #17, slice 3) */
+    .qc-clock { display: flex; align-items: center; gap: 10px; border: 1px solid var(--soft-line); border-radius: 14px; background: var(--soft); padding: 10px 12px; font-size: 13px; color: #54412f; }
+    .qc-clock i { display: grid; place-items: center; width: 36px; height: 36px; flex: none; border: 4px solid var(--danger); border-radius: 50%; font-style: normal; font-size: 14px; font-weight: 900; color: var(--danger); }
+    .qc-bar { height: 10px; border-radius: 99px; background: #ede3d2; overflow: hidden; }
+    .qc-bar i { display: block; height: 100%; width: 60%; background: var(--danger); }
+    .qc-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+    .qc-list li { display: flex; gap: 10px; font-size: 14px; line-height: 1.45; }
+    .qc-list i { display: grid; place-items: center; width: 24px; height: 24px; flex: none; border-radius: 50%; background: #fbefed; color: var(--danger); font-style: normal; font-weight: 900; font-size: 13px; }
+    .danger-eye { color: var(--danger); }
+    .ghost.danger { color: var(--danger); border-color: #e8c5bf; }
+
+    /* Promotion (issue #17, slice 2) */
+    .rules { margin: 0; padding-left: 22px; display: flex; flex-direction: column; gap: 9px; font-size: 15px; line-height: 1.5; }
+    .rules li::marker { font-weight: 900; color: var(--accent); }
+
+    /* Ranked quiz (issue #17, slice 1). Belt colours are BELT_STYLE from
+       src/belts.js: routing information, never restyled. */
+    .rq-top { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+    .rq-count { color: var(--muted); font-size: 12px; font-weight: 900; letter-spacing: .07em; text-transform: uppercase; }
+    .rq-clock { width: 46px; height: 46px; flex: none; border: 4px solid var(--accent); border-radius: 50%; display: grid; place-items: center; background: var(--panel); font-size: 19px; font-weight: 900; font-variant-numeric: tabular-nums; }
+    .rq-clock.urgent { border-color: var(--danger); color: var(--danger); }
+    .rq-clock.off { border-color: var(--line); color: var(--muted); font-size: 15px; }
+    /* Ranked costs points and Practice does not; the two screens otherwise
+       look alike, so this marker says which one the player is in. */
+    .rq-stake { display: inline-flex; align-items: center; gap: 7px; align-self: flex-start; padding: 5px 11px; border-radius: 99px; background: var(--soft); border: 1px solid var(--soft-line); color: var(--accent); font-size: 12px; font-weight: 900; }
+    .rq-prompt { text-align: center; }
+    .rq-service { color: var(--muted); font-size: 13px; font-weight: 900; letter-spacing: .1em; text-transform: uppercase; }
+    .rq-code { font-size: clamp(42px, 13vw, 58px); font-weight: 900; letter-spacing: -.05em; line-height: 1.04; }
+    .belts { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; }
+    .belts button { min-height: 84px; border-radius: 14px; font-size: 17px; font-weight: 900; letter-spacing: .05em; color: #fff; }
+    .belts button:disabled { opacity: .45; }
+    .belts button.picked { outline: 4px solid var(--accent); outline-offset: 2px; opacity: 1; }
+    .belts button.answer { outline: 4px solid var(--success); outline-offset: 2px; opacity: 1; }
+    .rq-verdict { font-size: 26px; font-weight: 900; letter-spacing: -.045em; line-height: 1.1; }
+    .rq-verdict.good { color: var(--success); }
+    .rq-verdict.bad { color: var(--danger); }
+    .rq-worth { font-size: 15px; font-weight: 900; }
+    .rq-worth.good { color: var(--success); }
+    .rq-worth.bad { color: var(--danger); }
+    .rq-cmp { border: 1px solid var(--line); border-radius: 15px; background: #f3ece0; padding: 12px; display: grid; gap: 7px; }
+    .rq-cmp div { display: flex; justify-content: space-between; align-items: center; gap: 9px; font-size: 13px; }
+    .chip { min-width: 92px; padding: 7px 10px; border-radius: 8px; text-align: center; font-size: 13px; font-weight: 900; color: #fff; }
+    .rq-why { border-left: 3px solid var(--accent); padding-left: 11px; color: #54412f; font-size: 14px; line-height: 1.5; }
+    .sum { border: 1px solid var(--line); border-radius: 17px; background: var(--panel); padding: 4px 14px; }
+    .sum div { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; padding: 10px 0; border-bottom: 1px solid #ebe2d4; font-size: 14px; }
+    .sum div:last-child { border: 0; }
+    .sum b { font-size: 17px; font-weight: 900; font-variant-numeric: tabular-nums; }
+    .sum .total b { font-size: 22px; }
+    .sum .lost { color: var(--danger); }
+
+    /* Support tickets (issue #16, slice 4) */
+    .tickets { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 9px; }
+    .tickets li { border: 1px solid var(--line); border-radius: 17px; background: #fffdf8; padding: 13px 14px; }
+    .tickets b { display: block; font-size: 16px; font-weight: 900; }
+    .tickets small { display: block; color: var(--muted); font-size: 12px; margin-top: 2px; }
+    .pill { display: inline-block; margin-bottom: 6px; padding: 3px 10px; border-radius: 99px; font-size: 11px; font-weight: 900; }
+    .pill.open { background: var(--soft); color: var(--accent); }
+    .pill.closed { background: #ebe2d4; color: #6e5c4d; }
+    .keep { display: block; margin-top: 9px; padding-top: 9px; border-top: 1px solid #ebe2d4; color: #6e5c4d; font-size: 12px; font-weight: 700; line-height: 1.45; }
+    .keep b { display: inline; font-size: 12px; }
+    select, textarea { font: inherit; width: 100%; padding: 14px; border: 1px solid #cdbfae; border-radius: 14px; background: #fffdf8; color: var(--ink); font-size: 15px; }
+    select:focus-visible, textarea:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+    textarea { resize: vertical; }
+
+    /* Account deletion (issue #16, slice 3) */
+    .steps { display: flex; gap: 5px; }
+    .steps span { flex: 1; height: 6px; border-radius: 99px; background: var(--line); }
+    .steps span.on { background: #a12d2d; }
+    .check { display: flex; gap: 11px; align-items: flex-start; border: 1px solid var(--line); border-radius: 17px; background: #fffdf8; padding: 14px; font-size: 14px; line-height: 1.45; cursor: pointer; }
+    .check input { width: 22px; height: 22px; flex: none; margin: 0; accent-color: var(--accent); }
+    /* The destructive action is the one place that leaves the warm palette,
+       and it still says "Delete account" in words. */
+    .danger { background: var(--danger); color: #fffdf8; border-color: #7a2622; }
+    .danger:disabled { background: #ebe2d4; color: #79634e; border-color: #cdbfae; cursor: not-allowed; }
+    .warn-box { border: 1px solid #e8c5bf; border-radius: 17px; background: #fbefed; padding: 13px 15px; color: #7a2622; }
+    .warn-box h2 { font-size: 16px; }
+    .warn-box p { margin-top: 4px; font-size: 13px; }
+    .error-text { color: #a12d2d; font-size: 14px; font-weight: 900; }
+
+    /* Leaderboard (issue #16, slice 2) */
+    .notice-box { border: 1px solid #e4d3a8; border-radius: 17px; background: #fbf3e1; padding: 13px 15px; }
+    .notice-box h2 { font-size: 16px; }
+    .notice-box p { margin-top: 4px; color: #54412f; font-size: 13px; }
+    /* The approved list is not a ranking, so it is not the board grid:
+       a name, the roster reference under it, and the way to withdraw. */
+    .sel-list { list-style: none; margin: 10px 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+    .sel-list li { border: 1px solid var(--line); border-radius: 14px; padding: 10px 12px; }
+    .sel-list label { display: flex; align-items: center; justify-content: flex-start; gap: 8px; font-size: 15px; }
+    .sel-list label input { width: auto; flex: none; }
+    .sel-hist { display: block; margin-top: 4px; color: var(--muted); font-size: 12px; }
+    .cases { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 12px; }
+    .cases li { border: 1px solid var(--line); border-radius: 17px; background: #fffdf8; padding: 14px; display: flex; flex-direction: column; gap: 8px; }
+    .cases blockquote { margin: 0; padding-left: 11px; border-left: 3px solid var(--soft-line); color: #54412f; font-size: 14px; }
+    .cases .row button { width: auto; flex: 1; min-height: 44px; font-size: 13px; }
+    .danger-btn { color: var(--danger); border-color: #d8b6b6; }
+    .approved { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+    .approved li { display: flex; align-items: center; gap: 10px; border: 1px solid var(--line); border-radius: 17px; background: #fffdf8; padding: 12px 14px; }
+    .approved .who { min-width: 0; flex: 1; }
+    .approved .who b { display: block; font-weight: 900; overflow-wrap: anywhere; }
+    .approved .who small { display: block; color: var(--muted); font-size: 12px; overflow-wrap: anywhere; }
+    .board li .marker { grid-column: 1 / -1; margin-top: 4px; font-size: 12px; font-weight: 800; }
+    .board li.tied, .board li.filled { border-color: #c79a2c; background: #fdf6e4; }
+    .board li.tied .marker, .board li.filled .marker { color: #7a5200; }
+    .board li.winner { border-color: #2d7a57; background: #eef5ee; }
+    .board li.winner .marker { color: #1f5a3a; }
+    .board li.vacant { border-style: dashed; color: var(--muted); }
+    .board .pos { font-weight: 900; font-variant-numeric: tabular-nums; }
+    /* A long username must not push the points off the row. */
+    .board .who { min-width: 0; }
+    .board .who b { display: block; overflow-wrap: anywhere; }
+
+    /* Profile (issue #16, slice 1) */
+    .tabs { display: flex; flex-wrap: wrap; gap: 2px; border-bottom: 2px solid var(--line); }
+    .tabs button { min-height: 44px; padding: 8px 10px; margin-bottom: -2px; border-bottom: 3px solid transparent; background: none; color: var(--muted); font-size: 13px; font-weight: 900; }
+    .tabs button[aria-selected="true"] { color: var(--accent); border-bottom-color: var(--gold-line); }
+    .bar { height: 12px; margin: 10px 0 7px; border-radius: 99px; background: #ede3d2; overflow: hidden; }
+    .bar i { display: block; height: 100%; border-radius: 99px; background: var(--accent); }
+    .promo { border-color: #cdbfae; background: #fbf3e1; }
+    .fold { border: 1px solid var(--line); border-radius: 20px; background: #fffdf8; overflow: hidden; }
+    .fold summary { display: flex; align-items: center; min-height: 52px; padding: 8px 16px; list-style: none; cursor: pointer; font-size: 16px; font-weight: 900; }
+    .fold summary::-webkit-details-marker { display: none; }
+    .fold summary::after { content: "+"; margin-left: auto; color: var(--accent); font-size: 24px; }
+    .fold[open] summary::after { content: "−"; }
+    .fold-body { border-top: 1px solid var(--line); padding: 14px 16px; }
+    .ladder { list-style: none; margin: 0 0 10px; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+    .ladder li { display: grid; grid-template-columns: 44px 1fr auto; align-items: center; gap: 4px 11px; border: 1px solid var(--line); border-radius: 13px; padding: 9px 11px; font-size: 14px; font-weight: 900; }
+    .ladder img { width: 44px; height: 44px; object-fit: contain; grid-row: span 2; }
+    .ladder b { font-size: 15px; font-weight: 900; }
+    /* The approved badge art, from mockups/design-library/badges. */
+    .balance { display: flex; align-items: center; gap: 14px; }
+    .balance > div { min-width: 0; flex: 1; }
+    .balance-badge { width: 76px; height: 76px; flex: none; object-fit: contain; }
+    /* The approved Blender render carries its own backdrop, so it is framed
+       as a portrait rather than floated on the page. */
+    .avatar { display: block; width: 148px; height: 148px; margin: 2px auto 4px; border-radius: 24px; border: 1px solid var(--line); object-fit: cover; background: #ede6da; }
+    .ladder li[aria-current="true"] { border: 2px solid var(--gold-line); background: var(--soft); color: var(--accent); }
+    .ladder span { color: var(--muted); font-size: 12px; font-weight: 600; }
+    .ladder li[aria-current="true"] span { color: var(--accent); font-weight: 900; }
+    .filters { display: flex; flex-wrap: wrap; gap: 6px; }
+    .filters button { min-height: 44px; padding: 8px 14px; border: 1px solid var(--line); border-radius: 99px; background: #fffdf8; font-size: 13px; font-weight: 900; }
+    .filters button[aria-pressed="true"] { border-color: var(--accent); background: var(--accent); color: #fffdf8; }
+    .hist { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+    .hist li { border: 1px solid var(--line); border-radius: 17px; background: #fffdf8; padding: 12px 14px; display: grid; grid-template-columns: 1fr auto; gap: 4px 10px; }
+    .hist li.ended { border-style: dashed; }
+    .hist b { font-size: 16px; font-weight: 900; }
+    .hist .score { font-size: 16px; font-weight: 900; font-variant-numeric: tabular-nums; }
+    .hist small { grid-column: 1 / -1; color: var(--muted); font-size: 12px; }
+    .status { grid-column: 1 / -1; justify-self: start; margin-top: 2px; padding: 3px 10px; border-radius: 99px; background: #e8efdf; color: #1f5a3a; font-size: 11px; font-weight: 900; }
+    .status.ended { background: #f3ece0; color: #6e5c4d; border: 1px dashed #9a876f; }
+    .mock-controls { margin-top: 18px; border: 1px dashed #9a876f; border-radius: 17px; padding: 12px 13px; background: #f3ece0; }
+    .mock-controls p { color: #6e5c4d; font-size: 11px; font-weight: 900; letter-spacing: .08em; text-transform: uppercase; margin-bottom: 8px; }
+    .mock-controls .row { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 8px; }
+    .mock-controls .row:last-child { margin-bottom: 0; }
+    .mock-controls button { min-height: 44px; padding: 7px 11px; border: 1px solid #cdbfae; border-radius: 11px; background: #fffdf8; font-size: 12px; font-weight: 900; }
+    .mock-controls button[aria-pressed="true"] { border-color: var(--accent); background: var(--accent); color: #fffdf8; }
+    @media (max-width: 345px) { .top, main { padding-inline: 15px; } .mock-tag { display: none; } }
+    @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <header class="top">
+      <div class="brand"><span class="mark" aria-hidden="true">SL</span> Sort Lab</div>
+      <span class="mock-tag">Design mock</span>
+      <button class="top-login" id="top-login" type="button" data-go="login" hidden>Log in</button>
+    </header>
+
+    <main>
+      <!-- 1. Public entry -->
+      <section class="view" data-view="entry">
+        <div class="change" data-announcement></div>
+        <h1 tabindex="-1">How do you want to use Sort Lab?</h1>
+        <div class="mode-card">
+          <p class="eyebrow">Ranked · needs an account</p>
+          <h2>Play for points</h2>
+          <p>Log in to play Ranked quizzes, earn a badge and see the leaderboard.</p>
+          <button class="primary" type="button" data-go="login">Log in</button>
+        </div>
+        <div class="mode-card practice">
+          <p class="eyebrow">Practice · no account</p>
+          <h2>Study and practice</h2>
+          <p>Study the chart and try practice quizzes. Nothing is saved to an account.</p>
+          <button class="ghost" type="button" data-enter="guest">Continue as guest</button>
+        </div>
+      </section>
+
+      <!-- 2. Log in -->
+      <section class="view" data-view="login" hidden>
+        <p class="eyebrow">Account</p>
+        <h1 tabindex="-1">Log in</h1>
+        <p class="lead">Enter the login ID you were shown when you created your account.</p>
+        <label class="field"><span>Login ID</span><input type="text" autocomplete="off" placeholder="EXAMPLE-ID"></label>
+        <button class="primary" type="button" data-enter="member">Log in</button>
+        <button class="ghost" type="button" data-enter="member">Create account</button>
+        <button class="link" type="button" data-go="lost">Lost your login ID?</button>
+        <button class="link" type="button" data-leave>← Back</button>
+        <p class="note"><strong>Design mock.</strong> Both buttons open the logged-in screens with a fictional player. Nothing you type is checked or sent.</p>
+      </section>
+
+      <!-- 3. Lost login ID -->
+      <section class="view" data-view="lost" hidden>
+        <p class="eyebrow">Account</p>
+        <h1 tabindex="-1">Lost your login ID?</h1>
+        <p class="lead">A login ID cannot be recovered online.</p>
+        <div class="panel">
+          <h2>Ask the owner in person</h2>
+          <p class="small" style="margin-top:6px">Talk to the Sort Lab owner at work. After they confirm it is you, they give you a new login ID for the same account. The old one stops working.</p>
+        </div>
+        <p class="small">Your username or tag alone is not enough to get a new login ID.</p>
+        <button class="link" type="button" data-go="login">← Back to log in</button>
+      </section>
+
+      <!-- 4 and 6. Home (guest and logged in) -->
+      <section class="view" data-view="home" hidden>
+        <p class="eyebrow" id="home-eyebrow"></p>
+        <h1 tabindex="-1">Test your skills and study the chart.</h1>
+        <div class="launch" id="launch-callout" hidden>
+          <i aria-hidden="true">!</i>
+          <div>
+            <h2>The official season has started</h2>
+            <p id="launch-text"></p>
+          </div>
+        </div>
+        <div class="change" data-announcement></div>
+        <h2>Where do you want to start?</h2>
+        <button class="choice" type="button" data-go="practice"><span class="choice-icon" aria-hidden="true">01</span><span><strong>Practice</strong><small>Study the chart or try a practice quiz.</small></span><span class="arrow" aria-hidden="true">→</span></button>
+        <button class="choice alt" type="button" data-go="ranked" data-member><span class="choice-icon" aria-hidden="true">02</span><span><strong>Ranked</strong><small>Play for points this season.</small></span><span class="arrow" aria-hidden="true">→</span></button>
+        <p class="note" data-guest><strong>You are a guest.</strong> Ranked and the leaderboard need an account. Use Log in at the top when you want one.</p>
+        <div class="mock-controls">
+          <p>Mock controls · not part of the app</p>
+          <div class="row" role="group" aria-label="Season state">
+            <button type="button" data-season="pre" aria-pressed="true">Pre-Season</button>
+            <button type="button" data-season="live" aria-pressed="false">Season started</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- 5. Practice (same for guest and logged in) -->
+      <section class="view" data-view="practice" hidden>
+        <p class="eyebrow">Practice</p>
+        <h1 tabindex="-1">Study and practice</h1>
+        <p class="lead">Practice never changes Ranked points.</p>
+        <button class="choice" type="button" data-stub="The study chart already exists in the live app."><span class="choice-icon" aria-hidden="true">01</span><span><strong>Know the chart</strong><small>Small chunks for ranges, sort changes and exceptions.</small></span><span class="arrow" aria-hidden="true">→</span></button>
+        <button class="choice alt" type="button" data-stub="The practice quiz already exists in the live app."><span class="choice-icon" aria-hidden="true">02</span><span><strong>Try a quiz</strong><small>Pick a belt, see why, and build confidence.</small></span><span class="arrow" aria-hidden="true">→</span></button>
+      </section>
+
+      <!-- 7. Ranked -->
+      <section class="view" data-view="ranked" hidden>
+        <p class="eyebrow">Ranked</p>
+        <h1 tabindex="-1">Pre-Season</h1>
+        <div class="panel">
+          <p class="small">Your balance</p>
+          <p class="stat">Iron · 640 points</p>
+          <p class="small" style="margin-top:6px">No start date has been announced for the official season.</p>
+        </div>
+        <button class="primary" type="button" data-go="rquiz">Start Ranked quiz</button>
+        <button class="choice alt" type="button" data-go="tb"><span class="choice-icon" aria-hidden="true">=</span><span><strong>Prize tie-break</strong><small>You are tied for third place.</small></span><span class="arrow" aria-hidden="true">→</span></button>
+        <button class="choice" type="button" data-go="leaderboard"><span class="choice-icon" aria-hidden="true">#</span><span><strong>Leaderboard</strong><small>See the standings.</small></span><span class="arrow" aria-hidden="true">→</span></button>
+      </section>
+
+      <!-- 8. Leaderboard (inside Ranked) -->
+      <section class="view" data-view="leaderboard" hidden>
+        <button class="link" type="button" data-go="ranked">← Back to Ranked</button>
+        <p class="eyebrow">Ranked</p>
+        <h1 tabindex="-1">Leaderboard</h1>
+        <div class="notice-box" id="lb-notice" hidden></div>
+        <p class="small" id="lb-sub"></p>
+        <ol class="board" id="lb-rows"></ol>
+        <div id="lb-end"></div>
+        <div class="mock-controls">
+          <p>Mock controls · not part of the app</p>
+          <div class="row" role="group" aria-label="Leaderboard state">
+            <button type="button" data-lb="during" aria-pressed="true">During the season</button>
+            <button type="button" data-lb="nopos" aria-pressed="false">No position</button>
+            <button type="button" data-lb="tie" aria-pressed="false">Tie</button>
+            <button type="button" data-lb="replaced" aria-pressed="false">Replacement</button>
+            <button type="button" data-lb="final" aria-pressed="false">Final</button>
+            <button type="button" data-lb="fewer" aria-pressed="false">Fewer winners</button>
+            <button type="button" data-lb="loading" aria-pressed="false">Loading</button>
+            <button type="button" data-lb="empty" aria-pressed="false">Empty</button>
+            <button type="button" data-lb="error" aria-pressed="false">Error</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- 9. Profile -->
+      <section class="view" data-view="profile" hidden>
+        <p class="eyebrow">Profile</p>
+        <h1 tabindex="-1">parcel_fox</h1>
+        <p class="lead">Tag #K7Q2MX</p>
+
+        <div class="tabs" role="tablist" aria-label="Profile sections">
+          <button type="button" role="tab" id="tab-overview" aria-controls="panel-overview" aria-selected="true" data-tab="overview">Overview</button>
+          <button type="button" role="tab" id="tab-history" aria-controls="panel-history" aria-selected="false" data-tab="history">pre season history</button>
+          <button type="button" role="tab" id="tab-settings" aria-controls="panel-settings" aria-selected="false" data-tab="settings">Settings</button>
+        </div>
+
+        <div class="view" id="panel-overview" role="tabpanel" aria-labelledby="tab-overview">
+          <div class="panel balance">
+            <img class="balance-badge" id="balance-art" src="assets-sm/badge-iron.png" alt="">
+            <div>
+              <p class="small">Your balance</p>
+              <p class="stat" id="balance-points">640 points</p>
+              <div class="bar"><i id="balance-bar" style="width:64%"></i></div>
+              <p class="small" id="balance-note">Iron · 360 points to the Iron cap (1,000)</p>
+            </div>
+          </div>
+          <div class="panel promo" id="promo" hidden>
+            <h2>Promotion available</h2>
+            <p class="small" style="margin-top:6px">You are at the Iron cap. A perfect 15 out of 15 quiz promotes you to Bronze. Start promotion is on the Ranked screen; nothing starts from here.</p>
+          </div>
+          <details class="fold">
+            <summary>How badges work</summary>
+            <div class="fold-body">
+              <ol class="ladder">
+                <li data-badge="Challenger"><img src="assets-sm/badge-challenger.png" alt=""><b>Challenger</b><span>4,001 and up, no cap</span></li>
+                <li data-badge="Gold"><img src="assets-sm/badge-gold.png" alt=""><b>Gold</b><span>3,001–4,000</span></li>
+                <li data-badge="Silver"><img src="assets-sm/badge-silver.png" alt=""><b>Silver</b><span>2,001–3,000</span></li>
+                <li data-badge="Bronze"><img src="assets-sm/badge-bronze.png" alt=""><b>Bronze</b><span>1,001–2,000</span></li>
+                <li data-badge="Iron" aria-current="true"><img src="assets-sm/badge-iron.png" alt=""><b>Iron</b><span>Through 1,000 · you are here</span></li>
+              </ol>
+              <p class="small">One balance decides your badge. Reaching a cap makes promotion available; only a perfect promotion quiz moves you up.</p>
+            </div>
+          </details>
+          <button class="choice" type="button" data-go="tickets"><span class="choice-icon" aria-hidden="true">?</span><span><strong>Support</strong><small>Your tickets.</small></span><span class="arrow" aria-hidden="true">→</span></button>
+        </div>
+
+        <div class="view" id="panel-history" role="tabpanel" aria-labelledby="tab-history" hidden>
+          <div class="panel" data-hist="pre">
+            <h2>Pre-Season is still running</h2>
+            <p class="small" style="margin-top:6px">When the first official season starts, every player goes back to 0 points and Iron. Your Pre-Season attempts are kept here, and only you can see them.</p>
+          </div>
+          <div data-hist="loading"><p class="small" role="status">Loading your Pre-Season attempts…</p></div>
+          <div class="panel" data-hist="empty" hidden><p class="small">You played no Ranked quizzes during Pre-Season, so there is nothing here.</p></div>
+          <div class="panel" data-hist="error" hidden>
+            <h2>Could not load your history</h2>
+            <p class="small" style="margin-top:6px">Your attempts are safe. Try again in a moment.</p>
+            <button class="ghost" type="button" style="margin-top:10px" data-stub="This mock does not reload anything.">Try again</button>
+          </div>
+          <div data-hist="list" hidden>
+            <p class="small">Only you can see this. Pre-Season results never count toward the official season.</p>
+            <div class="filters" role="group" aria-label="Filter attempts" style="margin:10px 0">
+              <button type="button" data-filter="all" aria-pressed="true">All</button>
+              <button type="button" data-filter="done" aria-pressed="false">Completed</button>
+              <button type="button" data-filter="ended" aria-pressed="false">Ended at launch</button>
+            </div>
+            <ul class="hist">
+              <li class="ended" data-kind="ended"><b>Ranked quiz</b><span class="score">—</span><small>Example date 3</small><span class="status ended">Ended at launch · no score applied</span></li>
+              <li data-kind="done"><b>Ranked quiz</b><span class="score">+275</span><small>Example date 2 · 14 of 15 correct</small><span class="status">Completed</span></li>
+              <li data-kind="done"><b>Ranked quiz</b><span class="score">−40</span><small>Example date 1 · 9 of 15 correct</small><span class="status">Completed</span></li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="view" id="panel-settings" role="tabpanel" aria-labelledby="tab-settings" hidden>
+          <!-- Owner tools live inside Settings, not in a tab of their own:
+               the owner is a sorter with one extra job, not a different
+               kind of visitor, and a fourth tab would cost every player
+               width on a phone. The row is absent for everyone else. -->
+          <button class="choice" type="button" data-go="owner" id="owner-row" hidden><span class="choice-icon" aria-hidden="true">★</span><span><strong>Owner tools</strong><small>Prize eligibility, access recovery, case review.</small></span><span class="arrow" aria-hidden="true">→</span></button>
+          <button class="choice" type="button" data-go="tickets"><span class="choice-icon" aria-hidden="true">?</span><span><strong>Support</strong><small>Your tickets.</small></span><span class="arrow" aria-hidden="true">→</span></button>
+          <button class="choice alt" type="button" data-go="delete"><span class="choice-icon" aria-hidden="true">!</span><span><strong>Delete account</strong><small>Removes your profile, history and points.</small></span><span class="arrow" aria-hidden="true">→</span></button>
+          <button class="ghost" type="button" data-leave>Log out</button>
+        </div>
+
+        <div class="mock-controls">
+          <p>Mock controls · not part of the app</p>
+          <div class="row" role="group" aria-label="Player balance">
+            <button type="button" data-state="640" aria-pressed="true">640 points</button>
+            <button type="button" data-state="-40" aria-pressed="false">−40 points</button>
+            <button type="button" data-state="1000" aria-pressed="false">At the cap</button>
+          </div>
+          <div class="row" role="group" aria-label="Who is signed in">
+            <button type="button" data-owner="no" aria-pressed="true">A player</button>
+            <button type="button" data-owner="yes" aria-pressed="false">The owner</button>
+          </div>
+          <div class="row" role="group" aria-label="History tab state">
+            <button type="button" data-hist-state="pre" aria-pressed="true">Before launch</button>
+            <button type="button" data-hist-state="list" aria-pressed="false">After launch</button>
+            <button type="button" data-hist-state="loading" aria-pressed="false">Loading</button>
+            <button type="button" data-hist-state="empty" aria-pressed="false">Empty</button>
+            <button type="button" data-hist-state="error" aria-pressed="false">Error</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Support → Tickets (inside Profile) -->
+      <!-- Owner tools (issue #11). Scoped on purpose: approving prize
+           eligibility, approving access recovery in person, and reviewing
+           cases. There is no player list, no points screen, no history
+           browser and no ban button, because the owner was never granted
+           those. What is not drawn here is not an omission. -->
+      <section class="view" data-view="owner" hidden>
+        <button class="link" type="button" data-go="profile">← Back to Profile</button>
+        <p class="eyebrow">Owner</p>
+        <h1 tabindex="-1">Owner tools</h1>
+        <div class="panel">
+          <p class="small">These are the only administrator powers this app has. Approving does not change anybody's points, badge or history, and gives you no access to a player's record.</p>
+        </div>
+        <button class="choice" type="button" data-go="owner-eligibility"><span class="choice-icon" aria-hidden="true">✓</span><span><strong>Prize eligibility</strong><small>Who may win a hat this season.</small></span><span class="arrow" aria-hidden="true">→</span></button>
+        <button class="choice" type="button" data-go="owner-recovery"><span class="choice-icon" aria-hidden="true">↺</span><span><strong>Access recovery</strong><small>In person, for a sorter who lost their login ID.</small></span><span class="arrow" aria-hidden="true">→</span></button>
+        <button class="choice" type="button" data-go="owner-select"><span class="choice-icon" aria-hidden="true">♛</span><span><strong>Prize selection</strong><small>1 tie waiting for you.</small></span><span class="arrow" aria-hidden="true">→</span></button>
+        <button class="choice" type="button" data-go="owner-cases"><span class="choice-icon" aria-hidden="true">?</span><span><strong>Case review</strong><small>Tickets players opened, and connection flags.</small></span><span class="arrow" aria-hidden="true">→</span></button>
+      </section>
+
+      <!-- Prize selection (issue #24, slice 6). Where every "wait for the
+           owner" lands: still tied after the last round, no fresh question
+           set left, or several incomplete players for fewer hats. The owner
+           chooses among the players the rules sent here and nobody else,
+           and changes no points and no result. -->
+      <section class="view" data-view="owner-select" hidden>
+        <button class="link" type="button" data-go="owner">← Back to Owner tools</button>
+        <p class="eyebrow">Owner</p>
+        <h1 tabindex="-1">Prize selection</h1>
+        <div class="notice-box" id="sel-notice" hidden></div>
+        <div id="sel-body"></div>
+        <div class="mock-controls">
+          <p>Mock controls · not part of the app</p>
+          <div class="row" role="group" aria-label="Selection state">
+            <button type="button" data-sel="waiting" aria-pressed="true">A tie waiting</button>
+            <button type="button" data-sel="confirm" aria-pressed="false">Confirming</button>
+            <button type="button" data-sel="done" aria-pressed="false">Recorded</button>
+            <button type="button" data-sel="none" aria-pressed="false">Nothing waiting</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Case review (issue #11, boxes 3 and 6). Two kinds of case, kept
+           apart because they arrive differently: a ticket is a player
+           asking, a flag is the server noticing. Neither is proof of
+           cheating and neither can change points or access, so there is
+           no sanction here to press -- only an outcome to record. -->
+      <section class="view" data-view="owner-cases" hidden>
+        <button class="link" type="button" data-go="owner">← Back to Owner tools</button>
+        <p class="eyebrow">Owner</p>
+        <h1 tabindex="-1">Case review</h1>
+        <div class="panel">
+          <p class="small">Closing a case records what you found. It never changes anybody's points, badge or access, and it opens no ticket by itself. A connection flag is a pattern the server noticed, not evidence that somebody cheated.</p>
+        </div>
+        <div class="tabs" role="tablist" aria-label="Case kind">
+          <button type="button" role="tab" data-case="tickets" aria-selected="true">Tickets</button>
+          <button type="button" role="tab" data-case="flags" aria-selected="false">Flags</button>
+        </div>
+        <div id="case-body"></div>
+
+        <div class="mock-controls">
+          <p>Mock controls · not part of the app</p>
+          <div class="row" role="group" aria-label="Case review state">
+            <button type="button" data-cs="tickets" aria-pressed="true">Open tickets</button>
+            <button type="button" data-cs="flags" aria-pressed="false">Open flags</button>
+            <button type="button" data-cs="closing" aria-pressed="false">Closing one</button>
+            <button type="button" data-cs="closed" aria-pressed="false">Just closed</button>
+            <button type="button" data-cs="none" aria-pressed="false">Nothing waiting</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Access recovery (issue #11, box 2). In person, at work. The
+           screen cannot check the part that matters most -- that the
+           person in front of the owner is who they say they are -- so it
+           says that out loud instead of pretending otherwise. -->
+      <section class="view" data-view="owner-recovery" hidden>
+        <button class="link" type="button" data-go="owner">← Back to Owner tools</button>
+        <p class="eyebrow">Owner</p>
+        <h1 tabindex="-1">Access recovery</h1>
+        <div class="notice-box" id="rec-notice" hidden></div>
+        <div id="rec-body"></div>
+
+        <div class="mock-controls">
+          <p>Mock controls · not part of the app</p>
+          <div class="row" role="group" aria-label="Recovery state">
+            <button type="button" data-rec="start" aria-pressed="true">Start</button>
+            <button type="button" data-rec="confirm" aria-pressed="false">Check in person</button>
+            <button type="button" data-rec="shown" aria-pressed="false">Login ID shown</button>
+            <button type="button" data-rec="nolink" aria-pressed="false">No prior link</button>
+            <button type="button" data-rec="done" aria-pressed="false">Already handed over</button>
+            <button type="button" data-rec="unknown" aria-pressed="false">Unknown tag</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Prize eligibility (issue #11, slice 2). One sorter, one account,
+           recorded while the season is open. -->
+      <section class="view" data-view="owner-eligibility" hidden>
+        <button class="link" type="button" data-go="owner">← Back to Owner tools</button>
+        <p class="eyebrow">Owner</p>
+        <h1 tabindex="-1">Prize eligibility</h1>
+        <div class="notice-box" id="elig-notice" hidden></div>
+        <p class="small" id="elig-sub">Approved sorters may win one of the three hats. Each sorter holds one approved account. New approvals close when the season ends; you can still withdraw one afterwards.</p>
+
+        <div class="panel" id="elig-form">
+          <h2>Approve a sorter</h2>
+          <label class="field"><span>Player tag</span><input type="text" placeholder="#K7Q2MX" value=""></label>
+          <label class="field"><span>Roster reference</span><input type="text" placeholder="Primary Sort · Twilight · badge 4471"></label>
+          <p class="small">The roster reference is how you identify this person on your own roster. It is never shown to players.</p>
+          <button class="primary" type="button">Approve</button>
+        </div>
+
+        <h2 id="elig-count">Approved this season</h2>
+        <ul class="approved" id="elig-rows"></ul>
+
+        <div class="mock-controls">
+          <p>Mock controls · not part of the app</p>
+          <div class="row" role="group" aria-label="Eligibility state">
+            <button type="button" data-el="list" aria-pressed="true">Approved list</button>
+            <button type="button" data-el="empty" aria-pressed="false">Nobody yet</button>
+            <button type="button" data-el="withdraw" aria-pressed="false">Withdrawing</button>
+            <button type="button" data-el="dupe" aria-pressed="false">Sorter already approved</button>
+            <button type="button" data-el="self" aria-pressed="false">Your own account</button>
+            <button type="button" data-el="closed" aria-pressed="false">Season closed</button>
+            <button type="button" data-el="error" aria-pressed="false">Error</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="view" data-view="tickets" hidden>
+        <button class="link" type="button" data-go="profile">← Back to Profile</button>
+        <p class="eyebrow">Support</p>
+        <h1 tabindex="-1">Tickets</h1>
+        <!-- Support tickets (issue #16, slice 4). Decision 8: tickets only,
+             created by the player alone, never changing points or access.
+             A closed ticket's description and connection details go 15 days
+             after closure, unless its log is shared with an open case. -->
+        <div class="view" data-tk="list">
+          <div class="panel">
+            <p class="small">Only you can see your tickets. When a ticket is closed, its description and connection details are deleted 15 days later. Evidence shared with another case that is still open is kept until that case closes.</p>
+          </div>
+          <ul class="tickets">
+            <li><span class="pill open">Open</span><b>Quiz cut out halfway</b><small>Attempt #EX-204 · example date 7</small>
+              <span class="keep">Your evidence is kept while this case is open.</span></li>
+            <li><span class="pill closed">Closed · network instability</span><b>Lost connection twice</b><small>Attempt #EX-187 · example date 5</small>
+              <span class="keep">Description and connection details are deleted on <b>example date 9</b>.</span></li>
+            <li><span class="pill closed">Closed · not enough evidence</span><b>Question did not load</b><small>Attempt #EX-152 · example date 3</small>
+              <span class="keep">Kept for now: this connection log is shared with another case that is still open.</span></li>
+          </ul>
+          <p class="small">Opening a ticket never changes your points or your access.</p>
+          <button class="primary" type="button" data-tk-go="create">Create ticket</button>
+        </div>
+
+        <div class="view" data-tk="empty" hidden>
+          <div class="panel">
+            <p class="small">You have no tickets. Support only opens one when you ask for it: nothing here is created automatically, and a connection problem does not open a ticket by itself.</p>
+          </div>
+          <button class="primary" type="button" data-tk-go="create">Create ticket</button>
+        </div>
+
+        <div class="view" data-tk="loading" hidden><p class="small" role="status">Loading your tickets…</p></div>
+
+        <div class="view" data-tk="error" hidden>
+          <div class="panel">
+            <h2>Could not load your tickets</h2>
+            <p class="small" style="margin-top:6px">Your tickets and your points are safe. Try again in a moment.</p>
+          </div>
+          <button class="ghost" type="button" data-stub="This mock does not reload anything.">Try again</button>
+        </div>
+
+        <div class="view" data-tk="create" hidden>
+          <h2>Create ticket</h2>
+          <label class="field"><span>Which attempt</span>
+            <select id="tk-attempt">
+              <option>Ranked quiz #EX-204 · example date 7 · ended early</option>
+              <option>Ranked quiz #EX-198 · example date 6 · finished, 15 of 15</option>
+              <option>Ranked quiz #EX-187 · example date 5 · ended early</option>
+            </select>
+          </label>
+          <label class="field"><span>What happened (optional)</span>
+            <textarea id="tk-note" rows="4" placeholder="Anything that helps. You can leave this empty."></textarea>
+          </label>
+          <div class="panel">
+            <h2>Sent with your ticket</h2>
+            <p class="small" style="margin-top:6px">The attempt you picked and the connection events recorded for it. Only you and the people reviewing your ticket can see them. Your tickets never appear on your profile or the leaderboard.</p>
+          </div>
+          <button class="primary" type="button" data-tk-go="sent">Send ticket</button>
+          <button class="ghost" type="button" data-tk-go="list">Cancel</button>
+        </div>
+
+        <div class="view" data-tk="sent" hidden>
+          <h2>Ticket sent</h2>
+          <p class="lead">Someone will look at it. You can close the app; nothing is waiting on you.</p>
+          <div class="panel"><p class="small">This does not change your points or your access, whatever the outcome is.</p></div>
+          <button class="ghost" type="button" data-tk-go="list">Back to your tickets</button>
+        </div>
+
+        <div class="view" data-tk="open" hidden>
+          <h2>Quiz cut out halfway</h2>
+          <p class="lead"><span class="pill open">Open</span></p>
+          <div class="panel">
+            <p class="small"><b>Attempt</b> #EX-204 · example date 7</p>
+            <p class="small" style="margin-top:6px"><b>What you wrote</b> The quiz stopped answering and I could not get back in.</p>
+            <p class="small" style="margin-top:6px"><b>Sent with it</b> The connection events for that attempt.</p>
+          </div>
+          <p class="small">Your evidence is kept while this case is open. Nothing here changes your points or your access.</p>
+          <button class="ghost" type="button" data-tk-go="list">Back to your tickets</button>
+        </div>
+
+        <div class="view" data-tk="closed" hidden>
+          <h2>Lost connection twice</h2>
+          <p class="lead"><span class="pill closed">Closed · network instability</span></p>
+          <div class="panel">
+            <p class="small"><b>Attempt</b> #EX-187 · example date 5</p>
+            <p class="small" style="margin-top:6px"><b>Outcome</b> Closed as network instability. Your points and your access are unchanged.</p>
+          </div>
+          <p class="small">The description and the connection details of this ticket are deleted on <b>example date 9</b>. Your season points and quiz history stay.</p>
+          <button class="ghost" type="button" data-tk-go="list">Back to your tickets</button>
+        </div>
+
+        <div class="mock-controls">
+          <p>Mock controls · not part of the app</p>
+          <div class="row" role="group" aria-label="Tickets screen">
+            <button type="button" data-tk-go="list" aria-pressed="true">List</button>
+            <button type="button" data-tk-go="empty" aria-pressed="false">Empty</button>
+            <button type="button" data-tk-go="create" aria-pressed="false">Create</button>
+            <button type="button" data-tk-go="sent" aria-pressed="false">Sent</button>
+            <button type="button" data-tk-go="open" aria-pressed="false">Open ticket</button>
+            <button type="button" data-tk-go="closed" aria-pressed="false">Closed ticket</button>
+            <button type="button" data-tk-go="loading" aria-pressed="false">Loading</button>
+            <button type="button" data-tk-go="error" aria-pressed="false">Error</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Ranked quiz (issue #17, slice 1). Fifteen questions, ten seconds
+           each on the SERVER's clock, answers locked once accepted, feedback
+           held until Next, and the fifteenth settling on its own. -->
+      <section class="view" data-view="rquiz" hidden>
+        <div class="rq-top">
+          <span class="rq-count" id="rq-count">Question 4 of 15</span>
+          <span class="rq-clock" id="rq-clock">07</span>
+        </div>
+        <span class="rq-stake">◆ Ranked · this attempt counts for points</span>
+
+        <div class="view" data-rq="question">
+          <h1 tabindex="-1" class="sr-only">Question 4 of 15</h1>
+          <div class="rq-prompt">
+            <p class="rq-service">Ground · New York</p>
+            <p class="rq-code">148&ndash;149</p>
+          </div>
+          <p class="small">Where does this go?</p>
+          <div class="belts" role="group" aria-label="Choose a belt">
+            <button type="button" style="background:#5b2d8e" data-rq-go="locked">PURPLE</button>
+            <button type="button" style="background:#b34d06" data-rq-go="wrong">ORANGE</button>
+            <button type="button" style="background:#1e6b3a" data-rq-go="right">GREEN</button>
+            <button type="button" style="background:#f6d33c;color:#35271e" data-rq-go="timeout">YELLOW</button>
+          </div>
+          <button class="ghost" type="button" data-go="qc">Cancel this attempt</button>
+          <p class="note"><strong>Design mock.</strong> Each belt opens a different outcome so you can see them all: PURPLE shows the locked moment, ORANGE a wrong answer, GREEN a right one, YELLOW a timeout.</p>
+        </div>
+
+        <div class="view" data-rq="locked" hidden>
+          <h1 tabindex="-1" class="sr-only">Answer sent</h1>
+          <div class="rq-prompt">
+            <p class="rq-service">Ground · New York</p>
+            <p class="rq-code">148&ndash;149</p>
+          </div>
+          <p class="small">Your answer is in. You cannot change it or answer again.</p>
+          <div class="belts" role="group" aria-label="Your answer">
+            <button type="button" class="picked" style="background:#5b2d8e" disabled>PURPLE</button>
+            <button type="button" style="background:#b34d06" disabled>ORANGE</button>
+            <button type="button" style="background:#1e6b3a" disabled>GREEN</button>
+            <button type="button" style="background:#f6d33c;color:#35271e" disabled>YELLOW</button>
+          </div>
+          <p class="small" role="status">Checking with the server…</p>
+        </div>
+
+        <div class="view" data-rq="right" hidden>
+          <h1 tabindex="-1" class="rq-verdict good">Correct</h1>
+          <p class="rq-worth good">+20 points · Medium question</p>
+          <div class="rq-cmp"><div><span>Correct belt</span><span class="chip" style="background:#1e6b3a">GREEN</span></div></div>
+          <p class="rq-why">PA 179&ndash;189 goes to GREEN on the Twilight Ground chart.</p>
+          <button class="primary" type="button" data-rq-go="question">Next</button>
+          <p class="note">This stays until you press Next. The next question's ten seconds start only then.</p>
+        </div>
+
+        <div class="view" data-rq="wrong" hidden>
+          <h1 tabindex="-1" class="rq-verdict bad">Review this route</h1>
+          <p class="rq-worth bad">&minus;10 points · Medium question</p>
+          <div class="rq-cmp">
+            <div><span>Your choice</span><span class="chip" style="background:#b34d06">ORANGE</span></div>
+            <div><span>Correct belt</span><span class="chip" style="background:#1e6b3a">GREEN</span></div>
+          </div>
+          <p class="rq-why">PA 179&ndash;189 goes to GREEN on the Twilight Ground chart. Check the service and the range before choosing.</p>
+          <button class="primary" type="button" data-rq-go="question">Next</button>
+        </div>
+
+        <div class="view" data-rq="timeout" hidden>
+          <h1 tabindex="-1" class="rq-verdict bad">Time ran out</h1>
+          <p class="rq-worth bad">&minus;10 points · Medium question. A question that runs out counts as wrong.</p>
+          <div class="rq-cmp">
+            <div><span>Your choice</span><span class="small">none sent in time</span></div>
+            <div><span>Correct belt</span><span class="chip" style="background:#1e6b3a">GREEN</span></div>
+          </div>
+          <button class="primary" type="button" data-rq-go="question">Next</button>
+          <p class="note">The ten seconds belong to the server and start when it sends the question, so a slow connection can spend them before the question appears.</p>
+        </div>
+
+        <div class="view" data-rq="final" hidden>
+          <h1 tabindex="-1" class="rq-verdict good">Correct</h1>
+          <p class="rq-worth good">+30 points · Hard question</p>
+          <div class="rq-cmp"><div><span>Correct belt</span><span class="chip" style="background:#1f4e9c">BLUE</span></div></div>
+          <p class="rq-why">That was question 15 of 15, so the attempt is already finished. There is no Next on the last question.</p>
+          <button class="primary" type="button" data-rq-go="cap">See your result</button>
+        </div>
+
+        <div class="view" data-rq="cap" hidden>
+          <p class="eyebrow">Ranked · attempt finished</p>
+          <h1 tabindex="-1">13 of 15 correct</h1>
+          <div class="sum">
+            <div><span>Before this attempt</span><b>950</b></div>
+            <div><span>Earned this attempt</span><b>+300</b></div>
+            <div class="lost"><span>Did not fit in Iron</span><b>&minus;250</b></div>
+            <div class="total"><span>Your balance now</span><b>1,000</b></div>
+          </div>
+          <div class="notice-box">
+            <h2>Iron stops at 1,000</h2>
+            <p>Points above a cap are not saved for later. Reaching the cap is what makes promotion available.</p>
+          </div>
+          <button class="primary" type="button" data-go="promo">Start promotion</button>
+          <button class="ghost" type="button" data-go="ranked">Back to Ranked</button>
+        </div>
+
+        <div class="view" data-rq="plain" hidden>
+          <p class="eyebrow">Ranked · attempt finished</p>
+          <h1 tabindex="-1">11 of 15 correct</h1>
+          <div class="sum">
+            <div><span>Before this attempt</span><b>340</b></div>
+            <div><span>Earned this attempt</span><b>+145</b></div>
+            <div class="total"><span>Your balance now</span><b>485</b></div>
+          </div>
+          <p class="small">Iron · 515 points to the Iron cap (1,000). Nothing was discarded.</p>
+          <button class="ghost" type="button" data-go="ranked">Back to Ranked</button>
+        </div>
+
+        <div class="view" data-rq="negative" hidden>
+          <p class="eyebrow">Ranked · attempt finished</p>
+          <h1 tabindex="-1">4 of 15 correct</h1>
+          <div class="sum">
+            <div><span>Before this attempt</span><b>120</b></div>
+            <div class="lost"><span>Lost this attempt</span><b>&minus;95</b></div>
+            <div class="total"><span>Your balance now</span><b>25</b></div>
+          </div>
+          <p class="small">Still Iron. A hard question costs 5 when it is wrong and an easy one costs 15, so an attempt can end below where it started. Practice does not touch these points.</p>
+          <button class="ghost" type="button" data-go="ranked">Back to Ranked</button>
+        </div>
+
+        <div class="mock-controls">
+          <p>Mock controls · not part of the app</p>
+          <div class="row" role="group" aria-label="Ranked quiz screen">
+            <button type="button" data-rq-go="question" aria-pressed="true">Question</button>
+            <button type="button" data-rq-go="locked" aria-pressed="false">Locked</button>
+            <button type="button" data-rq-go="right" aria-pressed="false">Right</button>
+            <button type="button" data-rq-go="wrong" aria-pressed="false">Wrong</button>
+            <button type="button" data-rq-go="timeout" aria-pressed="false">Timed out</button>
+            <button type="button" data-rq-go="final" aria-pressed="false">Last question</button>
+            <button type="button" data-rq-go="cap" aria-pressed="false">Result at cap</button>
+            <button type="button" data-rq-go="plain" aria-pressed="false">Result below cap</button>
+            <button type="button" data-rq-go="negative" aria-pressed="false">Result negative</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Promotion (issue #17, slice 2). At a cap, promotion is the only
+           Ranked option. 15 of 15 required; a correct answer adds nothing,
+           a wrong one deducts and ends the attempt, dropping the player
+           below the cap. Opening this screen starts nothing. -->
+      <section class="view" data-view="promo" hidden>
+        <button class="link" type="button" data-go="ranked">← Back to Ranked</button>
+
+        <div class="view" data-pr="offer">
+          <p class="eyebrow">Ranked · Pre-Season</p>
+          <h1 tabindex="-1">Promotion to Bronze</h1>
+          <div class="panel balance">
+            <img class="balance-badge" src="assets-sm/badge-iron.png" alt="">
+            <div>
+              <p class="small">Your balance</p>
+              <p class="stat">1,000 points</p>
+              <p class="small">Iron · at the Iron cap</p>
+            </div>
+          </div>
+          <ol class="rules">
+            <li>15 questions. You need every one of them right.</li>
+            <li>A wrong answer or a timeout ends the attempt and deducts points.</li>
+            <li>Losing points drops you below the cap, so promotion is not available again until you earn them back.</li>
+            <li>Passing sets you to 1,001 points and Bronze.</li>
+          </ol>
+          <p class="small">Opening this screen has not started anything. No question has been sent and no clock is running.</p>
+          <button class="primary" type="button" data-pr-go="question">Start promotion</button>
+          <button class="ghost" type="button" data-go="ranked">Not now</button>
+          <p class="small">Ordinary Ranked quizzes are not available at the cap. Practice is, and never changes these points.</p>
+        </div>
+
+        <div class="view" data-pr="question" hidden>
+          <div class="rq-top">
+            <span class="rq-count">Question 9 of 15</span>
+            <span class="rq-clock">06</span>
+          </div>
+          <span class="rq-stake">◆ Promotion · 8 of 8 right so far</span>
+          <h1 tabindex="-1" class="sr-only">Promotion question 9 of 15</h1>
+          <div class="rq-prompt">
+            <p class="rq-service">Next Day Air · New York</p>
+            <p class="rq-code">136</p>
+          </div>
+          <p class="small">Where does this go?</p>
+          <div class="belts" role="group" aria-label="Choose a belt">
+            <button type="button" style="background:#5b2d8e" data-pr-go="right">PURPLE</button>
+            <button type="button" style="background:#8a6400" data-pr-go="failed">GOLD</button>
+            <button type="button" style="background:#1f4e9c" data-pr-go="failed">BLUE</button>
+            <button type="button" style="background:#a81c1c" data-pr-go="failed">RED</button>
+          </div>
+          <p class="note"><strong>Design mock.</strong> PURPLE is the right answer and continues; the others show a failed promotion.</p>
+        </div>
+
+        <div class="view" data-pr="right" hidden>
+          <h1 tabindex="-1" class="rq-verdict good">Correct · still perfect</h1>
+          <p class="rq-worth">9 of 9 right. Six questions to go.</p>
+          <div class="rq-cmp"><div><span>Correct belt</span><span class="chip" style="background:#5b2d8e">PURPLE</span></div></div>
+          <div class="notice-box">
+            <h2>A right answer in promotion adds no points</h2>
+            <p>It keeps the attempt alive. Only passing all fifteen changes your balance, and it sets you to 1,001.</p>
+          </div>
+          <button class="primary" type="button" data-pr-go="passed">Next</button>
+        </div>
+
+        <div class="view" data-pr="failed" hidden>
+          <p class="eyebrow">Promotion · ended</p>
+          <h1 tabindex="-1">14 of 15 — promotion needs all 15</h1>
+          <div class="rq-cmp">
+            <div><span>Question 9 · your choice</span><span class="chip" style="background:#a81f5e">PINK</span></div>
+            <div><span>Correct belt</span><span class="chip" style="background:#8a6400">GOLD</span></div>
+          </div>
+          <div class="sum">
+            <div><span>Before this attempt</span><b>1,000</b></div>
+            <div class="lost"><span>Wrong Easy question</span><b>−15</b></div>
+            <div class="total"><span>Your balance now</span><b>985</b></div>
+          </div>
+          <div class="notice-box">
+            <h2>15 points to the Iron cap again</h2>
+            <p>Earn them in ordinary Ranked quizzes. Promotion comes back when you reach 1,000.</p>
+          </div>
+          <button class="ghost" type="button" data-go="ranked">Back to Ranked</button>
+          <p class="small">Your history keeps the raw +275 from this attempt as well as the −15 that was applied.</p>
+        </div>
+
+        <div class="view" data-pr="passed" hidden>
+          <p class="eyebrow">Promotion · passed</p>
+          <h1 tabindex="-1">15 of 15. You are Bronze.</h1>
+          <div class="panel balance">
+            <img class="balance-badge" src="assets-sm/badge-bronze.png" alt="">
+            <div>
+              <p class="small">Your balance</p>
+              <p class="stat">1,001 points</p>
+              <p class="small">Bronze · 999 points to the Bronze cap (2,000)</p>
+            </div>
+          </div>
+          <p class="small">Passing sets the new badge's first point total. Ordinary Ranked quizzes are available again until you reach 2,000.</p>
+          <button class="ghost" type="button" data-go="ranked">Back to Ranked</button>
+        </div>
+
+        <div class="view" data-pr="demoted" hidden>
+          <p class="eyebrow">Ranked · attempt finished</p>
+          <h1 tabindex="-1">3 of 15 correct</h1>
+          <div class="sum">
+            <div><span>Before this attempt</span><b>1,010</b></div>
+            <div class="lost"><span>Lost this attempt</span><b>−150</b></div>
+            <div class="total"><span>Your balance now</span><b>860</b></div>
+          </div>
+          <div class="notice-box">
+            <h2>You are Iron again</h2>
+            <p>Bronze starts at 1,001, and 860 is below it. Getting Bronze back takes two things: reach 1,000, then pass another perfect promotion.</p>
+          </div>
+          <button class="ghost" type="button" data-go="ranked">Back to Ranked</button>
+        </div>
+
+        <div class="mock-controls">
+          <p>Mock controls · not part of the app</p>
+          <div class="row" role="group" aria-label="Promotion screen">
+            <button type="button" data-pr-go="offer" aria-pressed="true">At the cap</button>
+            <button type="button" data-pr-go="question" aria-pressed="false">Question</button>
+            <button type="button" data-pr-go="right" aria-pressed="false">Correct</button>
+            <button type="button" data-pr-go="failed" aria-pressed="false">Failed</button>
+            <button type="button" data-pr-go="passed" aria-pressed="false">Passed</button>
+            <button type="button" data-pr-go="demoted" aria-pressed="false">Demoted</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Quitting and lost connection (issue #17, slice 3). Quitting costs
+           the partial score plus 10, before the cap. A lost connection
+           costs no extra penalty. A confirmed outage costs nothing at all.
+           No screen says whose fault it was: the app cannot tell. -->
+      <section class="view" data-view="qc" hidden>
+        <button class="link" type="button" data-go="ranked">← Back to Ranked</button>
+
+        <div class="view" data-qc="confirm">
+          <div class="qc-clock"><i>04</i><span>The question clock keeps running while you decide.</span></div>
+          <h1 tabindex="-1">Quit this ranked quiz?</h1>
+          <p class="lead">Your current score will count, and 10 points are taken off it. You cannot resume this attempt.</p>
+          <button class="primary" type="button" data-qc-go="back">Continue quiz</button>
+          <button class="ghost danger" type="button" data-qc-go="quit">Quit quiz</button>
+        </div>
+
+        <div class="view" data-qc="back" hidden>
+          <h1 tabindex="-1">Back in the quiz</h1>
+          <p class="lead">Nothing changed. The question you were on still has its own time left.</p>
+          <button class="ghost" type="button" data-qc-go="confirm">Show the quit confirmation again</button>
+        </div>
+
+        <div class="view" data-qc="quit" hidden>
+          <p class="eyebrow">Ranked · attempt ended</p>
+          <h1 tabindex="-1">You quit this attempt</h1>
+          <div class="sum">
+            <div><span>Before this attempt</span><b>340</b></div>
+            <div><span>Right before you quit</span><b>+100</b></div>
+            <div class="lost"><span>Quitting costs</span><b>−10</b></div>
+            <div class="total"><span>Your balance now</span><b>430</b></div>
+          </div>
+          <p class="small">The attempt is over and cannot be resumed. The questions you never saw deducted nothing.</p>
+          <button class="ghost" type="button" data-go="ranked">Back to Ranked</button>
+        </div>
+
+        <div class="view" data-qc="quitcap" hidden>
+          <p class="eyebrow">Ranked · attempt ended</p>
+          <h1 tabindex="-1">You quit this attempt</h1>
+          <div class="sum">
+            <div><span>Before this attempt</span><b>990</b></div>
+            <div><span>Right before you quit</span><b>+100</b></div>
+            <div class="lost"><span>Quitting costs</span><b>−10</b></div>
+            <div><span>Which comes to</span><b>1,080</b></div>
+            <div class="lost"><span>Did not fit in Iron</span><b>−80</b></div>
+            <div class="total"><span>Your balance now</span><b>1,000</b></div>
+          </div>
+          <div class="notice-box">
+            <h2>The 10 points came off, even though your balance went up</h2>
+            <p>They are taken from the attempt's result before the Iron cap is applied. This close to the cap, the overflow absorbs them.</p>
+          </div>
+          <button class="ghost" type="button" data-go="ranked">Back to Ranked</button>
+        </div>
+
+        <div class="view" data-qc="lost" hidden>
+          <p class="eyebrow danger-eye">Connection</p>
+          <h1 tabindex="-1">The server lost contact with this quiz</h1>
+          <div class="qc-bar"><i></i></div>
+          <p class="lead"><b>9 seconds left</b> to come back and carry on.</p>
+          <ul class="qc-list">
+            <li><i aria-hidden="true">!</i><span>The current question's clock is still running, and it can run out while you are away.</span></li>
+            <li><i aria-hidden="true">!</i><span>Reloading or closing this page ends the attempt, even now.</span></li>
+            <li><i aria-hidden="true">!</i><span>No new question is sent until contact returns.</span></li>
+          </ul>
+          <p class="note">The app cannot tell whether the problem is this device, the signal here, or the server. It only reports that contact stopped.</p>
+        </div>
+
+        <div class="view" data-qc="reconnected" hidden>
+          <p class="eyebrow">Connection</p>
+          <h1 tabindex="-1">Back in contact</h1>
+          <p class="lead">The attempt carried on. Question 7 of 15 has 3 seconds left.</p>
+          <div class="panel"><p class="small">Nothing was deducted for the time away. A question that ran out while contact was lost still counts as wrong, like any other.</p></div>
+          <button class="primary" type="button" data-go="rquiz">Back to the question</button>
+        </div>
+
+        <div class="view" data-qc="expired" hidden>
+          <p class="eyebrow">Ranked · attempt ended</p>
+          <h1 tabindex="-1">Contact did not come back in time</h1>
+          <div class="sum">
+            <div><span>Before this attempt</span><b>340</b></div>
+            <div><span>Right up to the loss</span><b>+100</b></div>
+            <div class="total"><span>Your balance now</span><b>440</b></div>
+          </div>
+          <div class="notice-box">
+            <h2>No extra penalty</h2>
+            <p>Losing contact is not quitting. The 10-point quit penalty was not applied, and the questions never sent deducted nothing.</p>
+          </div>
+          <button class="ghost" type="button" data-go="ranked">Back to Ranked</button>
+        </div>
+
+        <div class="view" data-qc="outage" hidden>
+          <p class="eyebrow">Ranked · attempt voided</p>
+          <h1 tabindex="-1">This attempt does not count</h1>
+          <div class="sum">
+            <div><span>Before this attempt</span><b>340</b></div>
+            <div><span>Applied from this attempt</span><b>0</b></div>
+            <div class="total"><span>Your balance now</span><b>340</b></div>
+          </div>
+          <div class="notice-box">
+            <h2>A confirmed server problem</h2>
+            <p>Nothing from this attempt is counted and nothing is deducted. There is no quit penalty and no mark against your account. You can start a fresh attempt once the season is open again.</p>
+          </div>
+          <button class="ghost" type="button" data-go="ranked">Back to Ranked</button>
+        </div>
+
+        <div class="view" data-qc="reloaded" hidden>
+          <p class="eyebrow">Ranked · attempt ended</p>
+          <h1 tabindex="-1">This attempt ended when the page reloaded</h1>
+          <div class="sum">
+            <div><span>Before this attempt</span><b>340</b></div>
+            <div><span>Right up to the reload</span><b>+60</b></div>
+            <div class="total"><span>Your balance now</span><b>400</b></div>
+          </div>
+          <p class="small">A reloaded page cannot carry on an attempt, even within the 15 seconds of grace. Your answers up to that point counted, and there was no quit penalty.</p>
+          <button class="ghost" type="button" data-go="ranked">Back to Ranked</button>
+        </div>
+
+        <div class="mock-controls">
+          <p>Mock controls · not part of the app</p>
+          <div class="row" role="group" aria-label="Ending screen">
+            <button type="button" data-qc-go="confirm" aria-pressed="true">Quit?</button>
+            <button type="button" data-qc-go="quit" aria-pressed="false">Quit done</button>
+            <button type="button" data-qc-go="quitcap" aria-pressed="false">Quit near cap</button>
+            <button type="button" data-qc-go="lost" aria-pressed="false">Contact lost</button>
+            <button type="button" data-qc-go="reconnected" aria-pressed="false">Back in time</button>
+            <button type="button" data-qc-go="expired" aria-pressed="false">Grace expired</button>
+            <button type="button" data-qc-go="outage" aria-pressed="false">Server outage</button>
+            <button type="button" data-qc-go="reloaded" aria-pressed="false">Page reloaded</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Prize tie-breaks (issue #17, slice 4). Five shared Hard questions,
+           no Next button, shortening timers, and NOTHING revealed until the
+           round's 24-hour window closes. No seasonal points change. -->
+      <section class="view" data-view="tb" hidden>
+        <button class="link" type="button" data-go="ranked">← Back to Ranked</button>
+
+        <div class="view" data-tb="invite">
+          <p class="eyebrow">Prize tie-break · round 1</p>
+          <h1 tabindex="-1">You are tied for third place</h1>
+          <p class="lead">One more player has the same points as you. A separate quiz decides which of you takes the third hat.</p>
+          <ol class="rules">
+            <li>Five Hard route questions, the same five for everyone in this round.</li>
+            <li>Five seconds each. Questions move on by themselves — there is no Next.</li>
+            <li>Play once, at any time before the round closes.</li>
+            <li>Nothing is shown until the round closes, for anyone.</li>
+          </ol>
+          <div class="notice-box">
+            <h2>This changes no points and no badge</h2>
+            <p>It decides the prize place only. Your season points, your badge and your history stay exactly as they are, whatever happens here.</p>
+          </div>
+          <p class="small"><b>Round closes in 19 hours.</b> Nothing has started yet.</p>
+          <button class="primary" type="button" data-tb-go="question">Start round</button>
+          <button class="ghost" type="button" data-go="ranked">Not yet</button>
+        </div>
+
+        <div class="view" data-tb="question" hidden>
+          <div class="rq-top">
+            <span class="rq-count">Question 4 of 5 · round 5</span>
+            <span class="rq-count">3 seconds</span>
+          </div>
+          <div class="tb-bar"><i></i></div>
+          <h1 tabindex="-1" class="sr-only">Tie-break question 4 of 5</h1>
+          <!-- Owner decision 2026-11-15 (#136): tie-breaks draw from the
+               approved Hard route questions, so the question looks like an
+               ordinary Ranked one and is answered by belt colour. -->
+          <div class="rq-prompt">
+            <p class="rq-service">Ground · New Jersey · Hard</p>
+            <p class="rq-code">079&ndash;079</p>
+          </div>
+          <p class="small">Where does this go?</p>
+          <div class="belts" role="group" aria-label="Choose a belt">
+            <button type="button" style="background:#5b2d8e" data-tb-go="submitted">PURPLE</button>
+            <button type="button" style="background:#b34d06" data-tb-go="submitted">ORANGE</button>
+            <button type="button" style="background:#1e6b3a" data-tb-go="submitted">GREEN</button>
+            <button type="button" style="background:#f6d33c;color:#35271e" data-tb-go="submitted">YELLOW</button>
+          </div>
+          <p class="small">No feedback: whether you were right stays hidden until the round closes.</p>
+          <p class="note">There is no Next button. The next question opens by itself when the time runs out, whether or not you answered.</p>
+        </div>
+
+        <div class="view" data-tb="submitted" hidden>
+          <p class="eyebrow">Prize tie-break · round 1</p>
+          <h1 tabindex="-1">Attempt submitted</h1>
+          <p class="lead">All five are in. Nothing else is needed from you.</p>
+          <ul class="tb-recap">
+            <li><span>Question 1</span><span class="tb-state">answered</span></li>
+            <li><span>Question 2</span><span class="tb-state">answered</span></li>
+            <li><span>Question 3</span><span class="tb-state">ran out of time</span></li>
+            <li><span>Question 4</span><span class="tb-state">answered</span></li>
+            <li><span>Question 5</span><span class="tb-state">answered</span></li>
+          </ul>
+          <div class="notice-box">
+            <h2>Why you see nothing yet</h2>
+            <p>Everyone in this round answers the same five questions, at different times. Showing a score now would tell a later player what to expect. Scores and correct answers are hidden for everyone until the round closes.</p>
+          </div>
+          <p class="small"><b>Round closes in 19 hours.</b> Come back then for the result.</p>
+          <button class="ghost" type="button" data-go="ranked">Back to Ranked</button>
+        </div>
+
+        <div class="view" data-tb="result" hidden>
+          <p class="eyebrow">Prize tie-break · round 1 closed</p>
+          <h1 tabindex="-1">Third place is settled</h1>
+          <ul class="board">
+            <li class="winner"><span class="pos">1</span><span class="who"><b>parcel_fox</b><small>#K7Q2MX · your place</small></span><b>4 of 5</b><span class="marker">Takes the third hat</span></li>
+            <li><span class="pos">2</span><span class="who"><b>tape_gull</b><small>#G8H9JK</small></span><b>2 of 5</b></li>
+          </ul>
+          <p class="small">Season points and badges are unchanged. This decided the prize place only.</p>
+          <button class="ghost" type="button" data-go="leaderboard">See the leaderboard</button>
+        </div>
+
+        <div class="view" data-tb="tied" hidden>
+          <p class="eyebrow">Prize tie-break · round 1 closed</p>
+          <h1 tabindex="-1">Still tied — round 2 opens</h1>
+          <ul class="board">
+            <li><span class="pos">=</span><span class="who"><b>parcel_fox</b><small>#K7Q2MX · your place</small></span><b>3 of 5</b></li>
+            <li><span class="pos">=</span><span class="who"><b>tape_gull</b><small>#G8H9JK</small></span><b>3 of 5</b></li>
+          </ul>
+          <div class="notice-box">
+            <h2>A fresh round, with new questions</h2>
+            <p>Round 2 uses five questions neither of you has seen, and its own 24-hour window from the moment it opens. Round 1 still counts as played.</p>
+          </div>
+          <p class="small"><b>Round 2 closes in 24 hours.</b></p>
+          <button class="primary" type="button" data-tb-go="invite">Open round 2</button>
+        </div>
+
+        <div class="view" data-tb="missed" hidden>
+          <p class="eyebrow">Prize tie-break · round 1 closed</p>
+          <h1 tabindex="-1">You did not play this round</h1>
+          <div class="notice-box">
+            <h2>Out of the top three for this season</h2>
+            <p>The round closed with no attempt from you. A completed attempt outranks one that was not played, so the prize place goes to the player who finished.</p>
+          </div>
+          <div class="sum">
+            <div><span>Your season points</span><b>1,420</b></div>
+            <div><span>Your badge</span><b>Bronze</b></div>
+            <div><span>Your history</span><b>unchanged</b></div>
+          </div>
+          <p class="small">Only the prize placement changed. Nothing was deducted, and nothing was removed from your account.</p>
+          <button class="ghost" type="button" data-go="ranked">Back to Ranked</button>
+        </div>
+
+        <div class="view" data-tb="exhausted" hidden>
+          <p class="eyebrow">Prize tie-break · rounds finished</p>
+          <h1 tabindex="-1">Still tied after 5 rounds</h1>
+          <div class="notice-box">
+            <h2>The owner decides this place</h2>
+            <p>Five rounds is the agreed limit for this badge, and the tie survived all of them. The rule set before the season says the owner then chooses between the players still tied. No extra round is run, and nobody is ordered by who answered first.</p>
+          </div>
+          <div class="sum">
+            <div><span>Your season points</span><b>1,420</b></div>
+            <div><span>Your badge</span><b>Bronze</b></div>
+            <div><span>Earlier rounds</span><b>kept</b></div>
+          </div>
+          <p class="small">Points, badge, history and the order already earned in valid rounds all stand.</p>
+          <button class="ghost" type="button" data-go="ranked">Back to Ranked</button>
+        </div>
+
+        <div class="view" data-tb="noquestions" hidden>
+          <p class="eyebrow">Prize tie-break · round not run</p>
+          <h1 tabindex="-1">This round cannot be played</h1>
+          <div class="notice-box">
+            <h2>The owner decides this place</h2>
+            <p>A round needs five approved Hard questions that nobody in it has seen. There is no fresh set, and questions are never reused — a repeated question would favour whoever saw it first. The rule set before the season says the owner then chooses between the players still tied.</p>
+          </div>
+          <p class="small">Your points, badge and history are unchanged, and the results of any earlier rounds still stand.</p>
+          <button class="ghost" type="button" data-go="ranked">Back to Ranked</button>
+        </div>
+
+        <div class="view" data-tb="outage" hidden>
+          <p class="eyebrow">Prize tie-break · round restarted</p>
+          <h1 tabindex="-1">This round starts again</h1>
+          <div class="notice-box">
+            <h2>A confirmed server problem</h2>
+            <p>The round restarts for everyone in it, including players who had already finished. It uses five new questions and a new 24-hour window, and it does not count against the number of rounds this tie is allowed.</p>
+          </div>
+          <p class="small">Anything you answered in the interrupted round is discarded for everyone equally. No points changed and there is no mark against your account.</p>
+          <p class="small"><b>The restarted round closes in 24 hours.</b></p>
+          <button class="primary" type="button" data-tb-go="invite">Open the restarted round</button>
+        </div>
+
+        <div class="mock-controls">
+          <p>Mock controls · not part of the app</p>
+          <div class="row" role="group" aria-label="Tie-break screen">
+            <button type="button" data-tb-go="invite" aria-pressed="true">Invitation</button>
+            <button type="button" data-tb-go="question" aria-pressed="false">Question</button>
+            <button type="button" data-tb-go="submitted" aria-pressed="false">Submitted</button>
+            <button type="button" data-tb-go="result" aria-pressed="false">Settled</button>
+            <button type="button" data-tb-go="tied" aria-pressed="false">Still tied</button>
+            <button type="button" data-tb-go="missed" aria-pressed="false">Did not play</button>
+            <button type="button" data-tb-go="exhausted" aria-pressed="false">Rounds finished</button>
+            <button type="button" data-tb-go="noquestions" aria-pressed="false">No questions</button>
+            <button type="button" data-tb-go="outage" aria-pressed="false">Outage restart</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Account deletion (issue #16, slice 3). The server behaviour is
+           already built in #47: the login ID typed here is the
+           reauthentication, a wrong one changes nothing and does not say
+           which part was wrong, the owner cannot delete, and an accepted
+           deletion is pending, never completed. -->
+      <section class="view" data-view="delete" hidden>
+        <button class="link" type="button" data-go="profile">← Back to Profile</button>
+        <p class="eyebrow" id="del-step-label">Settings · step 1 of 2</p>
+        <div class="steps" aria-hidden="true"><span class="on" id="del-bar-1"></span><span id="del-bar-2"></span></div>
+
+        <div class="view" data-del="step1">
+          <h1 tabindex="-1">Are you sure you want to proceed with deleting this account?</h1>
+          <p class="lead">After deletion is completed, your profile, quiz history and points are removed. A new account starts at 0 points / Iron.</p>
+          <label class="check">
+            <input type="checkbox" id="del-ack">
+            <span>I agree to delete my account. I understand that deleting it before prizes are finalized removes this account from this season's competition.</span>
+          </label>
+          <p class="small" id="del-hint">Tick the box above to continue.</p>
+          <button class="primary danger" type="button" id="del-continue" disabled>Continue</button>
+          <button class="ghost" type="button" data-go="profile">Cancel</button>
+          <p class="note">Your profile, quiz history and points are deleted. We keep only a private season-ineligibility record until prizes are finalized.</p>
+        </div>
+
+        <div class="view" data-del="step2" hidden>
+          <h1 tabindex="-1">Type your login ID to confirm</h1>
+          <div class="warn-box">
+            <h2>This cannot be undone</h2>
+            <p>Once this is accepted there is no undo, no restore and no way to get this season's prizes back.</p>
+          </div>
+          <label class="field"><span>Login ID</span><input type="text" id="del-id" autocomplete="off" placeholder="EXAMPLE-ID"></label>
+          <p class="error-text" id="del-error" role="alert" hidden>That did not work. Nothing has been deleted.</p>
+          <button class="primary danger" type="button" id="del-confirm">Delete account</button>
+          <button class="ghost" type="button" data-go="profile">Cancel</button>
+          <p class="note"><strong>Design mock.</strong> Typing <strong>EXAMPLE-ID</strong> shows the accepted screen; anything else shows the failure. Nothing is sent.</p>
+        </div>
+
+        <div class="view" data-del="pending" hidden>
+          <h1 tabindex="-1">Deletion accepted</h1>
+          <p class="lead">You have been signed out and this account can no longer be used. Removing your data is under way.</p>
+          <div class="panel">
+            <p class="small">There is no undo and nothing to restore. A new account would start at 0 points and Iron, and cannot get this season's prizes back.</p>
+          </div>
+          <button class="ghost" type="button" data-leave>Back to the start</button>
+          <p class="note"><strong>No "completed" screen exists on purpose.</strong> The app can only say a deletion is accepted and under way. Saying "completed" needs verified erasure from backups and outside providers, which are not built yet (#13, #41).</p>
+        </div>
+
+        <div class="view" data-del="owner" hidden>
+          <h1 tabindex="-1">This account cannot be deleted</h1>
+          <p class="lead">You are the owner. The owner account stays, so Sort Lab is never left with nobody in charge.</p>
+          <button class="ghost" type="button" data-go="profile">Back to Profile</button>
+        </div>
+
+        <div class="mock-controls">
+          <p>Mock controls · not part of the app</p>
+          <div class="row" role="group" aria-label="Deletion screen">
+            <button type="button" data-del-go="step1" aria-pressed="true">Step 1</button>
+            <button type="button" data-del-go="step2" aria-pressed="false">Step 2</button>
+            <button type="button" data-del-go="pending" aria-pressed="false">Accepted</button>
+            <button type="button" data-del-go="owner" aria-pressed="false">Owner account</button>
+          </div>
+        </div>
+      </section>
+
+      <p class="note" id="stub" role="status" style="margin-top:12px" hidden></p>
+    </main>
+
+    <nav class="nav" id="nav" aria-label="Main navigation" hidden></nav>
+  </div>
+
+  <script>
+    // Which bottom tabs each kind of visitor gets. "public" has no tab bar.
+    const TABS = {
+      public: [],
+      guest: [['home', '⌂', 'Home'], ['practice', '≡', 'Practice']],
+      member: [['home', '⌂', 'Home'], ['practice', '≡', 'Practice'], ['ranked', '◆', 'Ranked'], ['profile', '●', 'Profile']],
+    };
+    // Screens that live inside a tab keep that tab marked as current.
+    const PARENT_TAB = { leaderboard: 'ranked', tickets: 'profile', delete: 'profile', rquiz: 'ranked', promo: 'ranked', qc: 'ranked', tb: 'ranked', owner: 'profile', 'owner-eligibility': 'profile', 'owner-recovery': 'profile', 'owner-cases': 'profile', 'owner-select': 'profile' };
+    const MEMBER_ONLY = ['ranked', 'leaderboard', 'profile', 'tickets', 'delete', 'rquiz', 'promo', 'qc', 'tb', 'owner', 'owner-eligibility', 'owner-recovery', 'owner-cases', 'owner-select'];
+    let mode = 'public';
+    // Whether this signed-in account is the owner. One account in the whole
+    // app is, so the Owner tools row is absent for everybody else.
+    let owner = false;
+    // The home callout appears only once a start is confirmed. During
+    // Pre-Season there is no callout and no invented date.
+    let season = 'pre';
+
+    const nav = document.getElementById('nav');
+    const stub = document.getElementById('stub');
+
+    for (const box of document.querySelectorAll('[data-announcement]')) {
+      box.innerHTML = '<p class="eyebrow">Sort change · example</p>' +
+        '<div class="change-row"><div><h2>Code 000 0</h2><p>All services · Twilight</p></div>' +
+        '<span class="belt-chip">BLUE</span></div>';
+    }
+
+    // Everyone sees the callout. A guest has no balance, so its second
+    // sentence tells them what to do instead of what was reset.
+    function setLaunchCallout() {
+      document.getElementById('launch-callout').hidden = season !== 'live';
+      document.getElementById('launch-text').innerHTML =
+        'It started on <b>example date 4</b> and ends on <b>example date 5</b>. ' +
+        (mode === 'member' ? 'Everyone began again at 0 points and Iron.' : 'Log in to play for points this season.');
+    }
+
+    function show(name) {
+      // A guest can never reach a logged-in screen, even through a stray link.
+      if (MEMBER_ONLY.includes(name) && mode !== 'member') name = 'login';
+      stub.hidden = true;
+      if (name === 'delete') setDelete('step1');
+      if (name === 'tickets') setTickets('list');
+      if (name === 'rquiz') setRanked('question');
+      if (name === 'promo') setPromotion('offer');
+      if (name === 'qc') setQc('confirm');
+      if (name === 'tb') setTb('invite');
+      for (const view of document.querySelectorAll('[data-view]')) view.hidden = view.dataset.view !== name;
+      for (const el of document.querySelectorAll('[data-member]')) el.hidden = mode !== 'member';
+      for (const el of document.querySelectorAll('[data-guest]')) el.hidden = mode !== 'guest';
+      document.getElementById('home-eyebrow').textContent = mode === 'member' ? 'Welcome back, parcel_fox' : 'Guest practice';
+      setLaunchCallout();
+      const signingIn = ['login', 'lost'].includes(name);
+      document.getElementById('top-login').hidden = mode !== 'guest' || signingIn;
+
+      const tabs = signingIn ? [] : TABS[mode];
+      const current = PARENT_TAB[name] || name;
+      nav.hidden = tabs.length === 0;
+      nav.style.gridTemplateColumns = `repeat(${tabs.length || 1}, 1fr)`;
+      nav.innerHTML = tabs.map(([id, icon, label]) =>
+        `<button type="button" data-go="${id}"${id === current ? ' aria-current="page"' : ''}><i aria-hidden="true">${icon}</i>${label}</button>`).join('');
+
+      window.scrollTo(0, 0);
+      // The delete screen holds one h1 per step, so focus the visible one.
+      const heading = [...document.querySelectorAll(`[data-view="${name}"] h1`)].find(h => h.offsetParent !== null);
+      if (heading) heading.focus({ preventScroll: true });
+    }
+
+    // Prize tie-breaks. Opening lands on the invitation: nothing starts
+    // until the explicit action, and no state ever reveals a score early.
+    function setTb(state) {
+      for (const el of document.querySelectorAll('[data-tb]')) el.hidden = el.dataset.tb !== state;
+      for (const el of document.querySelectorAll('[data-tb-go]')) el.setAttribute('aria-pressed', String(el.dataset.tbGo === state));
+      const heading = document.querySelector(`[data-tb="${state}"] h1`);
+      if (heading) heading.focus({ preventScroll: true });
+    }
+
+    // Quitting and lost connection. Opening lands on the confirmation.
+    function setQc(state) {
+      for (const el of document.querySelectorAll('[data-qc]')) el.hidden = el.dataset.qc !== state;
+      for (const el of document.querySelectorAll('[data-qc-go]')) el.setAttribute('aria-pressed', String(el.dataset.qcGo === state));
+      const heading = document.querySelector(`[data-qc="${state}"] h1`);
+      if (heading) heading.focus({ preventScroll: true });
+    }
+
+    // Promotion. Opening the screen lands on the offer, never mid-attempt:
+    // information must not start an attempt or a clock.
+    function setPromotion(state) {
+      for (const el of document.querySelectorAll('[data-pr]')) el.hidden = el.dataset.pr !== state;
+      for (const el of document.querySelectorAll('[data-pr-go]')) el.setAttribute('aria-pressed', String(el.dataset.prGo === state));
+      const heading = document.querySelector(`[data-pr="${state}"] h1`);
+      if (heading) heading.focus({ preventScroll: true });
+    }
+
+    // Ranked quiz. The clock reads differently per state: a live question
+    // counts down, a settled one shows no time at all, because the clock
+    // belongs to the server and stops the moment it accepts an answer.
+    const RQ_CLOCK = {
+      question: { text: '07', cls: '' },
+      locked: { text: '—', cls: 'off' },
+      right: { text: '—', cls: 'off' },
+      wrong: { text: '—', cls: 'off' },
+      timeout: { text: '00', cls: 'urgent' },
+      final: { text: '—', cls: 'off' },
+    };
+    const RQ_COUNT = { final: 'Question 15 of 15', cap: '', plain: '', negative: '' };
+
+    function setRanked(state) {
+      for (const el of document.querySelectorAll('[data-rq]')) el.hidden = el.dataset.rq !== state;
+      for (const el of document.querySelectorAll('[data-rq-go]')) el.setAttribute('aria-pressed', String(el.dataset.rqGo === state));
+      const clock = document.getElementById('rq-clock');
+      const c = RQ_CLOCK[state];
+      clock.hidden = !c;
+      if (c) { clock.textContent = c.text; clock.className = 'rq-clock ' + c.cls; }
+      const count = document.getElementById('rq-count');
+      count.textContent = RQ_COUNT[state] !== undefined ? RQ_COUNT[state] : 'Question 4 of 15';
+      count.hidden = !count.textContent;
+      document.querySelector('.rq-stake').hidden = ['cap', 'plain', 'negative'].includes(state);
+      const heading = document.querySelector(`[data-rq="${state}"] h1`);
+      if (heading) heading.focus({ preventScroll: true });
+    }
+
+    // Support tickets. Opening Support always lands on the list.
+    function setTickets(state) {
+      for (const el of document.querySelectorAll('[data-tk]')) el.hidden = el.dataset.tk !== state;
+      for (const el of document.querySelectorAll('[data-tk-go]')) el.setAttribute('aria-pressed', String(el.dataset.tkGo === state));
+    }
+
+    // Account deletion. Opening the screen always resets to step 1 with the
+    // box unchecked and the field empty: nothing about a previous visit
+    // carries over, and nothing here deletes anything.
+    function setDelete(step) {
+      for (const el of document.querySelectorAll('[data-del]')) el.hidden = el.dataset.del !== step;
+      for (const el of document.querySelectorAll('[data-del-go]')) el.setAttribute('aria-pressed', String(el.dataset.delGo === step));
+      const onStep2 = step === 'step2';
+      document.getElementById('del-bar-2').classList.toggle('on', onStep2);
+      document.getElementById('del-step-label').textContent =
+        step === 'step1' ? 'Settings · step 1 of 2'
+          : onStep2 ? 'Settings · step 2 of 2'
+            : 'Settings';
+      document.getElementById('del-error').hidden = true;
+      if (step === 'step1') {
+        document.getElementById('del-ack').checked = false;
+        document.getElementById('del-continue').disabled = true;
+        document.getElementById('del-hint').hidden = false;
+        document.getElementById('del-id').value = '';
+      }
+    }
+
+    document.getElementById('del-ack').addEventListener('change', event => {
+      document.getElementById('del-continue').disabled = !event.target.checked;
+      document.getElementById('del-hint').hidden = event.target.checked;
+    });
+    document.getElementById('del-continue').addEventListener('click', () => setDelete('step2'));
+    document.getElementById('del-confirm').addEventListener('click', () => {
+      // One message for every failure, so nobody can learn whether an
+      // account exists by trying login IDs against it.
+      if (document.getElementById('del-id').value.trim().toUpperCase() === 'EXAMPLE-ID') setDelete('pending');
+      else document.getElementById('del-error').hidden = false;
+    });
+
+    // Leaderboard. No timestamps anywhere: the first-reached-score rule was
+    // superseded by tie-break quizzes, and showing a time would revive it.
+    const P = {
+      owl: { name: 'dock_owl', tag: '#A1B2C3', badge: 'Bronze', points: '1,420' },
+      belt: { name: 'belt_runner', tag: '#D4E5F6', badge: 'Iron', points: '910' },
+      fox: { name: 'parcel_fox', tag: '#K7Q2MX', badge: 'Iron', points: '640', you: true },
+      gull: { name: 'tape_gull', tag: '#G8H9JK', badge: 'Iron', points: '505' },
+      hare: { name: 'chute_hare', tag: '#L2M3NP', badge: 'Iron', points: '505' },
+      long: { name: 'a_very_long_example_username', tag: '#Q9R8ST', badge: 'Iron', points: '120' },
+    };
+    const row = (pos, p, extra = {}) => ({ pos, ...p, ...extra });
+
+    const LEADERBOARD = {
+      during: {
+        sub: 'Standings update after each settled Ranked quiz, not once a day.',
+        rows: [row(1, P.owl), row(2, P.belt), row(3, P.fox), row(4, P.gull), row(5, P.long)],
+      },
+      nopos: {
+        sub: 'Standings update after each settled Ranked quiz, not once a day.',
+        rows: [row(1, P.owl), row(2, P.belt), row(3, P.gull), row(4, P.long)],
+        end: {
+          title: 'You are not in the standings',
+          text: 'You have 640 points and Iron, and they count as usual. The competition is for Primary Sort on the Twilight shift, approved by the owner. Ask the owner if that should be you.',
+        },
+      },
+      tie: {
+        notice: { title: 'Not final yet', text: 'The season is closed and two players are tied for third. A tie-break quiz decides that place, so positions can still change.' },
+        rows: [row(1, P.owl), row(2, P.belt), row(3, P.gull, { cls: 'tied', marker: 'Tied for third · tie-break quiz pending' }), row(3, P.hare, { cls: 'tied', marker: 'Tied for third · tie-break quiz pending' })],
+      },
+      replaced: {
+        notice: { title: 'Not final yet', text: 'A prize place was filled after a player withdrew, so the places below it moved up. A filled place can create a new tie, which then needs its own tie-break quiz.' },
+        rows: [row(1, P.owl), row(2, P.belt), row(3, P.gull, { cls: 'filled', marker: 'Place filled after a withdrawal' }), row(4, P.long)],
+      },
+      final: {
+        sub: 'Final results for this season.',
+        rows: [row(1, P.owl, { cls: 'winner', marker: 'Hat winner' }), row(2, P.belt, { cls: 'winner', marker: 'Hat winner' }), row(3, P.gull, { cls: 'winner', marker: 'Hat winner' }), row(4, P.fox), row(5, P.long)],
+      },
+      fewer: {
+        notice: { title: 'Two hats awarded, not three', text: 'Only two eligible players finished this season, so the third place stays empty. No third winner is chosen.' },
+        rows: [row(1, P.owl, { cls: 'winner', marker: 'Hat winner' }), row(2, P.belt, { cls: 'winner', marker: 'Hat winner' }), row(3, null, { cls: 'vacant', marker: 'No eligible player for this place' })],
+      },
+      loading: { sub: 'Loading the standings…', rows: [] },
+      empty: { notice: { title: 'No standings yet', text: 'The season has started and nobody has completed a Ranked quiz, so there is nothing to rank.' }, rows: [] },
+      error: { notice: { title: 'Could not load the standings', text: 'Your points are safe. Try again in a moment.' }, rows: [] },
+    };
+
+    function setLeaderboard(state) {
+      const s = LEADERBOARD[state];
+      const notice = document.getElementById('lb-notice');
+      notice.hidden = !s.notice;
+      if (s.notice) notice.innerHTML = `<h2>${s.notice.title}</h2><p>${s.notice.text}</p>`;
+      const sub = document.getElementById('lb-sub');
+      sub.hidden = !s.sub;
+      sub.textContent = s.sub || '';
+      sub.setAttribute('role', state === 'loading' ? 'status' : 'presentation');
+      document.getElementById('lb-rows').innerHTML = s.rows.map(r => {
+        const who = r.name
+          ? `<b>${r.name}</b><small>${r.tag} · ${r.badge}${r.you ? ' · your place' : ''}</small>`
+          : '<b>Empty place</b>';
+        return `<li class="${[r.cls, r.you ? 'me' : ''].filter(Boolean).join(' ')}">`
+          + `<span class="pos">${r.pos}</span><span class="who">${who}</span>`
+          + `<b>${r.points || '—'}</b>${r.marker ? `<span class="marker">${r.marker}</span>` : ''}</li>`;
+      }).join('');
+      document.getElementById('lb-end').innerHTML = s.end
+        ? `<div class="notice-box" style="margin-top:12px"><h2>${s.end.title}</h2><p>${s.end.text}</p></div>`
+        : '';
+      for (const el of document.querySelectorAll('[data-lb]')) el.setAttribute('aria-pressed', String(el.dataset.lb === state));
+    }
+
+    // Profile. Three balances, because the screen has to hold a negative total
+    // and the cap as well as an ordinary one.
+    const BALANCES = {
+      '640': { points: '640 points', bar: 64, note: 'Iron · 360 points to the Iron cap (1,000)', promo: false, badge: 'iron' },
+      '-40': { points: '−40 points', bar: 0, note: 'Iron · a negative total stays in Iron', promo: false, badge: 'iron' },
+      '1000': { points: '1,000 points', bar: 100, note: 'Iron · at the Iron cap (1,000)', promo: true, badge: 'iron' },
+    };
+
+    function setBalance(key) {
+      const b = BALANCES[key];
+      document.getElementById('balance-points').textContent = b.points;
+      document.getElementById('balance-bar').style.width = b.bar + '%';
+      document.getElementById('balance-note').textContent = b.note;
+      document.getElementById('promo').hidden = !b.promo;
+      document.getElementById('balance-art').src = 'assets-sm/badge-' + b.badge + '.png';
+      for (const el of document.querySelectorAll('[data-state]')) el.setAttribute('aria-pressed', String(el.dataset.state === key));
+    }
+
+    function setHistory(state) {
+      for (const el of document.querySelectorAll('[data-hist]')) el.hidden = el.dataset.hist !== state;
+      for (const el of document.querySelectorAll('[data-hist-state]')) el.setAttribute('aria-pressed', String(el.dataset.histState === state));
+    }
+
+    function setTab(name) {
+      for (const tab of document.querySelectorAll('[data-tab]')) tab.setAttribute('aria-selected', String(tab.dataset.tab === name));
+      for (const id of ['overview', 'history', 'settings']) document.getElementById('panel-' + id).hidden = id !== name;
+    }
+
+    function setFilter(kind) {
+      for (const el of document.querySelectorAll('[data-filter]')) el.setAttribute('aria-pressed', String(el.dataset.filter === kind));
+      for (const row of document.querySelectorAll('.hist li')) row.hidden = kind !== 'all' && row.dataset.kind !== kind;
+    }
+
+    // Prize eligibility (issue #11). The owner's own screen: who may win a
+    // hat. No points here and no history: approving is not a way into
+    // anybody's record, so the row carries a name, a tag and the roster
+    // reference the owner typed, and nothing else.
+    const APPROVED = [
+      { name: 'dock_owl', tag: '#A1B2C3', ref: 'Primary Sort · Twilight · badge 4471' },
+      { name: 'belt_runner', tag: '#D4E5F6', ref: 'Primary Sort · Twilight · badge 2210' },
+      { name: 'tape_gull', tag: '#G8H9JK', ref: 'Primary Sort · Twilight · badge 8806' },
+    ];
+
+    const ELIGIBILITY = {
+      list: { rows: APPROVED },
+      empty: {
+        rows: [],
+        sub: 'Nobody is approved yet. Until you approve a sorter, the leaderboard has nobody to rank.',
+      },
+      withdraw: {
+        rows: APPROVED,
+        confirm: {
+          title: 'Withdraw belt_runner?',
+          text: 'They leave the standings and cannot win a hat this season. Their points, badge and history do not change, and they can go on playing. You can approve this sorter again while the season is open.',
+        },
+      },
+      dupe: {
+        rows: APPROVED,
+        notice: {
+          title: 'That sorter already has an approved account',
+          text: 'One sorter holds one approved account. Withdraw the approval below before approving a different account for the same person.',
+        },
+      },
+      self: {
+        rows: APPROVED,
+        notice: {
+          title: 'You cannot approve your own account',
+          text: 'Deciding who may win and being one of the winners is the one thing this screen does not allow.',
+        },
+      },
+      closed: {
+        rows: APPROVED,
+        form: false,
+        notice: {
+          title: 'The season is closed to new approvals',
+          text: 'Approvals close when the season ends, including the five-minute finishing window. You can still withdraw an approval that should not stand.',
+        },
+      },
+      error: {
+        rows: [],
+        form: false,
+        notice: {
+          title: 'Could not load the approvals',
+          text: 'Nothing has been changed. Try again in a moment.',
+        },
+      },
+    };
+
+    function setEligibility(state) {
+      const s = ELIGIBILITY[state];
+      const notice = document.getElementById('elig-notice');
+      notice.hidden = !(s.notice || s.confirm);
+      if (s.confirm) {
+        notice.innerHTML = `<h2>${s.confirm.title}</h2><p>${s.confirm.text}</p>`
+          // Withdrawing is the one destructive thing on this screen, so it
+          // is the quieter button and keeping the approval is the easy one.
+          + '<div class="row" style="margin-top:10px"><button class="ghost danger-btn" type="button">Withdraw approval</button>'
+          + '<button class="primary" type="button">Keep it</button></div>';
+      } else if (s.notice) {
+        notice.innerHTML = `<h2>${s.notice.title}</h2><p>${s.notice.text}</p>`;
+      }
+      document.getElementById('elig-form').hidden = s.form === false;
+      document.getElementById('elig-sub').textContent = s.sub
+        || 'Approved sorters may win one of the three hats. Each sorter holds one approved account. New approvals close when the season ends; you can still withdraw one afterwards.';
+      document.getElementById('elig-count').textContent = s.rows.length
+        ? `Approved this season (${s.rows.length})` : 'Approved this season';
+      document.getElementById('elig-rows').innerHTML = s.rows.map(r =>
+        `<li><span class="who"><b>${r.name}</b><small>${r.tag} · ${r.ref}</small></span>`
+        + '<button class="ghost" type="button" style="width:auto;padding:8px 12px">Withdraw</button></li>').join('');
+      for (const el of document.querySelectorAll('[data-el]')) el.setAttribute('aria-pressed', String(el.dataset.el === state));
+    }
+
+    // Access recovery. Two steps on purpose: opening one asserts nothing,
+    // and the login ID is only issued after the owner says they have
+    // checked the person in front of them. No step asks for a password,
+    // because the app has none to ask for.
+    const RECOVERY = {
+      start: {
+        body: `<div class="panel">
+            <h2>Who is in front of you?</h2>
+            <label class="field"><span>Player tag</span><input type="text" placeholder="#K7Q2MX"></label>
+            <p class="small">The tag is on their profile. It is how you find the account, not proof of who they are.</p>
+            <button class="primary" type="button">Find the account</button>
+          </div>
+          <h2>Recent recoveries</h2>
+          <ul class="approved">
+            <li><span class="who"><b>belt_runner</b><small>#D4E5F6 · handed over example date 4</small></span></li>
+            <li><span class="who"><b>tape_gull</b><small>#G8H9JK · opened example date 2, not completed</small></span></li>
+          </ul>`,
+      },
+      confirm: {
+        body: `<div class="panel">
+            <h2>dock_owl · #A1B2C3</h2>
+            <p class="small">This account has a roster link you recorded on example date 1, before this request. That link is what allows a recovery here.</p>
+            <p class="small"><b>Check in person first.</b> Nothing on this screen proves who is standing in front of you. Their username and tag are public, so neither is evidence.</p>
+            <button class="primary" type="button">I have checked them in person · show the login ID</button>
+            <button class="ghost" type="button">Cancel</button>
+          </div>`,
+      },
+      shown: {
+        notice: {
+          title: 'Hand this over now',
+          text: 'It is shown once and cannot be shown again. Their old login ID and every signed-in device stopped working just now.',
+        },
+        body: `<div class="panel">
+            <p class="small">New login ID for <b>dock_owl</b> · #A1B2C3</p>
+            <p class="stat" style="letter-spacing:.06em">K7Q2-MX4D-9FTR-2BHN</p>
+            <p class="small">Their points, badge and history are unchanged. This did not approve them for prizes and did not restore anything deleted.</p>
+            <button class="primary" type="button">Done</button>
+          </div>`,
+      },
+      nolink: {
+        notice: {
+          title: 'No recovery by this route',
+          text: 'This account has no roster link recorded before the request. Approving them now would be you saying twice that this is the right person, so it would not be evidence. Record the approval, then recover on a later day if that is right.',
+        },
+        body: '<button class="ghost" type="button">Back to start</button>',
+      },
+      done: {
+        notice: {
+          title: 'That recovery is already done',
+          text: 'Its login ID was shown once and cannot be shown again. If it was lost before they wrote it down, start a new recovery.',
+        },
+        body: '<button class="ghost" type="button">Start a new recovery</button>',
+      },
+      unknown: {
+        notice: { title: 'No account with that tag', text: 'Check the tag on their profile.' },
+        body: '<button class="ghost" type="button">Back to start</button>',
+      },
+    };
+
+    function setRecovery(state) {
+      const s = RECOVERY[state];
+      const notice = document.getElementById('rec-notice');
+      notice.hidden = !s.notice;
+      if (s.notice) notice.innerHTML = `<h2>${s.notice.title}</h2><p>${s.notice.text}</p>`;
+      document.getElementById('rec-body').innerHTML = s.body;
+      for (const el of document.querySelectorAll('[data-rec]')) el.setAttribute('aria-pressed', String(el.dataset.rec === state));
+    }
+
+    setBalance('640');
+    setHistory('pre');
+    setLeaderboard('during');
+    setEligibility('list');
+    setRecovery('start');
+
+    // Case review. The retention line is part of the case, not a footnote:
+    // a reviewer deciding what to do should see how long the evidence
+    // they are looking at will exist (#11 box 6).
+    const CASES = {
+      tickets: { tab: 'tickets', body: `
+        <ul class="cases">
+          <li>
+            <p class="eyebrow">Ticket · opened example date 7</p>
+            <h2>dock_owl · #A1B2C3</h2>
+            <p class="small">Attempt #EX-204</p>
+            <blockquote>"The quiz cut out halfway through and I could not get back in."</blockquote>
+            <details class="fold"><summary>Connection events (4)</summary><div class="fold-body">
+              <ul class="small">
+                <li>lost · example time 1</li><li>regained · example time 2</li>
+                <li>lost · example time 3</li><li>grace expired · example time 4</li>
+              </ul></div></details>
+            <p class="keep">While this case is open, its description and connection details are kept.</p>
+            <div class="row">
+              <button class="ghost" type="button">Close · network instability</button>
+              <button class="ghost" type="button">Close · not enough evidence</button>
+            </div>
+            <p class="small">Or leave it open. Nothing happens until you choose.</p>
+          </li>
+        </ul>` },
+      flags: { tab: 'flags', body: `
+        <ul class="cases">
+          <li>
+            <p class="eyebrow">Flag · noticed example date 6</p>
+            <h2>belt_runner · #D4E5F6</h2>
+            <p class="small">Attempt #EX-187 · losses between example time 1 and example time 5</p>
+            <div class="notice-box"><p>This is a pattern the server noticed. It is not proof that anybody cheated, and closing it changes no points and no access.</p></div>
+            <details class="fold"><summary>Connection events (6)</summary><div class="fold-body">
+              <ul class="small"><li>lost · example time 1</li><li>regained · example time 2</li><li>lost · example time 3</li></ul></div></details>
+            <p class="keep">Kept while this review is open. Fifteen days after it closes, these connection details are deleted, unless a ticket still open shares the same log.</p>
+            <div class="row">
+              <button class="ghost" type="button">Close · network instability</button>
+              <button class="ghost" type="button">Close · not enough evidence</button>
+            </div>
+          </li>
+        </ul>` },
+      closing: { tab: 'tickets', body: `
+        <div class="notice-box">
+          <h2>Close as network instability?</h2>
+          <p>That is the outcome the player sees, in those words. Their points, badge and access do not change either way. The description and connection details are deleted 15 days after closure, unless a case still open shares the log.</p>
+          <div class="row" style="margin-top:10px">
+            <button class="ghost danger-btn" type="button">Close the case</button>
+            <button class="primary" type="button">Keep it open</button>
+          </div>
+        </div>` },
+      closed: { tab: 'tickets', notice: {
+          title: 'Closed · network instability',
+          text: 'dock_owl can see that outcome on their ticket. Its description and connection details are deleted on example date 9.',
+        }, body: '<p class="small">Nothing else is waiting.</p>' },
+      none: { tab: 'tickets', body: `
+        <div class="panel">
+          <h2>Nothing waiting</h2>
+          <p class="small">No open tickets and no open flags. Tickets only appear when a player opens one; a connection problem does not open a ticket by itself.</p>
+        </div>` },
+    };
+
+    function setCases(state) {
+      const s = CASES[state];
+      document.getElementById('case-body').innerHTML =
+        (s.notice ? `<div class="notice-box"><h2>${s.notice.title}</h2><p>${s.notice.text}</p></div>` : '') + s.body;
+      for (const el of document.querySelectorAll('[data-case]')) el.setAttribute('aria-selected', String(el.dataset.case === s.tab));
+      for (const el of document.querySelectorAll('[data-cs]')) el.setAttribute('aria-pressed', String(el.dataset.cs === state));
+    }
+
+    setCases('tickets');
+
+    // Prize selection. Each player's tie-break history is shown so the
+    // owner can see why the case came to them; nothing else about the
+    // players is, and no points appear because none can be changed here.
+    const SELECTION = {
+      waiting: { body: `
+        <div class="panel">
+          <p class="small">These ties could not be settled by a quiz, so the rules send them to you. Choose who takes the hats. Your choice is final, and it changes nobody's points, badge or tie-break results.</p>
+        </div>
+        <div class="panel">
+          <p class="eyebrow">Third place · 1 hat · 700 points each</p>
+          <h2>Still tied after round 5</h2>
+          <ul class="sel-list">
+            <li><label><input type="checkbox"> <b>tape_gull</b> <small>#G8H9JK</small></label>
+              <small class="sel-hist">Round 1: 3/5 · Round 2: 4/5 · Round 3: 2/5 · Round 4: 5/5 · Round 5: 3/5</small></li>
+            <li><label><input type="checkbox"> <b>chute_hare</b> <small>#L2M3NP</small></label>
+              <small class="sel-hist">Round 1: 3/5 · Round 2: 4/5 · Round 3: 2/5 · Round 4: 5/5 · Round 5: 3/5</small></li>
+          </ul>
+          <p class="small">Choose exactly 1.</p>
+          <button class="primary" type="button" disabled>Choose 1 to continue</button>
+        </div>` },
+      confirm: { body: `
+        <div class="notice-box">
+          <h2>Give the third hat to tape_gull?</h2>
+          <p>chute_hare does not take a hat this season. This cannot be undone from the app. Nobody's points, badge or tie-break results change.</p>
+          <div class="row" style="margin-top:10px">
+            <button class="ghost danger-btn" type="button">Record my choice</button>
+            <button class="primary" type="button">Go back</button>
+          </div>
+        </div>` },
+      done: { notice: { title: 'Recorded', text: 'tape_gull takes the third hat. The leaderboard shows it once every prize place is settled.' },
+        body: '<p class="small">Nothing else is waiting.</p>' },
+      none: { body: `
+        <div class="panel">
+          <h2>Nothing waiting</h2>
+          <p class="small">A tie comes here only when the rules say so: still tied after the last round, no fresh questions left, or several players who did not finish competing for fewer hats.</p>
+        </div>` },
+    };
+
+    function setSelection(state) {
+      const s = SELECTION[state];
+      const notice = document.getElementById('sel-notice');
+      notice.hidden = !s.notice;
+      if (s.notice) notice.innerHTML = `<h2>${s.notice.title}</h2><p>${s.notice.text}</p>`;
+      document.getElementById('sel-body').innerHTML = s.body;
+      for (const el of document.querySelectorAll('[data-sel]')) el.setAttribute('aria-pressed', String(el.dataset.sel === state));
+    }
+
+    setSelection('waiting');
+
+    document.addEventListener('click', event => {
+      const button = event.target.closest('button');
+      if (!button) return;
+      if (button.dataset.tab) return setTab(button.dataset.tab);
+      if (button.dataset.state) return setBalance(button.dataset.state);
+      if (button.dataset.histState) { setHistory(button.dataset.histState); return setTab('history'); }
+      if (button.dataset.filter) return setFilter(button.dataset.filter);
+      if (button.dataset.lb) return setLeaderboard(button.dataset.lb);
+      if (button.dataset.el) return setEligibility(button.dataset.el);
+      if (button.dataset.rec) return setRecovery(button.dataset.rec);
+      if (button.dataset.cs) return setCases(button.dataset.cs);
+      if (button.dataset.sel) return setSelection(button.dataset.sel);
+      if (button.dataset.case) return setCases(button.dataset.case);
+      if (button.dataset.owner) {
+        owner = button.dataset.owner === 'yes';
+        document.getElementById('owner-row').hidden = !owner;
+        for (const el of document.querySelectorAll('[data-owner]')) el.setAttribute('aria-pressed', String((el.dataset.owner === 'yes') === owner));
+        return setTab('settings');
+      }
+      if (button.dataset.delGo) return setDelete(button.dataset.delGo);
+      if (button.dataset.tkGo) return setTickets(button.dataset.tkGo);
+      if (button.dataset.rqGo) return setRanked(button.dataset.rqGo);
+      if (button.dataset.prGo) return setPromotion(button.dataset.prGo);
+      if (button.dataset.qcGo) return setQc(button.dataset.qcGo);
+      if (button.dataset.tbGo) return setTb(button.dataset.tbGo);
+      if (button.dataset.season) {
+        season = button.dataset.season;
+        for (const el of document.querySelectorAll('[data-season]')) el.setAttribute('aria-pressed', String(el.dataset.season === season));
+        setLaunchCallout();
+        return;
+      }
+      if (button.dataset.enter) { mode = button.dataset.enter; show('home'); }
+      else if ('leave' in button.dataset) { mode = 'public'; show('entry'); }
+      else if (button.dataset.go) show(button.dataset.go);
+      else if (button.dataset.stub) { stub.textContent = 'Not part of this mock. ' + button.dataset.stub; stub.hidden = false; }
+    });
+  </script>
+</body>
+</html>

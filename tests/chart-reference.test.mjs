@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import { loadAppModules } from './helpers/load-app-modules.mjs';
 
-const reference = JSON.parse(await readFile(new URL('./fixtures/twilight-reference-2026-11-16.json', import.meta.url)));
+const reference = JSON.parse(await readFile(new URL('./fixtures/twilight-reference-2026-11-08.json', import.meta.url)));
 const { modules: [chart, { DECKS }, { selectLevelCards }, { createLanguage }], cleanup } = await loadAppModules([
   'src/chart.js', 'src/decks.js', 'src/levels.js', 'src/i18n.js',
 ]);
@@ -43,8 +43,7 @@ for (const [service, state, lower, upper, belt] of [
   ['3 Day Select', 'TX', '750', '768', 'BLUE'],
   ['3 Day Select', 'TX', '770', '779', 'BLACK'],
   ['3 Day Select', 'TX', '780', '784', 'BLUE'],
-  ['Ground', 'TX', '750', '769', 'BLACK'],
-  ['Ground', 'TX', '770', '779', 'BLACK'],
+  ['Ground', 'TX', '750', '779', 'BLACK'],
   ['3 Day Select', 'TX', '785', '799', 'PURPLE'],
   ['3 Day Select', '', '811', '999', 'PURPLE'],
   ['Ground', 'NY', '128', '147', 'GOLD'],
@@ -115,9 +114,9 @@ test('existing deck run lengths are retained', () => {
 });
 
 test('current cards carry route provenance without claiming Ranked approval', () => {
-  assert.equal(chart.ROUTE_REFERENCE_VERSION, 'twilight-2026-11-16-r1');
+  assert.equal(chart.ROUTE_REFERENCE_VERSION, 'twilight-2026-11-08-r2');
   for (const deck of DECKS) for (const card of deck.cards) {
-    assert.equal(card.referenceVersion, 'twilight-2026-11-16-r1', card.id);
+    assert.equal(card.referenceVersion, 'twilight-2026-11-08-r2', card.id);
     assert.equal(card.rankedApproved, undefined);
   }
 });
@@ -144,7 +143,7 @@ test('2DA Indiana accepts ORANGE and rejects the superseded PURPLE answer', asyn
       const response = answerCard(run, answer, 1000);
       assert.equal(response.outcome, expected);
       assert.equal(response.correctBelt, 'ORANGE');
-      assert.equal(response.referenceVersion, 'twilight-2026-11-16-r1');
+      assert.equal(response.referenceVersion, 'twilight-2026-11-08-r2');
     }
     const language = createLanguage();
     for (const lang of ['en', 'es']) {

@@ -120,7 +120,8 @@ def get_account_by_session(conn, raw_token: str) -> dict | None:
         return None
     return migrate.fetch_one(
         conn,
-        "SELECT id, username, tag, is_owner, created_at FROM accounts WHERE id = %s",
+        "SELECT id, username, tag, is_owner, created_at FROM accounts"
+        " WHERE id = %s AND deleted_at IS NULL",
         (session["account_id"],),
     )
 
@@ -128,31 +129,45 @@ def get_account_by_session(conn, raw_token: str) -> dict | None:
 def admin_regenerate_login_id(
     conn, admin_account_id: UUID, target_account_id: UUID
 ) -> str | None:
-    """Admin-only: revoke the target's credential and sessions, issue a new login ID."""
-    admin = migrate.fetch_one(
-        conn,
-        "SELECT is_owner FROM accounts WHERE id = %s AND is_owner = true",
-        (admin_account_id,),
-    )
-    if admin is None:
-        return None
+    """Deprecated: regenerating on the owner's say-so alone.
 
-    target = migrate.fetch_one(
-        conn,
-        "SELECT id FROM accounts WHERE id = %s",
-        (target_account_id,),
-    )
-    if target is None:
-        return None
+    The settled recovery policy requires in-person verification against a
+    trusted participant link **established before the request**, and says
+    that no trusted prior link means no reset by this route. This function
+    checked only that the caller is the owner, which is the authority to
+    act and not evidence about who is asking.
 
-    # revoke existing credential
+    ``backend.auth.recovery`` is that route now: it records the request,
+    refuses without an older link, and hands the login ID over once. This
+    is kept only so that an old caller fails loudly rather than quietly
+    doing the wrong thing.
+    """
+    raise NotImplementedError(
+        "Use backend.auth.recovery.open_request and hand_over: recovery needs"
+        " a trusted roster link established before the request (settled"
+        " recovery policy), which this function never checked."
+    )
+
+
+def issue_new_login_id(conn, account_id: UUID) -> str:
+    """Give this account a new login ID and invalidate what came before.
+
+    The old credential is revoked and every session is ended, so a login
+    ID that may have been seen by somebody else stops working at the same
+    moment the new one starts. The old one is never disclosed, because
+    only its hash was ever stored. Returned once: the caller shows it to
+    the person it belongs to and keeps no copy.
+
+    Restoring access is all this does. It moves no points, opens no
+    history and creates no prize eligibility.
+    """
     migrate.execute(
         conn,
-        "UPDATE login_credentials SET revoked_at = now() WHERE account_id = %s AND revoked_at IS NULL",
-        (target_account_id,),
+        "UPDATE login_credentials SET revoked_at = now()"
+        " WHERE account_id = %s AND revoked_at IS NULL",
+        (account_id,),
     )
-    # revoke all active sessions
-    revoke_all_account_sessions(conn, target_account_id)
+    revoke_all_account_sessions(conn, account_id)
 
     new_login_id = generate_login_id(_settings)
     lookup_key = derive_lookup_key(new_login_id)
@@ -163,6 +178,6 @@ def admin_regenerate_login_id(
         INSERT INTO login_credentials (account_id, lookup_key, verifier)
         VALUES (%s, %s, %s)
         """,
-        (target_account_id, lookup_key, verifier),
+        (account_id, lookup_key, verifier),
     )
     return new_login_id

@@ -1,4 +1,4 @@
-import { ROUTE_REFERENCE_VERSION } from './chart.js?v=sort-change-20261116-r1';
+import { ROUTE_REFERENCE_VERSION } from './chart.js?v=chart-destination-20261108-r2';
 
 // Current Twilight cards use only reviewed ranges and listed preload codes.
 

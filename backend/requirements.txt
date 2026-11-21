@@ -41,6 +41,7 @@ opentelemetry-semantic-conventions==0.66b2
 protobuf==7.36.2
 psycopg==3.3.8
 psycopg-binary==3.3.8
+psycopg-pool==3.3.3
 pydantic==2.14.3
 pydantic-extra-types==2.11.1
 pydantic-settings==2.16.2

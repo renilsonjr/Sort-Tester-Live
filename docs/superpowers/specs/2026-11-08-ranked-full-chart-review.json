@@ -1474,8 +1474,8 @@
       "kind": "main",
       "state": "TX",
       "code": "750–779",
-      "expectedBelt": "BLUE",
-      "provenance": "photo",
+      "expectedBelt": "BLACK",
+      "provenance": "owner-override-10",
       "destinationModifier": null,
       "difficulty": "Easy",
       "difficultyStatus": "owner-approved",
@@ -1489,12 +1489,12 @@
       "wording": {
         "en": {
           "prompt": "Which belt does this go to?",
-          "explanation": "Ground TX 750–779 goes to BLUE.",
+          "explanation": "Ground TX 750–779 goes to BLACK.",
           "approvalStatus": "owner-approved"
         },
         "es": {
           "prompt": "¿A qué color va?",
-          "explanation": "En Terrestre, TX 750–779 va a BLUE.",
+          "explanation": "En Terrestre, TX 750–779 va a BLACK.",
           "approvalStatus": "owner-approved"
         }
       },
@@ -3374,8 +3374,8 @@
       "kind": "main",
       "state": "NY",
       "code": "140–147",
-      "expectedBelt": "ORANGE",
-      "provenance": "photo",
+      "expectedBelt": "GOLD",
+      "provenance": "owner-override-10",
       "destinationModifier": null,
       "difficulty": "Medium",
       "difficultyStatus": "owner-approved",
@@ -3389,12 +3389,12 @@
       "wording": {
         "en": {
           "prompt": "Which belt does this go to?",
-          "explanation": "3 Day Select NY 140–147 goes to ORANGE.",
+          "explanation": "3 Day Select NY 140–147 goes to GOLD.",
           "approvalStatus": "owner-approved"
         },
         "es": {
           "prompt": "¿A qué color va?",
-          "explanation": "En Select 3 días, NY 140–147 va a ORANGE.",
+          "explanation": "En Select 3 días, NY 140–147 va a GOLD.",
           "approvalStatus": "owner-approved"
         }
       },
@@ -4480,23 +4480,67 @@
       }
     },
     {
-      "id": "3dayselect-main-tx-770-784",
+      "id": "3dayselect-main-tx-770-779",
       "service": "3 Day Select",
       "kind": "main",
       "state": "TX",
-      "code": "770–784",
-      "expectedBelt": "BLUE",
-      "provenance": "photo",
+      "code": "770–779",
+      "expectedBelt": "BLACK",
+      "provenance": "owner-override-10",
       "destinationModifier": null,
       "difficulty": "Medium",
       "difficultyStatus": "owner-approved",
       "approvedReview": "M1",
       "difficultyReason": "Preserved existing owner-reviewed label; do not ask to rank again.",
-      "wordingStatus": "owner-approved-in-initial-sheet",
+      "wordingStatus": "owner-approved-bilingual",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [
         "Check applicable exceptions and effective coverage before approving broad-range wording."
-      ]
+      ],
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "3 Day Select TX 770–779 goes to BLACK.",
+          "approvalStatus": "owner-approved"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Select 3 días, TX 770–779 va a BLACK.",
+          "approvalStatus": "owner-approved"
+        }
+      }
+    },
+    {
+      "id": "3dayselect-main-tx-780-784",
+      "service": "3 Day Select",
+      "kind": "main",
+      "state": "TX",
+      "code": "780–784",
+      "expectedBelt": "BLUE",
+      "provenance": "owner-override-10",
+      "destinationModifier": null,
+      "difficulty": "Medium",
+      "difficultyStatus": "owner-approved",
+      "difficultyReason": "Split from the former TX 770–784 range when 770–779 became BLACK (SORT CHANGE); owner-approved.",
+      "wordingStatus": "owner-approved-bilingual",
+      "canonicalStatus": "source-review-entry-not-final-canonical-ID",
+      "reviewNotes": [
+        "Split sibling of the SORT CHANGE edit; 780–784 keeps BLUE."
+      ],
+      "approvedReview": "S83",
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "3 Day Select TX 780–784 goes to BLUE.",
+          "approvalStatus": "owner-approved"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Select 3 días, TX 780–784 va a BLUE.",
+          "approvalStatus": "owner-approved"
+        }
+      },
+      "wordingReviewGroup": "owner-override-sort-change"
     },
     {
       "id": "3dayselect-main-tx-785-799",
@@ -6191,18 +6235,30 @@
       "kind": "main",
       "state": "NY",
       "code": "140–147",
-      "expectedBelt": "ORANGE",
-      "provenance": "photo",
+      "expectedBelt": "GOLD",
+      "provenance": "owner-override-10",
       "destinationModifier": null,
       "difficulty": "Medium",
       "difficultyStatus": "owner-approved",
       "approvedReview": "M2",
       "difficultyReason": "Preserved existing owner-reviewed label; do not ask to rank again.",
-      "wordingStatus": "owner-approved-in-initial-sheet",
+      "wordingStatus": "owner-approved-bilingual",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [
         "Check applicable exceptions and effective coverage before approving broad-range wording."
-      ]
+      ],
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "2 Day Air NY 140–147 goes to GOLD.",
+          "approvalStatus": "owner-approved"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Aéreo 2 días, NY 140–147 va a GOLD.",
+          "approvalStatus": "owner-approved"
+        }
+      }
     },
     {
       "id": "2dayair-main-ny-148-149",
@@ -6916,42 +6972,66 @@
       }
     },
     {
-      "id": "2dayair-main-il-600-608",
+      "id": "2dayair-main-il-600-619",
       "service": "2 Day Air",
       "kind": "main",
       "state": "IL",
-      "code": "600–608",
-      "expectedBelt": "YELLOW",
-      "provenance": "photo",
+      "code": "600–619",
+      "expectedBelt": "PURPLE",
+      "provenance": "owner-override-10",
       "destinationModifier": null,
       "difficulty": "Hard",
       "difficultyStatus": "owner-approved",
       "approvedReview": "H1",
       "difficultyReason": "Preserved existing owner-reviewed label; do not ask to rank again.",
-      "wordingStatus": "owner-approved-in-initial-sheet",
+      "wordingStatus": "owner-approved-bilingual",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [
         "Check applicable exceptions and effective coverage before approving broad-range wording."
-      ]
+      ],
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "2 Day Air IL 600–619 goes to PURPLE.",
+          "approvalStatus": "owner-approved"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Aéreo 2 días, IL 600–619 va a PURPLE.",
+          "approvalStatus": "owner-approved"
+        }
+      }
     },
     {
-      "id": "2dayair-main-il-609-629",
+      "id": "2dayair-main-il-620-629",
       "service": "2 Day Air",
       "kind": "main",
       "state": "IL",
-      "code": "609–629",
+      "code": "620–629",
       "expectedBelt": "ORANGE",
-      "provenance": "photo",
+      "provenance": "owner-override-10",
       "destinationModifier": null,
       "difficulty": "Hard",
       "difficultyStatus": "owner-approved",
       "approvedReview": "H2",
       "difficultyReason": "Preserved existing owner-reviewed label; do not ask to rank again.",
-      "wordingStatus": "owner-approved-in-initial-sheet",
+      "wordingStatus": "owner-approved-bilingual",
       "canonicalStatus": "source-review-entry-not-final-canonical-ID",
       "reviewNotes": [
         "Check applicable exceptions and effective coverage before approving broad-range wording."
-      ]
+      ],
+      "wording": {
+        "en": {
+          "prompt": "Which belt does this go to?",
+          "explanation": "2 Day Air IL 620–629 goes to ORANGE.",
+          "approvalStatus": "owner-approved"
+        },
+        "es": {
+          "prompt": "¿A qué color va?",
+          "explanation": "En Aéreo 2 días, IL 620–629 va a ORANGE.",
+          "approvalStatus": "owner-approved"
+        }
+      }
     },
     {
       "id": "2dayair-main-mo-630-639",

@@ -101,3 +101,90 @@ class TestDatabaseUrlTests(unittest.TestCase):
     def test_environment_guard_is_presence_only(self):
         with mock.patch.dict(os.environ, {settings.ENV_VAR: "not-a-url"}):
             self.assertTrue(settings.environment_has_test_url())
+
+
+class VerifiedTlsTests(unittest.TestCase):
+    """A DSN that reaches the database over a network must verify TLS.
+
+    Audit M-4: nothing in code required ``sslmode``, and libpq's own
+    default is ``prefer`` -- which silently falls back to an unencrypted
+    connection if the server offers one. A misconfiguration therefore
+    downgraded the connection with no error anywhere (audit L1).
+    """
+
+    def _app_url(self, url):
+        with mock.patch.dict(os.environ, {settings.APP_ENV_VAR: url}):
+            return settings.app_database_url()
+
+    def _assert_app_url_rejected(self, url):
+        with self.assertRaises(settings.DatabaseConfigError) as ctx:
+            self._app_url(url)
+        return str(ctx.exception)
+
+    def test_a_remote_dsn_without_sslmode_is_refused(self):
+        # libpq would read this as sslmode=prefer and accept plaintext
+        message = self._assert_app_url_rejected(
+            "postgresql://u:p@db.example.com:5432/sort_tester_app"
+        )
+        self.assertIn("sslmode", message)
+        self.assertIn("verify-full", message)
+
+    def test_the_downgrading_sslmodes_are_refused(self):
+        for mode in ("disable", "allow", "prefer"):
+            with self.subTest(mode=mode):
+                self._assert_app_url_rejected(
+                    f"postgresql://u:p@db.example.com/sort_tester_app?sslmode={mode}"
+                )
+
+    def test_the_verifying_sslmodes_are_accepted(self):
+        for mode in ("require", "verify-ca", "verify-full"):
+            with self.subTest(mode=mode):
+                url = f"postgresql://u:p@db.example.com/sort_tester_app?sslmode={mode}"
+                self.assertEqual(self._app_url(url), url)
+
+    def test_a_refusal_does_not_echo_the_password(self):
+        message = self._assert_app_url_rejected(
+            "postgresql://u:super-secret@db.example.com/sort_tester_app"
+        )
+        self.assertNotIn("super-secret", message)
+
+    def test_a_loopback_database_may_still_run_without_tls(self):
+        # the development database on the same machine: there is no network
+        # for the connection to be read on, and requiring a certificate
+        # there would mean no one could run the app locally at all
+        for host in ("localhost", "127.0.0.1", "[::1]"):
+            with self.subTest(host=host):
+                url = f"postgresql://{host}:5432/sort_tester_walkthrough"
+                self.assertEqual(self._app_url(url), url)
+
+    def test_the_test_dsn_follows_the_same_rule(self):
+        remote = (
+            "postgresql://u:p@db.example.com/sort_tester_unittest_scratch"
+        )
+        with mock.patch.dict(os.environ, {settings.ENV_VAR: remote}):
+            with self.assertRaises(settings.DatabaseConfigError):
+                settings.test_database_url()
+
+        secured = f"{remote}?sslmode=verify-full"
+        with mock.patch.dict(os.environ, {settings.ENV_VAR: secured}):
+            self.assertEqual(settings.test_database_url(), secured)
+
+
+class DbAuthModeTests(unittest.TestCase):
+    def test_defaults_to_password_when_unset(self):
+        with mock.patch.dict(os.environ, {}, clear=False):
+            os.environ.pop(settings.DB_AUTH_ENV_VAR, None)
+            self.assertEqual(settings.db_auth_mode(), settings.PASSWORD_MODE)
+
+    def test_blank_is_password(self):
+        with mock.patch.dict(os.environ, {settings.DB_AUTH_ENV_VAR: "   "}):
+            self.assertEqual(settings.db_auth_mode(), settings.PASSWORD_MODE)
+
+    def test_managed_identity_is_accepted(self):
+        with mock.patch.dict(os.environ, {settings.DB_AUTH_ENV_VAR: "managed_identity"}):
+            self.assertEqual(settings.db_auth_mode(), settings.MANAGED_IDENTITY_MODE)
+
+    def test_unknown_mode_raises(self):
+        with mock.patch.dict(os.environ, {settings.DB_AUTH_ENV_VAR: "kerberos"}):
+            with self.assertRaises(settings.DatabaseConfigError):
+                settings.db_auth_mode()

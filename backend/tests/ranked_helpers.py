@@ -49,3 +49,23 @@ def make_unavailable_bank(directory):
 
 def make_unconstrained_bank(directory):
     return _selection_fixture(directory)
+
+
+def make_owner(conn, *, username="outage_owner", tag="OWNR01"):
+    """An owner account, for the operations that require one.
+
+    Recording a confirmed outage voids attempts and rewrites flags for
+    every account on the server, so it checks `is_owner` itself rather
+    than trusting a future caller (audit L5). Tests that exercise it need
+    an owner to act as.
+    """
+    from backend.db import migrate
+
+    row = migrate.fetch_one(
+        conn,
+        "INSERT INTO accounts (username, username_lower, tag, is_owner)"
+        " VALUES (%s, %s, %s, true) RETURNING id",
+        (username, username.lower(), tag),
+    )
+    conn.commit()
+    return row["id"]

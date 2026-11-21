@@ -34,16 +34,44 @@ jobs:
   publish:
     name: Build and publish the app image
     runs-on: ubuntu-latest
+    # The run stops here and waits for the owner's approval, and only a ref
+    # the environment's branch policy allows may reach it at all (audit
+    # M-7). Anyone with write access can dispatch this workflow; without the
+    # gate that is enough to publish the image, which carries the Ranked
+    # question bank.
+    #
+    # The environment must already exist **with its protection rules**. A
+    # workflow naming an environment that does not exist makes GitHub create
+    # an unprotected one, and the gate would then approve everything while
+    # looking like a gate.
+    environment: publish
     timeout-minutes: 20
     permissions:
       contents: read
       packages: write
+      # Lets GitHub mint the short-lived token Azure checks against the
+      # federated credential. It is a token for this run, bound to this
+      # repository and branch; it is not a credential anyone stores.
+      id-token: write
     env:
       IMAGE: ghcr.io/${{ github.repository_owner }}/sort-tester-live-app
       PACKAGE_API: users/${{ github.repository_owner }}/packages/container/sort-tester-live-app
       EXPECTED: ${{ inputs.expected_visibility }}
       CONFIRM: ${{ inputs.confirm_publish }}
     steps:
+      - name: Check the branch this run came from
+        env:
+          REF: ${{ github.ref }}
+        run: |
+          # Belt and braces beside the environment's branch policy (audit
+          # M-7): a policy is repository configuration, which can be widened
+          # by anyone with admin access and without a commit. This check
+          # lives in the file, so widening it leaves a diff to review.
+          case "$REF" in
+            refs/heads/main|refs/heads/codex/ranked-mode) ;;
+            *) echo "Publishing from $REF is not allowed. Nothing was published."; exit 1 ;;
+          esac
+
       - name: Check the confirmation
         run: |
           # Inputs reach the shell only through the environment, never spliced
@@ -92,6 +120,45 @@ jobs:
           ref=$(docker inspect --format='{{index .RepoDigests 0}}' "$IMAGE:${{ github.sha }}")
           digest=${ref#*@sha256:}
           echo "digest=$digest" >> "$GITHUB_OUTPUT"
+
+      # --- the same image into our own registry (audit H-5, step 2) ---
+      #
+      # Before this, every deployment needed someone to copy the image
+      # across by hand with a GitHub token that could read every private
+      # package the account can see. The image is already built and pushed
+      # above; this pushes the identical bytes to the registry the app
+      # actually pulls from, so no second build and no second digest.
+      - name: Sign in to Azure without a stored secret
+        uses: azure/login@a641126d1b8aa4d1fa005f4f92df94a3a4c4c906 # v3.1.0
+        with:
+          client-id: ${{ vars.AZURE_PUBLISH_CLIENT_ID }}
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
+          subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Push the image to the Azure registry
+        env:
+          ACR_NAME: ${{ vars.AZURE_REGISTRY_NAME }}
+        run: |
+          set -euo pipefail
+          # az hands docker a token that expires in minutes; nothing is
+          # written to the workflow or to the repository's secrets.
+          az acr login --name "$ACR_NAME"
+          target="$ACR_NAME.azurecr.io/sort-tester-live-app:${{ github.sha }}"
+          docker tag "$IMAGE:${{ github.sha }}" "$target"
+          docker push "$target"
+          # the digest must be the one published above: a different one
+          # would mean the registries hold different images under the same
+          # commit, which is the thing a digest is supposed to rule out
+          # picked by registry host, not by position: once an image
+          # carries two names it has two RepoDigests, and taking the
+          # first would compare GHCR's digest with itself
+          acr_digest=$(docker inspect \
+            --format='{{range .RepoDigests}}{{println .}}{{end}}' "$target" \
+            | grep "^$ACR_NAME.azurecr.io/" | head -n 1)
+          [ -n "$acr_digest" ] || { echo "no digest recorded for $target"; exit 1; }
+          acr_digest=${acr_digest#*@sha256:}
+          [ "$acr_digest" = "${{ steps.push.outputs.digest }}" ] \
+            || { echo "ACR digest $acr_digest does not match GHCR ${{ steps.push.outputs.digest }}"; exit 1; }
 
       - name: Report the digest to deploy
         run: |

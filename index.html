@@ -12,11 +12,20 @@
     font-weight: 200 1000;
     font-display: swap;
   }
+  /* One palette, from mockups/design-library (the approved brown, gold and
+     warm white refresh). Two later :root blocks used to stack on top of this
+     one; they are gone, so these values are the ones in force. Belt colours
+     come from BELT_STYLE in src/belts.js and are routing information, never
+     restyled here. */
   :root {
-    --bg: #fbfaf6; --panel: #ffffff; --sunk: #e9eee9;
-    --ink: #193042; --muted: #61717a; --line: #dbe2dd;
-    --accent: #193042; --accent-ink: #ffffff;
-    --good: #295b38; --bad: #a3332c;
+    /* Twilight palette (dark glass). Belt colours stay in BELT_STYLE
+       (src/belts.js) and are routing information, never restyled. */
+    --bg: #140d09; --panel: #241811; --sunk: #1a110a;
+    --ink: #fffdf8; --muted: #c9bbab; --line: rgba(255, 255, 255, 0.12);
+    --accent: #38261b; --accent-ink: #fffdf8;
+    --gold: #f4bd38; --gold-line: #b47d15;
+    --soft: rgba(244, 189, 56, 0.14); --soft-line: rgba(244, 189, 56, 0.3);
+    --focus: #6db6ff; --good: #6cd39a; --bad: #f08a8a;
   }
   * { box-sizing: border-box; }
 
@@ -30,11 +39,12 @@
        this the browser's default 8px body margin overflows the 100dvh card
        screen and every card scrolls. */
     margin: 0;
-    background: #e9eee9; color: var(--ink);
+    background: radial-gradient(130% 90% at 50% -10%, #2b1b11 0%, #160d07 52%, #0a0504 100%) fixed;
+    color: var(--ink);
     font-family: "DM Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
     font-size: 16px; line-height: 1.45; -webkit-text-size-adjust: 100%;
   }
-  #app { margin: 0 auto; background: var(--bg); box-shadow: 0 16px 70px #1b3c4a1c; }
+  #app { margin: 0 auto; background: var(--bg); box-shadow: 0 16px 70px #38261b1c; }
   #app.quiz-page { max-width: 520px; min-height: 100dvh; padding: 20px 16px 48px; }
   #app.lab-page { max-width: 430px; min-height: 100dvh; }
   .screen { display: flex; flex-direction: column; gap: 16px; }
@@ -55,28 +65,54 @@
   .field span { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.1em; font-weight: 600; }
   input {
     font: inherit; font-size: 18px; padding: 15px; border-radius: 12px; width: 100%;
-    border: 1px solid var(--line); background: var(--panel); color: var(--ink);
+    /* Frosted like every other surface (mockup `.glass-input`). A lighter
+       blur than the cards, so a field reads as something you type into
+       rather than another panel. */
+    border: 1px solid var(--glass-border-subtle); color: var(--ink);
+    background: var(--glass-surface-sub);
+    backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
   }
-  input:focus-visible, button:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+  input:focus-visible, button:focus-visible, select:focus-visible, summary:focus-visible { outline: 3px solid var(--focus); outline-offset: 4px; }
 
   button { font: inherit; cursor: pointer; border: 0; }
   .primary {
     background: var(--accent); color: var(--accent-ink);
     padding: 17px; border-radius: 12px; font-size: 17px; font-weight: 600;
   }
+  /* The mockup's `.btn-secondary`. `.primary` is deliberately left solid:
+     an action that should stand out cannot be made of the same material
+     as the panel behind it. */
   .ghost {
-    background: transparent; color: var(--ink);
-    border: 1px solid var(--line); padding: 14px; border-radius: 12px; font-size: 15px;
+    background: var(--glass-surface-sub); color: var(--ink);
+    backdrop-filter: var(--blur-md); -webkit-backdrop-filter: var(--blur-md);
+    border: 1px solid var(--glass-border); padding: 14px; border-radius: 12px; font-size: 15px;
   }
   .ghost.danger { color: var(--bad); }
 
   #auth-panel {
     position: fixed; inset: 0; z-index: 100;
-    background: var(--bg); display: flex; align-items: center; justify-content: center;
-    padding: 20px;
+    /* Transparent on purpose. This panel covers the whole viewport above
+       everything else, so an opaque fill here hides the ambient lighting
+       and makes every frosted surface on the entry screen read as plain
+       white -- the design was applied correctly and simply could not be
+       seen. The page keeps its own background behind it. */
+    background: transparent; display: flex; flex-direction: column; align-items: center;
+    padding: 20px; overflow-y: auto;
   }
-  .auth-screen { width: min(360px, 100%); display: flex; flex-direction: column; gap: 16px; }
+  .auth-screen { width: min(360px, 100%); margin-block: auto; flex-shrink: 0; display: flex; flex-direction: column; gap: 14px; }
+  .auth-choices { display: flex; flex-direction: column; gap: 14px; }
   .auth-buttons { display: flex; flex-direction: column; gap: 10px; }
+  /* The approved entry screen: two cards that say what each way in gives
+     you. See mockups/entry-navigation.html. */
+  .auth-brand { display: flex; align-items: center; gap: 10px; font-size: 21px; font-weight: 900; letter-spacing: -.05em; }
+  .auth-card { display: flex; flex-direction: column; gap: 8px; padding: 17px; border-radius: 20px; background: var(--soft); border: 1px solid var(--soft-line); }
+  /* Translucent, so the guest card is the same material as the one
+     beside it. An opaque fill here outranks the glass rule, which is
+     how one card ended up solid next to a frosted one. */
+  .auth-card.guest { background: rgba(232, 239, 223, 0.58); border-color: #c4d3b4; }
+  .auth-card h2 { margin: 0; font-size: 19px; font-weight: 900; letter-spacing: -.035em; text-transform: none; color: var(--ink); }
+  .auth-eyebrow { margin: 0; color: var(--accent); font-size: 11px; font-weight: 900; letter-spacing: .13em; text-transform: uppercase; }
+  .auth-copy { margin: 0 0 4px; color: #54412f; font-size: 14px; line-height: 1.45; }
   .auth-screen input[readonly] { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; letter-spacing: 0.05em; }
 
   .decks { display: flex; flex-direction: column; gap: 10px; }
@@ -200,9 +236,8 @@
   .quiz-actions { display: grid; grid-template-columns: minmax(0,1fr) auto minmax(0,1fr); }
   .quiz-actions .stopbtn { justify-self: end; min-height: 44px; border-radius: 22px; }
   .quiz-step { color: var(--muted); font-size: 12px; font-weight: 800; letter-spacing: .07em; text-transform: uppercase; }
-  .quiz-timer { width: 48px; height: 48px; border: 4px solid var(--ink); border-radius: 50%; display: grid; place-items: center; background: #fff; font-size: 20px; font-weight: 800; font-variant-numeric: tabular-nums; }
+  .quiz-timer { width: 48px; height: 48px; border: 4px solid var(--ink); border-radius: 50%; display: grid; place-items: center; background: var(--panel); font-size: 20px; font-weight: 800; font-variant-numeric: tabular-nums; }
   .quiz-timer.urgent { border-color: var(--bad); color: var(--bad); }
-  .quiz-avatar { display: block; width: 100%; height: auto; aspect-ratio: 1712 / 1152; object-fit: cover; }
   .quiz-route { display: flex; flex-direction: column; align-items: center; text-align: center; }
   .quiz-route .p-line { font-size: clamp(16px, 2.4dvh, 21px); }
   .quiz-route .p-code { font-size: clamp(48px, 10dvh, 72px); font-weight: 800; letter-spacing: -.04em; }
@@ -212,11 +247,11 @@
   .quiz-feedback .verdict { line-height: 1.05; letter-spacing: -.04em; text-align: left; align-self: stretch; }
   .quiz-feedback.good .verdict { color: var(--good); }
   .quiz-feedback.bad .verdict { color: var(--bad); }
-  .quiz-feedback .answer-compare { align-self: stretch; display: grid; gap: 8px; padding: 12px; border: 1px solid var(--line); background: #f3f7fb; }
+  .quiz-feedback .answer-compare { align-self: stretch; display: grid; gap: 8px; padding: 12px; border: 1px solid var(--line); background: #f3ece0; }
   .quiz-feedback .answer-row { display: flex; justify-content: space-between; align-items: center; gap: 8px; font-size: 13px; }
   .quiz-feedback .answer-row strong { font-size: 15px; }
   .quiz-feedback .answer-row .answer { min-width: 96px; padding: 7px 10px; border-radius: 5px; font-size: 14px; text-align: center; align-self: auto; }
-  .quiz-feedback .why { align-self: stretch; max-width: none; border-left: 3px solid var(--ink); padding-left: 10px; color: #343b45; }
+  .quiz-feedback .why { align-self: stretch; max-width: none; border-left: 3px solid var(--ink); padding-left: 10px; color: #54412f; }
   .quiz-feedback .primary { width: 100%; border-radius: 0; min-height: 52px; }
   .quiz-auto { margin: 0; align-self: center; color: var(--muted); font-size: 12px; text-align: center; }
   @media (max-width: 340px) { .quiz-step { font-size: 10px; letter-spacing: .02em; white-space: nowrap; } .quiz-actions .stopbtn { padding-inline: 12px; } }
@@ -264,63 +299,206 @@
   .lab-top { display: flex; flex-direction: column; gap: 8px; padding: 25px 22px 18px; }
   .lab-top-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
   .lab-language { display: flex; gap: 4px; margin-left: auto; flex: none; }
-  .lab-language button { display: flex; flex-direction: column; align-items: center; justify-content: center; width: 44px; min-height: 44px; padding: 2px; border: 1px solid var(--line); border-radius: 5px; background: #fff; color: var(--ink); font: 800 10px/1.1 Arial, Helvetica, sans-serif; cursor: pointer; }
+  .lab-language button { display: flex; flex-direction: column; align-items: center; justify-content: center; width: 44px; min-height: 44px; padding: 2px; border: 1px solid var(--line); border-radius: 5px; background: var(--panel); color: var(--ink); font: 800 10px/1.1 Arial, Helvetica, sans-serif; cursor: pointer; }
   .lab-language button span:first-child { font-size: 19px; line-height: 1.25; }
-  .lab-language button[aria-pressed="true"] { border: 2px solid var(--ink); background: #eaf2fa; }
-  .lab-language button:focus-visible { outline: 3px solid #1263a6; outline-offset: 2px; }
+  .lab-language button[aria-pressed="true"] { border: 2px solid var(--ink); background: #f7eac7; }
+  .lab-language button:focus-visible { outline: 3px solid #175e94; outline-offset: 2px; }
   .quiz-language { display: flex; justify-content: flex-end; margin-bottom: 6px; }
   .lab-site { color: var(--muted); font-size: 11px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; }
   .lab-brand { display: flex; align-items: center; gap: 10px; font: 700 20px "Space Grotesk", sans-serif; letter-spacing: -.05em; white-space: nowrap; }
-  .lab-mark { display: grid; place-items: center; width: 34px; height: 34px; flex: none; background: var(--ink); color: #fff; border-radius: 11px; font-size: 13px; transform: rotate(-5deg); }
-  .lab-tag { color: #1d5d83; background: #e9f1f4; padding: 6px 9px; border-radius: 999px; font-size: 10px; font-weight: 800; letter-spacing: .07em; text-transform: uppercase; text-align: center; }
+  .lab-mark { display: grid; place-items: center; width: 34px; height: 34px; flex: none; background: var(--ink); color: var(--accent-ink); border-radius: 11px; font-size: 13px; transform: rotate(-5deg); }
+  .lab-tag { color: #38261b; background: #f7eac7; padding: 6px 9px; border-radius: 999px; font-size: 10px; font-weight: 800; letter-spacing: .07em; text-transform: uppercase; text-align: center; }
   .lab-main { flex: 1; padding: 0 22px 105px; }
   .lab-screen { display: flex; flex-direction: column; gap: 12px; }
-  .lab-eyebrow { margin: 0; color: #a04b2a; font-size: 11px; font-weight: 800; letter-spacing: .18em; text-transform: uppercase; }
+  .lab-eyebrow { margin: 0; color: #8a5a12; font-size: 11px; font-weight: 800; letter-spacing: .18em; text-transform: uppercase; }
   .lab-title { font-size: clamp(34px, 9vw, 42px); line-height: 1.06; margin: 0; }
   .lab-intro { margin: 0 0 8px; color: var(--muted); font-size: 15px; line-height: 1.5; }
-  .lab-hero { position: relative; overflow: hidden; border-radius: 25px; padding: 25px 22px 21px; background: #dfebe7; margin-bottom: 7px; }
-  .lab-hero::before { content: ""; position: absolute; width: 180px; height: 180px; border: 1px solid #a5c6bf; border-radius: 50%; right: -55px; top: -88px; box-shadow: 0 0 0 34px #cfe2dc, 0 0 0 35px #b4d0c7; }
+  .lab-hero { position: relative; overflow: hidden; border-radius: 25px; padding: 25px 22px 21px; background: #e8efdf; margin-bottom: 7px; }
+  .lab-hero::before { content: ""; position: absolute; width: 180px; height: 180px; border: 1px solid #d6bc75; border-radius: 50%; right: -55px; top: -88px; box-shadow: 0 0 0 34px #f7eac7, 0 0 0 35px #e4d3a8; }
   .lab-hero > * { position: relative; }
-  .lab-hero .lab-eyebrow { color: #2d745f; margin-bottom: 10px; }
+  .lab-hero .lab-eyebrow { color: #38261b; margin-bottom: 10px; }
   .lab-hero h1 { max-width: 310px; font-size: clamp(35px, 10vw, 46px); line-height: 1.04; margin-bottom: 14px; }
-  .lab-hero p:not(.lab-eyebrow) { max-width: 300px; margin: 0; color: #36575b; font-size: 15px; line-height: 1.5; }
+  .lab-hero p:not(.lab-eyebrow) { max-width: 300px; margin: 0; color: #54412f; font-size: 15px; line-height: 1.5; }
   .lab-route { display: flex; gap: 7px; margin-top: 18px; }
-  .lab-route span { height: 8px; flex: 1; border-radius: 999px; background: #e9c355; }
-  .lab-route span:nth-child(2) { background: #e77e53; }
-  .lab-route span:nth-child(3) { background: #42769d; }
-  .lab-route span:nth-child(4) { background: #9e4c76; }
+  /* Decorative only: these four bars are not belts and carry no routing
+     meaning, so they follow the warm palette. */
+  .lab-route span { height: 8px; flex: 1; border-radius: 999px; background: #f4bd38; }
+  .lab-route span:nth-child(2) { background: #d79a3a; }
+  .lab-route span:nth-child(3) { background: #a8773f; }
+  .lab-route span:nth-child(4) { background: #6e5c4d; }
   .lab-section-heading { margin: 3px 0 0; color: var(--ink); font: 700 17px "Space Grotesk", sans-serif; letter-spacing: -.04em; text-transform: none; }
-  .lab-choice { width: 100%; display: flex; align-items: center; gap: 14px; text-align: left; border: 1px solid var(--line); border-radius: 19px; background: #fff; color: var(--ink); padding: 16px; box-shadow: 0 3px 12px #1c405208; }
-  .lab-choice-icon { display: grid; place-items: center; width: 49px; height: 49px; flex: none; border-radius: 15px; background: #e8f0ee; color: #28735e; font: 700 20px "Space Grotesk", sans-serif; }
-  .lab-choice-quiz .lab-choice-icon { background: #fff0e7; color: #bc5b30; }
+  .lab-choice { width: 100%; display: flex; align-items: center; gap: 14px; text-align: left; border: 1px solid var(--line); border-radius: 19px; background: var(--panel); color: var(--ink); padding: 16px; box-shadow: 0 3px 12px #38261b0d; }
+  .lab-choice-icon { display: grid; place-items: center; width: 49px; height: 49px; flex: none; border-radius: 15px; background: #e8efdf; color: #38261b; font: 700 20px "Space Grotesk", sans-serif; }
+  .lab-choice-quiz .lab-choice-icon { background: #f6e2c6; color: #8a5a12; }
   .lab-choice strong, .lab-choice small { display: block; }
   .lab-choice strong { font-size: 16px; }
   .lab-choice small { color: var(--muted); margin-top: 3px; font-size: 12px; line-height: 1.35; }
-  .lab-arrow { margin-left: auto; color: #8fa6ac; font-size: 22px; }
-  .lab-log-link { display: flex; justify-content: space-between; align-items: center; padding: 11px 3px; background: none; color: #1d5d83; font-size: 14px; font-weight: 800; text-align: left; }
+  .lab-arrow { margin-left: auto; color: #9a876f; font-size: 22px; }
+  .lab-log-link { display: flex; justify-content: space-between; align-items: center; padding: 11px 3px; background: none; color: #38261b; font-size: 14px; font-weight: 800; text-align: left; }
   .lab-log-link span:last-child { margin-left: auto; font-size: 20px; }
-  .lab-disclaimer { border: 1px solid #e6e2d7; background: #f6f3e9; padding: 13px 14px; border-radius: 15px; color: #566165; font-size: 12px; line-height: 1.5; }
+  .lab-disclaimer { border: 1px solid #ded4c5; background: #f3ece0; padding: 13px 14px; border-radius: 15px; color: #6e5c4d; font-size: 12px; line-height: 1.5; }
   .lab-disclaimer strong { color: var(--ink); }
-  .lab-nav { position: fixed; z-index: 20; left: 50%; bottom: 0; transform: translateX(-50%); width: min(100%, 430px); display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; padding: 10px 18px max(10px, env(safe-area-inset-bottom)); background: #fbfaf6ed; backdrop-filter: blur(15px); border-top: 1px solid var(--line); }
-  .lab-nav button { border: 0; border-radius: 11px; background: transparent; color: #72818a; padding: 8px 5px; font-size: 12px; font-weight: 700; }
-  .lab-nav button[aria-current="page"] { background: #e9f0ec; color: var(--ink); }
+  /* Leaderboard (#12, built to the screen approved in #16). No timestamps:
+     the first-reached-score rule was superseded by tie-break quizzes. */
+  .board { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+  /* No `background` here: the glass rule below supplies a translucent
+     one, and an opaque colour at this point would sit on top of it. */
+  .board li { display: grid; grid-template-columns: 34px 1fr auto; align-items: center; gap: 10px; border: 1px solid var(--line); border-radius: 17px; padding: 12px 14px; }
+  .board li.board-you { border: 2px solid var(--accent); }
+  /* Tinted, not painted: an opaque fill would hide the blur that every
+     other row has, and the tie marker would read as a different surface
+     rather than the same one highlighted. */
+  .board li.board-tied { border-color: #c79a2c; background: rgba(253, 246, 228, 0.62); }
+  /* Shown only when the player is ranked past the rows the server sends,
+     so their place is stated instead of being looked for in vain. */
+  .board-your-place { margin: .6rem 0 0; font-size: .95rem; }
+  .board b { font-weight: 900; }
+  .board small { display: block; color: var(--muted); font-size: 12px; }
+  .board-place { font-weight: 900; font-variant-numeric: tabular-nums; }
+  /* A long username must not push the points off the row. */
+  .board-who { min-width: 0; }
+  .board-who b { display: block; overflow-wrap: anywhere; }
+  .board-marker { grid-column: 1 / -1; margin-top: 4px; color: #7a5200; font-size: 12px; font-weight: 800; }
+  /* Owner tools (#11). The approved list is not a ranking, so it is not
+     the board grid: a name, the roster reference under it, and the way to
+     withdraw. */
+  .approved { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+  .approved li { display: flex; align-items: center; gap: 10px; border: 1px solid var(--line); border-radius: 17px; background: var(--panel); padding: 12px 14px; }
+  .approved-who { min-width: 0; flex: 1; }
+  .approved-who b { display: block; font-weight: 900; overflow-wrap: anywhere; }
+  .approved-who small { display: block; color: var(--muted); font-size: 12px; overflow-wrap: anywhere; }
+  .approved .ghost { flex: none; width: auto; min-height: 0; padding: 9px 13px; font-size: 13px; }
+  .owner-form { border: 1px solid var(--line); border-radius: 17px; background: var(--panel); padding: 14px; display: flex; flex-direction: column; gap: 10px; }
+  .owner-form h2 { font-size: 16px; }
+  .owner-count { font-size: 16px; margin-top: 4px; }
+  /* Withdrawing is the one destructive thing on that screen, so it is the
+     quieter button and keeping the approval is the easy one. */
+  .owner-danger { color: var(--bad); border-color: #d8b6b6; }
+  .owner-note { margin-top: 2px; }
+  /* The login ID is read out loud from a phone held at arm's length, so
+     it is large, spaced and selectable rather than pretty. */
+  /* Case review (#11). A case is a card: who, what they said, the
+     evidence, how long it is kept, and the outcomes. No sanction. */
+  .cases { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 12px; }
+  .cases li { border: 1px solid var(--line); border-radius: 17px; background: var(--panel); padding: 14px; display: flex; flex-direction: column; gap: 8px; }
+  .cases h2 { font-size: 17px; overflow-wrap: anywhere; }
+  .case-said { margin: 0; padding-left: 11px; border-left: 3px solid var(--soft-line); color: #54412f; font-size: 14px; overflow-wrap: anywhere; }
+  .case-keep { margin: 0; color: var(--muted); font-size: 12px; line-height: 1.45; }
+  .case-events { margin: 0; padding-left: 18px; color: var(--muted); font-size: 12px; }
+  .case-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+  .case-actions .ghost { flex: 1 1 150px; width: auto; min-height: 44px; font-size: 13px; padding: 10px; }
+  .lab-fold { border: 1px solid var(--line); border-radius: 13px; padding: 10px 12px; }
+  .lab-fold summary { font-size: 13px; font-weight: 800; cursor: pointer; }
+  /* Reauthentication (#11 box 5): a small dialog over the screen, so the
+     action it guards is still visible behind it. */
+  .reauth-dialog { position: fixed; inset: 0; z-index: 40; display: grid; place-items: center; padding: 16px; background: #35271e66; }
+  .reauth-card { width: min(100%, 380px); display: flex; flex-direction: column; gap: 10px; padding: 18px; border-radius: 19px; background: var(--panel); box-shadow: 0 18px 50px #35271e40; }
+  .reauth-card h2 { font-size: 18px; }
+  /* Prize tie-break, player side (#24). The question looks like an
+     ordinary Ranked one: service and code, then four belt buttons. */
+  .tb-top { display: flex; justify-content: space-between; align-items: baseline; }
+  .tb-bar { height: 8px; border-radius: 99px; background: #ede3d2; overflow: hidden; margin: 8px 0 14px; }
+  .tb-bar i { display: block; height: 100%; width: 100%; background: var(--danger); border-radius: 99px; transition: width .2s linear; }
+  .rq-prompt { text-align: center; margin: 6px 0; }
+  .rq-service { color: var(--muted); font-size: 12px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; }
+  .rq-code { font: 900 clamp(34px, 7dvh, 52px)/1 "Space Grotesk", sans-serif; letter-spacing: -.02em; margin-top: 4px; }
+  .belts { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 10px 0; }
+  .belts .belt { min-height: clamp(76px, 12dvh, 104px); border-radius: 14px; font-weight: 900; font-size: clamp(18px, 2.6dvh, 24px); border: 0; transition: transform 0.15s ease, box-shadow 0.2s ease, filter 0.15s ease; }
+  .belts .belt:disabled { opacity: .5; }
+  .belts .belt.picked { opacity: 1; outline: 3px solid var(--ink); outline-offset: 2px; }
+
+  /* Interactive quiz feedback: correct green glow & incorrect red shake */
+  .belt.belt-correct {
+    opacity: 1 !important;
+    animation: correctGlow 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+    z-index: 2;
+  }
+  .belt.belt-incorrect {
+    opacity: 1 !important;
+    animation: incorrectShake 0.5s ease-in-out forwards;
+    z-index: 2;
+  }
+
+  @keyframes correctGlow {
+    0% { box-shadow: 0 0 0 0 rgba(34, 100, 66, 0.9); transform: scale(1); }
+    40% { box-shadow: 0 0 0 6px rgba(34, 100, 66, 0.4), 0 0 26px 8px var(--good); transform: scale(1.04); filter: brightness(1.15); }
+    100% { box-shadow: 0 0 0 4px rgba(34, 100, 66, 0.7), 0 0 16px 3px var(--good); transform: scale(1.02); }
+  }
+
+  @keyframes incorrectShake {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(161, 45, 45, 0.8); transform: translateX(0); }
+    20%, 60% { box-shadow: 0 0 0 5px rgba(161, 45, 45, 0.4), 0 0 20px 4px var(--bad); transform: translateX(-5px); filter: brightness(1.15); }
+    40%, 80% { box-shadow: 0 0 0 5px rgba(161, 45, 45, 0.4), 0 0 20px 4px var(--bad); transform: translateX(5px); filter: brightness(1.15); }
+  }
+  .lab-rules { margin: 4px 0 10px 0; padding-left: 20px; color: var(--ink); font-size: 14px; line-height: 1.5; display: flex; flex-direction: column; gap: 6px; }
+
+  /* Ranked and promotion feedback/result (built to the screens approved
+     in #17): verdict heading, this question's worth, the your-choice vs
+     correct-belt comparison, and the balance breakdown on a result. */
+  .rq-stake { display: block; color: var(--muted); font-size: 12px; font-weight: 800; margin: 2px 0 10px; }
+  .rq-verdict.good { color: var(--good); }
+  .rq-verdict.bad { color: var(--bad); }
+  .rq-worth { font-weight: 800; font-size: 15px; margin: 2px 0 10px; }
+  .rq-worth.good { color: var(--good); }
+  .rq-worth.bad { color: var(--bad); }
+  .rq-cmp { display: flex; flex-direction: column; gap: 8px; margin: 10px 0; }
+  .rq-cmp > div { display: flex; justify-content: space-between; align-items: center; gap: 10px; border: 1px solid var(--line); border-radius: 12px; padding: 8px 12px; font-size: 13px; }
+  .rq-cmp .chip { padding: 5px 10px; border-radius: 999px; font-weight: 900; font-size: 12px; letter-spacing: .03em; }
+  /* The BLACK belt is pure #000 and vanishes on the dark app background;
+     give it a light ring so the chip reads as a swatch, not a hole. */
+  [data-belt="BLACK"] { box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.55); }
+  html[data-theme="day"] [data-belt="BLACK"] { box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.25); }
+  .rq-why { color: var(--muted); font-size: 13px; line-height: 1.5; margin: 6px 0 14px; }
+  .sum { display: flex; flex-direction: column; gap: 8px; margin: 10px 0; border: 1px solid var(--line); border-radius: 15px; padding: 12px 14px; background: var(--panel); }
+  .sum > div { display: flex; justify-content: space-between; font-size: 14px; }
+  .sum .lost b { color: var(--bad); }
+  .sum .total { border-top: 1px dashed var(--line); margin-top: 4px; padding-top: 8px; font-weight: 900; }
+  /* Prize selection (#24): the tied players with their tie-break history. */
+  .sel-list { list-style: none; margin: 4px 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+  .sel-list li { border: 1px solid var(--line); border-radius: 14px; padding: 10px 12px; }
+  .sel-list label { display: flex; align-items: center; gap: 8px; font-size: 15px; overflow-wrap: anywhere; }
+  .sel-list label input { width: auto; flex: none; }
+  .sel-hist { display: block; margin-top: 4px; color: var(--muted); font-size: 12px; }
+  .handover-id { font: 900 26px/1.3 "Space Grotesk", sans-serif; letter-spacing: .06em; overflow-wrap: anywhere; user-select: all; }
+  /* Same reason as the tied row: translucent, so the hat winner is the
+     same surface as everyone else, lit differently. */
+  .board li.board-hat { border-color: var(--gold-line); background: rgba(253, 246, 228, 0.62); }
+  .board-marker-hat { color: #7a5200; }
+  .board li.board-hat .board-place { color: var(--gold-line); }
+  .board-notice-bad { border-color: #d8b6b6; background: #fbf0ee; }
+  .board-notice { margin-top: 12px; border: 1px solid #e4d3a8; border-radius: 17px; background: #fbf3e1; padding: 13px 15px; }
+  .board-notice h2 { font-size: 16px; }
+  .board-notice p { margin-top: 4px; color: #54412f; font-size: 13px; }
+
+  /* The inactivity warning. It sits above the navigation, not over the
+     question, so a player reading a card is never covered by it. */
+  .idle-warning { position: fixed; z-index: 30; left: 50%; transform: translateX(-50%); bottom: calc(68px + env(safe-area-inset-bottom)); width: min(100% - 28px, 402px); display: flex; align-items: center; gap: 11px; padding: 12px 14px; border: 1px solid var(--soft-line); border-radius: 15px; background: var(--soft); color: var(--ink); box-shadow: 0 10px 30px #35271e26; }
+  .idle-warning p { margin: 0; font-size: 13px; font-weight: 700; line-height: 1.35; }
+  /* Brown, not gold. This bar can appear over a quiz card, where the gold
+     #f4bd38 is a near match for the YELLOW belt and would read as a belt
+     answer. Same reason the quiz and promotion screens use brown: do not
+     "fix" it back to gold. */
+  .idle-warning button { margin-left: auto; flex: none; width: auto; padding: 9px 13px; font-size: 13px; background: var(--accent); color: var(--accent-ink); }
+  .lab-nav { position: fixed; z-index: 20; left: 50%; bottom: 0; transform: translateX(-50%); width: min(100%, 430px); display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; padding: 10px 18px max(10px, env(safe-area-inset-bottom)); background: #fffdf8ed; backdrop-filter: blur(15px); border-top: 1px solid var(--line); }
+  .lab-nav button { border: 0; border-radius: 11px; background: transparent; color: #79634e; padding: 8px 5px; font-size: 12px; font-weight: 700; }
+  .lab-nav button[aria-current="page"] { background: var(--soft); color: var(--ink); }
   .lab-nav i { display: block; margin: 0 auto 3px; font: 700 18px "Space Grotesk", sans-serif; }
   .lab-study-sections { display: flex; flex-direction: column; gap: 10px; margin: 6px 0; }
-  .lab-study-card { border: 1px solid var(--line); border-radius: 19px; background: #fff; overflow: hidden; }
+  .lab-study-card { border: 1px solid var(--line); border-radius: 19px; background: var(--panel); overflow: hidden; }
   .lab-study-card summary { list-style: none; display: flex; align-items: center; gap: 13px; padding: 16px; cursor: pointer; }
   .lab-study-card summary::-webkit-details-marker { display: none; }
-  .lab-study-card summary::after { content: "+"; margin-left: auto; font: 600 24px "Space Grotesk", sans-serif; color: #7f9698; }
+  .lab-study-card summary::after { content: "+"; margin-left: auto; font: 600 24px "Space Grotesk", sans-serif; color: #9a876f; }
   .lab-study-card[open] summary::after { content: "−"; }
-  .lab-count { display: grid; place-items: center; width: 39px; height: 39px; flex: none; background: #eef1ec; border-radius: 12px; color: #557461; font: 700 14px "Space Grotesk", sans-serif; }
+  .lab-count { display: grid; place-items: center; width: 39px; height: 39px; flex: none; background: #ebe2d4; border-radius: 12px; color: #6e5c4d; font: 700 14px "Space Grotesk", sans-serif; }
   .lab-study-card summary strong, .lab-study-card summary small { display: block; }
   .lab-study-card summary strong { font-size: 15px; }
   .lab-study-card summary small { color: var(--muted); margin-top: 3px; font-size: 12px; line-height: 1.35; }
   .lab-study-body { border-top: 1px solid var(--line); padding: 16px; }
   .lab-sort-tabs { display: flex; gap: 7px; margin-bottom: 15px; }
-  .lab-sort-tabs button { border: 1px solid var(--line); border-radius: 999px; background: #fff; color: var(--ink); padding: 8px 13px; font-size: 12px; font-weight: 700; }
-  .lab-sort-tabs button[aria-pressed="true"] { background: var(--ink); border-color: var(--ink); color: #fff; }
+  .lab-sort-tabs button { border: 1px solid var(--line); border-radius: 999px; background: var(--panel); color: var(--ink); padding: 8px 13px; font-size: 12px; font-weight: 700; }
+  .lab-sort-tabs button[aria-pressed="true"] { background: var(--ink); border-color: var(--ink); color: var(--accent-ink); }
   .lab-study-cards { display: flex; flex-direction: column; gap: 10px; }
-  .lab-study-row { background: #f5f7f4; border-radius: 13px; padding: 14px; }
+  .lab-study-row { background: #f3ece0; border-radius: 13px; padding: 14px; }
   .lab-study-meta { color: var(--muted); font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; }
   .lab-study-answer { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin: 5px 0; }
   .lab-study-answer strong { font: 700 22px "Space Grotesk", sans-serif; letter-spacing: -.04em; }
@@ -328,46 +506,48 @@
   .lab-study-row p { margin: 6px 0 0; color: var(--muted); font-size: 12px; line-height: 1.5; }
   .lab-main .field { margin: 8px 0; }
   .lab-main .decks { margin: 6px 0; }
-  .lab-main .deckbtn { border-radius: 19px; padding: 16px; box-shadow: 0 3px 12px #1c405208; }
+  .lab-main .deckbtn { border-radius: 19px; padding: 16px; box-shadow: 0 3px 12px #38261b0d; }
   .lab-main .deckbtn .dname { font-family: "Space Grotesk", sans-serif; letter-spacing: -.03em; }
 
   /* The approved Twilight redesign: a plain black and white interface with
      the mascot's muted blue. Belt answer colors still come from BELT_STYLE. */
-  :root { --bg: #fff; --panel: #fff; --sunk: #e9edf1; --ink: #17191d; --muted: #565d67; --line: #d9dde2; --accent: #17191d; }
-  body { background: #e9edf1; color: var(--ink); font-family: Arial, Helvetica, sans-serif; }
+  body { background: #f7f3ec; color: var(--ink); font-family: Arial, Helvetica, sans-serif; }
   h1, .lab-brand, .lab-section-heading, .lab-choice-icon, .lab-main .deckbtn .dname, .lab-nav i { font-family: Arial, Helvetica, sans-serif; }
-  #app { box-shadow: 0 12px 45px #1c2a3b18; }
+  #app { box-shadow: 0 12px 45px #38261b18; }
   .lab-top { padding: 20px 22px 15px; border-bottom: 1px solid var(--line); gap: 8px; }
   .lab-brand { font-size: 19px; font-weight: 800; letter-spacing: -.035em; }
   .lab-mark { border-radius: 5px; transform: none; }
-  .lab-tag { align-self: flex-start; border: 1px solid #b7c9df; border-radius: 0; background: #eaf2fa; color: #293d56; font-size: 9px; letter-spacing: .04em; }
+  .lab-tag { align-self: flex-start; border: 1px solid #d6bc75; border-radius: 0; background: #f7eac7; color: #38261b; font-size: 9px; letter-spacing: .04em; }
   .lab-site { letter-spacing: .055em; }
   .lab-main { padding: 20px 22px 100px; }
   .lab-eyebrow { color: var(--ink); letter-spacing: .13em; }
   .lab-title { font-size: 35px; font-weight: 800; letter-spacing: -.065em; }
-  .lab-hero { border: 1px solid #c8d7e7; border-radius: 0; background: #d8e5f4; padding: 0; margin: 0; }
+  .lab-hero { border: 1px solid #d6bc75; border-radius: 0; background: #f7eac7; padding: 0; margin: 0; }
   .lab-hero::before { content: none; }
   .lab-hero-copy { padding: 22px 20px 8px; }
   .lab-hero .lab-eyebrow { color: var(--ink); margin-bottom: 10px; }
   .lab-hero h1 { font: 800 35px/1.02 Arial, Helvetica, sans-serif; letter-spacing: -.065em; margin: 0; }
   .lab-hero p:not(.lab-eyebrow) { margin: 12px 0 0; color: var(--ink); font-size: 14px; }
-  .lab-mascot { display: block; width: 100%; height: 225px; object-fit: cover; object-position: 50% 46%; }
+  /* The home poster, unlike the mascot, is never cropped: its own
+     words are part of the picture, so any crop cuts the message. */
+  .lab-campaign { margin: 0; }
+  .lab-campaign img { display: block; width: 100%; height: auto; }
   .lab-section-heading { margin: 16px 0 1px; font-size: 20px; font-weight: 800; }
   .lab-choice { border-radius: 0; box-shadow: none; padding: 17px 15px; }
-  .lab-choice-icon, .lab-choice-quiz .lab-choice-icon { border: 1px solid #d9e5f2; border-radius: 0; background: #edf3fa; color: var(--ink); width: 44px; height: 44px; font-size: 17px; }
+  .lab-choice-icon, .lab-choice-quiz .lab-choice-icon { border: 1px solid #d6bc75; border-radius: 0; background: #f7eac7; color: var(--ink); width: 44px; height: 44px; font-size: 17px; }
   .lab-arrow { color: var(--ink); }
-  .lab-log-link { color: #263c58; }
-  .lab-disclaimer { border-color: var(--line); border-radius: 0; background: #f5f6f7; color: var(--muted); }
-  .lab-nav { background: #fff; backdrop-filter: none; gap: 0; padding: 0 max(0px, env(safe-area-inset-right)) max(0px, env(safe-area-inset-bottom)) max(0px, env(safe-area-inset-left)); }
+  .lab-log-link { color: #38261b; }
+  .lab-disclaimer { border-color: var(--line); border-radius: 0; background: #f3ece0; color: var(--muted); }
+  .lab-nav { background: var(--panel); backdrop-filter: none; gap: 0; padding: 0 max(0px, env(safe-area-inset-right)) max(0px, env(safe-area-inset-bottom)) max(0px, env(safe-area-inset-left)); }
   .lab-nav button { border-radius: 0; padding: 10px 5px 12px; }
-  .lab-nav button[aria-current="page"] { background: #fff; box-shadow: inset 0 3px var(--ink); }
+  .lab-nav button[aria-current="page"] { background: var(--panel); box-shadow: inset 0 3px var(--ink); }
   .lab-main .deckbtn, .ghost, .primary, input { border-radius: 0; }
   .lab-main .deckbtn { box-shadow: none; }
   .lab-main .deckbtn .dname { letter-spacing: 0; }
   .lab-picker-heading { margin: 16px 0 2px; font-size: 16px; letter-spacing: -.02em; text-transform: none; color: var(--ink); }
   .lab-service-tabs { display: grid; grid-template-columns: repeat(2, 1fr); gap: 7px; margin: 9px 0 18px; }
-  .lab-service-tabs button { border: 1px solid var(--line); background: #fff; color: var(--ink); padding: 11px 8px; font-size: 13px; font-weight: 700; }
-  .lab-service-tabs button[aria-pressed="true"] { border-color: var(--ink); background: var(--ink); color: #fff; }
+  .lab-service-tabs button { border: 1px solid var(--line); background: var(--panel); color: var(--ink); padding: 11px 8px; font-size: 13px; font-weight: 700; }
+  .lab-service-tabs button[aria-pressed="true"] { border-color: var(--ink); background: var(--ink); color: var(--accent-ink); }
   .lab-chart-heading { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; border-bottom: 2px solid var(--ink); padding: 8px 0; }
   .lab-chart-heading strong { font-size: 17px; }
   .lab-chart-heading span, .lab-chart-count { color: var(--muted); font-size: 12px; }
@@ -381,78 +561,145 @@
   .lab-chart-row small { margin-top: 2px; font-size: 11px; }
   .lab-chart-row .lab-belt-chip { min-width: 75px; border-radius: 0; padding: 7px 8px; font-size: 11px; }
 
+  /* The season-start notice on the home page (Decision 15) */
+  .lab-launch { display: flex; gap: 11px; margin-top: 16px; padding: 14px 15px; border: 1px solid #b9c2e8; border-color: var(--soft-line); border-radius: 19px; background: var(--soft); }
+  .lab-launch i { display: grid; place-items: center; width: 34px; height: 34px; flex: none; border-radius: 50%; background: var(--accent); color: var(--accent-ink); font-style: normal; font-size: 17px; font-weight: 900; }
+  .lab-launch h2 { margin: 0; font-size: 17px; font-weight: 900; letter-spacing: -.03em; text-transform: none; color: var(--ink); }
+  .lab-launch p { margin: 3px 0 0; color: #3b4668; color: #54412f; font-size: 13px; line-height: 1.5; }
+
+  /* Support tickets (issue #10, slice 5) */
+  .support-list { list-style: none; margin: 10px 0; padding: 0; display: flex; flex-direction: column; gap: 9px; }
+  .support-list li { border: 1px solid var(--line); border-radius: 17px; background: var(--panel); padding: 13px 14px; }
+  .support-list b { display: block; font-size: 16px; font-weight: 900; }
+  .support-list small { display: block; color: var(--muted); font-size: 12px; margin-top: 2px; }
+  .support-pill { display: inline-block; margin-bottom: 6px; padding: 3px 10px; border-radius: 99px; font-size: 11px; font-weight: 900; }
+  .support-pill.open { background: var(--soft); color: var(--accent); }
+  .support-pill.closed { background: #ebe2d4; color: #6e5c4d; }
+  .support-keep { display: block; margin-top: 9px; padding-top: 9px; border-top: 1px solid #ebe2d4; color: #6e5c4d; font-size: 12px; font-weight: 700; line-height: 1.45; }
+  select, textarea { font: inherit; width: 100%; padding: 14px; border: 1px solid #cdbfae; border-radius: 14px; background: var(--panel); color: var(--ink); font-size: 15px; }
+  textarea { resize: vertical; }
+
+  /* Account deletion (issue #10, slice 4) */
+  .delete-ack { display: flex; align-items: flex-start; gap: 11px; border: 1px solid var(--line); border-radius: 17px; background: var(--panel); padding: 14px; font-size: 14px; line-height: 1.45; cursor: pointer; }
+  .delete-ack input { width: 22px; height: 22px; flex: none; margin: 0; accent-color: var(--accent); }
+  .delete-warn { border: 1px solid #e8c5bf; border-radius: 17px; background: #fbefed; padding: 13px 15px; color: #7a2622; margin: 10px 0; }
+  .delete-warn h2 { margin: 0; font-size: 16px; font-weight: 900; letter-spacing: -.03em; text-transform: none; color: #7a2622; }
+  .delete-warn p { margin: 4px 0 0; font-size: 13px; line-height: 1.5; }
+  .delete-danger { background: var(--danger); color: #fffdf8; border-color: #7a2622; }
+  /* A disabled button must look disabled. Without this, a primary button
+     waiting for a condition (the right number of players chosen, "I saved
+     my login ID" ticked) stayed bright gold and read as ready to press. */
+  .primary:disabled, .ghost:disabled { background: #ebe2d4; color: #79634e; border-color: #cdbfae; cursor: not-allowed; box-shadow: none; }
+  .delete-danger:disabled { background: #ebe2d4; color: #79634e; border-color: #cdbfae; cursor: not-allowed; }
+
+  /* Profile (issue #10, slice 2). The badge art is the approved set from
+     mockups/design-library/badges. */
+  .profile-tabs { display: flex; flex-wrap: wrap; gap: 2px; border-bottom: 2px solid var(--line); margin: 14px 0 12px; }
+  .profile-tabs button { min-height: 44px; padding: 8px 10px; margin-bottom: -2px; border: 0; border-bottom: 3px solid transparent; background: none; color: var(--muted); font-size: 13px; font-weight: 900; }
+  .profile-tabs button[aria-selected="true"] { color: var(--accent); border-bottom-color: var(--gold-line); }
+  .profile-balance { display: flex; align-items: center; gap: 14px; border: 1px solid var(--line); border-radius: 20px; background: var(--panel); padding: 16px; margin-bottom: 10px; }
+  .profile-balance > div { min-width: 0; flex: 1; }
+  .profile-badge { width: 76px; height: 76px; flex: none; object-fit: contain; border-radius: 14px; }
+  .profile-points { margin: 2px 0; font-size: 30px; font-weight: 900; letter-spacing: -.04em; line-height: 1.1; }
+  .profile-bar { height: 12px; margin: 8px 0 6px; border-radius: 99px; background: #ede3d2; overflow: hidden; }
+  .profile-bar i { display: block; height: 100%; border-radius: 99px; background: var(--accent); }
+  .profile-promo { border: 1px solid var(--soft-line); border-radius: 19px; background: var(--soft); padding: 14px 16px; margin-bottom: 10px; }
+  .profile-promo h2 { margin: 0; font-size: 17px; font-weight: 900; letter-spacing: -.03em; text-transform: none; color: var(--ink); }
+  .profile-promo p { margin: 5px 0 0; color: #54412f; font-size: 13px; line-height: 1.5; }
+  .profile-ladder { list-style: none; margin: 0 0 12px; padding: 0; display: flex; flex-direction: column; gap: 7px; }
+  .profile-ladder li { display: grid; grid-template-columns: 44px 1fr; align-items: center; gap: 3px 11px; border: 1px solid var(--line); border-radius: 13px; padding: 9px 11px; font-size: 14px; font-weight: 900; }
+  .profile-ladder img { width: 44px; height: 44px; object-fit: contain; grid-row: span 2; }
+  .profile-ladder span { color: var(--muted); font-size: 12px; font-weight: 600; }
+  .profile-ladder li[aria-current="true"] { border: 2px solid var(--gold-line); background: var(--soft); color: var(--accent); }
+  .profile-ladder li[aria-current="true"] span { color: var(--accent); font-weight: 900; }
+  .profile-history { list-style: none; margin: 10px 0 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+  .profile-history li { border: 1px solid var(--line); border-radius: 17px; background: var(--panel); padding: 12px 14px; display: grid; grid-template-columns: 1fr auto; gap: 3px 10px; }
+  .profile-history li.ended { border-style: dashed; }
+  .profile-history .score { font-size: 16px; font-weight: 900; font-variant-numeric: tabular-nums; }
+  .profile-history small { grid-column: 1 / -1; color: var(--muted); font-size: 12px; }
+  .profile-history .status { grid-column: 1 / -1; justify-self: start; margin-top: 3px; padding: 3px 10px; border-radius: 99px; background: #dff2e8; color: #1f5a3a; font-size: 11px; font-weight: 900; }
+  .profile-history .status.ended { background: #f3ece0; color: #6e5c4d; border: 1px dashed #9a876f; }
+
   /* Friendly study concept: softer learning surfaces and a stronger reading
      hierarchy. The answer buttons and chart chips keep BELT_STYLE colors. */
-  :root {
-    --bg: #fffdf9; --panel: #fff; --sunk: #e9edff;
-    --ink: #17233f; --muted: #657085; --line: #e6e8f0;
-    --accent: #343ca2; --accent-ink: #fff;
-  }
-  body { background: #e7ebf5; color: var(--ink); font-family: Nunito, "Trebuchet MS", sans-serif; font-weight: 600; }
+  body { background: #f7f3ec; color: var(--ink); font-family: Nunito, "Trebuchet MS", sans-serif; font-weight: 600; }
   h1, h2, .lab-brand, .lab-section-heading, .lab-choice-icon,
   .lab-main .deckbtn .dname, .lab-nav i { font-family: Nunito, "Trebuchet MS", sans-serif; }
   h1 { font-weight: 900; letter-spacing: -.055em; }
   h2 { font-weight: 900; }
-  #app { background: var(--bg); box-shadow: 0 20px 80px #1b28682b; }
+  #app { background: var(--bg); box-shadow: 0 20px 80px #38261b22; }
   .lab-top { border: 0; padding: 20px 20px 18px; }
   .lab-brand { font-size: 21px; font-weight: 900; letter-spacing: -.05em; }
   .lab-mark { width: 37px; height: 37px; border-radius: 13px; background: var(--accent); transform: rotate(-5deg); }
   .lab-site { margin-left: 46px; color: var(--muted); font-weight: 900; letter-spacing: .09em; }
-  .lab-tag { margin-left: 46px; border: 0; border-radius: 99px; padding: 5px 9px; background: #e9edff; color: var(--accent); font-weight: 900; }
+  .lab-tag { margin-left: 46px; border: 0; border-radius: 99px; padding: 5px 9px; background: #f7eac7; color: var(--accent); font-weight: 900; }
   .lab-language button { border-radius: 13px; }
-  .lab-language button[aria-pressed="true"] { border-color: var(--accent); background: #eff1ff; }
+  .lab-language button[aria-pressed="true"] { border-color: var(--accent); background: #f7eac7; }
   .lab-main { padding: 0 20px 100px; }
   .lab-eyebrow { color: var(--accent); font-weight: 900; letter-spacing: .13em; }
   .lab-title { font-size: clamp(34px, 9vw, 43px); font-weight: 900; letter-spacing: -.055em; }
-  .lab-hero { overflow: hidden; margin: 0; border: 0; border-radius: 26px; background: #dce8f8; box-shadow: 0 12px 30px #25336a12; }
+  .lab-hero { overflow: hidden; margin: 0; border: 0; border-radius: 26px; background: #f7eac7; box-shadow: 0 12px 30px #38261b12; }
   .lab-hero-copy { padding: 24px 22px 4px; }
   .lab-hero .lab-eyebrow { color: var(--accent); }
   .lab-hero h1 { font: 900 clamp(34px, 9vw, 43px)/1.06 Nunito, "Trebuchet MS", sans-serif; letter-spacing: -.055em; }
-  .lab-hero p:not(.lab-eyebrow) { color: #344767; font-size: 15px; }
-  .lab-mascot { height: 209px; object-position: center 52%; }
-  .lab-change { margin-top: 16px; padding: 15px 16px; border: 1px solid #d9dff7; border-radius: 19px; background: #eff2ff; }
+  .lab-hero p:not(.lab-eyebrow) { color: #54412f; font-size: 15px; }
+  .lab-campaign img { border-radius: 0 0 26px 26px; }
+  .lab-change { margin-top: 16px; padding: 15px 16px; border: 1px solid #e4d3a8; border-radius: 19px; background: #fbf3e1; }
   .lab-change-kicker { margin: 0 0 8px; color: var(--accent); font-size: 11px; font-weight: 900; letter-spacing: .09em; text-transform: uppercase; }
   .lab-change-row { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
-  .lab-change-row p { margin: 2px 0 0; color: #465174; font-size: 12px; font-weight: 800; }
-  .lab-change-row h3 { margin: 0; font-size: 16px; }
-  .lab-change-row + .lab-change-row { margin-top: 12px; }
+  .lab-change-row h2 { margin: 0; color: var(--ink); font-size: 21px; font-weight: 900; letter-spacing: -.03em; text-transform: none; }
+  .lab-change-row p { margin: 2px 0 0; color: #54412f; font-size: 12px; font-weight: 800; }
   .lab-change-row .lab-belt-chip { flex: none; min-width: 72px; border-radius: 11px; }
-  .lab-change-note { margin: 11px 0 0; padding-top: 10px; border-top: 1px solid #d9dff7; color: #465174; font-size: 12px; line-height: 1.45; }
+  .lab-change-note { margin: 11px 0 0; padding-top: 10px; border-top: 1px solid #e4d3a8; color: #54412f; font-size: 12px; line-height: 1.45; }
   .lab-section-heading { margin: 23px 0 11px; font-size: 20px; font-weight: 900; letter-spacing: -.035em; }
-  .lab-choice { margin-bottom: 10px; border-radius: 20px; padding: 15px; box-shadow: 0 5px 18px #1924530a; }
-  .lab-choice-icon, .lab-choice-quiz .lab-choice-icon { width: 49px; height: 49px; border: 0; border-radius: 16px; background: #dff2e8; color: var(--ink); font-size: 20px; font-weight: 900; }
-  .lab-choice-quiz .lab-choice-icon { background: #ffdfcf; }
+  .lab-choice { margin-bottom: 10px; border-radius: 20px; padding: 15px; box-shadow: 0 5px 18px #38261b0d; }
+  .lab-choice-icon, .lab-choice-quiz .lab-choice-icon { width: 49px; height: 49px; border: 0; border-radius: 16px; background: #e8efdf; color: var(--ink); font-size: 20px; font-weight: 900; }
+  .lab-choice-quiz .lab-choice-icon { background: #f6e2c6; }
   .lab-choice strong { font-size: 17px; font-weight: 900; }
   .lab-choice small { color: var(--muted); }
   .lab-arrow, .lab-log-link { color: var(--accent); }
   .lab-log-link { padding: 15px 3px; font-weight: 900; }
-  .lab-disclaimer { border: 0; border-radius: 17px; background: #f2f2f9; color: #4e5770; }
-  .lab-nav { gap: 5px; padding: 7px 12px max(8px, env(safe-area-inset-bottom)); background: #fffdf9f5; backdrop-filter: blur(12px); }
+  .lab-disclaimer { border: 0; border-radius: 17px; background: #f3ece0; color: #6e5c4d; }
+  .lab-nav { gap: 5px; padding: 7px 12px max(8px, env(safe-area-inset-bottom)); background: #fffdf8f2; backdrop-filter: blur(12px); }
   .lab-nav button { min-height: 54px; border-radius: 13px; font-size: 11px; font-weight: 900; padding: 6px 5px; }
-  .lab-nav button[aria-current="page"] { box-shadow: none; background: #e9edff; color: var(--accent); }
+  .lab-nav button[aria-current="page"] { box-shadow: none; background: #f7eac7; color: var(--accent); }
   .lab-nav i { font-size: 20px; }
   .lab-service-tabs { display: flex; flex-wrap: wrap; gap: 7px; }
   .lab-service-tabs button { min-height: 40px; border-radius: 999px; padding: 9px 13px; font-size: 12px; font-weight: 900; }
   .lab-service-tabs button[aria-pressed="true"] { border-color: var(--accent); background: var(--accent); }
-  .lab-chart-search, .lab-main input { border-radius: 14px; background: #fff; }
+  .lab-chart-search, .lab-main input { border-radius: 14px; background: var(--panel); }
   .lab-chart-heading { border-color: var(--accent); }
-  .lab-chart-row { margin: 0 0 8px; padding: 13px 14px; border: 1px solid var(--line); border-radius: 17px; background: #fff; }
+  .lab-chart-row { margin: 0 0 8px; padding: 13px 14px; border: 1px solid var(--line); border-radius: 17px; background: var(--panel); }
   .lab-chart-row strong { font-size: 20px; font-weight: 900; letter-spacing: -.03em; }
   .lab-chart-row .lab-belt-chip { min-width: 84px; min-height: 38px; border-radius: 11px; padding: 7px 10px; font-size: 12px; }
-  .lab-main .deckbtn { margin-bottom: 9px; border-radius: 19px; box-shadow: 0 4px 14px #19245309; }
+  .lab-main .deckbtn { margin-bottom: 9px; border-radius: 19px; box-shadow: 0 4px 14px #38261b0d; }
   .lab-main .deckbtn .dname { font-size: 17px; font-weight: 900; }
   .lab-picker-heading { margin: 23px 0 11px; font-size: 20px; font-weight: 900; }
   .lab-main .primary, .lab-main .ghost, .primary, .ghost { border-radius: 14px; font-weight: 900; }
-  .primary { background: var(--accent); }
+  /* The library's primary action: gold with dark text, not a brown fill.
+     The gradient and the light edge come from the mockup's `.btn-primary`.
+     It stays opaque on purpose while the panels around it are frosted: an
+     action meant to be found cannot be made of the same material as the
+     surface behind it. */
+  .primary {
+    background: linear-gradient(135deg, var(--gold) 0%, #e5a720 100%);
+    color: var(--ink); border: 1px solid rgba(255, 255, 255, 0.5);
+  }
   .quiz-card, .quiz-feedback { color: var(--ink); }
-  .quiz-card .quiz-avatar, .quiz-feedback .quiz-avatar { border-radius: 17px; }
   .quiz-actions .stopbtn { color: var(--accent); border-color: var(--line); font-family: inherit; }
   .quiz-timer { border-color: var(--accent); font-weight: 900; }
   .quiz-route .p-code { font-weight: 900; }
   .quiz-card .belt { border-radius: 14px; font-family: inherit; font-weight: 900; }
-  .quiz-feedback .answer-compare { border: 0; border-radius: 17px; background: #eff2ff; }
+  .quiz-feedback .answer-compare { border: 0; border-radius: 17px; background: #fbf3e1; }
   .quiz-feedback .answer-row .answer { border-radius: 11px; }
   .quiz-feedback .why { border-color: var(--accent); }
+  /* On quiz screens the primary action is brown, not gold: the library's gold
+     (#f4bd38) and the YELLOW belt (#f6d33c) are nearly the same colour, and
+     on these screens yellow has to mean a belt, never a button. Deliberate,
+     settled with the owner 2026-11-14 — do not "fix" it back to gold. */
+  .quiz-card .primary, .quiz-feedback .primary, .bail .primary {
+    background: var(--accent); color: var(--accent-ink); border-color: var(--accent);
+  }
   .quiz-feedback .primary { border-radius: 14px; }
   .logl li { border-radius: 17px; }
   .bail { background: var(--bg); }
@@ -463,18 +710,415 @@
   }
   @media (prefers-reduced-motion: no-preference) {
     .lab-choice, .lab-main .deckbtn { transition: transform .18s, box-shadow .18s; }
-    .lab-choice:hover, .lab-main .deckbtn:hover { transform: translateY(-2px); box-shadow: 0 12px 30px #25336a12; }
+    .lab-choice:hover, .lab-main .deckbtn:hover { transform: translateY(-2px); box-shadow: 0 12px 30px #38261b12; }
+  }
+
+  /* Promotion celebration (#95). Every piece starts invisible or small and
+     ends where it belongs, so when the animations are switched off -- the
+     reduced-motion rule below, or the Skip button -- what stays on screen
+     is the finished state: the badge and the new rank, nothing missing. */
+  .promo-cheer .cheer-stage { position: relative; display: grid; place-items: center; height: 212px; margin: 4px 0; }
+  .cheer-badge { width: 136px; height: 136px; object-fit: contain; animation: cheer-badge-in .62s cubic-bezier(.18,.9,.32,1.25) both; }
+  .cheer-glow { position: absolute; width: 196px; height: 196px; border-radius: 50%; opacity: 0;
+    background: radial-gradient(circle, #f4bd3866 0%, #f4bd3800 70%); animation: cheer-glow 1.05s ease-out .12s both; }
+  .cheer-spark { position: absolute; width: 9px; height: 9px; border-radius: 2px; background: #f4bd38; opacity: 0;
+    animation: cheer-spark .78s ease-out both; animation-delay: calc(260ms + var(--delay)); }
+  .cheer-name { margin-top: 2px; }
+  /* Skip lands on the same finished state the reduced-motion rule gives. */
+  .promo-cheer.skipped .cheer-badge,
+  .promo-cheer.skipped .cheer-glow,
+  .promo-cheer.skipped .cheer-spark { animation: none; }
+  @keyframes cheer-badge-in { from { opacity: 0; transform: scale(.42); } to { opacity: 1; transform: none; } }
+  @keyframes cheer-glow { 0% { opacity: 0; transform: scale(.55); } 45% { opacity: 1; } 100% { opacity: 0; transform: scale(1.3); } }
+  @keyframes cheer-spark {
+    0% { opacity: 0; transform: rotate(var(--a)) translateY(0); }
+    18% { opacity: 1; }
+    100% { opacity: 0; transform: rotate(var(--a)) translateY(calc(var(--d) * -1)); }
   }
 
   @media (prefers-reduced-motion: reduce) {
     * { animation: none !important; transition: none !important; }
   }
+
+  /* Glassmorphism twilight tokens & surfaces (dark glass over the twilight
+     gradient). These replace the earlier light/warm-white glass values. */
+  :root {
+    --glass-surface: rgba(38, 26, 18, 0.62);
+    --glass-surface-sub: rgba(56, 38, 27, 0.5);
+    --glass-border: rgba(255, 255, 255, 0.14);
+    --glass-border-subtle: rgba(255, 255, 255, 0.08);
+    --glass-highlight: rgba(255, 255, 255, 0.22);
+    --glass-shadow: 0 16px 40px -4px rgba(0, 0, 0, 0.5), 0 4px 12px rgba(0, 0, 0, 0.3);
+    --dock-bg: rgba(28, 19, 13, 0.85);
+    --blur-lg: blur(24px);
+    --blur-md: blur(14px);
+  }
+
+  /* Ambient Lighting Orbs */
+  .ambient-canvas {
+    position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden;
+  }
+  .orb { position: absolute; border-radius: 50%; filter: blur(85px); }
+  .orb-gold { width: 440px; height: 440px; background: radial-gradient(circle, #f4bd38 0%, rgba(244, 189, 56, 0.02) 70%); top: -60px; left: 15%; opacity: 0.55; }
+  .orb-amber { width: 460px; height: 460px; background: radial-gradient(circle, #c96b1b 0%, rgba(201, 107, 27, 0.02) 70%); top: 35%; right: 10%; opacity: 0.45; }
+  .orb-blue { width: 360px; height: 360px; background: radial-gradient(circle, #175e94 0%, rgba(23, 94, 148, 0.02) 70%); bottom: -40px; left: 20%; opacity: 0.3; }
+
+  /* Glass App Shell & Floating Glass Dock */
+  #app {
+    position: relative; z-index: 1;
+    backdrop-filter: var(--blur-lg); -webkit-backdrop-filter: var(--blur-lg);
+    background: var(--glass-surface);
+    border: 1px solid var(--glass-border);
+  }
+  /* Static dock: pinned flush to the bottom of the app column (no longer a
+     floating pill that covers the tappable content). Content clears it with
+     the bottom padding added to .lab-main / .quiz-page below. */
+  .lab-nav {
+    position: fixed !important;
+    bottom: 0 !important;
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+    width: min(100%, 430px) !important;
+    height: 60px !important;
+    background: var(--dock-bg) !important;
+    backdrop-filter: blur(18px) !important;
+    -webkit-backdrop-filter: blur(18px) !important;
+    border: 0 !important;
+    border-top: 1px solid var(--glass-border) !important;
+    border-radius: 0 !important;
+    box-shadow: 0 -8px 24px -8px rgba(0,0,0,0.28) !important;
+    z-index: 50 !important;
+    display: grid !important;
+    align-items: center !important;
+    padding: 0 6px max(0px, env(safe-area-inset-bottom)) !important;
+  }
+  .lab-nav button {
+    border-radius: 24px !important;
+    min-height: 48px !important;
+    font-weight: 800 !important;
+    background: transparent !important;
+    border: 0 !important;
+    transition: all 0.2s ease !important;
+  }
+  .lab-nav button[aria-current="page"] {
+    background: var(--gold) !important;
+    color: #38261b !important;
+    box-shadow: 0 4px 14px rgba(244, 189, 56, 0.4) !important;
+  }
+
+  /* Glass Cards across Ranked & Quiz */
+  .lab-change, .lab-choice, .auth-card, .quiz-card, .rq-cmp, .sum, .profile-balance, .board li {
+    background: var(--glass-surface-sub);
+    backdrop-filter: var(--blur-md); -webkit-backdrop-filter: var(--blur-md);
+    border: 1px solid var(--glass-border);
+    box-shadow: var(--glass-shadow);
+  }
+
+  /* Interactive quiz feedback: correct green glow & incorrect red shake */
+  .belt.belt-correct {
+    opacity: 1 !important;
+    animation: correctGlow 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+    z-index: 2;
+  }
+  .belt.belt-incorrect {
+    opacity: 1 !important;
+    animation: incorrectShake 0.5s ease-in-out forwards;
+    z-index: 2;
+  }
+
+  @keyframes correctGlow {
+    0% { box-shadow: 0 0 0 0 rgba(34, 100, 66, 0.9); transform: scale(1); }
+    40% { box-shadow: 0 0 0 6px rgba(34, 100, 66, 0.4), 0 0 26px 8px var(--good); transform: scale(1.04); filter: brightness(1.15); }
+    100% { box-shadow: 0 0 0 4px rgba(34, 100, 66, 0.7), 0 0 16px 3px var(--good); transform: scale(1.02); }
+  }
+
+  @keyframes incorrectShake {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(161, 45, 45, 0.8); transform: translateX(0); }
+    20%, 60% { box-shadow: 0 0 0 5px rgba(161, 45, 45, 0.4), 0 0 20px 4px var(--bad); transform: translateX(-5px); filter: brightness(1.15); }
+    40%, 80% { box-shadow: 0 0 0 5px rgba(161, 45, 45, 0.4), 0 0 20px 4px var(--bad); transform: translateX(5px); filter: brightness(1.15); }
+  }
+
+  /* ============================================================
+     Twilight glass — component port to match the approved mock
+     (mockups/app-redesign-mock.html). Appended last, so these are
+     the styles in force. Visual only; behaviour unchanged. Belt
+     colours (src/belts.js) are never restyled here.
+     ============================================================ */
+  :root { --r-md: 22px; --r-sm: 14px; }
+
+  /* Crisper glass cards with a soft top highlight */
+  .lab-change, .lab-choice, .auth-card, .quiz-card, .rq-cmp, .sum,
+  .profile-balance, .board li, .reauth-card, .owner-form, .cases li, .approved li {
+    background: rgba(48, 32, 22, 0.62);
+    border: 1px solid rgba(255, 255, 255, 0.11);
+    border-radius: var(--r-md);
+    box-shadow: 0 20px 45px -14px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  }
+
+  /* Hero art rounded like the mock */
+  .lab-campaign { margin: 0; }
+  .lab-campaign img { display: block; width: 100%; height: auto; border-radius: var(--r-md); border: 1px solid rgba(255, 255, 255, 0.08); }
+
+  /* Gold eyebrows / section headings */
+  .lab-change-kicker { color: var(--gold); text-transform: uppercase; letter-spacing: .14em; font-weight: 900; font-size: 11px; }
+  .lab-change-note { color: var(--muted); }
+
+  /* Choice cards — gold-tinted icon and gold arrow (mock .choice) */
+  .lab-choice { border-radius: var(--r-sm); padding: 14px; gap: 12px; box-shadow: 0 10px 26px -12px rgba(0,0,0,0.6); }
+  .lab-choice-icon, .lab-choice-quiz .lab-choice-icon {
+    background: rgba(244, 189, 56, 0.14); border: 1px solid rgba(244, 189, 56, 0.32);
+    color: var(--gold); border-radius: 12px; width: 44px; height: 44px; font-size: 16px; font-weight: 800;
+  }
+  .lab-choice small { color: var(--muted); }
+  .lab-arrow { color: var(--gold); font-weight: 900; }
+
+  /* Buttons matched to the mock (.btn / .btn.ghost): radius 14, padding 14 */
+  .primary {
+    background: linear-gradient(135deg, var(--gold) 0%, #d89115 100%);
+    color: #2a1c10; border: 1px solid rgba(255, 255, 255, 0.45);
+    border-radius: var(--r-sm); padding: 14px; font-size: 15px; font-weight: 900;
+    box-shadow: 0 8px 20px -6px rgba(244, 189, 56, 0.5);
+  }
+  .ghost { border-radius: var(--r-sm); padding: 14px; font-weight: 800; background: var(--glass-surface-sub); border: 1px solid var(--glass-border); }
+  input, .glass-input { border-radius: var(--r-sm); }
+
+  /* Brand mark in gold (mock brandmark) */
+  .lab-mark {
+    background: linear-gradient(135deg, var(--gold), #d89115); color: #2a1c10;
+    border-radius: 12px;
+  }
+
+  /* Dock labels/icons readable on the dark glass dock */
+  .lab-nav button { color: var(--muted); }
+
+  /* Language toggle as glass */
+  .lab-language button { background: var(--glass-surface-sub); border: 1px solid var(--glass-border); color: var(--ink); backdrop-filter: var(--blur-md); -webkit-backdrop-filter: var(--blur-md); }
+  .lab-language button[aria-pressed="true"] { border-color: var(--gold); color: var(--ink); }
+
+
+
+  /* Ranked quiz — belts and timer bar */
+  .rq-stake { color: var(--muted); }
+  /* Ring timer (mock): conic gold ring with the seconds on a dark disc */
+  .rq-ring { width: 46px; height: 46px; border-radius: 50%; display: grid; place-items: center; font-weight: 900; font-size: 14px; color: var(--gold); background: conic-gradient(var(--gold) calc(var(--pct, 100) * 1%), rgba(255, 255, 255, 0.12) 0); }
+  .rq-ring.low { color: var(--bad); background: conic-gradient(var(--bad) calc(var(--pct, 0) * 1%), rgba(255, 255, 255, 0.12) 0); }
+  .rq-ring span { width: 36px; height: 36px; border-radius: 50%; background: #1a110a; display: grid; place-items: center; }
+  .tb-bar { background: rgba(255, 255, 255, 0.1); }
+  .tb-bar i { background: linear-gradient(90deg, var(--gold), #ffe08a); }
+  /* Balance meter on Ranked home / Profile: dark track, gold fill */
+  .profile-bar { background: rgba(255, 255, 255, 0.1); }
+  .profile-bar i { background: linear-gradient(90deg, var(--gold), #ffe08a); }
+
+  /* Profile laid out like the mock: centered badge, stats grid, climb row */
+  .pf-hero { display: flex; flex-direction: column; align-items: center; gap: 8px; text-align: center; }
+  .pf-badge { width: 92px; height: 92px; object-fit: contain; filter: drop-shadow(0 6px 16px rgba(0, 0, 0, 0.45)) drop-shadow(0 0 14px rgba(244, 189, 56, 0.22)); }
+  .pf-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; }
+  .pf-stat { padding: 14px; border-radius: var(--r-sm); text-align: center; background: var(--glass-surface-sub); border: 1px solid var(--glass-border); }
+  .pf-stat b { display: block; font-size: 24px; font-weight: 900; }
+  .pf-stat small { font-size: 11px; color: var(--muted); }
+  .pf-climb { padding: 14px; border-radius: var(--r-md); background: var(--glass-surface-sub); border: 1px solid var(--glass-border); }
+  .pf-badges { display: flex; justify-content: space-between; gap: 8px; margin-top: 9px; }
+  .pf-badges img { width: 46px; height: 46px; object-fit: contain; filter: drop-shadow(0 3px 7px rgba(0, 0, 0, 0.4)); }
+  .pf-badges img.off { opacity: 0.32; filter: grayscale(1); }
+  .belts .belt { border: 1px solid rgba(255, 255, 255, 0.18); box-shadow: inset 0 0 0 100px rgba(255, 255, 255, 0.04); }
+
+  /* Leaderboard — 3D-style podium (match the mock) */
+  .podium { display: flex; align-items: flex-end; justify-content: center; gap: 8px; margin: 6px 0 12px; }
+  .pslot { display: flex; flex-direction: column; align-items: center; gap: 5px; width: 33%; max-width: 112px; }
+  .pcrown { font-size: 16px; color: var(--gold); line-height: 1; }
+  .pdisc { width: 46px; height: 46px; border-radius: 50%; display: grid; place-items: center; font-weight: 900; font-size: 18px; color: var(--ink); background: var(--glass-surface-sub); border: 2px solid var(--glass-border); }
+  .pslot.p1 .pdisc { width: 56px; height: 56px; border-color: var(--gold); box-shadow: 0 0 18px rgba(244, 189, 56, 0.5); }
+  .pslot-you .pdisc { border-color: var(--gold); }
+  .pname { font-size: 11px; font-weight: 800; }
+  .ppts { font-size: 10.5px; color: var(--gold); font-weight: 800; }
+  .ppillar { width: 100%; border-radius: 12px 12px 0 0; display: grid; place-items: center; font-weight: 900; font-size: 22px; color: var(--ink); background: linear-gradient(180deg, rgba(244, 189, 56, 0.22), var(--glass-surface-sub)); border: 1px solid var(--glass-border-subtle); border-bottom: 0; }
+  .pslot.p1 .ppillar { height: 86px; } .pslot.p2 .ppillar { height: 66px; } .pslot.p3 .ppillar { height: 54px; }
+
+  /* Entry / login — single card like the mock. The panel gets a dark rgba
+     scrim (still translucent) so the twilight reads dark, not washed by orbs. */
+  #auth-panel { background: rgba(13, 8, 5, 0.86); }
+  .auth-screen { align-items: center; text-align: center; }
+  .auth-screen .brandmark { width: 64px; height: 64px; border-radius: 20px; display: grid; place-items: center; font: 900 26px/1 Arial, Helvetica, sans-serif; color: #2a1c10; background: linear-gradient(135deg, var(--gold), #d89115); box-shadow: 0 10px 26px -6px rgba(244, 189, 56, 0.55); }
+  .auth-title { font-size: 26px; font-weight: 900; margin: 0; letter-spacing: -0.03em; }
+  .auth-sub { margin: 4px 0 0; color: var(--muted); font-size: 14px; }
+  .auth-head { margin: 0; }
+  #auth-panel .auth-card { text-align: left; width: 100%; }
+  #auth-panel .auth-card .auth-eyebrow { color: var(--gold); }
+  .auth-note { margin: 2px 0 0; color: var(--muted); font-size: 12.5px; text-align: center; }
+  .auth-link { background: transparent; border: 0; color: var(--gold); font-weight: 800; font-size: 13px; width: 100%; padding: 4px; cursor: pointer; }
+
+  /* The app screen is an opaque dark panel (like the mock's phone screen), so
+     the UI reads crisp and dark; the ambient orbs stay behind it and only peek
+     at the edges on wide screens. */
+  #app { background: radial-gradient(120% 80% at 50% 0%, #2e1d12 0%, #140d08 68%); border: 0; box-shadow: 0 16px 70px rgba(0,0,0,0.5); backdrop-filter: none; -webkit-backdrop-filter: none; }
+  .orb-gold { opacity: 0.30; }
+  .orb-amber { opacity: 0.24; }
+  .orb-blue { opacity: 0.2; }
+
+  /* Leaderboard rows: keep tied/hat/you rows on dark glass, gold accents */
+  .board li.board-tied, .board li.board-hat { background: var(--glass-surface-sub); border-color: rgba(244, 189, 56, 0.4); }
+  .board li.board-hat .board-place { color: var(--gold); }
+  .board li.board-you { border: 2px solid var(--gold); }
+
+  /* ============================================================
+     Redesign v2 — static dock spacing, Home identity block,
+     theme toggle, and the Day (light) theme.
+     ============================================================ */
+
+  /* Content clears the static bottom dock (60px + safe area). */
+  .lab-main { padding-bottom: calc(76px + env(safe-area-inset-bottom)); }
+  #app.quiz-page { padding-bottom: calc(80px + env(safe-area-inset-bottom)); }
+
+  /* Theme toggle button in the header (sun/moon), matching the glass language
+     buttons. */
+  .lab-top-actions { display: flex; align-items: center; gap: 7px; }
+  .lab-theme-btn { background: var(--glass-surface-sub); border: 1px solid var(--glass-border); color: var(--gold); border-radius: var(--r-sm); padding: 8px 11px; font-size: 16px; line-height: 1; cursor: pointer; backdrop-filter: var(--blur-md); -webkit-backdrop-filter: var(--blur-md); }
+
+  /* Home identity block (below the banner) — badge + name + points when signed
+     in; a dashed "sign in to compete" invite for guests. */
+  .home-ident { display: flex; align-items: center; gap: 11px; background: var(--glass-surface-sub); border: 1px solid var(--glass-border); border-radius: var(--r-sm); padding: 11px 13px; }
+  .home-ident img { width: 44px; height: 44px; object-fit: contain; flex: none; }
+  .home-ident .home-ident-name { font-weight: 800; font-size: 15px; }
+  .home-ident .home-ident-sub { font-size: 12px; color: var(--muted); margin-top: 1px; }
+  .home-ident .home-ident-pts { margin-left: auto; text-align: right; }
+  .home-ident .home-ident-pts b { font-size: 16px; color: var(--gold); display: block; }
+  .home-ident .home-ident-pts span { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; }
+  .home-invite { display: flex; align-items: center; gap: 11px; background: var(--glass-surface-sub); border: 1px dashed var(--gold); border-radius: var(--r-sm); padding: 12px 13px; width: 100%; text-align: left; color: var(--ink); }
+  .home-ident .home-ident-name, .home-ident .home-ident-sub,
+  .home-invite .home-ident-name, .home-invite .home-ident-sub { display: block; }
+  .home-invite .home-invite-ic { width: 38px; height: 38px; border-radius: 11px; background: var(--soft); display: grid; place-items: center; font-size: 18px; flex: none; }
+  .home-invite .home-ident-name { font-weight: 800; font-size: 14px; }
+  .home-invite .home-ident-sub { font-size: 11.5px; color: var(--muted); margin-top: 1px; }
+  .home-invite .home-invite-go { margin-left: auto; font-size: 12px; font-weight: 800; color: var(--gold); white-space: nowrap; }
+
+  /* ===== DAY (light) THEME — overrides tokens, plus the few hard-coded
+     surfaces the twilight port set directly. Night stays the default. ===== */
+  html[data-theme="day"] {
+    --bg: #fbf4e8; --panel: #fffaf2; --sunk: #f1e4d1;
+    --ink: #2b1c10; --muted: #7a6650; --line: rgba(120, 90, 50, 0.18);
+    --accent: #f3e7d3; --accent-ink: #2b1c10;
+    --gold: #c98a10; --gold-line: #a9740d;
+    --soft: rgba(201, 138, 16, 0.14); --soft-line: rgba(201, 138, 16, 0.32);
+    --good: #2f9e6b; --bad: #c9524a;
+    --glass-surface: rgba(255, 255, 255, 0.74); --glass-surface-sub: rgba(255, 252, 246, 0.92);
+    --glass-border: rgba(120, 90, 50, 0.18); --glass-border-subtle: rgba(120, 90, 50, 0.1);
+    --glass-highlight: rgba(255, 255, 255, 0.6);
+    --glass-shadow: 0 16px 40px -8px rgba(90, 60, 25, 0.18), 0 4px 12px rgba(90, 60, 25, 0.08);
+    --dock-bg: rgba(255, 250, 242, 0.92);
+  }
+  html[data-theme="day"] body { background: radial-gradient(130% 90% at 50% -10%, #fef8ee 0%, #f4e7d3 52%, #ecdcc4 100%) fixed; }
+  html[data-theme="day"] #app { background: radial-gradient(120% 80% at 50% 0%, #fffaf2 0%, #f3e6d2 68%); box-shadow: 0 16px 60px rgba(120, 90, 40, 0.18); }
+  html[data-theme="day"] .orb-gold { opacity: 0.12; }
+  html[data-theme="day"] .orb-amber { opacity: 0.1; }
+  html[data-theme="day"] .orb-blue { opacity: 0.08; }
+  /* Hard-coded card surfaces from the port → light for day */
+  html[data-theme="day"] .lab-change, html[data-theme="day"] .lab-choice,
+  html[data-theme="day"] .auth-card, html[data-theme="day"] .quiz-card,
+  html[data-theme="day"] .rq-cmp, html[data-theme="day"] .sum,
+  html[data-theme="day"] .profile-balance, html[data-theme="day"] .board li,
+  html[data-theme="day"] .reauth-card, html[data-theme="day"] .owner-form,
+  html[data-theme="day"] .cases li, html[data-theme="day"] .approved li {
+    background: rgba(255, 252, 246, 0.92);
+    border: 1px solid rgba(120, 90, 50, 0.16);
+    box-shadow: 0 16px 36px -16px rgba(90, 60, 25, 0.22), inset 0 1px 0 rgba(255, 255, 255, 0.6);
+  }
+  html[data-theme="day"] .rq-ring span { background: var(--sunk); }
+  html[data-theme="day"] .tb-bar, html[data-theme="day"] .profile-bar { background: rgba(120, 90, 50, 0.16); }
+  html[data-theme="day"] .lab-campaign img { border-color: rgba(120, 90, 50, 0.14); }
+  html[data-theme="day"] .belts .belt { border-color: rgba(120, 90, 50, 0.18); box-shadow: inset 0 0 0 100px rgba(255, 255, 255, 0.04); }
+  html[data-theme="day"] #auth-panel { background: rgba(255, 250, 242, 0.9); }
+  html[data-theme="day"] .lab-choice-icon, html[data-theme="day"] .lab-choice-quiz .lab-choice-icon { background: rgba(201, 138, 16, 0.16); border-color: rgba(201, 138, 16, 0.34); color: var(--gold); }
+
+  /* ============================================================
+     Redesign v3 — the quiz avatar is gone (the prompt and belts use
+     the space), Profile actions moved, and a refinement pass.
+     ============================================================ */
+
+  /* Small labels were dark-on-dark / cream-on-cream; gold reads in both themes */
+  .lab-eyebrow { color: var(--gold); font-size: 11px; font-weight: 900; letter-spacing: .16em; }
+
+  /* Header: equal-sized controls, and a row under them for the site line
+     (+ Settings on the Profile screen) */
+  .lab-top { padding: 18px 20px 12px; gap: 8px; }
+  .lab-language { gap: 6px; }
+  .lab-language button, .lab-theme-btn { width: 44px; min-height: 44px; border-radius: 13px; }
+  .lab-theme-btn { padding: 0; display: grid; place-items: center; }
+  .lab-site-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+  .lab-site-row .lab-site { margin-left: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 10.5px; letter-spacing: .08em; }
+  .lab-settings-btn { flex: none; display: inline-flex; align-items: center; gap: 6px; padding: 7px 13px; border-radius: 999px; background: var(--glass-surface-sub); border: 1px solid var(--glass-border); color: var(--ink); font-size: 12px; font-weight: 800; white-space: nowrap; }
+  .lab-settings-btn span { color: var(--gold); font-size: 14px; line-height: 1; }
+
+  /* Ranked question: the route is the hero now */
+  .tb-top { align-items: center; }
+  .tb-bar { height: 6px; margin: 8px 0 12px; }
+  .rq-stake { margin: 0; font-size: 12px; }
+  .rq-prompt { margin: clamp(10px, 2.4dvh, 28px) 0 clamp(8px, 2dvh, 22px); }
+  .rq-service { margin: 0; font-size: clamp(13px, 2dvh, 16px); font-weight: 800; letter-spacing: .14em; }
+  .rq-code { margin: 8px 0 0; font: 900 clamp(60px, 12dvh, 92px)/1 Nunito, "Trebuchet MS", sans-serif; letter-spacing: -.03em; font-variant-numeric: tabular-nums; }
+  #rq-question .lab-study-meta { margin: 0; text-align: center; letter-spacing: .14em; font-weight: 800; }
+  .belts { gap: 10px; margin: 10px 0; }
+  .belts .belt { min-height: clamp(66px, 10.5dvh, 100px); border-radius: 16px; letter-spacing: .06em; box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.22), 0 10px 20px -12px rgba(0, 0, 0, 0.6); }
+  .belts .belt:active { transform: scale(.97); }
+
+  /* Ranked feedback: a verdict mark where the avatar used to be */
+  .rq-mark { width: 56px; height: 56px; margin: 4px auto 0; border-radius: 50%; display: grid; place-items: center; font-size: 26px; font-weight: 900; line-height: 1; }
+  .rq-mark.good { color: var(--good); background: rgba(108, 211, 154, 0.14); border: 1px solid rgba(108, 211, 154, 0.45); }
+  .rq-mark.bad { color: var(--bad); background: rgba(240, 138, 138, 0.14); border: 1px solid rgba(240, 138, 138, 0.45); }
+  .rq-verdict, .rq-worth { text-align: center; }
+  .rq-worth { margin: 0 0 4px; }
+  .rq-verdict { font-size: clamp(26px, 7vw, 32px); }
+  /* On feedback the route is a reminder, not the hero: keep Continue in view */
+  .rq-mark ~ .rq-prompt { margin: 4px 0 2px; }
+  .rq-mark ~ .rq-prompt .rq-code { margin-top: 4px; font-size: clamp(38px, 7dvh, 56px); }
+  .rq-mark ~ .rq-why { margin: 2px 0 4px; }
+
+  /* Practice quiz: same idea — bigger route, no avatar */
+  .quiz-route { margin: clamp(8px, 2.4dvh, 22px) 0; }
+  .quiz-route .p-code { font-size: clamp(48px, min(12.5dvh, 19vw), 92px); }
+  .quiz-actions .stopbtn { background: var(--glass-surface-sub); border: 1px solid var(--glass-border); color: var(--ink); font-weight: 800; }
+  .quiz-timer { border-color: var(--gold); background: var(--sunk); color: var(--ink); }
+  .quiz-cue { text-align: center; letter-spacing: .14em; color: var(--muted); }
+
+  /* Profile: even rhythm, stats read as figures, history centred under the climb */
+  #profile-panel { display: flex; flex-direction: column; gap: 12px; }
+  .pf-stat { padding: 16px 12px; }
+  .pf-stat b { font-size: 26px; letter-spacing: -.02em; font-variant-numeric: tabular-nums; }
+  .pf-stat small { display: block; margin-top: 3px; font-size: 10px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; }
+  .pf-climb { padding: 14px 16px 16px; }
+  .pf-history { align-self: center; min-width: 62%; padding: 13px 28px; border-radius: 999px; }
+
+  /* Home: the notice, shift log and disclaimer follow the theme */
+  .lab-launch { margin-top: 0; border-radius: var(--r-sm); background: var(--soft); border-color: var(--soft-line); }
+  .lab-launch i { background: var(--gold); color: #2a1c10; }
+  .lab-launch p { color: var(--muted); }
+  .lab-log-link { color: var(--ink); padding: 12px 4px; }
+  .lab-log-link span:last-child { color: var(--gold); }
+  .lab-disclaimer { background: transparent; border: 1px solid var(--glass-border-subtle); border-radius: var(--r-sm); color: var(--muted); font-size: 11.5px; }
+  .lab-disclaimer strong { color: var(--ink); }
+
+  /* Dock: the active pill sits inside the bar instead of spilling over it */
+  .lab-nav { height: calc(62px + env(safe-area-inset-bottom)) !important; padding: 0 10px env(safe-area-inset-bottom) !important; gap: 4px !important; }
+  .lab-nav button { min-height: 0 !important; height: 46px; padding: 0 !important; border-radius: 15px !important; font-size: 11px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; }
+  .lab-nav i { margin: 0; font-size: 17px; line-height: 1; }
+  .lab-nav button[aria-current="page"] { box-shadow: 0 6px 16px -6px rgba(244, 189, 56, 0.6) !important; }
+
+  html[data-theme="day"] .rq-mark.good { background: rgba(47, 158, 107, 0.12); border-color: rgba(47, 158, 107, 0.4); }
+  html[data-theme="day"] .rq-mark.bad { background: rgba(201, 82, 74, 0.1); border-color: rgba(201, 82, 74, 0.4); }
+  html[data-theme="day"] .belts .belt { box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.28), 0 10px 18px -12px rgba(90, 60, 25, 0.5); }
+
 </style>
 </head>
 <body>
 
+
+<div class="ambient-canvas" aria-hidden="true">
+  <div class="orb orb-gold"></div>
+  <div class="orb orb-amber"></div>
+  <div class="orb orb-blue"></div>
+</div>
+<div id="auth-panel" hidden></div>
 <main id="app"></main>
-<script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js" integrity="sha384-EnyY0/GSHQGSxSgMwaIPzSESbqoOLSexfnSMN2AP+39Ckmn92stwABZynq1JyzdT" crossorigin="anonymous"></script>
-<script type="module" src="src/app.js?v=sort-change-20261116-r1"></script>
+<script type="module" src="src/app.js?v=readcache-20261121"></script>
+<script type="module" src="src/auth.js?v=lazyxlsx-20261121"></script>
 </body>
 </html>

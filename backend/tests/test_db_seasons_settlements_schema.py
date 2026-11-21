@@ -20,8 +20,7 @@ class SeasonsSettlementsSchemaTests(unittest.TestCase):
         try:
             cls.conninfo = settings.test_database_url()
             cls.admin = settings.admin_url()
-            migrate.recreate_scratch_database(cls.admin, settings.SCRATCH_DB_NAME)
-            migrate.upgrade_to_head(cls.conninfo)
+            migrate.reset_scratch_to_head(cls.admin, settings.SCRATCH_DB_NAME)
         except settings.DatabaseConfigError as exc:
             raise unittest.SkipTest(str(exc)) from None
 
@@ -108,10 +107,10 @@ class SeasonsSettlementsSchemaTests(unittest.TestCase):
                          adjustment=0, final_outcome="quit"):
         row = migrate.fetch_one(
             self.conn,
-            "INSERT INTO settlements (attempt_id, season_id, raw_score,"
+            "INSERT INTO settlements (attempt_id, account_id, season_id, raw_score,"
             " adjustment, final_outcome)"
-            " VALUES (%s, %s, %s, %s, %s) RETURNING attempt_id",
-            (attempt_id, season_id or self.season_id, raw_score, adjustment,
+            " VALUES (%s, (SELECT account_id FROM attempts WHERE id = %s), %s, %s, %s, %s) RETURNING attempt_id",
+            (attempt_id, attempt_id, season_id or self.season_id, raw_score, adjustment,
              final_outcome),
         )
         return row["attempt_id"]

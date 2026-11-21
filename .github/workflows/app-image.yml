@@ -1,0 +1,214 @@
+name: App image
+
+# Builds the production image (infra/azure/app.Dockerfile) and checks it
+# end to end against a throwaway PostgreSQL. Nothing is published here.
+on:
+  pull_request:
+  push:
+    branches: [main, codex/ranked-mode]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  app-image:
+    name: Build and test the app image
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    services:
+      postgres:
+        # Pinned by digest, not by tag (audit M-9). `18-alpine` is a moving
+        # name: the same workflow file can run different database code on
+        # different days, which is how a test starts failing with no commit
+        # to explain it. Dependabot's github-actions ecosystem does not
+        # update a service image, so this moves when someone moves it --
+        # read `docker manifest inspect postgres:18-alpine` to get the next.
+        image: postgres@sha256:b6972e1115a4ff8eba5d7f7d19184926d1e16d7d1136ae1e1a7ebf286da0f015
+        env:
+          POSTGRES_USER: ci
+          POSTGRES_PASSWORD: ci-only-password
+          POSTGRES_DB: sort_tester_ci_app
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U ci -d sort_tester_ci_app"
+          --health-interval 2s --health-timeout 5s --health-retries 30
+    env:
+      IMAGE: sort-tester-live-app:ci
+      DB_URL: postgresql://ci:ci-only-password@127.0.0.1:5432/sort_tester_ci_app
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Build the image from the repository root
+        run: docker build --file infra/azure/app.Dockerfile --tag "$IMAGE" .
+
+      - name: Runs as UID 10001 and cannot change its own files
+        run: |
+          uid=$(docker run --rm --entrypoint id "$IMAGE" -u)
+          if [ "$uid" != "10001" ]; then echo "Expected UID 10001, got $uid"; exit 1; fi
+          if docker run --rm --entrypoint sh "$IMAGE" -c 'touch /app/backend/main.py' 2>/dev/null; then
+            echo "The app user can modify /app/backend/main.py"; exit 1
+          fi
+
+      - name: Needed files are present, sensitive ones are absent
+        run: |
+          docker run --rm --entrypoint sh "$IMAGE" -c '
+            missing=0
+            for path in /app/index.html /app/src/app.js /app/src/auth.js /app/assets/nunito-variable.ttf \
+                        /app/backend/main.py /app/backend/data/ranked/manifest.json \
+                        /app/backend/migrations/env.py /app/backend/migrations.ini /app/backend/db/upgrade_app.py; do
+              [ -e "$path" ] || { echo "Missing in image: $path"; missing=1; }
+            done
+            for path in /app/.git /app/.github /app/backend/tests /app/backend/.venv /app/tests /app/dev \
+                        /app/docs /app/infra /app/mockups /app/tools /app/README.md /tmp/requirements.txt \
+                        /app/backend/requirements.txt; do
+              [ -e "$path" ] && { echo "Unexpected in image: $path"; missing=1; }
+            done
+            found=$(find /app \( -name ".env" -o -name ".env.*" -o -name "*.pem" -o -name "*.key" -o -name "__pycache__" \) -print)
+            [ -z "$found" ] || { echo "Unexpected files: $found"; missing=1; }
+            exit $missing'
+
+      - name: Migrate the throwaway database with the guarded command
+        run: |
+          docker run --rm --network host -e SORT_TESTER_DATABASE_URL="$DB_URL" "$IMAGE" \
+            python -m backend.db.upgrade_app \
+              --confirm sort_tester_ci_app@127.0.0.1:5432 | tee /tmp/migrate.txt
+          grep -q "Revision after: " /tmp/migrate.txt
+          if grep -q "ci-only-password" /tmp/migrate.txt; then echo "Password printed"; exit 1; fi
+
+      - name: Smoke-test the running app
+        run: |
+          container=$(docker run -d --rm --network host -e SORT_TESTER_DATABASE_URL="$DB_URL" "$IMAGE")
+          trap 'docker stop "$container" >/dev/null 2>&1 || true' EXIT
+          base=http://127.0.0.1:8000
+          for attempt in $(seq 1 30); do
+            curl -fsS "$base/health" >/tmp/health.json 2>/dev/null && break
+            docker ps --quiet --filter "id=$container" | grep -q . || { echo 'Container exited'; docker logs "$container"; exit 1; }
+            sleep 1
+          done
+          [ "$(cat /tmp/health.json)" = '{"status":"ok"}' ] || { echo "Bad /health: $(cat /tmp/health.json)"; exit 1; }
+
+          expect() { # expect <path> <status>
+            code=$(curl -s --path-as-is -o /dev/null -w '%{http_code}' "$base$1")
+            [ "$code" = "$2" ] || { echo "$1: expected $2, got $code"; docker logs "$container"; exit 1; }
+            echo "$1 -> $code"
+          }
+          expect / 200
+          expect /src/app.js 200
+          expect /assets/home-podium.jpg 200
+          expect /backend/main.py 404
+          expect /.git/config 404
+          expect /src/../backend/main.py 404
+          expect /src/%2e%2e/backend/main.py 404
+          curl -s "$base/" | grep -q 'src="src/app.js' || { echo "/ is not the app page"; exit 1; }
+
+          # The generated API docs are closed, and every answer is hardened.
+          expect /docs 404
+          expect /redoc 404
+          expect /openapi.json 404
+          curl -s -D /tmp/page-headers.txt -o /dev/null "$base/"
+          for header in strict-transport-security x-content-type-options x-frame-options \
+                        referrer-policy content-security-policy; do
+            grep -qi "^$header:" /tmp/page-headers.txt || { echo "Missing header: $header"; cat /tmp/page-headers.txt; exit 1; }
+          done
+          if grep -qi '^server: *uvicorn' /tmp/page-headers.txt; then echo 'Server software is advertised'; exit 1; fi
+          code=$(head -c 200000 /dev/zero | tr '\0' 'a' | curl -s -o /dev/null -w '%{http_code}' -X POST "$base/api/auth/register" \
+            -H "Origin: $base" -H 'Content-Type: application/json' --data-binary @-)
+          [ "$code" = 413 ] || { echo "oversized body: expected 413, got $code"; exit 1; }
+
+          jar=$(mktemp)
+          # Writes must state their origin, exactly as a browser does.
+          same_origin="Origin: http://127.0.0.1:8000"
+          code=$(curl -s -c "$jar" -o /tmp/register.json -w '%{http_code}' -X POST "$base/api/auth/register" \
+            -H "$same_origin" -H 'Content-Type: application/json' -d '{"username":"ci_check"}')
+          [ "$code" = 200 ] || { echo "register: $code $(cat /tmp/register.json)"; docker logs "$container"; exit 1; }
+          login_id=$(python3 -c 'import json; print(json.load(open("/tmp/register.json"))["login_id"])')
+          code=$(curl -s -c "$jar" -o /dev/null -w '%{http_code}' -X POST "$base/api/auth/login" \
+            -H "$same_origin" -H 'Content-Type: application/json' -d "{\"login_id\":\"$login_id\"}")
+          [ "$code" = 200 ] || { echo "login: $code"; exit 1; }
+          curl -fsS -b "$jar" "$base/api/auth/me" | grep -q '"username":"ci_check"' || { echo "me failed"; exit 1; }
+
+          # A write from another site, carrying the same session cookie, is refused.
+          code=$(curl -s -b "$jar" -o /dev/null -w '%{http_code}' -X POST "$base/api/auth/logout" \
+            -H 'Origin: https://evil.example')
+          [ "$code" = 403 ] || { echo "cross-site logout: expected 403, got $code"; exit 1; }
+          curl -fsS -b "$jar" "$base/api/auth/me" | grep -q '"username":"ci_check"' \
+            || { echo "the rejected cross-site write ended the session"; exit 1; }
+          echo 'App image passed smoke tests'
+
+      - name: The hosted configuration behaves as the runbook says
+        # Exactly the environment infra/azure/container-apps-app.bicep sets,
+        # so the deployment runbook's checks are proved before anyone deploys.
+        run: |
+          container=$(docker run -d --rm --network host \
+            -e SORT_TESTER_DATABASE_URL="$DB_URL" \
+            -e SORT_TESTER_COOKIE_SECURE=true \
+            -e SORT_TESTER_APP_ORIGIN=https://sortlab.example.com "$IMAGE")
+          trap 'docker stop "$container" >/dev/null 2>&1 || true' EXIT
+          base=http://127.0.0.1:8000
+          public=https://sortlab.example.com
+          for attempt in $(seq 1 30); do
+            curl -fsS "$base/health" >/dev/null 2>&1 && break
+            docker ps --quiet --filter "id=$container" | grep -q . || { echo 'Container exited'; docker logs "$container"; exit 1; }
+            sleep 1
+          done
+
+          curl -fsS -o /tmp/hosted.json -X POST "$base/api/auth/register" \
+            -H "Origin: $public" -H 'Content-Type: application/json' -d '{"username":"hosted_check"}'
+          login_id=$(python3 -c 'import json; print(json.load(open("/tmp/hosted.json"))["login_id"])')
+          curl -si -X POST "$base/api/auth/login" -H "Origin: $public" \
+            -H 'Content-Type: application/json' -d "{\"login_id\":\"$login_id\"}" >/tmp/hosted-login.txt
+          cookie=$(grep -i '^set-cookie:' /tmp/hosted-login.txt || true)
+          [ -n "$cookie" ] || { echo 'Login set no cookie'; cat /tmp/hosted-login.txt; exit 1; }
+          for flag in Secure HttpOnly SameSite; do
+            echo "$cookie" | grep -qi "$flag" || { echo "Session cookie is missing $flag"; exit 1; }
+          done
+          echo 'Session cookie carries Secure, HttpOnly and SameSite'
+
+          # With a public origin configured, the ingress host alone is not enough.
+          code=$(curl -s -o /dev/null -w '%{http_code}' -X POST "$base/api/auth/login" \
+            -H 'Origin: https://evil.example' -H 'Content-Type: application/json' \
+            -d "{\"login_id\":\"$login_id\"}")
+          [ "$code" = 403 ] || { echo "cross-site login: expected 403, got $code"; exit 1; }
+          echo 'Hosted configuration passed'
+
+      - name: The image holds only the runtime packages, and no installer
+        run: |
+          docker run --rm --entrypoint python "$IMAGE" - <<'PY'
+          import sys
+          from importlib.metadata import distributions
+          installed = sorted({d.metadata["Name"].lower().replace("_", "-") for d in distributions()})
+          print(len(installed), "packages:", " ".join(installed))
+          unwanted = [n for n in installed if n in {
+              "pip", "setuptools", "wheel", "sentry-sdk", "requests", "httpx", "msgpack",
+              "urllib3", "fastapi-cli", "fastapi-cloud-cli", "opentelemetry-sdk", "watchfiles"}]
+          if unwanted:
+              print("Unwanted packages in the image:", unwanted); sys.exit(1)
+          if len(installed) > 30:
+              print("More packages than the runtime list allows"); sys.exit(1)
+          PY
+          if docker run --rm --entrypoint python "$IMAGE" -m pip --version 2>/dev/null; then
+            echo 'pip is still runnable in the image'; exit 1
+          fi
+          docker run --rm --entrypoint sh "$IMAGE" -c '
+            hits=$(find / -xdev \( -path "*/_vendor/*" -o -name "pip" -o -name "pip-*" \) -print 2>/dev/null | grep -v "^/proc" | head -5)
+            [ -z "$hits" ] || { echo "Bundled copies or pip left behind: $hits"; exit 1; }
+            echo "No pip and no vendored library copies in the image"'
+
+      - name: Vulnerability scan (blocking)
+        # With pip and the unused packages gone, the image scanned clean of
+        # HIGH and CRITICAL findings, so a new one now fails the build.
+        run: |
+          set -o pipefail  # without it, tee would hide a failing scan
+          # Digest-pinned (audit M-9): this container is handed the Docker
+          # socket, so whatever `0.76.2` resolves to runs with control of
+          # the daemon. The tag is kept in the comment because the digest
+          # alone says nothing about which version it is: 0.76.2.
+          docker run --rm -v /var/run/docker.sock:/var/run/docker.sock \
+            aquasec/trivy@sha256:8f6bb947dbc528902e11f2f5be52f7b519f6a39d5d148f41166f2040499768fb \
+            image --no-progress --severity HIGH,CRITICAL --exit-code 1 "$IMAGE" | tee /tmp/trivy.txt
+          { echo '### Trivy (HIGH/CRITICAL, blocking)'; echo '```'; tail -n 40 /tmp/trivy.txt; echo '```'; } >> "$GITHUB_STEP_SUMMARY"

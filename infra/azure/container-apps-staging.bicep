@@ -17,10 +17,10 @@ param expiresOn string
 param imageSha256 string = '2efc496c42d6302260ce297b228581511bc73ec0a181671644170cf3255638cf'
 
 var stagingTags = {
-  'project': 'sort-tester-live'
-  'environment': 'staging'
+  project: 'sort-tester-live'
+  environment: 'staging'
   'data-classification': 'fictional-only'
-  'purpose': 'api-only-container-apps-staging'
+  purpose: 'api-only-container-apps-staging'
   'expires-on': expiresOn
 }
 

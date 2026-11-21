@@ -1112,7 +1112,6 @@
       <!-- Live Mascot Reaction Area -->
       <div class="avatar-reaction-stage">
         <div class="reaction-bubble" id="avatar-reaction-bubble">BOM TRABALHO!</div>
-        <img id="mascot-img" src="../assets/avatar-thinking.jpg" alt="Mascote" class="avatar-interactive-img">
       </div>
 
       <!-- Question Glass Card (Ranked Item) -->
@@ -1160,7 +1159,7 @@
     <div id="screen-ranked" class="screen-pane">
       <div class="mobile-header">
         <div class="user-pill">
-          <img src="../assets/avatar-idle.jpg" alt="Avatar" class="avatar-mini">
+          <span class="avatar-mini" style="display:inline-block;background:rgba(244,189,56,.2)" aria-hidden="true"></span>
           <div class="user-pill-info">
             <div class="user-pill-name">Alex Dev</div>
             <div class="user-pill-belt">Gold Belt · #4</div>
@@ -1180,7 +1179,7 @@
         <!-- 2nd Place -->
         <div class="podium-slot slot-2">
           <div class="podium-avatar-wrap">
-            <img src="../assets/avatar-thinking.jpg" alt="2nd" class="podium-avatar">
+            <span class="podium-avatar" style="display:inline-block;background:rgba(244,189,56,.2)" aria-hidden="true"></span>
             <div class="podium-rank-badge">2</div>
           </div>
           <div class="podium-pillar">
@@ -1193,7 +1192,7 @@
         <div class="podium-slot slot-1">
           <span class="crown-icon">👑</span>
           <div class="podium-avatar-wrap">
-            <img src="../assets/avatar-correct.jpg" alt="1st" class="podium-avatar">
+            <span class="podium-avatar" style="display:inline-block;background:rgba(244,189,56,.2)" aria-hidden="true"></span>
             <div class="podium-rank-badge">1</div>
           </div>
           <div class="podium-pillar">
@@ -1205,7 +1204,7 @@
         <!-- 3rd Place -->
         <div class="podium-slot slot-3">
           <div class="podium-avatar-wrap">
-            <img src="../assets/avatar-incorrect.jpg" alt="3rd" class="podium-avatar">
+            <span class="podium-avatar" style="display:inline-block;background:rgba(244,189,56,.2)" aria-hidden="true"></span>
             <div class="podium-rank-badge">3</div>
           </div>
           <div class="podium-pillar">
@@ -1219,7 +1218,7 @@
       <div class="ranked-list">
         <div class="ranked-item current-user">
           <span class="rank-num">4</span>
-          <img src="../assets/avatar-idle.jpg" alt="Alex Dev" class="rank-user-avatar">
+          <span class="rank-user-avatar" style="display:inline-block;background:rgba(244,189,56,.2)" aria-hidden="true"></span>
           <div class="rank-user-info">
             <span class="rank-user-name">Alex Dev (Você)</span>
             <span class="belt-tag" style="background:#8a6400; color:#fff">Gold Belt</span>
@@ -1229,7 +1228,7 @@
 
         <div class="ranked-item">
           <span class="rank-num">5</span>
-          <img src="../assets/avatar-thinking.jpg" alt="Elena" class="rank-user-avatar">
+          <span class="rank-user-avatar" style="display:inline-block;background:rgba(244,189,56,.2)" aria-hidden="true"></span>
           <div class="rank-user-info">
             <span class="rank-user-name">Elena Costa</span>
             <span class="belt-tag" style="background:#1f4e9c; color:#fff">Blue Belt</span>
@@ -1239,7 +1238,7 @@
 
         <div class="ranked-item">
           <span class="rank-num">6</span>
-          <img src="../assets/avatar-idle.jpg" alt="Marcos" class="rank-user-avatar">
+          <span class="rank-user-avatar" style="display:inline-block;background:rgba(244,189,56,.2)" aria-hidden="true"></span>
           <div class="rank-user-info">
             <span class="rank-user-name">Marcos Vinicius</span>
             <span class="belt-tag" style="background:#1e6b3a; color:#fff">Green Belt</span>
@@ -1265,7 +1264,7 @@
 
       <div class="profile-hero">
         <div class="profile-avatar-large-wrap">
-          <img src="../assets/avatar-idle.jpg" alt="Alex Dev" class="profile-avatar-large">
+          <span class="profile-avatar-large" style="display:inline-block;background:rgba(244,189,56,.2)" aria-hidden="true"></span>
           <div class="profile-belt-badge">GOLD BELT</div>
         </div>
         <h2 class="profile-name">Alexandre Silva</h2>
@@ -1524,7 +1523,7 @@
       if (answered) return;
       answered = true;
 
-      const mascot = document.getElementById('mascot-img');
+      const mascot = { style: {} };
       const bubble = document.getElementById('avatar-reaction-bubble');
       const banner = document.getElementById('feedback-banner');
       const bannerMsg = document.getElementById('feedback-message');
@@ -1534,7 +1533,6 @@
         // Correct feedback
         btn.classList.add('feedback-correct');
         playCorrectSfx();
-        mascot.src = '../assets/avatar-correct.jpg';
         mascot.style.transform = 'scale(1.12)';
         bubble.textContent = 'EXCELENTE!';
         bubble.classList.add('show');
@@ -1546,7 +1544,6 @@
         // Incorrect feedback
         btn.classList.add('feedback-incorrect');
         playIncorrectSfx();
-        mascot.src = '../assets/avatar-incorrect.jpg';
         mascot.style.transform = 'scale(0.95)';
         bubble.textContent = 'QUASE LÁ!';
         bubble.classList.add('show');
@@ -1569,11 +1566,9 @@
       document.querySelectorAll('.belt-option-btn').forEach(b => {
         b.className = 'belt-option-btn';
       });
-      const mascot = document.getElementById('mascot-img');
+      const mascot = { style: {} };
       const bubble = document.getElementById('avatar-reaction-bubble');
       const banner = document.getElementById('feedback-banner');
-
-      mascot.src = '../assets/avatar-thinking.jpg';
       mascot.style.transform = 'scale(1)';
       bubble.classList.remove('show');
       banner.className = 'feedback-banner';

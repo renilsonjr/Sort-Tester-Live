@@ -14,8 +14,7 @@ class BalanceLedgerTests(unittest.TestCase):
         try:
             cls.conninfo = settings.test_database_url()
             cls.admin = settings.admin_url()
-            migrate.recreate_scratch_database(cls.admin, settings.SCRATCH_DB_NAME)
-            migrate.upgrade_to_head(cls.conninfo)
+            migrate.reset_scratch_to_head(cls.admin, settings.SCRATCH_DB_NAME)
         except settings.DatabaseConfigError as exc:
             raise unittest.SkipTest(str(exc)) from None
 
@@ -100,10 +99,10 @@ class BalanceLedgerTests(unittest.TestCase):
         attempt_id = self._make_attempt(account_id, season_id)
         row = migrate.fetch_one(
             self.conn,
-            "INSERT INTO settlements (attempt_id, season_id, raw_score,"
+            "INSERT INTO settlements (attempt_id, account_id, season_id, raw_score,"
             " adjustment, final_outcome)"
-            " VALUES (%s, %s, %s, %s, %s) RETURNING attempt_id",
-            (attempt_id, season_id or self.season_id, raw_score, adjustment,
+            " VALUES (%s, (SELECT account_id FROM attempts WHERE id = %s), %s, %s, %s, %s) RETURNING attempt_id",
+            (attempt_id, attempt_id, season_id or self.season_id, raw_score, adjustment,
              final_outcome),
         )
         return row["attempt_id"]
@@ -182,3 +181,32 @@ class BalanceLedgerTests(unittest.TestCase):
         self.assertIsNone(
             migrate.fetch_one(self.conn, "SELECT 1 FROM balance_history WHERE settlement_id = %s", (settlement_id,))
         )
+
+    def test_a_balance_outside_the_bounds_is_refused(self):
+        # audit M-3: the columns are smallint, and an out-of-range total used
+        # to be accepted right up to the point where it overflowed and left
+        # the account unable to settle anything ever again
+        import psycopg
+
+        for points in (30001, -30001):
+            with self.subTest(points=points):
+                # a savepoint, so the refusal does not roll back the account
+                # this test needs
+                with self.assertRaises(psycopg.errors.CheckViolation):
+                    with self.conn.transaction():
+                        migrate.execute(
+                            self.conn,
+                            "INSERT INTO balances (account_id, current_points)"
+                            " VALUES (%s, %s)",
+                            (self._make_account(), points),
+                        )
+
+    def test_the_bounds_allow_the_whole_range_the_game_can_reach(self):
+        for points in (30000, -30000, 0):
+            with self.subTest(points=points):
+                migrate.execute(
+                    self.conn,
+                    "INSERT INTO balances (account_id, current_points)"
+                    " VALUES (%s, %s)",
+                    (self._make_account(), points),
+                )

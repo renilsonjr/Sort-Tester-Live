@@ -1,0 +1,395 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Sort Lab · Quiz Ranqueado (Feedback & Efeitos)</title>
+  <link rel="stylesheet" href="quiz-review.css">
+  <style>
+    /* Estilos do efeito de animação integrados ao design library */
+    .answers {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-top: 14px;
+    }
+    .answers button {
+      position: relative;
+      min-height: 54px;
+      border: 0;
+      border-radius: 12px;
+      font-size: 16px;
+      font-weight: 900;
+      letter-spacing: 0.05em;
+      transition: transform 0.15s ease, box-shadow 0.2s ease, filter 0.15s ease;
+      cursor: pointer;
+      user-select: none;
+    }
+    .answers button:hover {
+      filter: brightness(1.08);
+      transform: translateY(-2px);
+    }
+    .answers button:active {
+      transform: scale(0.96);
+    }
+
+    /* Brilho Verde - Correto */
+    .answers button.belt-correct {
+      animation: correctGlow 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+      z-index: 2;
+    }
+
+    /* Brilho Vermelho & Tremor - Incorreto */
+    .answers button.belt-incorrect {
+      animation: incorrectShake 0.5s ease-in-out forwards;
+      z-index: 2;
+    }
+
+    @keyframes correctGlow {
+      0% {
+        box-shadow: 0 0 0 0 rgba(34, 100, 66, 0.9);
+        transform: scale(1);
+      }
+      40% {
+        box-shadow: 0 0 0 6px rgba(34, 100, 66, 0.4), 0 0 28px 8px #226442;
+        transform: scale(1.05);
+        filter: brightness(1.18);
+      }
+      100% {
+        box-shadow: 0 0 0 4px rgba(34, 100, 66, 0.7), 0 0 16px 3px #226442;
+        transform: scale(1.02);
+      }
+    }
+
+    @keyframes incorrectShake {
+      0%, 100% {
+        box-shadow: 0 0 0 0 rgba(161, 45, 45, 0.8);
+        transform: translateX(0);
+      }
+      20%, 60% {
+        box-shadow: 0 0 0 5px rgba(161, 45, 45, 0.4), 0 0 22px 6px #a12d2d;
+        transform: translateX(-6px);
+        filter: brightness(1.15);
+      }
+      40%, 80% {
+        box-shadow: 0 0 0 5px rgba(161, 45, 45, 0.4), 0 0 22px 6px #a12d2d;
+        transform: translateX(6px);
+        filter: brightness(1.15);
+      }
+    }
+
+    /* Som toggle & feedback visual de status */
+    .sound-controls {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 14px;
+      padding: 12px;
+      background: #eee8dd;
+      border-radius: 12px;
+      font-size: 14px;
+      font-weight: 800;
+    }
+    .sound-toggle-btn {
+      margin-left: auto;
+      min-height: 34px;
+      padding: 6px 14px;
+      font-size: 13px;
+      font-weight: 900;
+      border-radius: 8px;
+      background: #f4bd38;
+      border: 1px solid #bd891f;
+      color: #35271e;
+      cursor: pointer;
+    }
+
+    .badge-preview {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11px;
+      background: #f0e9dd;
+      padding: 3px 8px;
+      border-radius: 6px;
+      font-weight: 800;
+      color: #624313;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .answers button.belt-correct {
+        animation: none !important;
+        box-shadow: 0 0 0 4px #226442 !important;
+      }
+      .answers button.belt-incorrect {
+        animation: none !important;
+        box-shadow: 0 0 0 4px #a12d2d !important;
+      }
+    }
+  </style>
+</head>
+<body>
+<header>
+  <a href="index.html#screens">← Biblioteca de Design</a>
+  <div class="eyebrow">Sort Lab · Experiência de Quiz Ranqueado</div>
+  <h1>Feedback com Brilho & Sons Interativos</h1>
+  <p>Padrão oficial da biblioteca de design com as cores reais das esteiras e áudio sintetizado em tempo real.</p>
+</header>
+
+<main>
+  <aside class="review-controls">
+    <h2>Controles do Mockup</h2>
+    <div class="sound-controls">
+      <span>🔊 Efeitos Sonoros</span>
+      <button id="toggle-sound" class="sound-toggle-btn" aria-pressed="true">Ligado</button>
+    </div>
+
+    <div class="sound-controls" style="margin-top: 8px;">
+      <span>🎵 Música de Foco (BGM)</span>
+      <button id="toggle-bgm" class="sound-toggle-btn" aria-pressed="false">▶ Iniciar Música</button>
+    </div>
+
+    <label class="motion">
+      <input type="checkbox" id="still"> Reduzir movimento (prefers-reduced-motion)
+    </label>
+
+    <div class="review-note">
+      <strong>Instruções de Teste:</strong>
+      <p>1. <strong>GOLD</strong> é a esteira correta desta rodada → você verá o <strong>brilho verde</strong> e ouvirá o <strong>arpeggio alegre de acerto</strong>, e o avatar vai comemorar!</p>
+      <p>2. <strong>YELLOW, PINK e ORANGE</strong> são esteiras incorretas → você verá o <strong>brilho vermelho com tremor</strong> e o som suave de erro.</p>
+      <p>3. Clique no botão <strong>"▶ Iniciar Música"</strong> acima para ligar a trilha sonora relaxante de fundo estilo jogo.</p>
+    </div>
+  </aside>
+
+  <section class="phone" aria-label="Prévia do quiz no celular">
+    <div class="phone-header">
+      <strong>Sort Lab</strong>
+      <span class="badge-preview">Ranked Mode · Silver</span>
+      <button id="cancel">Cancel</button>
+    </div>
+
+    <div class="quiz-progress">
+      <span id="step">Question 4 of 15</span>
+      <span class="timer" id="timer" aria-label="15 segundos restantes">15</span>
+    </div>
+
+    <div class="progress" aria-hidden="true">
+      <div id="progress-fill" style="width: 27%;"></div>
+    </div>
+
+
+    <div class="quiz-content" id="quiz-content">
+      <!-- Injetado via script -->
+    </div>
+
+    <div class="phone-footer">Design Library Refined · Ranked Interactive Feedback</div>
+  </section>
+</main>
+
+<script>
+// Paleta oficial de cores de belts extraída de src/belts.js (embutida para evitar dependência de import externo)
+const BELT_STYLE = {
+  GOLD:   { bg: '#8a6400', fg: '#ffffff' },
+  BLUE:   { bg: '#1f4e9c', fg: '#ffffff' },
+  ORANGE: { bg: '#b34d06', fg: '#ffffff' },
+  BROWN:  { bg: '#5b3a21', fg: '#ffffff' },
+  YELLOW: { bg: '#f6d33c', fg: '#1a1600' },
+  GREEN:  { bg: '#1e6b3a', fg: '#ffffff' },
+  PINK:   { bg: '#a81f5e', fg: '#ffffff' },
+  RED:    { bg: '#a81c1c', fg: '#ffffff' },
+  PURPLE: { bg: '#5b2d8e', fg: '#ffffff' },
+  CHECK:  { bg: '#333333', fg: '#ffffff' },
+};
+
+const $ = s => document.querySelector(s);
+let soundEnabled = true;
+let bgmPlaying = false;
+let audioCtx = null;
+let bgmTimer = null;
+
+function getAudioContext() {
+  if (!audioCtx) {
+    const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+    audioCtx = new AudioContextClass();
+  }
+  if (audioCtx.state === 'suspended') {
+    audioCtx.resume();
+  }
+  return audioCtx;
+}
+
+// Síntese sonora sutil sem arquivos externos
+function playTone(freq, type, duration, delay = 0, gainLevel = 0.15) {
+  if (!soundEnabled) return;
+  try {
+    const ctx = getAudioContext();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+
+    osc.type = type;
+    osc.frequency.setValueAtTime(freq, ctx.currentTime + delay);
+
+    gain.gain.setValueAtTime(gainLevel, ctx.currentTime + delay);
+    gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + delay + duration);
+
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+
+    osc.start(ctx.currentTime + delay);
+    osc.stop(ctx.currentTime + delay + duration);
+  } catch (err) {
+    console.warn("Audio feedback error:", err);
+  }
+}
+
+function playCorrectSfx() {
+  getAudioContext();
+  // Arpeggio alegre ascendente (Dó5 - Mi5 - Sol5 - Dó6)
+  playTone(523.25, 'sine', 0.15, 0.00, 0.20);
+  playTone(659.25, 'sine', 0.16, 0.08, 0.20);
+  playTone(783.99, 'sine', 0.18, 0.16, 0.22);
+  playTone(1046.50, 'sine', 0.35, 0.24, 0.25);
+}
+
+function playIncorrectSfx() {
+  getAudioContext();
+  // Som de erro/buzzer suave
+  playTone(220, 'triangle', 0.18, 0.00, 0.25);
+  playTone(174.61, 'triangle', 0.28, 0.12, 0.25);
+}
+
+// Melodia de fundo (BGM relaxante e ritmada tipo jogo arcade suave)
+const bgmNotes = [
+  { f: 261.63, d: 0.3 }, // C4
+  { f: 329.63, d: 0.3 }, // E4
+  { f: 392.00, d: 0.3 }, // G4
+  { f: 523.25, d: 0.4 }, // C5
+  { f: 440.00, d: 0.3 }, // A4
+  { f: 392.00, d: 0.3 }, // G4
+  { f: 349.23, d: 0.3 }, // F4
+  { f: 329.63, d: 0.5 }, // E4
+];
+let bgmIndex = 0;
+
+function tickBgm() {
+  if (!bgmPlaying) return;
+  const note = bgmNotes[bgmIndex % bgmNotes.length];
+  playTone(note.f, 'sine', note.d, 0, 0.04);
+  bgmIndex++;
+  bgmTimer = setTimeout(tickBgm, 420);
+}
+
+function startBgm() {
+  getAudioContext();
+  bgmPlaying = true;
+  $('#toggle-bgm').textContent = '⏸ Pausar Música';
+  $('#toggle-bgm').setAttribute('aria-pressed', 'true');
+  tickBgm();
+}
+
+function stopBgm() {
+  bgmPlaying = false;
+  if (bgmTimer) clearTimeout(bgmTimer);
+  $('#toggle-bgm').textContent = '▶ Iniciar Música';
+  $('#toggle-bgm').setAttribute('aria-pressed', 'false');
+}
+
+$('#toggle-sound').onclick = () => {
+  soundEnabled = !soundEnabled;
+  $('#toggle-sound').textContent = soundEnabled ? 'Ligado' : 'Desligado';
+  $('#toggle-sound').setAttribute('aria-pressed', String(soundEnabled));
+  if (!soundEnabled && bgmPlaying) stopBgm();
+};
+
+$('#toggle-bgm').onclick = () => {
+  if (bgmPlaying) {
+    stopBgm();
+  } else {
+    soundEnabled = true;
+    $('#toggle-sound').textContent = 'Ligado';
+    startBgm();
+  }
+};
+
+const chip = b => `<span class="chip" style="background:${BELT_STYLE[b].bg};color:${BELT_STYLE[b].fg}">${b}</span>`;
+const route = () => '<div class="route-service">Ground · SÃO PAULO</div><div class="route-code">000–009</div><div class="sample-label">Fictional route · Appearance review only</div>';
+
+function renderQuestion() {
+  $('#step').textContent = 'Question 4 of 15';
+  $('#timer').textContent = '15';
+  $('#timer').classList.remove('expired');
+
+  const answers = ['YELLOW', 'PINK', 'ORANGE', 'GOLD'];
+  
+  $('#quiz-content').innerHTML = `
+    ${route()}
+    <h2 class="question" tabindex="-1">Where does this go?</h2>
+    <div class="answers">
+      ${answers.map(b => `
+        <button data-answer="${b}" style="background:${BELT_STYLE[b].bg};color:${BELT_STYLE[b].fg}">
+          ${b}
+        </button>
+      `).join('')}
+    </div>
+  `;
+
+  // Bind clicks
+  document.querySelectorAll('.answers button').forEach(btn => {
+    btn.onclick = () => handleAnswer(btn, btn.dataset.answer);
+  });
+}
+
+function handleAnswer(buttonEl, chosenBelt) {
+  const isCorrect = (chosenBelt === 'GOLD');
+
+  // Trava botões durante a animação
+  document.querySelectorAll('.answers button').forEach(b => {
+    b.classList.remove('belt-correct', 'belt-incorrect');
+    b.disabled = true;
+  });
+
+  if (isCorrect) {
+    buttonEl.classList.add('belt-correct');
+    playCorrectSfx();
+  } else {
+    buttonEl.classList.add('belt-incorrect');
+    playIncorrectSfx();
+  }
+
+  // Avança para tela de feedback
+  setTimeout(() => {
+    renderFeedback(isCorrect, chosenBelt);
+  }, 950);
+}
+
+function renderFeedback(good, chosenBelt) {
+  $('#quiz-content').innerHTML = `
+    <h2 class="verdict ${good ? 'success' : 'error'}" tabindex="-1">
+      ${good ? 'Correct!' : 'Review this route.'}
+    </h2>
+    ${route()}
+    <div class="answer-row">
+      <span>Your choice</span>
+      ${chip(chosenBelt)}
+    </div>
+    <div class="answer-row">
+      <span>Correct belt</span>
+      ${chip('GOLD')}
+    </div>
+    <p class="why">
+      ${good ? 'Nice work! Streak bonus applied.' : 'Keep practicing. Route belongs to GOLD sort line.'}
+    </p>
+    <button class="primary full" id="next-btn">Continue</button>
+  `;
+
+  $('#next-btn').onclick = () => renderQuestion();
+}
+
+// Inicialização
+const media = matchMedia('(prefers-reduced-motion: reduce)');
+$('#still').checked = media.matches;
+
+// Renderiza a pergunta
+renderQuestion();
+</script>
+</body>
+</html>

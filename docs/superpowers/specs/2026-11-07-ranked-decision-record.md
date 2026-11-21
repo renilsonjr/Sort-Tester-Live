@@ -97,7 +97,8 @@ Use server-confirmed events and timestamps, not client reports alone. Reset sequ
 **REVISE — dense ranking superseded for prize positions.** Owners: #12/#24/#5/#7/#11/#16/#17.
 
 - Three prize positions, one UPS hat per winner, three hats total. Use separate quizzes for ties affecting prizes; Q5 eligibility below still applies.
-- Five shared Hard sort-work-methods questions per round. Correct +1, wrong/timeout 0; total 0–5, with no seasonal-point changes. Challenger rounds and lower-rank rounds 1–3 use five seconds per question; lower-rank round 4 uses four seconds and round 5 uses three seconds, the minimum.
+- **Update (2026-11-15, owner decision):** the separate Hard sort-work-methods bank is withdrawn (#55 closed, not planned). Tie-break rounds draw from the **owner-approved Hard questions of the regular route bank** (53 at bank revision of 2026-11-15), answered by belt colour like ordinary Ranked questions. The round rules below are unchanged: five shared questions, the same timers, no reuse across valid or outage-replaced rounds within the season, and the owner-selection fallback when no fresh set of five remains. 53 Hard questions give ten fresh sets per season. These questions also appear in ordinary Ranked quizzes and in study, so a tie-break measures knowledge of the chart under time pressure rather than unseen content; the owner accepted that trade-off.
+- Five shared Hard questions per round (originally specified as sort-work-methods; see the update above). Correct +1, wrong/timeout 0; total 0–5, with no seasonal-point changes. Challenger rounds and lower-rank rounds 1–3 use five seconds per question; lower-rank round 4 uses four seconds and round 5 uses three seconds, the minimum.
 - Play asynchronously once per participant per round. First deadline is scheduled season close +24 hours, not settlement +24 hours; start after eligible season attempts settle. Each additional round uses a fresh shared set and a new 24-hour window from opening. Preserve valid prior tie-break outcomes and remaining-player relative order/earlier valid rounds.
 - Challenger has at most three valid rounds; lower ranks have at most five. Outage-voided rounds do not consume this limit and their restarts retain the current round timer. After the applicable maximum, any remaining completed-player prize tie waits for authorized owner selection among the still-tied eligible players. No automatic extra round or first-arrival ordering.
 - If there is no fresh shared set of five approved Hard questions for any round or outage restart, affected unresolved prize positions wait for authorized owner selection, for every badge including Challenger. Do not silently reuse questions or approve new content. Preserve valid prior tie-break outcomes and remaining-player relative order and frozen points.
@@ -108,7 +109,7 @@ Use server-confirmed events and timestamps, not client reports alone. Reset sequ
 - A confirmed server outage interrupting an attempt restarts the whole current round for all participants, including players already finished, with fresh questions and a new 24-hour window. Earlier valid rounds remain. This is the approved exception to the original deadline.
 - Q4: after submission show “Attempt submitted”; withhold scores, correctness, correct answers and detailed review in API responses and UI until the current round’s 24-hour window closes, including an outage-reset deadline. Normal Ranked retains immediate feedback. This cannot prevent sharing question text.
 - Q8 tie-break advancement settled: Prize tie-break questions advance automatically after the server accepts an answer or resolves the current question’s timeout. There is no Next button or player-controlled feedback pause between tie-break questions. Activate each next question with its own existing round-specific timer: five seconds for Challenger and initial lower-rank rounds, four seconds for lower-rank round four, three seconds for round five. Keep answers locked and resolve each question only once; duplicate/late requests cannot skip questions or restart/extend clocks. After the fifth resolved question, finish the attempt under the existing completion rules and show only submission confirmation. Do not reveal correctness, scores, answers or review in API responses/UI before the round’s valid deadline. Do not send a next question while disconnected: keep the current clock, original still-running-session grace and refresh restrictions; on eligible recovery continue automatically without resetting clocks. Grace expiry, Quit, season/round deadlines and confirmed-outage policies keep their existing effects. Ordinary Ranked/promotion feedback still waits for Next and Practice remains unchanged.
-- Question inventory (#5): owner prepares/reviews Easy, Medium and Hard lists, answers and explanations. Verify unique approved normal questions for 5/5/5 assignments and approved Hard work-methods sets for tie-breaks; bank sufficiency has not been verified.
+- Question inventory (#5): owner prepares/reviews Easy, Medium and Hard lists, answers and explanations. Verify unique approved normal questions for 5/5/5 assignments and approved Hard sets for tie-breaks, drawn from the regular bank since 2026-11-15; bank sufficiency for normal assignments has not been verified.
 - Q6 is settled: the earlier first-reached-seasonal-score fallback and its timestamp/event-definition questions are superseded. Current points still determine ordinary leaderboard order and badge rules are unchanged. Manual selection is limited to the approved unresolved prize cases; it does not authorize point/result edits.
 
 ### Q5 — settled prize eligibility
@@ -144,9 +145,9 @@ Stop new Ranked admission at closing. Already-started attempts get five extra mi
 
 **SETTLED OWNER POLICY (revised 2026-11-11 for login ID auth; see [login ID auth plan (v2)](../plans/2026-11-11-login-id-auth-plan.md)); technical defaults proposed separately.** Owners: #6/#7/#10/#11/#12/#15/#16.
 
-- Case-insensitive unique username, stable internal ownership (`accounts.id` UUID) and generated permanent unique six-character uppercase alphanumeric tag. Supported renames keep ownership/tag. No required real name, employee-ID upload or phone collection. Optional email remains private and never appears in profiles/leaderboards.
+- Case-insensitive unique username, stable internal ownership (`accounts.id` UUID) and generated permanent unique six-character uppercase alphanumeric tag. Supported renames keep ownership/tag. No required real name, employee-ID upload or phone collection. **No email address is collected (settled 2026-11-14; supersedes the earlier optional private email).**
 - **Login credential (v2):** on account creation the system generates a separate **login ID** (short, grouped, easy-to-type secret) shown **once**; the login page accepts only this login ID (no password). It is distinct from the display identity beside names (`username`/`tag`). Store only a verifier (no raw login ID); treat as a bearer secret with rate limiting and generic failures.
-- **Lost access / recovery (v2):** there is no self-service password or secret recovery. If a user loses the login ID, only the **admin/owner may grant/regenerate access** after **in-person verification at work against a trusted participant/account link established before the request** (owner-approved). Public username/tag alone is insufficient; no trusted prior link means no reset/grant via this route. Recovery restores access only to the same existing account by issuing a **new login ID shown once** (revoking the old credential and sessions); never disclose the old secret, never transfer points, never create substitute prize eligibility, and never restore wiped data or grant player-private history access. Adding/verifying email or recovering access never grants reminder consent.
+- **Lost access / recovery (v2):** there is no self-service password or secret recovery. If a user loses the login ID, only the **admin/owner may grant/regenerate access** after **in-person verification at work against a trusted participant/account link established before the request** (owner-approved). Public username/tag alone is insufficient; no trusted prior link means no reset/grant via this route. Recovery restores access only to the same existing account by issuing a **new login ID shown once** (revoking the old credential and sessions); never disclose the old secret, never transfer points, never create substitute prize eligibility, and never restore wiped data or grant player-private history access. Recovering access never grants any notification consent.
 - The exact “pre season history” tab and all underlying lists/attempts/details/downloads are private to the owning player, server-enforced; no other-player access or automatic administrator exception. Authorized Support incident review remains limited to its incident scope.
 - Own-account deletion is self-service, authenticated and ownership-confirmed; no owner/admin approval. Opening the screen, checking a checkbox, canceling, a recovery request or a failed/unconfirmed deletion does not delete or withdraw anyone. The server must validate explicit acknowledgment and ownership, not trust a disabled browser button.
 - Dialog question: “Are you sure you want to proceed with deleting this account?” Required initially unchecked checkbox: “I agree to delete my account. I understand that deleting it before prizes are finalized removes this account from this season’s competition.” Offer Cancel and final Delete account, disabled until checked. Reopening resets it unchecked. Explain: “After deletion is completed, your profile, quiz history and points are removed. A new account starts at 0 points / Iron.” Disclose: “Your profile, email, quiz history and points are deleted. We keep only a private season-ineligibility record until prizes are finalized.”
@@ -158,14 +159,35 @@ Stop new Ranked admission at closing. Already-started attempts get five extra mi
 
 ## Decision 15 — one-time launch reminders
 
-**ADOPT NEW.** Owners: #27/#7/#10/#16/#23.
+**WITHDRAWN 2026-11-14 — no email anywhere in the app.** Owners: #27/#7/#10/#16/#23.
 
-- Separate initially unchecked option: “Email me when the first official season starts.” Recovery email alone is not consent; preference can change before launch.
-- Delivery requires verified email plus active opt-in; choosing preference before verification does not permit unverified delivery.
-- At launch retire opt-in, show season-start notice, preserve recovery email, and do not carry consent into future seasons.
-- Consent withdrawal/email removal cancels unsent/queued mail. Recheck consent/verification immediately before sending.
-- One initial attempt plus at most two retries within the first hour after launch: three total. Stop after provider-confirmed success, cancellation or exhaustion; record failure without blocking Ranked.
-- Proposed provider/budget, uncertain-send reconciliation and post-launch pending cancellation behavior are in [[2026-11-07-ranked-security-operations-design]] (Q11). No provider-independent exactly-once email guarantee is approved.
+The owner settled on 2026-11-14 that the app collects no email address at
+all. The earlier removal recorded in the [login ID auth plan
+(v2)](../plans/2026-11-11-login-id-auth-plan.md) covered only authentication
+and recovery; this one covers the whole app.
+
+- No email field, no verification, no stored address, and no mail of any
+  kind, including the launch reminder.
+- The withdrawn opt-in was: “Email me when the first official season starts,”
+  with verified email plus active consent, bounded retries and consent
+  rechecks. None of it applies.
+- The official season start is announced in the app only. Players learn
+  about the launch by opening Sort Lab.
+- **Launch notice placement (settled 2026-11-14):** the main home page shows
+  a small callout announcing the start and carrying the start date, beside
+  the existing sort-change announcements. It appears only once a start is
+  confirmed; during Pre-Season there is no callout and no invented date, as
+  Decision 16 already requires. The Ranked landing page remains the main
+  season display; this callout is the short notice on the home page, not a
+  second season display. Guests see it too (settled 2026-11-14), with a
+  second sentence inviting them to log in rather than one about a reset
+  balance they do not have.
+- Issue #27 (verified opt-in launch reminder delivery) has nothing left to
+  build.
+- Any email rows, consent records and queued mail that the database already
+  carries are to be removed; their removal is an implementation task, not a
+  new retention exception. The deletion wipe in Decision 14 continues to name
+  email records so an existing row cannot survive a deletion.
 
 ## Decision 16 — standings and notices
 
@@ -174,6 +196,24 @@ Stop new Ranked admission at closing. Already-started attempts get five extra mi
 Leaderboard requires login; guests retain Practice/study. Update canonical standings after each settled Ranked attempt, not daily. Show provisional state during season-end settlement/tie-breaks.
 
 Logged-in Ranked landing page is the main season display: Pre-Season with no invented countdown; launch countdown when a start is confirmed; ending countdown while active; settlement/tie-break status when closed; then final results. Keep sort-change announcements on the main home page. Display capability does not authorize an automatic launch mechanism/date.
+
+**Pre-Season leaderboard (owner decision 2026-11-20, issue #247).** The
+leaderboard is also available during Pre-Season, with login as above.
+
+- It lists every account with at least one **completed** Ranked quiz in the
+  Pre-Season. Quit, disconnected, voided and unfinished attempts do not
+  count, the same as the official rule. No owner approval is needed, because
+  no prize depends on this board.
+- It decides nothing: no prize, hat, tie-break or eligibility is taken from
+  it. The screen says, in English and Spanish, that it wins no prize and is
+  reset when the official season starts.
+- At the owner's manual launch the Pre-Season board disappears. Points reset
+  to 0/Iron as Decision 12 says and the official leaderboard starts empty.
+  No public final Pre-Season standings are kept; Pre-Season history stays
+  private to each player (Decision 12).
+- The official competition leaderboard (settled Q5: owner approval plus one
+  completed official quiz) is unchanged. The Season 1 start date is still
+  not chosen and launch stays manual (Decision 11).
 
 ## Explicitly superseded / deferred
 
@@ -189,6 +229,7 @@ Logged-in Ranked landing page is the main season display: Pre-Season with no inv
 | Count four ended quizzes | Count distinct server-observed losses within an attempt |
 | Automatic Support ticket / 90-day closed retention | Player-requested ticket / 15 days after closure |
 | Phone/SMS, extra achievements, January season start | Deferred/unapproved |
+| Optional private email and the one-time email launch reminder | Withdrawn 2026-11-14: no email anywhere; the launch is announced in the app only |
 
 ## Decision status and implementation gates
 

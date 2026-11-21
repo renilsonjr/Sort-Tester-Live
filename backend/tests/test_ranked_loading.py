@@ -49,6 +49,10 @@ class LoadingTests(unittest.TestCase):
             data=raw_bank(raw_question('A')); data['questions'][0][field]=value
             with self.assertRaises(BankValidationError) as e:self.load(data)
             self.assertEqual(e.exception.code,'invalid_schema')
+    def test_black_is_an_accepted_belt(self):
+        # BLACK joins the chart with the SORT CHANGE edits (TX GND/3DS).
+        bank = self.load(raw_bank(raw_question('A', correct_belt='BLACK')))
+        self.assertEqual(bank.questions[0].correct_belt, 'BLACK')
     def test_bad_pin_is_rejected(self):
         path,pin=write_fixture(self.directory,raw_bank(raw_question('A')))
         with self.assertRaises(BankValidationError) as e:load_bank(path,expected_revision='fixture-v1',expected_sha256='bad')

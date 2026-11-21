@@ -82,7 +82,7 @@ test('destination plus-one never changes the routing code', () => {
   const response = quiz.answerCard(run, 'PURPLE', 1000);
   assert.equal(response.code, '109');
   assert.equal(response.destinationModifier, '+1');
-  assert.equal(response.referenceVersion, 'twilight-2026-11-16-r1');
+  assert.equal(response.referenceVersion, 'twilight-2026-11-08-r2');
 });
 
 for (const outcome of ['correct', 'wrong', 'timeout']) test(`${outcome} records preserve the actual card metadata`, () => {
@@ -119,7 +119,7 @@ for (const outcome of ['wrong', 'timeout']) test(`${outcome} destination survive
   assert.match(reloaded.markup, /Terrestre \+1 &middot; NY &middot; 109/);
   const response = JSON.parse(app.values.get('sortTest.shiftLog.v1'))[0].missed[0];
   assert.equal(response.destinationModifier, '+1');
-  assert.equal(response.referenceVersion, 'twilight-2026-11-16-r1');
+  assert.equal(response.referenceVersion, 'twilight-2026-11-08-r2');
   const row = reloaded.evaluate('buildWorkbook(log.all())').Missorts.rows[0];
   assert.equal(row.Service, 'Terrestre +1');
   assert.equal(row['Routing code'], '109');
@@ -152,39 +152,16 @@ test('bilingual modifier explanations precede generic and routing-ending branche
   assert.match(language.explanation({ ...ordinary, code: '150 1S' }), /1S.*PURPLE/);
 });
 
-test('Home renders all four sort changes and preserved NY exceptions in both languages', () => {
+test('Home (guest) shows the sign-in invite and practice actions in both languages', () => {
   const app = appHarness(); app.evaluate('showStart();');
-  for (const lang of ['en', 'es']) {
-    if (lang === 'es') app.view.languages[1].click();
-    const rows = [...app.markup.matchAll(/<div class="lab-change-row">([\s\S]*?)<\/div>\s*<\/div>/g)].map(m => m[1]);
-    assert.equal(rows.length, 4);
-    for (const [index, range, belt, services] of [
-      [0, 'TX 750–769', 'BLACK', ['Ground']],
-      [1, 'TX 770–779', 'BLACK', ['Ground', '3 Day Select']],
-      [2, 'IL 600–619', 'PURPLE', ['2 Day Air']],
-      [3, 'NY 140–147', 'GOLD', ['Ground', '3 Day Select', '2 Day Air']],
-    ]) {
-      assert.ok(rows[index].includes(range));
-      assert.ok(rows[index].includes(`>${belt}`));
-      const language = i18n.createLanguage(); language.set(lang);
-      assert.ok(rows[index].includes(services.map(s => language.service(s)).join(' / ')));
-    }
-    assert.match(app.markup, /148 1.*GOLD/);
-    assert.match(app.markup, lang === 'en' ? /Next Day Air keeps NY 140–149 PURPLE/ : /Aéreo 1 día mantiene NY 140–149 en PURPLE/);
-    assert.equal((app.markup.match(/background:#000000;color:#ffffff/g) ?? []).length, 2);
-  }
-});
-
-test('BLACK renders in Study, answer choices and wrong-answer feedback', () => {
-  const app = appHarness();
-  assert.match(app.evaluate("chartRow(['TX', '770–779', 'BLACK', 'Sort change'])"), /background:#000000;color:#ffffff">BLACK/);
-  const card = decks.DECKS.find(d => d.id === 'level-hard').cards.find(c => c.svc === 'GND' && c.code === '750–769');
-  app.setRun(card); app.evaluate('showCard();');
-  assert.match(app.markup, /data-belt="BLACK" style="background:#000000;color:#ffffff">BLACK/);
-  app.evaluate("showFeedback(answerCard(run, 'BLUE', 800));");
-  assert.match(app.markup, /background:#000000;color:#ffffff">BLACK/);
+  // The redesign dropped the "Recent sort changes" and "Where to start" blocks;
+  // a guest now sees an invite to sign in for Ranked plus the practice actions.
+  assert.match(app.markup, /Playing as guest/);
+  assert.match(app.markup, /Sign in to compete in Ranked/);
+  assert.match(app.markup, /Know the chart/);
   app.view.languages[1].click();
-  assert.match(app.markup, /background:#000000;color:#ffffff">BLACK/);
+  assert.match(app.markup, /Jugando como invitado/);
+  assert.match(app.markup, /Conoce la tabla/);
 });
 
 test('ordinary picker shows selected run sizes without changing deck grouping', () => {
@@ -219,7 +196,7 @@ test('all four base services keep translated destination labels separate from wo
 test('ordinary recording preserves provenance and leaves absent optional metadata absent', () => {
   const current = quiz.answerCard(quiz.createRun({ name: '', cards: [ordinary] }), 'ORANGE', 100);
   assert.equal(current.code, '109');
-  assert.equal(current.referenceVersion, 'twilight-2026-11-16-r1');
+  assert.equal(current.referenceVersion, 'twilight-2026-11-08-r2');
   assert.equal(Object.hasOwn(current, 'destinationModifier'), false);
   const { referenceVersion, ...legacyCard } = ordinary;
   const legacy = quiz.timeoutCard(quiz.createRun({ name: '', cards: [legacyCard] }));

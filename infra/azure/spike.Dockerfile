@@ -4,9 +4,13 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
     PIP_DISABLE_PIP_VERSION_CHECK=1
 WORKDIR /app
-COPY backend/requirements.txt /tmp/requirements.txt
+# The runtime set, not the development one (audit M-9). The spike only ever
+# serves /health, so the test client, the CLIs and their dependencies were
+# attack surface it had no use for -- and the two pinned upgrades below
+# existed solely to patch vulnerabilities in packages that came with that
+# wider set. Install less, and there is nothing to patch.
+COPY backend/requirements-runtime.txt /tmp/requirements.txt
 RUN python -m pip install --no-cache-dir -r /tmp/requirements.txt \
-    && python -m pip install --no-cache-dir --upgrade 'setuptools==78.1.1' 'msgpack==1.2.3' \
     && python -m pip check \
     && adduser -D -u 10001 appuser
 COPY --chown=10001:10001 backend/main.py /app/backend/main.py

@@ -25,9 +25,9 @@ class ReviewedDataTests(unittest.TestCase):
         report=export_reviewed_bank(self.output_dir)
         return report,load_bank(report.bank_path,expected_revision='ranked-routes-v1',expected_sha256=read_manifest_pin(report.manifest_path))
     def test_full_artifact_preserves_approved_content(self):
-        report,bank=self.export(); self.assertEqual(report.question_count,283)
-        self.assertEqual(Counter(q.difficulty for q in bank.questions),{'Easy':103,'Medium':127,'Hard':53})
-        self.assertEqual(Counter(q.rule.kind for q in bank.questions),{'prefix_range':174,'qualified_code':85,'exact_literal':6,'suffix':8,'named_destination':5,'any_route':5})
+        report,bank=self.export(); self.assertEqual(report.question_count,284)
+        self.assertEqual(Counter(q.difficulty for q in bank.questions),{'Easy':103,'Medium':128,'Hard':53})
+        self.assertEqual(Counter(q.rule.kind for q in bank.questions),{'prefix_range':175,'qualified_code':85,'exact_literal':6,'suffix':8,'named_destination':5,'any_route':5})
         by={q.source.review_ref:q for q in bank.questions}
         self.assertEqual(by['G74'].rule.parts,('833 9-7',)); self.assertEqual(by['S47'].presentation.routing_code,'900')
     def test_original17_copy_and_ids_map_once(self):
@@ -39,11 +39,16 @@ class ReviewedDataTests(unittest.TestCase):
             if cells and re.fullmatch('[EMH][1-7]',cells[0]):
                 language='en' if len(cells)==7 else 'es'
                 self.assertEqual(fixture[cells[0]][language]['explanation'],cells[-1])
+        # Four of the original 17 (M1, M2, H1, H2) were re-authored by the
+        # SORT CHANGE owner override; their copy now comes from the entry's
+        # own wording, not the sheet. The id mapping is still checked for all.
+        overridden={e['approvedReview'] for e in self.source['entries'] if 'wording' in e}
         for q in bank.questions:
             if q.source.review_ref in fixture:
-                for lang in ('en','es'):
-                    self.assertEqual(vars_copy(getattr(q.text,lang)),fixture[q.source.review_ref][lang])
                 self.assertEqual(mapping[q.source.review_ref],q.canonical_id)
+                if q.source.review_ref not in overridden:
+                    for lang in ('en','es'):
+                        self.assertEqual(vars_copy(getattr(q.text,lang)),fixture[q.source.review_ref][lang])
     def test_all266_expanded_copies_match_verbatim(self):
         _,bank=self.export(); by={q.source.review_ref:q for q in bank.questions}; count=0
         for e in self.source['entries']:
@@ -51,7 +56,7 @@ class ReviewedDataTests(unittest.TestCase):
                 count+=1
                 for lang in ('en','es'):
                     self.assertEqual(vars_copy(getattr(by[e['approvedReview']].text,lang)),{k:e['wording'][lang][k] for k in ('prompt','explanation')})
-        self.assertEqual(count,266)
+        self.assertEqual(count,271)
     def test_no_CHECK_or_photo_is_exported(self):
         _,bank=self.export(); self.assertFalse(any(q.correct_belt=='CHECK' for q in bank.questions))
         self.assertEqual(set(p.name for p in self.output_dir.iterdir()),{'routes-v1.json','manifest.json'})
@@ -121,7 +126,7 @@ class ReviewedDataTests(unittest.TestCase):
         self.assertEqual(count,20)
     def test_all_source_rows_are_accounted_for(self):
         _,bank=self.export(); by={q.source.review_ref:q for q in bank.questions}
-        self.assertEqual(len(by),283); self.assertEqual(set(by),{e['approvedReview'] for e in self.source['entries']})
+        self.assertEqual(len(by),284); self.assertEqual(set(by),{e['approvedReview'] for e in self.source['entries']})
         for e in self.source['entries']:
             q=by[e['approvedReview']]
             self.assertEqual(q.context.service,{'Ground':'GND','Next Day Air':'NDA','2 Day Air':'2DA','3 Day Select':'3DS'}[e['service']])

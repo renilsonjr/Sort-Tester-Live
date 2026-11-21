@@ -1,0 +1,111 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "_comment": "Representative compiled-ARM shape of the reviewed baseline. Mirrors the security-relevant properties of infra/azure/*.bicep as az bicep build emits them (literals stay literal; parameter/function values compile to [..] expression strings). Used by test_check.py and by the CI demonstration so the pass case is reproducible without an Azure CLI.",
+  "resources": [
+    {
+      "type": "Microsoft.ContainerRegistry/registries",
+      "name": "[format('acrsortstg{0}', uniqueString(resourceGroup().id))]",
+      "properties": {
+        "adminUserEnabled": false,
+        "anonymousPullEnabled": false,
+        "publicNetworkAccess": "Enabled"
+      }
+    },
+    {
+      "type": "Microsoft.KeyVault/vaults",
+      "name": "[format('kv-sortstg-{0}', uniqueString(resourceGroup().id))]",
+      "properties": {
+        "enableRbacAuthorization": true,
+        "enableSoftDelete": true,
+        "publicNetworkAccess": "Enabled"
+      }
+    },
+    {
+      "type": "Microsoft.Authorization/roleAssignments",
+      "name": "[guid(...)]",
+      "properties": {
+        "roleDefinitionId": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', '7f951dda-4ed3-4680-a7ca-43fe172d538d')]",
+        "principalType": "ServicePrincipal"
+      }
+    },
+    {
+      "type": "Microsoft.ManagedIdentity/userAssignedIdentities/federatedIdentityCredentials",
+      "name": "id-sort-publish-ci/github-publish",
+      "properties": {
+        "issuer": "https://token.actions.githubusercontent.com",
+        "subject": "[parameters('federatedSubject')]",
+        "audiences": [
+          "api://AzureADTokenExchange"
+        ]
+      }
+    },
+    {
+      "type": "Microsoft.App/containerApps",
+      "name": "ca-sort-app-stg",
+      "properties": {
+        "configuration": {
+          "activeRevisionsMode": "Single",
+          "ingress": {
+            "external": true,
+            "allowInsecure": false,
+            "targetPort": 8000,
+            "transport": "auto"
+          },
+          "secrets": [
+            {
+              "name": "database-url",
+              "keyVaultUrl": "[parameters('databaseUrlSecretUri')]",
+              "identity": "[parameters('runtimeIdentityId')]"
+            }
+          ]
+        },
+        "template": {
+          "containers": [
+            {
+              "name": "sort-app",
+              "image": "[format('{0}/{1}@sha256:{2}', parameters('registryServer'), parameters('imageRepository'), parameters('imageSha256'))]"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "type": "Microsoft.Storage/storageAccounts",
+      "apiVersion": "2024-01-01",
+      "name": "[format('stsortdel{0}', uniqueString(resourceGroup().id))]",
+      "properties": {
+        "allowSharedKeyAccess": false,
+        "allowBlobPublicAccess": false,
+        "publicNetworkAccess": "Disabled"
+      }
+    },
+    {
+      "type": "Microsoft.Storage/storageAccounts/blobServices",
+      "apiVersion": "2024-01-01",
+      "name": "[format('{0}/{1}', format('stsortdel{0}', uniqueString(resourceGroup().id)), 'default')]",
+      "properties": {
+        "isVersioningEnabled": false,
+        "deleteRetentionPolicy": {
+          "enabled": false
+        },
+        "containerDeleteRetentionPolicy": {
+          "enabled": false
+        }
+      }
+    },
+    {
+      "type": "Microsoft.DBforPostgreSQL/flexibleServers",
+      "apiVersion": "2024-08-01",
+      "name": "[parameters('serverName')]",
+      "properties": {
+        "network": {
+          "publicNetworkAccess": "Disabled"
+        },
+        "backup": {
+          "backupRetentionDays": 7,
+          "geoRedundantBackup": "Disabled"
+        }
+      }
+    }
+  ]
+}

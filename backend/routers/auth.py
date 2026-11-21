@@ -2,29 +2,41 @@ from contextlib import contextmanager
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
-from backend.auth.rate_limit import _client_key, get_login_rate_limiter
+from backend.auth.rate_limit import _client_key, _login_rate_key, get_login_rate_limiter
 from backend.auth.service import (
     admin_regenerate_login_id,
     get_account_by_session,
     login_with_id,
     register_account,
 )
+from backend.auth.deletion_list import DeletionListUnavailable
+from backend.auth.deletion import (
+    OwnerAccountError,
+    WrongLoginIdError,
+    purge_deleted_accounts,
+    request_deletion,
+)
 from backend.auth.sessions import revoke_session
 from backend.auth.settings import AuthSettings, get_auth_settings
-from backend.db import migrate, settings
+from backend.db import migrate, pool, settings
 
 router = APIRouter(prefix="/api/auth", tags=["auth"])
 
 
 @contextmanager
 def _db_connection():
-    conn = migrate.connect(settings.app_database_url())
-    try:
+    """One pooled connection for this request (audit M-5).
+
+    Opening a connection per request cost a connect to Postgres each time
+    and had no ceiling; the pool reuses a capped set and makes a burst
+    wait. Commits are still the caller's own: see backend/db/pool.py for
+    why that was kept rather than folded into the checkout.
+    """
+    pool.init_pool(settings.app_database_url(), auth_mode=settings.db_auth_mode())
+    with pool.checkout() as conn:
         yield conn
-    finally:
-        conn.close()
 
 
 def get_db():
@@ -33,7 +45,8 @@ def get_db():
 
 
 class RegisterRequest(BaseModel):
-    username: str
+    # the accounts table's own rule: 3-24 letters, digits or underscores
+    username: str = Field(pattern=r"^[A-Za-z0-9_]{3,24}$")
 
 
 class RegisterResponse(BaseModel):
@@ -66,29 +79,60 @@ class AccountResponse(BaseModel):
     is_owner: bool
 
 
+def _purge_pending_deletions():
+    # accepted deletions are purged before any auth request is handled, the
+    # same per-request pattern as the season close; one statement when idle
+    with _db_connection() as conn:
+        purge_deleted_accounts(conn)
+
+
+# runs before every auth route below
+router.dependencies.append(Depends(_purge_pending_deletions))
+
+
 def _current_account(request: Request):
     raw_token = request.cookies.get("sort_tester_session")
     if not raw_token:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized")
     with _db_connection() as conn:
         account = get_account_by_session(conn, raw_token)
+        # the idle refresh and the idle revocation are writes: without this
+        # the close rolls both back, so last_seen_at never leaves the login
+        # time and every session dies one idle window later (audit H-1)
+        conn.commit()
     if account is None:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized")
     return account
 
 
 @router.post("/register", response_model=RegisterResponse)
-def register(payload: RegisterRequest):
+def register(request: Request, payload: RegisterRequest):
+    limiter = request.app.state.registration_limiter
+    client = _client_key(request)
+    if not limiter.is_allowed(client):
+        raise HTTPException(
+            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+            detail="Too many sign-ups; try again later",
+        )
     with _db_connection() as conn:
-        account_id, login_id = register_account(conn, payload.username)
+        try:
+            account_id, login_id = register_account(conn, payload.username)
+        except migrate.IntegrityError:
+            # the unique key on username_lower decides, so a race between two
+            # sign-ups for one name also ends here, never in a server error
+            conn.rollback()
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT, detail="Username taken"
+            ) from None
         conn.commit()
+    limiter.record(client)  # only a successful sign-up counts
     return {"account_id": str(account_id), "login_id": login_id}
 
 
 @router.post("/login", response_model=LoginResponse)
 def login(request: Request, response: Response, payload: LoginRequest):
     limiter = get_login_rate_limiter()
-    rate_key = _client_key(request)
+    rate_key = _login_rate_key(request, payload.login_id)
     if not limiter.is_allowed(rate_key):
         raise HTTPException(status_code=status.HTTP_429_TOO_MANY_REQUESTS, detail="Too many requests")
 
@@ -108,6 +152,13 @@ def login(request: Request, response: Response, payload: LoginRequest):
         token, _ = result
         account = get_account_by_session(conn, token)
         conn.commit()
+    if account is None:
+        # the account can be deleted between creating the session and
+        # reading it back; indexing into None here made that a 500 and a
+        # traceback for what is simply an unauthenticated request
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized"
+        )
     response.set_cookie(
         key="sort_tester_session",
         value=token,
@@ -150,11 +201,114 @@ def admin_regenerate(
     payload: AdminRegenerateRequest,
     account: dict = Depends(_current_account),
 ):
+    """Withdrawn: this route reset a login ID on the owner's say-so alone.
+
+    The settled recovery policy requires in-person verification against a
+    trusted participant link established **before** the request, and says
+    plainly that without such a link there is no reset by this route.
+    Being the owner is the authority to act, not evidence about who is
+    asking, so this endpoint was short of the rule it was meant to carry.
+
+    Recovery now goes through ``/api/ranked/owner/recoveries``, which
+    records the request, refuses when no older link exists, and shows the
+    new login ID once. A caller that still reaches here is told where to
+    go rather than quietly being served.
+    """
     if not account["is_owner"]:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden")
+    raise HTTPException(
+        status_code=status.HTTP_410_GONE,
+        detail=(
+            "Access recovery moved to the owner's Access recovery screen,"
+            " which checks the in-person roster link this route never did."
+        ),
+    )
+
+
+class ReauthenticateRequest(BaseModel):
+    login_id: str
+
+
+@router.post("/reauthenticate", status_code=status.HTTP_204_NO_CONTENT)
+def reauthenticate_session(
+    request: Request,
+    payload: ReauthenticateRequest,
+    account: dict = Depends(_current_account),
+):
+    """Re-enter the login ID on this session (#11 box 5).
+
+    Confirms this device for the owner's sensitive actions for five
+    minutes. The login ID is checked against the signed-in account only,
+    so this cannot test somebody else's; a wrong one counts as a failed
+    login against the same limiter as sign-in, and the refusal is the same
+    whatever was wrong with it.
+    """
+    from backend.auth import reauth
+    from backend.ranked.clock import system_clock
+
+    limiter = get_login_rate_limiter()
+    rate_key = _login_rate_key(request, payload.login_id)
+    if not limiter.is_allowed(rate_key):
+        raise HTTPException(status_code=status.HTTP_429_TOO_MANY_REQUESTS, detail="Too many requests")
     with _db_connection() as conn:
-        new_login_id = admin_regenerate_login_id(conn, account["id"], UUID(payload.account_id))
+        try:
+            reauth.reauthenticate(
+                conn,
+                request.cookies.get("sort_tester_session") or "",
+                payload.login_id,
+                clock=system_clock(),
+            )
+        except reauth.WrongLoginId:
+            limiter.record_failure(rate_key)
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="That login ID does not match this account.",
+            ) from None
         conn.commit()
-    if new_login_id is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Not found")
-    return {"login_id": new_login_id}
+    return None
+
+
+class DeleteAccountRequest(BaseModel):
+    login_id: str
+    acknowledge: bool = False
+
+
+@router.post("/account/delete", status_code=status.HTTP_202_ACCEPTED)
+def delete_account(
+    request: Request,
+    response: Response,
+    payload: DeleteAccountRequest,
+    account: dict = Depends(_current_account),
+):
+    """Delete the signed-in account. Irreversible once accepted: the account
+    is locked out at once and its data is purged. Re-entering the login ID
+    is the reauthentication; a wrong one counts as a failed login."""
+    if payload.acknowledge is not True:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="Acknowledge that deletion cannot be undone",
+        )
+    limiter = get_login_rate_limiter()
+    rate_key = _login_rate_key(request, payload.login_id)
+    if not limiter.is_allowed(rate_key):
+        raise HTTPException(status_code=status.HTTP_429_TOO_MANY_REQUESTS, detail="Too many requests")
+    with _db_connection() as conn:
+        try:
+            request_deletion(conn, account["id"], payload.login_id)
+        except WrongLoginIdError:
+            limiter.record_failure(rate_key)
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden") from None
+        except OwnerAccountError:
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail="The owner account cannot be deleted",
+            ) from None
+        except DeletionListUnavailable:
+            # the deletion could not be made restore-proof, so it was not
+            # accepted: nothing changed and the player can try again (#13)
+            raise HTTPException(
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                detail="Deletion is temporarily unavailable. Nothing was changed; try again shortly.",
+            ) from None
+    response.delete_cookie(key="sort_tester_session", path="/")
+    return {"status": "accepted"}

@@ -1,0 +1,110 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "_comment": "Representative UNSAFE change (issue #205 item 3). Same resources as the baseline, each mutated into exactly the kind of regression this gate exists to catch: plaintext HTTP ingress, a mutable image tag, an inline database credential, a registry with admin + anonymous pull on, a Key Vault off RBAC with soft delete disabled, a Contributor role assignment, and a federated credential trusting a rogue issuer. Running check.py over this file must FAIL.",
+  "resources": [
+    {
+      "type": "Microsoft.ContainerRegistry/registries",
+      "name": "[format('acrsortstg{0}', uniqueString(resourceGroup().id))]",
+      "properties": {
+        "adminUserEnabled": true,
+        "anonymousPullEnabled": true,
+        "publicNetworkAccess": "Enabled"
+      }
+    },
+    {
+      "type": "Microsoft.KeyVault/vaults",
+      "name": "[format('kv-sortstg-{0}', uniqueString(resourceGroup().id))]",
+      "properties": {
+        "enableRbacAuthorization": false,
+        "enableSoftDelete": false,
+        "publicNetworkAccess": "Enabled"
+      }
+    },
+    {
+      "type": "Microsoft.Authorization/roleAssignments",
+      "name": "[guid(...)]",
+      "properties": {
+        "roleDefinitionId": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', 'b24988ac-6180-42a0-ab88-20f7382dd24c')]",
+        "principalType": "ServicePrincipal"
+      }
+    },
+    {
+      "type": "Microsoft.ManagedIdentity/userAssignedIdentities/federatedIdentityCredentials",
+      "name": "id-sort-publish-ci/github-publish",
+      "properties": {
+        "issuer": "https://evil.example.com",
+        "subject": "[parameters('federatedSubject')]",
+        "audiences": [
+          "api://AzureADTokenExchange"
+        ]
+      }
+    },
+    {
+      "type": "Microsoft.App/containerApps",
+      "name": "ca-sort-app-stg",
+      "properties": {
+        "configuration": {
+          "activeRevisionsMode": "Single",
+          "ingress": {
+            "external": true,
+            "allowInsecure": true,
+            "targetPort": 8000,
+            "transport": "auto"
+          },
+          "secrets": [
+            {
+              "name": "database-url",
+              "value": "postgresql://sort_app:hunter2@db.postgres.database.azure.com:5432/sort"
+            }
+          ]
+        },
+        "template": {
+          "containers": [
+            {
+              "name": "sort-app",
+              "image": "ghcr.io/renilsonjr/sort-tester-live-app:latest"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "type": "Microsoft.Storage/storageAccounts",
+      "apiVersion": "2024-01-01",
+      "name": "[format('stsortdel{0}', uniqueString(resourceGroup().id))]",
+      "properties": {
+        "allowSharedKeyAccess": true,
+        "allowBlobPublicAccess": true,
+        "publicNetworkAccess": "Enabled"
+      }
+    },
+    {
+      "type": "Microsoft.Storage/storageAccounts/blobServices",
+      "apiVersion": "2024-01-01",
+      "name": "[format('{0}/{1}', format('stsortdel{0}', uniqueString(resourceGroup().id)), 'default')]",
+      "properties": {
+        "isVersioningEnabled": false,
+        "deleteRetentionPolicy": {
+          "enabled": true
+        },
+        "containerDeleteRetentionPolicy": {
+          "enabled": false
+        }
+      }
+    },
+    {
+      "type": "Microsoft.DBforPostgreSQL/flexibleServers",
+      "apiVersion": "2024-08-01",
+      "name": "[parameters('serverName')]",
+      "properties": {
+        "network": {
+          "publicNetworkAccess": "Enabled"
+        },
+        "backup": {
+          "backupRetentionDays": 35,
+          "geoRedundantBackup": "Enabled"
+        }
+      }
+    }
+  ]
+}

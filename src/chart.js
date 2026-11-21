@@ -1,6 +1,6 @@
-// Current Twilight photo plus owner corrections through the November 16 SORT CHANGE.
+// Current Twilight photo plus the explicit owner corrections from November 8.
 // Reference provenance is not approval of Ranked difficulty or work methods.
-export const ROUTE_REFERENCE_VERSION = 'twilight-2026-11-16-r1';
+export const ROUTE_REFERENCE_VERSION = 'twilight-2026-11-08-r2';
     const rows = text => text.trim().split('\n').map(line => line.split('|').map(value => value.trim()));
     // Shared photo rows. Keep service-specific owner corrections out of this table.
     const sharedEast = rows(`
@@ -53,8 +53,7 @@ export const ROUTE_REFERENCE_VERSION = 'twilight-2026-11-16-r1';
       LA, AR|700–729|BLUE
       OK|730–734|ORANGE
       OK|735–749|ORANGE
-      TX|750–769|BLACK|Sort change
-      TX|770–779|BLACK|Sort change
+      TX|750–779|BLACK
       TX|780–784|BLUE
       TX|785–799|ORANGE
       CO, WY|800–831|ORANGE
@@ -94,7 +93,7 @@ export const ROUTE_REFERENCE_VERSION = 'twilight-2026-11-16-r1';
       OK|735–749|ORANGE
       TX|750–768|BLUE
       TX|769 0|PURPLE
-      TX|770–779|BLACK|Sort change
+      TX|770–779|BLACK
       TX|780–784|BLUE
       TX|785–799|PURPLE
       CO|800–810|ORANGE
@@ -113,7 +112,7 @@ export const ROUTE_REFERENCE_VERSION = 'twilight-2026-11-16-r1';
       IN|460–479|ORANGE
       MI|480–497|ORANGE
       *|498–599|PURPLE
-      IL|600–619|PURPLE|Sort change
+      IL|600–619|PURPLE
       IL|620–629|ORANGE
       MO|630–639|BLUE
       *|640–729|PURPLE

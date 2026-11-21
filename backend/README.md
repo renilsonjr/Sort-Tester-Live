@@ -255,3 +255,62 @@ dispatcher, which never rewrites the payload.
 
 No DSN or database credentials belong in the repository; keep every real
 connection string in your local environment only.
+
+## Migrate the application database
+
+The test tooling above only ever touches `sort_tester_unittest_scratch`. To
+create or update the tables of the database the app itself uses (local
+development, staging, or the hosted pilot), use the guarded command, from the
+repository root:
+
+```sh
+export SORT_TESTER_DATABASE_URL="postgresql://USER@HOST:5432/DATABASE"
+backend/.venv/bin/python -m backend.db.upgrade_app            # shows the target, changes nothing
+backend/.venv/bin/python -m backend.db.upgrade_app --confirm DATABASE@HOST:5432
+```
+
+On Windows use `& backend\.venv\Scripts\python.exe -m backend.db.upgrade_app`.
+
+Before connecting, it refuses (exit code 2) when the URL is missing or invalid,
+when `--confirm` does not repeat the whole target `database@host:port`
+exactly -- the database name alone is the same in staging and production,
+so it proved only that the operator knew what it was called -- or when the
+target is the unittest scratch database or the server's `postgres`
+maintenance database. It reads only
+`SORT_TESTER_DATABASE_URL`, never the test URL. It prints the target host,
+port and database and the revision before and after, never the password. It
+only upgrades to the latest revision; running it again is harmless. There is
+no downgrade command: take a backup first, and restore from it if needed.
+
+## Cross-site write protection
+
+The session lives in a cookie, so a browser attaches it to any request
+another site makes on the player's behalf. Every write (`POST`, `PUT`,
+`PATCH`, `DELETE`) must therefore state where it came from, in `Origin` or
+`Referer`, and that host must be one of ours; otherwise the request is
+refused with `403` before it reaches a route. Reads are never affected.
+
+Accepted hosts:
+
+- the app's own `Host`, whatever the scheme — behind an ingress that
+  terminates TLS the browser says `https` while the app sees plain `http`
+  for the same host, and that still matches;
+- `SORT_TESTER_APP_ORIGIN`, the public origin (for example
+  `https://sortlab.example.com`), when set;
+- the explicit loopback origins in `SORT_TEST_DEV_ORIGINS`.
+
+Set `SORT_TESTER_APP_ORIGIN` on the hosted app. A script that calls a write
+endpoint must send an `Origin` header, as `curl -H "Origin: https://..."`;
+a browser does this on its own. Tests that drive the API like a browser use
+`backend/tests/browser.py`.
+
+## Client addresses behind a proxy
+
+Login attempts and sign-ups are limited per client address. Behind a proxy the
+connection's address is the proxy's, the same for everyone, so set
+`SORT_TEST_TRUST_PROXY` to the number of proxies of your own in front of the
+app (`1` for a single ingress). The app then reads that entry of
+`X-Forwarded-For` counted **from the right** — the one your proxy appended —
+and never the first entry, which the client controls. Leave it unset when
+nothing trusted sits in front of the app. The hosting runbook, step 6a, has the
+two-request check that proves the setting on a real deployment.
