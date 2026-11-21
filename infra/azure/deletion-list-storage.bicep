@@ -31,12 +31,12 @@ param expiresOn string
 @allowed(['stg', 'pilot'])
 param environmentSuffix string = 'stg'
 
-@description('What kind of data the environment holds, recorded as a tag. Staging holds fictional data only. The pilot value marks real employee data.')
+@description('What kind of data the environment holds, recorded as a tag. The environment holds real employee accounts since 2026-11-21, so that is the default; fictional-only is for a scratch copy.')
 @allowed(['fictional-only', 'employee-pilot'])
-param dataClassification string = 'fictional-only'
+param dataClassification string = 'employee-pilot'
 
-// The tag kept its long form for staging so existing resources do not change.
-var environmentTag = environmentSuffix == 'stg' ? 'staging' : environmentSuffix
+// The names keep the stg suffix (renaming means recreating), but since 2026-11-21 this is the official environment with real employee accounts, so the tag says production.
+var environmentTag = environmentSuffix == 'stg' ? 'production' : environmentSuffix
 
 var tags = {
   project: 'sort-tester-live'

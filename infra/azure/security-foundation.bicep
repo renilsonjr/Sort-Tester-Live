@@ -12,8 +12,8 @@ param expiresOn string
 
 var tags = {
   project: 'sort-tester-live'
-  environment: 'staging'
-  'data-classification': 'fictional-only'
+  environment: 'production'
+  'data-classification': 'employee-pilot'
   purpose: 'security-foundation'
   'expires-on': expiresOn
 }
