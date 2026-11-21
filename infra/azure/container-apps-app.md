@@ -270,12 +270,13 @@ az postgres flexible-server firewall-rule delete -g rg-sort-tester-staging \
 
 1. Confirm the **App image** workflow passed on the commit you intend to
    deploy.
-2. Run **App image publish** manually on `codex/ranked-mode`
-   (`gh workflow run "App image publish" --ref codex/ranked-mode -f confirm_publish=publish`),
-   typing `publish` to confirm and choosing the visibility the package must
-   have. It refuses if App image did not succeed for that commit, and it
-   checks the package visibility **before** pushing, so a mismatch stops the
-   run with nothing published.
+2. Run **App image publish** manually on `main`
+   (`gh workflow run "App image publish" --ref main -f confirm_publish=publish`),
+   after the work on `codex/ranked-mode` has reached `main` through a pull
+   request. The workflow refuses any other branch. Type `publish` to confirm
+   and choose the visibility the package must have. It refuses if App image
+   did not succeed for that commit, and it checks the package visibility
+   **before** pushing, so a mismatch stops the run with nothing published.
 3. The job summary prints `imageSha256=<64 hex characters>`. That digest is
    the only thing you deploy.
 

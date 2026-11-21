@@ -30,7 +30,7 @@ Container Apps spike in `CONTAINER-APPS-SPIKE.md` is the tested starting point.
    more than a week has passed.
    Stop on a failed pull, architecture mismatch, scan finding requiring a fix,
    or missing cost evidence. Do not substitute a mutable tag.
-4. Use only a clean, reviewed commit of `codex/ranked-mode`. Keep account IDs,
+4. Use only a clean, reviewed commit of `main`. Keep account IDs,
    private inventory, cost reports, and response logs outside Git. Do not run
    the old `main.bicep` App Service deployment.
 
