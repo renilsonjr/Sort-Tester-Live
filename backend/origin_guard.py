@@ -10,7 +10,9 @@ Allowed:
 - the app's own host (the `Host` header), whatever the scheme — behind an
   ingress that terminates TLS the browser says `https` while the app sees
   a plain `http` request for the same host;
-- `SORT_TESTER_APP_ORIGIN`, the public origin, when set;
+- `SORT_TESTER_APP_ORIGIN`, the public origin, when set -- and when that
+  origin is https, only over https: a plain-http page of the same host can
+  be supplied by anyone on the network path, so it is not our origin;
 - the explicit loopback origins in `SORT_TEST_DEV_ORIGINS`.
 
 A request with neither header is refused too: every current browser sends
@@ -66,6 +68,14 @@ def allowed_hosts(request_host: str, app_origin: str, dev_origins) -> set[str]:
     return hosts
 
 
+def _is_downgraded(stated_url: str, stated_host: str, app_origin: str) -> bool:
+    """True when *stated_url* is the plain-http form of an https app origin."""
+    configured = urlsplit(app_origin)
+    if configured.scheme != "https" or stated_host != configured.netloc:
+        return False
+    return urlsplit(stated_url).scheme != "https"
+
+
 def install(application, app_origin: str, dev_origins) -> None:
     """Add the guard to *application*. Safe methods are never touched."""
 
@@ -74,14 +84,15 @@ def install(application, app_origin: str, dev_origins) -> None:
         if request.method not in GUARDED_METHODS:
             return await call_next(request)
 
-        origin = request.headers.get("origin", "")
-        stated = _host_of(origin)
+        source = request.headers.get("origin", "")
+        stated = _host_of(source)
         if not stated:
             # No usable Origin: fall back to the page in Referer.
-            stated = _referer_host(request.headers.get("referer", ""))
+            source = request.headers.get("referer", "")
+            stated = _referer_host(source)
 
         permitted = allowed_hosts(request.headers.get("host", ""), app_origin, dev_origins)
-        if not stated or stated not in permitted:
+        if not stated or stated not in permitted or _is_downgraded(source, stated, app_origin):
             # Say nothing about what was sent or what is configured.
             return JSONResponse({"detail": "Cross-site request rejected."}, status_code=403)
 
