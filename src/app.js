@@ -50,6 +50,27 @@ function canBuildWorkbook() {
   return typeof window !== 'undefined' && typeof window.XLSX !== 'undefined';
 }
 
+// SheetJS is ~900 KB and only needed when the player exports the shift log.
+// It used to load from the CDN on every page view; instead it is fetched on
+// demand the first time an export runs, keeping the first paint light.
+const XLSX_SRC = 'https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js';
+const XLSX_INTEGRITY = 'sha384-EnyY0/GSHQGSxSgMwaIPzSESbqoOLSexfnSMN2AP+39Ckmn92stwABZynq1JyzdT';
+let xlsxPromise = null;
+function loadXLSX() {
+  if (canBuildWorkbook()) return Promise.resolve(window.XLSX);
+  if (xlsxPromise) return xlsxPromise;
+  xlsxPromise = new Promise((resolve, reject) => {
+    const script = document.createElement('script');
+    script.src = XLSX_SRC;
+    script.integrity = XLSX_INTEGRITY;
+    script.crossOrigin = 'anonymous';
+    script.onload = () => (canBuildWorkbook() ? resolve(window.XLSX) : reject(new Error('xlsx-missing')));
+    script.onerror = () => { xlsxPromise = null; reject(new Error('xlsx-load-failed')); };
+    document.head.appendChild(script);
+  });
+  return xlsxPromise;
+}
+
 function clockText(totalMs) {
   const minutes = Math.floor(totalMs / 60000);
   const seconds = Math.floor((totalMs % 60000) / 1000);
@@ -2743,7 +2764,7 @@ function showLog() {
     exportNote.hidden = !message;
   }
 
-  if (exportButton && canBuildWorkbook()) {
+  if (exportButton && typeof document !== 'undefined') {
     getDownloads().then((downloads) => {
       exportButton.hidden = false;
 
@@ -2751,6 +2772,7 @@ function showLog() {
         exportButton.disabled = true;
         note(t('Preparing the sheet...'));
         try {
+          await loadXLSX();
           const workbook = buildWorkbook(log.all());
           const stamp = new Date().toISOString().slice(0, 10);
           const result = await saveWorkbook(workbook, `sort-test-log-${stamp}.xlsx`, downloads);

@@ -153,8 +153,11 @@ export function createAuthPanel(container, onContinueAsGuest, onLoggedIn) {
   });
 
   return {
-    async checkSession() {
-      const result = await fetchMe();
+    // `pending` lets the caller start the /auth/me request earlier (in
+    // parallel with the /health probe) and hand the promise in, so the
+    // session check costs no extra round-trip. Falls back to a fresh call.
+    async checkSession(pending) {
+      const result = await (pending ?? fetchMe());
       if (result && result.ok) {
         showMessage(`Welcome back, ${result.data.username}#${result.data.tag}`);
         if (onLoggedIn) onLoggedIn(result.data);
@@ -224,10 +227,16 @@ export async function backendIsAvailable(fetchFn = fetch, timeoutMs = 3000) {
 
 // Show the login screen only when the backend answers. Returns true if shown.
 export async function startAuthGate({ doc = document, fetchFn = fetch, timeoutMs = 3000 } = {}) {
+  // Fire the availability probe and the session lookup together. On the
+  // deployed backend /health always answers, so awaiting it before /auth/me
+  // added a guaranteed extra round-trip before the signed-in Home could
+  // appear. `fetchMe` never rejects, so starting it early is safe even when
+  // the backend turns out to be absent (then we simply never read it).
+  const sessionPromise = fetchMe();
   if (!(await backendIsAvailable(fetchFn, timeoutMs))) return false;
   const panel = initAuthPanel(doc);
   if (!panel) return false;
-  await panel.checkSession();
+  await panel.checkSession(sessionPromise);
   return true;
 }
 
