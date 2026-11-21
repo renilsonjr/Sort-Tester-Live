@@ -197,6 +197,66 @@ switched roles. Do not deploy the migration-owner URL as the runtime secret.
 > afterwards. The app answered `/api/ranked/season/notice` after it, so it
 > still reads the database.
 
+### 1d-i. A migration that creates a table: grant it to the runtime role
+
+Do this **in the same admin session, straight after `upgrade_app`, and before
+the new image is deployed**, whenever the migration created a table (or a
+sequence).
+
+The app connects as the Entra role `id-sort-app-stg` (#84). When that role was
+mapped it was granted the tables that existed that day
+(`GRANT … ON ALL TABLES`, [[db-runtime-role]]), and nothing was set for tables
+created later. The default privileges written by `db-role.sql` name `sort_app`,
+which can no longer log in. So a new table is owned by the migration owner and
+is invisible to the app: the feature that needs it answers a server error with
+`permission denied`, while every other route keeps working and `/health` stays
+green. No local or CI test can show this, because those run as the database
+owner.
+
+With `$PGPW` still set from §1d, and `<table>` being each table the migration
+created:
+
+```sh
+HOST=<server>.postgres.database.azure.com
+ADMIN=<admin>
+PGPASSWORD="$PGPW" psql "host=$HOST port=5432 dbname=sort_tester_app user=$ADMIN sslmode=verify-full sslrootcert=/etc/ssl/certs/ca-certificates.crt" \
+  -c 'GRANT SELECT, INSERT, UPDATE, DELETE ON <table> TO "id-sort-app-stg"' \
+  -c "SELECT has_table_privilege('id-sort-app-stg','<table>','INSERT') AS can_write"
+```
+
+`can_write` must read `t`. A table with a serial or identity column also needs
+`GRANT USAGE ON SEQUENCE <sequence> TO "id-sort-app-stg"`. Never grant
+`alembic_version` or `tooling_probe`: the runtime role is kept off both on
+purpose.
+
+The order matters. A table the old image does not know about is harmless; a
+new image without its table, or without this grant, is a broken feature in
+front of players.
+
+A permanent alternative exists and has **not** been applied: default
+privileges for `id-sort-app-stg` on objects the migration owner creates, as
+`db-role.sql` does for `sort_app`. It would remove this step, and it would also
+hand the app every future table without anybody deciding to. That is an owner
+decision for a reviewed change, not something to slip into a deploy.
+
+> **Applied 2026-11-21 — migration 0038 (`recovery_messages`, #251).** The
+> first migration since the app moved to the managed identity, and where this
+> gap was found — by reading [[db-runtime-role]] before deploying, not by a
+> failure. Since 2026-11-19 the server has public access disabled, so the
+> session was: `--public-access Enabled`, the existing neutralised firewall
+> rule pointed at the Cloud Shell address alone, `upgrade_app --confirm` taking
+> it 0037 → 0038, the grant above with `can_write` and the matching `UPDATE`
+> check both `t`, the rule pointed back at `192.0.2.1`, `--public-access
+> Disabled` read back, and only then the image (commit `1194383`) as a new
+> revision. Afterwards the public site served the new sign-in script and the
+> owner route answered 401 where the previous image answered 404. The admin
+> password rotated on 2026-11-20 was first used, and proven, by this
+> migration. The owner then ran the end-to-end check on the hosted app the
+> same day and reported it working: a message left from the sign-in screen
+> reached the owner's Recovery messages screen, which is the grant being used
+> for a write and a read by the runtime role. That check was the owner's own;
+> its output was not captured here.
+
 ### 1e. Close the firewall again
 
 ```sh
