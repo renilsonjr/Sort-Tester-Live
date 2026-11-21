@@ -28,6 +28,8 @@ than any request may and must not be cut off at five seconds.
 """
 from contextlib import contextmanager
 
+import threading
+
 import psycopg
 from psycopg.conninfo import make_conninfo
 from psycopg.rows import dict_row
@@ -49,6 +51,9 @@ MAX_SIZE = 8
 STATEMENT_TIMEOUT_MS = 5000
 
 _pool: ConnectionPool | None = None
+# Nothing builds the pool at startup: the first requests do, each on its own
+# worker thread, so building it has to be one-at-a-time.
+_pool_lock = threading.Lock()
 
 
 def _conninfo_with_timeout(conninfo: str) -> str:
@@ -63,9 +68,12 @@ def init_pool(
 ) -> None:
     """Build the pool if there is not one already.
 
-    Idempotent on purpose: it is called at startup and defensively from
-    `checkout`, and a second pool would be eight more connections that
-    nothing tracks or closes.
+    Idempotent on purpose: every request path calls it before borrowing a
+    connection, and a second pool would be eight more connections that
+    nothing tracks or closes. It is also safe to call from several threads
+    at once: the first requests after a start arrive together, and without
+    the lock each built its own pool, so a connection borrowed from one was
+    returned to another and the request failed.
 
     In managed-identity mode the connection password is a fresh Entra token
     resolved per physical connection via a callable `kwargs` (audit #84);
@@ -76,27 +84,30 @@ def init_pool(
     global _pool
     if _pool is not None:
         return
-    if auth_mode == db_settings.MANAGED_IDENTITY_MODE:
-        def _kwargs():
-            return {"row_factory": dict_row, "password": token_provider()}
-        pool_kwargs = _kwargs
-    else:
-        pool_kwargs = {"row_factory": dict_row}
-    _pool = ConnectionPool(
-        conninfo=_conninfo_with_timeout(conninfo),
-        min_size=1,
-        max_size=MAX_SIZE,
-        kwargs=pool_kwargs,
-        # A pooled connection outlives the thing at the other end of it: a
-        # restarted database, a dropped idle connection, a network blip
-        # between the app and a private endpoint. Without this check the
-        # first request to borrow a dead connection is the one that fails,
-        # for no reason it could have known. It costs a round trip per
-        # checkout and buys a failure that lands on the pool instead of on
-        # a player.
-        check=ConnectionPool.check_connection,
-        open=True,
-    )
+    with _pool_lock:
+        if _pool is not None:  # another thread built it while we waited
+            return
+        if auth_mode == db_settings.MANAGED_IDENTITY_MODE:
+            def _kwargs():
+                return {"row_factory": dict_row, "password": token_provider()}
+            pool_kwargs = _kwargs
+        else:
+            pool_kwargs = {"row_factory": dict_row}
+        _pool = ConnectionPool(
+            conninfo=_conninfo_with_timeout(conninfo),
+            min_size=1,
+            max_size=MAX_SIZE,
+            kwargs=pool_kwargs,
+            # A pooled connection outlives the thing at the other end of it: a
+            # restarted database, a dropped idle connection, a network blip
+            # between the app and a private endpoint. Without this check the
+            # first request to borrow a dead connection is the one that fails,
+            # for no reason it could have known. It costs a round trip per
+            # checkout and buys a failure that lands on the pool instead of on
+            # a player.
+            check=ConnectionPool.check_connection,
+            open=True,
+        )
 
 
 def current_pool() -> ConnectionPool:
