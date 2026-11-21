@@ -859,6 +859,11 @@ function showOwnerTools() {
         <span><strong>${esc(t('Access recovery'))}</strong><small>${esc(t('In person, for a sorter who lost their login ID.'))}</small></span>
         <span class="lab-arrow" aria-hidden="true">→</span>
       </button>
+      <button id="owner-messages" class="lab-choice" type="button">
+        <span class="lab-choice-icon">✉</span>
+        <span><strong>${esc(t('Recovery messages'))}</strong><small id="owner-messages-count">${esc(t('Left on the sign-in screen by people who are locked out.'))}</small></span>
+        <span class="lab-arrow" aria-hidden="true">→</span>
+      </button>
       <button id="owner-select" class="lab-choice" type="button">
         <span class="lab-choice-icon">\u265b</span>
         <span><strong>${esc(t('Prize selection'))}</strong><small id="owner-select-count">${esc(t('Ties the rules send to you.'))}</small></span>
@@ -874,6 +879,14 @@ function showOwnerTools() {
   `, 'profile', showOwnerTools);
   view.querySelector('#owner-eligibility').addEventListener('click', () => showOwnerEligibility());
   view.querySelector('#owner-recovery').addEventListener('click', () => showRecovery());
+  view.querySelector('#owner-messages').addEventListener('click', () => showRecoveryMessages());
+  api('/ranked/owner/recovery-messages').then((body) => {
+    const n = body?.open ?? 0;
+    if (n > 0) {
+      view.querySelector('#owner-messages-count').textContent =
+        n === 1 ? t('1 message waiting.') : `${n} ${t('messages waiting.')}`;
+    }
+  });
   view.querySelector('#owner-cases').addEventListener('click', () => showCases());
   view.querySelector('#owner-select').addEventListener('click', () => showSelection());
   // the row says when something is waiting, so the owner does not have to
@@ -1409,6 +1422,65 @@ async function fillRecoveries(panel) {
           : `${t('opened')} ${new Date(row.opened_at).toLocaleDateString()}, ${t('not completed')}`)}</small>
       </span>
     </li>`).join('')}</ul>`;
+}
+
+// Recovery messages (#251). What a locked-out player typed on the sign-in
+// screen. Anybody can type anything there, including somebody else's name,
+// so this screen shows the text as text and says what it is worth: a reason
+// to go and find a person. Recovering access is still the other screen.
+function showRecoveryMessages(message = null, bad = false) {
+  stopTick();
+  clock = null;
+  const view = labPage(`
+    <section class="lab-screen">
+      <p class="lab-eyebrow">${esc(t('Owner'))}</p>
+      <h1 class="lab-title">${esc(t('Recovery messages'))}</h1>
+      ${message ? `<div class="board-notice${bad ? ' board-notice-bad' : ''}" role="status"><p>${esc(message)}</p></div>` : ''}
+      <aside class="lab-disclaimer">${esc(t('A message proves nothing about who wrote it. Find the person, check them in person, then use Access recovery.'))}</aside>
+      <button id="msg-recovery" class="ghost">${esc(t('Open Access recovery'))}</button>
+      <div id="msg-list"><p class="lab-intro" role="status">${esc(t('Loading…'))}</p></div>
+      <button id="msg-back" class="ghost">${esc(t('Back to Owner tools'))}</button>
+    </section>
+  `, 'profile', () => showRecoveryMessages(message, bad));
+  view.querySelector('#msg-back').addEventListener('click', showOwnerTools);
+  view.querySelector('#msg-recovery').addEventListener('click', () => showRecovery());
+  fillRecoveryMessages(view.querySelector('#msg-list'));
+  return view;
+}
+
+async function fillRecoveryMessages(panel) {
+  const body = await api('/ranked/owner/recovery-messages');
+  if (!body) {
+    panel.innerHTML = `<p class="notice">${esc(t('Could not load the messages. Nothing has been changed.'))}</p>`;
+    return;
+  }
+  const rows = body.messages ?? [];
+  if (rows.length === 0) {
+    panel.innerHTML = `<p class="lab-intro">${esc(t('No messages.'))}</p>`;
+    return;
+  }
+  panel.innerHTML = `<ul class="approved">${rows.map((row) => `
+    <li${row.resolved_at ? ' style="opacity:.6"' : ''}>
+      <span class="approved-who">
+        <b style="white-space:pre-wrap">${esc(row.body)}</b>
+        <small>${esc(row.resolved_at
+          ? `${t('received')} ${new Date(row.created_at).toLocaleString()} · ${t('resolved')} ${new Date(row.resolved_at).toLocaleDateString()}`
+          : `${t('received')} ${new Date(row.created_at).toLocaleString()}`)}</small>
+      </span>
+      ${row.resolved_at ? '' : `<button class="ghost" data-resolve="${esc(row.id)}">${esc(t('Mark as resolved'))}</button>`}
+    </li>`).join('')}</ul>`;
+  panel.querySelectorAll('[data-resolve]').forEach((button) => {
+    button.addEventListener('click', async () => {
+      button.disabled = true;
+      const result = await apiSend('POST', `/ranked/owner/recovery-messages/${button.dataset.resolve}/resolve`);
+      if (!result.ok) {
+        button.disabled = false;
+        button.textContent = result.reason || t('That did not work. Nothing has been changed.');
+        return;
+      }
+      fillRecoveryMessages(panel);
+    });
+  });
 }
 
 async function findForRecovery(view) {

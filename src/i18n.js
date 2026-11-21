@@ -206,6 +206,18 @@ const ES = {
   'Already asking. Try again in a moment.': 'Ya se está procesando. Inténtalo de nuevo en un momento.',
   'The log is too big to send. Clear it and start a fresh shift.': 'El registro es demasiado grande. Bórralo y comienza un nuevo turno.',
   'This phone could not save the file.': 'Este teléfono no pudo guardar el archivo.',
+  // The owner's recovery-message inbox (#251)
+  'Recovery messages': 'Mensajes de recuperación',
+  'Left on the sign-in screen by people who are locked out.': 'Dejados en la pantalla de acceso por personas que no pueden entrar.',
+  'A message proves nothing about who wrote it. Find the person, check them in person, then use Access recovery.': 'Un mensaje no prueba quién lo escribió. Busca a la persona, compruébala en persona y luego usa Recuperación de acceso.',
+  'Open Access recovery': 'Abrir Recuperación de acceso',
+  'Mark as resolved': 'Marcar como resuelto',
+  'No messages.': 'No hay mensajes.',
+  'resolved': 'resuelto',
+  'received': 'recibido',
+  'Could not load the messages. Nothing has been changed.': 'No se pudieron cargar los mensajes. No se ha cambiado nada.',
+  '1 message waiting.': '1 mensaje en espera.',
+  'messages waiting.': 'mensajes en espera.',
 };
 
 const SERVICE_ES = {

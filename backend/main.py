@@ -14,7 +14,7 @@ from backend.db import settings as db_settings
 from backend.db.entra_token import TokenUnavailable
 from backend.auth import deletion_list, settings as auth_settings
 from backend.auth.rate_limit import RegistrationLimiter
-from backend.routers import auth, ranked
+from backend.routers import auth, ranked, recovery_messages as recovery_messages_router
 
 # The repository root holds index.html, src/ and assets/.
 FRONTEND_ROOT = Path(__file__).resolve().parent.parent
@@ -40,6 +40,11 @@ def create_app() -> FastAPI:
     # one sign-up limiter per application instance (owner caps: 30/hour per
     # address, 200/day in total)
     application.state.registration_limiter = RegistrationLimiter()
+    # recovery messages from the sign-in screen (#251, owner caps: 3/hour
+    # per address, 50/day in total); the same sliding-window rule
+    application.state.recovery_message_limiter = RegistrationLimiter(
+        per_client=3, per_client_window=3600.0, total=50, total_window=86400.0
+    )
 
     app_origin = os.environ.get("SORT_TESTER_APP_ORIGIN", "").strip()
 
@@ -78,6 +83,7 @@ def create_app() -> FastAPI:
     http_hardening.install(application)
 
     application.include_router(auth.router)
+    application.include_router(recovery_messages_router.router)
     application.include_router(ranked.router)
 
     @application.exception_handler(TokenUnavailable)

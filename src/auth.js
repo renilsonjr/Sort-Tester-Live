@@ -48,6 +48,45 @@ export async function fetchMe() {
   return api('GET', '/auth/me');
 }
 
+export async function leaveRecoveryMessage(message) {
+  return api('POST', '/auth/recovery-messages', { message });
+}
+
+// The rest of this panel is English only. These are the sentences added with
+// the recovery message (#251), in both of the app's languages. The table
+// lives here, not in i18n.js, because this file is loaded on its own and
+// imports nothing; the storage key is the one i18n.js keeps the choice in.
+const FORGOT_ES = {
+  'Forgot my login?':
+    '¿Olvidaste tu acceso?',
+  'Message for the owner':
+    'Mensaje para el responsable',
+  'Say who you are and what happened. The owner reads this and recovers your access in person. Nothing is recovered from this screen.':
+    'Di quién eres y qué pasó. El responsable lee esto y recupera tu acceso en persona. Desde esta pantalla no se recupera nada.',
+  'Send message':
+    'Enviar mensaje',
+  'Cancel':
+    'Cancelar',
+  'Write a message first.':
+    'Escribe un mensaje primero.',
+  'Message received. The owner recovers access in person: find them at work.':
+    'Mensaje recibido. El responsable recupera el acceso en persona: búscalo en el trabajo.',
+  'Too many messages for now. Find the owner in person.':
+    'Demasiados mensajes por ahora. Busca al responsable en persona.',
+  'Could not reach the server. Nothing was sent; try again in a moment.':
+    'No se pudo contactar con el servidor. No se envió nada; inténtalo de nuevo en un momento.',
+  'The message could not be sent. Find the owner in person.':
+    'No se pudo enviar el mensaje. Busca al responsable en persona.',
+};
+
+function forgotText(source) {
+  let spanish = false;
+  try {
+    spanish = globalThis.localStorage?.getItem('sortTest.language.v1') === 'es';
+  } catch { /* no storage: English */ }
+  return spanish ? FORGOT_ES[source] ?? source : source;
+}
+
 export function createAuthPanel(container, onContinueAsGuest, onLoggedIn) {
   // Keep entry choices compact; a form replaces them while it is open.
   container.innerHTML = `
@@ -65,6 +104,7 @@ export function createAuthPanel(container, onContinueAsGuest, onLoggedIn) {
         <button id="auth-guest-btn" class="ghost">Continue as guest</button>
         <p class="auth-note">Ranked needs a login. Guests get Practice only.</p>
         <button id="auth-register-btn" class="auth-link" type="button">Need an ID? Create an account</button>
+        <button id="auth-forgot-btn" class="auth-link" type="button">${forgotText('Forgot my login?')}</button>
       </div>
       <div id="auth-form" class="auth-card" hidden></div>
       <p id="auth-message" class="warn"></p>
@@ -146,6 +186,52 @@ export function createAuthPanel(container, onContinueAsGuest, onLoggedIn) {
       }
     });
     form.querySelector('#register-cancel').addEventListener('click', () => closeForm('#auth-register-btn'));
+  });
+
+  // A locked-out player cannot sign in, so this is the one thing they can
+  // do here: leave the owner a message (#251). It recovers nothing and
+  // looks nothing up, so every accepted message gets the same sentence.
+  container.querySelector('#auth-forgot-btn').addEventListener('click', () => {
+    choices.hidden = true;
+    showMessage('');
+    form.hidden = false;
+    form.innerHTML = `
+      <label class="field">
+        <span>${forgotText('Message for the owner')}</span>
+        <textarea id="forgot-message" class="glass-input" rows="4" maxlength="500"></textarea>
+      </label>
+      <p class="auth-note"><span id="forgot-count">0</span>/500</p>
+      <p class="auth-note">${forgotText('Say who you are and what happened. The owner reads this and recovers your access in person. Nothing is recovered from this screen.')}</p>
+      <button id="forgot-send" class="primary">${forgotText('Send message')}</button>
+      <button id="forgot-cancel" class="ghost">${forgotText('Cancel')}</button>
+    `;
+    const box = form.querySelector('#forgot-message');
+    const send = form.querySelector('#forgot-send');
+    box.focus();
+    box.addEventListener('input', () => {
+      form.querySelector('#forgot-count').textContent = String(box.value.length);
+    });
+    send.addEventListener('click', async () => {
+      const text = box.value.trim();
+      if (!text) {
+        showMessage(forgotText('Write a message first.'), true);
+        return;
+      }
+      send.disabled = true;
+      const result = await leaveRecoveryMessage(text);
+      send.disabled = false;
+      if (result.ok) {
+        closeForm('#auth-forgot-btn');
+        showMessage(forgotText('Message received. The owner recovers access in person: find them at work.'));
+      } else if (result.status === 429) {
+        showMessage(forgotText('Too many messages for now. Find the owner in person.'), true);
+      } else if (result.status === 0) {
+        showMessage(forgotText('Could not reach the server. Nothing was sent; try again in a moment.'), true);
+      } else {
+        showMessage(forgotText('The message could not be sent. Find the owner in person.'), true);
+      }
+    });
+    form.querySelector('#forgot-cancel').addEventListener('click', () => closeForm('#auth-forgot-btn'));
   });
 
   container.querySelector('#auth-guest-btn').addEventListener('click', () => {
