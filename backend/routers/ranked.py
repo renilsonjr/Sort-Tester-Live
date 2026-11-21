@@ -13,7 +13,7 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
 from pydantic import BaseModel, Field
 
-from backend.auth import eligibility, reauth, recovery
+from backend.auth import eligibility, reauth, recovery, recovery_messages
 from backend.auth.deletion import purge_deleted_accounts
 from backend.auth.service import get_account_by_session
 from backend.auth import sessions as auth_sessions
@@ -828,6 +828,62 @@ def hand_over_recovery(
         "username": handover.username,
         "tag": handover.tag,
     }
+
+
+# Recovery messages (#251): what a locked-out player typed on the sign-in
+# screen. The rule lives in backend/auth/recovery_messages.py. No recent
+# reauthentication here, unlike the recovery itself: reading a message and
+# marking it resolved reveal no secret and grant nobody access.
+@router.get("/owner/recovery-messages")
+def list_recovery_messages(
+    account: dict = Depends(_current_account), conn=Depends(get_db)
+):
+    _require_owner(account)
+    try:
+        rows = recovery_messages.list_messages(conn, account["id"])
+    except recovery_messages.NotOwner:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden"
+        ) from None
+    return {
+        "open": sum(1 for row in rows if row["resolved_at"] is None),
+        "messages": [
+            {
+                "id": str(row["id"]),
+                "body": row["body"],
+                "created_at": _utc(row["created_at"]),
+                "resolved_at": None if row["resolved_at"] is None
+                else _utc(row["resolved_at"]),
+            }
+            for row in rows
+        ],
+    }
+
+
+@router.post(
+    "/owner/recovery-messages/{message_id}/resolve",
+    status_code=status.HTTP_204_NO_CONTENT,
+)
+def resolve_recovery_message(
+    message_id: str,
+    account: dict = Depends(_current_account),
+    conn=Depends(get_db),
+):
+    _require_owner(account)
+    try:
+        found = recovery_messages.resolve(
+            conn, account["id"], UUID(message_id), clock=_CLOCK
+        )
+    except ValueError:
+        found = False
+    except recovery_messages.NotOwner:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden"
+        ) from None
+    if not found:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Not found")
+    conn.commit()
+    return None
 
 
 # Prize selection (#24, slice 6). Where every "wait for the owner" lands.
