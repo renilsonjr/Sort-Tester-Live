@@ -72,6 +72,44 @@ class PoolTests(unittest.TestCase):
         pool.init_pool(self.conninfo)
         self.assertIs(pool.current_pool(), before)
 
+    def test_concurrent_first_calls_build_exactly_one_pool(self):
+        # Nothing builds the pool at startup: the first requests after a
+        # start do, each from its own worker thread. Unlocked, two of them
+        # each built a pool; a connection borrowed from the first was then
+        # returned to the second ("can't return connection to pool"), a 500
+        # for that player, and the first pool's connections were never
+        # closed. Seen on 2026-11-21 with three simultaneous logins on a
+        # freshly started server.
+        import threading
+        import time
+        from unittest import mock
+
+        pool.close_pool()
+        built = []
+        real = pool.ConnectionPool
+
+        def slow_pool(*args, **kwargs):
+            time.sleep(0.2)  # hold the window open, as a real connect does
+            made = real(*args, **kwargs)
+            built.append(made)
+            return made
+
+        start = threading.Barrier(6)
+
+        def first_request():
+            start.wait()
+            pool.init_pool(self.conninfo)
+
+        with mock.patch.object(pool, "ConnectionPool", side_effect=slow_pool):
+            threads = [threading.Thread(target=first_request) for _ in range(6)]
+            for thread in threads:
+                thread.start()
+            for thread in threads:
+                thread.join()
+        self.addCleanup(lambda: [made.close() for made in built])
+        self.assertEqual(len(built), 1)
+        self.assertIs(pool.current_pool(), built[0])
+
     def test_the_pool_is_capped(self):
         self.assertEqual(pool.current_pool().max_size, pool.MAX_SIZE)
         self.assertLessEqual(pool.MAX_SIZE, 8)
