@@ -67,8 +67,10 @@ jobs:
           # M-7): a policy is repository configuration, which can be widened
           # by anyone with admin access and without a commit. This check
           # lives in the file, so widening it leaves a diff to review.
+          # Only main: players see what is on main, and day-to-day work on
+          # codex/ranked-mode reaches main through a reviewed pull request.
           case "$REF" in
-            refs/heads/main|refs/heads/codex/ranked-mode) ;;
+            refs/heads/main) ;;
             *) echo "Publishing from $REF is not allowed. Nothing was published."; exit 1 ;;
           esac
 
