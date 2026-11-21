@@ -535,10 +535,16 @@ async function fillOverview(panel) {
     return;
   }
   // Profile laid out like the mock: badge, a stats grid, the climb, and a way
-  // into history. Points come from the ledger; Best Ranked / Practices / Place
-  // are not tracked by the backend yet, so they show a placeholder until they
-  // are (see the roadmap issue).
+  // into history. Points come from the ledger; Best Ranked and Place come from
+  // the account-private stats endpoint (#218). Practices is not tracked by the
+  // backend yet, so it stays a placeholder. A failed stats read leaves the two
+  // it feeds as a dash rather than failing the whole screen.
   const DASH = '\u2014';
+  const stats = await api('/ranked/profile/stats');
+  const bestRanked = stats && stats.best_ranked
+    ? `${stats.best_ranked.correct}/${stats.best_ranked.total}`
+    : DASH;
+  const place = stats && stats.place != null ? `#${stats.place}` : DASH;
   const tagEl = panel.closest('.lab-screen')?.querySelector('#profile-tag');
   if (tagEl) tagEl.textContent = `${tagEl.textContent} \u00b7 ${entry.badge} \u00b7 ${entry.points.toLocaleString()} ${t('points')}`;
   panel.innerHTML = `
@@ -547,9 +553,9 @@ async function fillOverview(panel) {
     </div>
     <div class="pf-stats">
       <div class="pf-stat"><b>${entry.points.toLocaleString()}</b><small>${esc(t('Points'))}</small></div>
-      <div class="pf-stat"><b>${DASH}</b><small>${esc(t('Best Ranked'))}</small></div>
+      <div class="pf-stat"><b>${esc(bestRanked)}</b><small>${esc(t('Best Ranked'))}</small></div>
       <div class="pf-stat"><b>${DASH}</b><small>${esc(t('Practices'))}</small></div>
-      <div class="pf-stat"><b>${DASH}</b><small>${esc(t('Place'))}</small></div>
+      <div class="pf-stat"><b>${esc(place)}</b><small>${esc(t('Place'))}</small></div>
     </div>
     ${entry.mode === 'promotion' ? `
     <div class="profile-promo">
