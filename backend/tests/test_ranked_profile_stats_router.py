@@ -81,14 +81,16 @@ class ProfileStatsRouterTests(unittest.TestCase):
             (account_id, assignment_id, season_id),
         )["id"]
         for seq in range(1, 16):
-            outcome = "correct" if seq <= correct else "wrong"
+            # The engine writes outcome 'unsent' at send time and the grade
+            # in `answer`; mirror that here (see test_profile_stats).
+            answer = "correct" if seq <= correct else "wrong"
             migrate.execute(
                 self.conn,
                 "INSERT INTO attempt_answers (attempt_id, seq, question_version_id,"
-                " first_sent_at, deadline_at, outcome)"
+                " first_sent_at, deadline_at, outcome, answer, accepted_at)"
                 " VALUES (%s, %s, %s, '2026-01-01T00:00:00Z',"
-                " '2026-01-01T00:00:10Z', %s)",
-                (attempt_id, seq, self._question_version(), outcome),
+                " '2026-01-01T00:00:10Z', 'unsent', %s, '2026-01-01T00:00:05Z')",
+                (attempt_id, seq, self._question_version(), answer),
             )
         self.conn.commit()
 

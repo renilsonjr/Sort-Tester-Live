@@ -78,15 +78,19 @@ class _StatsBase(unittest.TestCase):
             (account_id, assignment_id, mode, season_id, state,
              tiebreak_round, final_outcome),
         )["id"]
+        # The shape the engine really writes: a row is inserted when the
+        # question is sent, with outcome 'unsent', and the grade lands in
+        # `answer` when it is accepted. `outcome` never changes afterwards
+        # (the table rejects it), so it says nothing about correctness.
         for seq in range(1, 16):
-            outcome = "correct" if seq <= correct else "wrong"
+            answer = "correct" if seq <= correct else "wrong"
             migrate.execute(
                 self.conn,
                 "INSERT INTO attempt_answers (attempt_id, seq, question_version_id,"
-                " first_sent_at, deadline_at, outcome)"
+                " first_sent_at, deadline_at, outcome, answer, accepted_at)"
                 " VALUES (%s, %s, %s, '2026-01-01T00:00:00Z',"
-                " '2026-01-01T00:00:10Z', %s)",
-                (attempt_id, seq, self._question_version(), outcome),
+                " '2026-01-01T00:00:10Z', 'unsent', %s, '2026-01-01T00:00:05Z')",
+                (attempt_id, seq, self._question_version(), answer),
             )
         return attempt_id
 

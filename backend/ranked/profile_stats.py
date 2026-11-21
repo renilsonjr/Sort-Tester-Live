@@ -15,11 +15,15 @@ RANKED_QUIZ_LENGTH = 15
 # "settled" state (it requires settled_at). Voids (launch_reset,
 # outage_void) are finalized too but excluded by the outcome filter;
 # tie-breaks (mode 'tiebreak', hidden until a round closes) never match.
+#
+# The grade is in `answer`. `outcome` is written as 'unsent' when the
+# question is sent and the table never lets it change, so counting it found
+# 0 correct for every attempt the engine recorded (seen 2026-11-21).
 _BEST_RANKED_SQL = """
     SELECT MAX(c.correct) AS best
     FROM (
         SELECT aa.attempt_id,
-               COUNT(*) FILTER (WHERE aa.outcome = 'correct') AS correct
+               COUNT(*) FILTER (WHERE aa.answer = 'correct') AS correct
         FROM attempt_answers aa
         JOIN attempts a ON a.id = aa.attempt_id
         WHERE a.account_id = %s
