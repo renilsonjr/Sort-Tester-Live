@@ -24,8 +24,8 @@ param registryName string = 'acrsortstg${uniqueString(resourceGroup().id)}'
 @description('Resource group of that registry when it is NOT this one, so a second environment can pull from the registry staging already has. Empty means this resource group.')
 param registryResourceGroup string = ''
 
-@description('Grant the identity read access to the Key Vault in this resource group. False for an environment that has no vault: the app signs in to its database as this identity and holds no password to store.')
-param grantVaultRead bool = true
+@description('Grant the identity read access to the Key Vault in this resource group. Off by default: the app signs in to its database as this identity and reads no vault secret, and the role was removed from the live identity on 2026-11-21 (issue #13). Turn on only for an app that really reads a secret.')
+param grantVaultRead bool = false
 
 // The tag kept its long form for staging so existing resources do not change.
 var environmentTag = environmentSuffix == 'stg' ? 'staging' : environmentSuffix

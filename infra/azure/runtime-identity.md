@@ -14,6 +14,8 @@ reference. It creates the identity and exactly two role assignments:
 | AcrPull | Existing `<acr-name>` registry only | Download images; no push or registry administration |
 | Key Vault Secrets User | Existing `<key-vault>` vault only | Read secret values/metadata; no secret writes or access administration |
 
+**2026-11-21:** the Key Vault Secrets User row is no longer granted. The app signs in to PostgreSQL as this identity and reads no vault secret, so the role was removed from the live identity (issue #13) and `grantVaultRead` now defaults to `false`. Pass `grantVaultRead=true` only for an app that really reads a secret.
+
 The vault is dedicated to this app. The grant covers all current/future secrets
 in that vault; do not use it as a shared vault for unrelated secrets. This is
 vault scope, not single-secret scope. The runtime identity receives no Owner,
