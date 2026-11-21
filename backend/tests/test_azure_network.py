@@ -77,10 +77,10 @@ class PrivateNetworkTemplateTests(unittest.TestCase):
         self.assertIsNotNone(prefix, "appSubnetPrefix is missing")
         self.assertLessEqual(int(prefix.group(2)), 27)
 
-    def test_it_carries_the_fictional_only_tag(self):
-        # By default: the tag is a parameter whose default is fictional-only.
+    def test_it_carries_the_data_classification_tag(self):
+        # By default: the tag is a parameter whose default is employee-pilot.
         self.assertIn("'data-classification': dataClassification", self.code)
-        self.assertIn("param dataClassification string = 'fictional-only'", self.code)
+        self.assertIn("param dataClassification string = 'employee-pilot'", self.code)
 
     def test_the_subnet_id_it_outputs_is_what_the_app_template_takes(self):
         self.assertIn("output appSubnetId string =", self.code)

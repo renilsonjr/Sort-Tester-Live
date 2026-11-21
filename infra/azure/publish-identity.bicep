@@ -44,8 +44,8 @@ resource publishIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2024-
   location: location
   tags: {
     project: 'sort-tester-live'
-    environment: 'staging'
-    'data-classification': 'fictional-only'
+    environment: 'production'
+    'data-classification': 'employee-pilot'
     purpose: 'ci-registry-push'
     // The subject below carries numeric ids, so it says nothing to a
     // reader. This tag is how someone looking at the identity in the

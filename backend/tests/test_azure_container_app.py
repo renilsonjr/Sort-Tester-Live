@@ -73,9 +73,9 @@ class SingleOriginAppTemplateTests(unittest.TestCase):
             "environment: environmentTag",
             "'data-classification': dataClassification",
             "purpose: 'single-origin-app-container-apps'",
-            # The defaults are what staging carries today.
-            "var environmentTag = environmentSuffix == 'stg' ? 'staging' : environmentSuffix",
-            "param dataClassification string = 'fictional-only'",
+            # The defaults are what the live environment carries today.
+            "var environmentTag = environmentSuffix == 'stg' ? 'production' : environmentSuffix",
+            "param dataClassification string = 'employee-pilot'",
         ):
             self.assertIn(line, self.code)
         self.assertIn("'expires-on': expiresOn", self.code)

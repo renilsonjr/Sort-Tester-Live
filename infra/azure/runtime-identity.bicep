@@ -14,9 +14,9 @@ param expiresOn string
 @allowed(['stg', 'pilot'])
 param environmentSuffix string = 'stg'
 
-@description('What kind of data the environment holds, recorded as a tag. Staging holds fictional data only. The pilot value marks real employee data.')
+@description('What kind of data the environment holds, recorded as a tag. The environment holds real employee accounts since 2026-11-21, so that is the default; fictional-only is for a scratch copy.')
 @allowed(['fictional-only', 'employee-pilot'])
-param dataClassification string = 'fictional-only'
+param dataClassification string = 'employee-pilot'
 
 @description('Name of the registry the app pulls from. The default is the registry in this resource group, which belongs to staging.')
 param registryName string = 'acrsortstg${uniqueString(resourceGroup().id)}'
@@ -27,8 +27,8 @@ param registryResourceGroup string = ''
 @description('Grant the identity read access to the Key Vault in this resource group. Off by default: the app signs in to its database as this identity and reads no vault secret, and the role was removed from the live identity on 2026-11-21 (issue #13). Turn on only for an app that really reads a secret.')
 param grantVaultRead bool = false
 
-// The tag kept its long form for staging so existing resources do not change.
-var environmentTag = environmentSuffix == 'stg' ? 'staging' : environmentSuffix
+// The names keep the stg suffix (renaming means recreating), but since 2026-11-21 this is the official environment with real employee accounts, so the tag says production.
+var environmentTag = environmentSuffix == 'stg' ? 'production' : environmentSuffix
 
 var acrPullRoleId = subscriptionResourceId('Microsoft.Authorization/roleDefinitions', '7f951dda-4ed3-4680-a7ca-43fe172d538d')
 var secretsUserRoleId = subscriptionResourceId('Microsoft.Authorization/roleDefinitions', '4633458b-17de-408a-b874-0445c86b69e6')
