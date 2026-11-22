@@ -49,12 +49,12 @@ test('auth.js answers a dead server instead of throwing', async () => {
   }
 });
 
-test('a dead server never tells the player their login ID is wrong', async () => {
+test('a dead server never tells the player their Quiz Code is wrong', async () => {
   const source = readFileSync(new URL('../src/auth.js', import.meta.url), 'utf8');
   // The message for status 0 has to be the one about reaching the server:
-  // blaming a correct login ID sends people to re-type a good credential.
+  // blaming a correct Quiz Code sends people to re-type a good credential.
   assert.match(source, /status === 0/);
-  assert.match(source, /Could not reach the server\. Your login ID is fine/);
+  assert.match(source, /Could not reach the server\. Your Quiz Code is fine/);
   assert.match(source, /Could not reach the server\. Nothing was created/);
 });
 

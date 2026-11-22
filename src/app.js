@@ -477,8 +477,8 @@ function askForLoginId(reason) {
     dialog.innerHTML = `
       <form class="reauth-card">
         <h2 id="reauth-title">${esc(t('Confirm it is you'))}</h2>
-        <p class="lab-study-meta">${esc(reason || t('Re-enter your login ID to continue. It stays confirmed on this device for five minutes.'))}</p>
-        <label class="field"><span>${esc(t('Your login ID'))}</span>
+        <p class="lab-study-meta">${esc(reason || t('Re-enter your Quiz Code to continue. It stays confirmed on this device for five minutes.'))}</p>
+        <label class="field"><span>${esc(t('Your Quiz Code'))}</span>
           <input id="reauth-input" type="password" autocomplete="current-password" spellcheck="false" placeholder="ABCD-EFGH-JKLM-NPQR"></label>
         <p class="notice" id="reauth-error" role="status" hidden></p>
         <button class="primary" type="submit">${esc(t('Confirm'))}</button>
@@ -800,7 +800,7 @@ function showDeleteAccount() {
           <p>${esc(t('Once this is accepted there is no undo and no restore.'))}</p>
         </div>
         <label class="field">
-          <span>${esc(t('Login ID'))}</span>
+          <span>${esc(t('Quiz Code'))}</span>
           <input id="delete-login-id" type="text" autocomplete="off" placeholder="ABCD-EFGH-JKLM-NPQR">
         </label>
         <p class="notice" id="delete-error" hidden></p>
@@ -923,7 +923,7 @@ function showOwnerTools() {
       </button>
       <button id="owner-recovery" class="lab-choice" type="button">
         <span class="lab-choice-icon">↺</span>
-        <span><strong>${esc(t('Access recovery'))}</strong><small>${esc(t('In person, for a sorter who lost their login ID.'))}</small></span>
+        <span><strong>${esc(t('Access recovery'))}</strong><small>${esc(t('In person, for a sorter who lost their Quiz Code.'))}</small></span>
         <span class="lab-arrow" aria-hidden="true">→</span>
       </button>
       <button id="owner-messages" class="lab-choice" type="button">
@@ -1590,8 +1590,8 @@ function showRecoveryCheck(request) {
         <strong>${esc(t('Check in person first.'))}</strong>
         ${esc(t('Nothing on this screen proves who is standing in front of you. Their username and tag are public, so neither is evidence.'))}
       </aside>
-      <p class="lab-intro">${esc(t('Handing over a login ID signs them out everywhere and ends their old one. Their points, badge and history do not change, and this approves nothing for prizes.'))}</p>
-      <button id="rec-hand" class="primary">${esc(t('I have checked them in person · show the login ID'))}</button>
+      <p class="lab-intro">${esc(t('Handing over a Quiz Code signs them out everywhere and ends their old one. Their points, badge and history do not change, and this approves nothing for prizes.'))}</p>
+      <button id="rec-hand" class="primary">${esc(t('I have checked them in person · show the Quiz Code'))}</button>
       <button id="rec-cancel" class="ghost">${esc(t('Cancel'))}</button>
     </section>
   `, 'profile', () => showRecoveryCheck(request));
@@ -1616,9 +1616,9 @@ function showHandover(handover) {
     <section class="lab-screen">
       <p class="lab-eyebrow">${esc(t('Owner'))}</p>
       <h1 class="lab-title">${esc(t('Hand this over now'))}</h1>
-      <p class="lab-intro">${esc(t('It is shown once and cannot be shown again. Their old login ID and every signed-in device stopped working just now.'))}</p>
+      <p class="lab-intro">${esc(t('It is shown once and cannot be shown again. Their old Quiz Code and every signed-in device stopped working just now.'))}</p>
       <div class="owner-form">
-        <p class="lab-study-meta">${esc(t('New login ID for'))} <b>${esc(handover.username)}</b> · #${esc(handover.tag)}</p>
+        <p class="lab-study-meta">${esc(t('New Quiz Code for'))} <b>${esc(handover.username)}</b> · #${esc(handover.tag)}</p>
         <p class="handover-id">${esc(handover.login_id)}</p>
       </div>
       <aside class="lab-disclaimer">${esc(t('Their points, badge and history are unchanged. This did not approve them for prizes and did not restore anything deleted.'))}</aside>

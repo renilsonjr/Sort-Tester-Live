@@ -27,7 +27,9 @@ function literalKeys() {
 }
 
 // Words that are the same in both languages, on purpose.
-const SAME = new Set(['Twilight', 'Ranked ID']);
+// 'Quiz Code' is the name of the login secret; the owner keeps it untranslated
+// so it reads as one identity in both languages (#265).
+const SAME = new Set(['Twilight', 'Ranked ID', 'Quiz Code']);
 
 test('every sentence app.js shows has a Spanish entry', () => {
   const es = createLanguage(null);

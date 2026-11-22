@@ -57,8 +57,8 @@ export async function leaveRecoveryMessage(message) {
 // lives here, not in i18n.js, because this file is loaded on its own and
 // imports nothing; the storage key is the one i18n.js keeps the choice in.
 const FORGOT_ES = {
-  'Forgot my login?':
-    '¿Olvidaste tu acceso?',
+  'Forgot my Quiz Code?':
+    '¿Olvidaste tu Quiz Code?',
   'Message for the owner':
     'Mensaje para el responsable',
   'Say who you are and what happened. The owner reads this and recovers your access in person. Nothing is recovered from this screen.':
@@ -98,13 +98,13 @@ export function createAuthPanel(container, onContinueAsGuest, onLoggedIn) {
       </div>
       <div id="auth-choices" class="auth-card">
         <p class="auth-eyebrow">Log in</p>
-        <label class="sr-only" for="login-id-input">Login ID</label>
-        <input id="login-id-input" class="glass-input" type="text" autocomplete="off" placeholder="Your login ID">
-        <button id="auth-login-btn" class="primary">Log in with ID</button>
+        <label class="sr-only" for="login-id-input">Quiz Code</label>
+        <input id="login-id-input" class="glass-input" type="text" autocomplete="off" placeholder="Your Quiz Code">
+        <button id="auth-login-btn" class="primary">Log in with Quiz Code</button>
         <button id="auth-guest-btn" class="ghost">Continue as guest</button>
-        <p class="auth-note">Ranked needs a login. Guests get Practice only.</p>
-        <button id="auth-register-btn" class="auth-link" type="button">Need an ID? Create an account</button>
-        <button id="auth-forgot-btn" class="auth-link" type="button">${forgotText('Forgot my login?')}</button>
+        <p class="auth-note">Ranked needs a Quiz Code. Guests get Practice only.</p>
+        <button id="auth-register-btn" class="auth-link" type="button">Need a Quiz Code? Create an account</button>
+        <button id="auth-forgot-btn" class="auth-link" type="button">${forgotText('Forgot my Quiz Code?')}</button>
       </div>
       <div id="auth-form" class="auth-card" hidden></div>
       <p id="auth-message" class="warn"></p>
@@ -137,9 +137,9 @@ export function createAuthPanel(container, onContinueAsGuest, onLoggedIn) {
       showMessage(`Welcome, ${result.data.username}#${result.data.tag}`);
       if (onLoggedIn) onLoggedIn(result.data);
     } else if (result.status === 0) {
-      showMessage('Could not reach the server. Your login ID is fine; try again in a moment.', true);
+      showMessage('Could not reach the server. Your Quiz Code is fine; try again in a moment.', true);
     } else {
-      showMessage('Invalid login ID. Please try again.', true);
+      showMessage('Invalid Quiz Code. Please try again.', true);
     }
   }
   container.querySelector('#auth-login-btn').addEventListener('click', doLogin);
@@ -165,13 +165,13 @@ export function createAuthPanel(container, onContinueAsGuest, onLoggedIn) {
       const result = await registerAccount(username);
       if (result.ok) {
         form.innerHTML = `
-          <p class="notice">Save this login ID. It will not be shown again.</p>
+          <p class="notice">Save this Quiz Code. It will not be shown again.</p>
           <div class="field">
-            <span>Your login ID</span>
+            <span>Your Quiz Code</span>
             <input id="generated-login-id" type="text" readonly value="${result.data.login_id}">
           </div>
           <label class="field">
-            <input id="saved-check" type="checkbox"> I saved my login ID
+            <input id="saved-check" type="checkbox"> I saved my Quiz Code
           </label>
           <button id="register-done" class="primary" disabled>Continue</button>
         `;

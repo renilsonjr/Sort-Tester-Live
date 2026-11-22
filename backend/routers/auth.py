@@ -262,7 +262,7 @@ def reauthenticate_session(
             limiter.record_failure(rate_key)
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
-                detail="That login ID does not match this account.",
+                detail="That Quiz Code does not match this account.",
             ) from None
         conn.commit()
     return None
