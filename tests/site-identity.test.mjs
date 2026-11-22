@@ -61,3 +61,13 @@ test('the picture is an absolute address on the public domain, at the size messa
 test('nothing in the head points at a private or internal address', () => {
   assert.doesNotMatch(head, /azurecontainerapps|localhost|127\.0\.0\.1/);
 });
+
+// The owner unified the name on 2026-11-22: the app is "Sort Quiz" wherever
+// a person reads it, not "Sort Lab" in some places and "Sort Quiz" in others.
+test('the app calls itself Sort Quiz on the sign-in screen and in the header', () => {
+  const auth = readFileSync(new URL('../src/auth.js', import.meta.url), 'utf8');
+  const app = readFileSync(new URL('../src/app.js', import.meta.url), 'utf8');
+  assert.match(auth, /<h1 class="auth-title">Sort Quiz<\/h1>/);
+  assert.match(app, /<span class="lab-mark">RJ<\/span> Sort Quiz<\/div>/);
+  for (const source of [auth, app, html]) assert.doesNotMatch(source, /Sort Lab/);
+});
