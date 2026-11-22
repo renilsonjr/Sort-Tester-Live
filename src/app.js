@@ -1942,20 +1942,22 @@ async function playRankedAttempt(attempt, mode, tally) {
         <div class="rq-ring" id="rq-clock" role="timer" aria-label="${esc(t('seconds'))}"><span id="rq-ring-num"></span></div>
       </div>
       <div class="tb-bar"><i id="rq-bar-fill"></i></div>
-      <p class="rq-stake">${esc(mode === 'promotion'
-        ? `◆ ${t('Promotion')} · ${tally.correctCount} ${t('of')} ${q.seq - 1} ${t('right so far')}`
-        : `◆ ${t('Ranked')} · ${t('this attempt counts for points')}`)}</p>
       <div id="rq-question"></div>
       <button id="rq-cancel" class="ghost">${esc(t('Cancel this attempt'))}</button>
     </section>
   `, 'ranked', () => playRankedAttempt(attempt, mode, tally));
   const where = destinationLine(q);
+  // What this attempt is playing for rides on the route card as its label.
+  const stake = mode === 'promotion'
+    ? `${t('Promotion')} · ${tally.correctCount} ${t('of')} ${q.seq - 1} ${t('right so far')}`
+    : `${t('Ranked')} · ${t('counts for points')}`;
   view.querySelector('#rq-question').innerHTML = `
-    <div class="rq-prompt">
+    <div class="rq-prompt rq-route home-spot">
+      <span class="home-pill">${esc(stake)}</span>
       <p class="rq-service">${esc(where.service)}</p>
       <p class="rq-code">${esc(where.code)}</p>
     </div>
-    <p class="lab-study-meta">${esc(t('Where does this go?'))}</p>
+    <p class="lab-eyebrow rq-cue">${esc(t('Where does this go?'))}</p>
     <div class="belts" role="group" aria-label="${esc(t('Choose a belt'))}">
       ${(q.options || []).map((belt) => beltButton(belt)).join('')}
     </div>
@@ -2020,14 +2022,19 @@ function showRankedFeedback(attempt, mode, q, chosen, response, tally) {
     : (response.outcome === 'timeout' ? t('Time ran out') : t('Review this route'));
   const view = labPage(`
     <section class="lab-screen" data-ranked-music>
+      <div class="rq-head">
       <div class="rq-mark ${right ? 'good' : 'bad'}" aria-hidden="true">${right ? '\u2713' : '\u2715'}</div>
+      <div class="rq-head-text">
       <h1 class="lab-title rq-verdict ${right ? 'good' : 'bad'}">${esc(verdict)}</h1>
       ${mode === 'promotion'
         ? (promoCorrect
           ? `<p class="rq-worth">${esc(tally.correctCount)} ${esc(t('of'))} ${esc(tally.correctCount)} ${esc(t('right.'))} ${q.seq < 15 ? `${esc(15 - q.seq)} ${esc(t(15 - q.seq === 1 ? 'question to go.' : 'questions to go.'))}` : esc(t('That was the last one.'))}</p>`
           : `<p class="rq-worth bad">${response.worth} ${esc(t('points'))} · ${esc(t(response.difficulty === 'easy' ? 'Easy question' : response.difficulty === 'hard' ? 'Hard question' : 'Medium question'))}</p>`)
         : `<p class="rq-worth ${right ? 'good' : 'bad'}">${response.worth > 0 ? '+' : ''}${response.worth} ${esc(t('points'))} · ${esc(t(response.difficulty === 'easy' ? 'Easy question' : response.difficulty === 'hard' ? 'Hard question' : 'Medium question'))}</p>`}
-      <div class="rq-prompt"><p class="rq-service">${esc(where.service)}</p><p class="rq-code">${esc(where.code)}</p></div>
+      </div>
+      </div>
+      <div class="rq-prompt rq-route rq-route-sm"><p class="rq-service">${esc(where.service)}</p><p class="rq-code">${esc(where.code)}</p></div>
+      <p class="lab-eyebrow">${esc(t('Answer'))}</p>
       <div class="rq-cmp">
         ${response.outcome === 'timeout'
           ? `<div><span>${esc(t('Your choice'))}</span><small>${esc(t('none sent in time'))}</small></div>`
@@ -2133,8 +2140,12 @@ function showRankedResult(mode, result, tally, { quit = false, attemptId = null 
   const view = labPage(`
     <section class="lab-screen">
       <p class="lab-eyebrow">${esc(t('Ranked'))} · ${esc(t(quit ? 'attempt ended' : 'attempt finished'))}</p>
-      <h1 class="lab-title">${esc(tally.correctCount)} ${esc(t('of'))} 15 ${esc(t('correct'))}</h1>
+      <div class="home-spot rq-score">
+        <h1 class="lab-title rq-score-line"><b>${esc(tally.correctCount)}</b> ${esc(t('of'))} 15 ${esc(t('correct'))}</h1>
+        <div class="profile-bar home-meter"><i style="width:${Math.round((tally.correctCount / 15) * 100)}%"></i></div>
+      </div>
       ${result.final_outcome === 'season_close' ? `<p class="lab-intro" id="rq-season-close">${esc(t('The season closed before you finished. What you had scored counts, with no penalty.'))}</p>` : ''}
+      <p class="lab-eyebrow">${esc(t('Points'))}</p>
       ${rankedSum(result, quit)}
       ${droppedBadge ? boardNotice(
           `${t('You are')} ${result.badge_after} ${t('again')}`,
@@ -2851,6 +2862,7 @@ function quizHeader(cardNumber, total, withTimer = false) {
       ${withTimer ? `<div id="ring" class="quiz-timer" role="timer" aria-label="${esc(t('Time to choose'))}: ${run.seconds}" aria-live="off"><span id="ringNum">${run.seconds}</span></div>` : '<span aria-hidden="true"></span>'}
       <button id="cancel" type="button" class="stopbtn">${esc(t('Cancel'))}</button>
     </div>
+    ${withTimer ? '<div class="tb-bar quiz-bar"><i id="quiz-bar-fill"></i></div>' : ''}
   </div>`;
 }
 
@@ -2970,6 +2982,7 @@ function showCard() {
 
   const ring = view.querySelector('#ring');
   const ringNum = view.querySelector('#ringNum');
+  const barFill = view.querySelector('#quiz-bar-fill');
   wireStopPanel(view, {
     canStop: () => !run.finished && run.index === cardIndex,
     pause: () => { clock.pause(); stopTick(); },
@@ -3007,6 +3020,7 @@ function showCard() {
     ring.classList.toggle('urgent', remaining <= 5000);
     ringNum.textContent = Math.ceil(remaining / 1000);
     ring.setAttribute('aria-label', `${t('Time to choose')}: ${ringNum.textContent}`);
+    if (barFill?.style) barFill.style.width = `${Math.max(0, Math.min(100, (remaining / (run.seconds * 1000)) * 100))}%`;
 
     if (clock.expired()) {
       stopTick();
@@ -3036,17 +3050,24 @@ function showFeedback(response) {
   const view = el(`
     <section class="screen quiz-feedback ${right ? 'good' : 'bad'}">
       ${quizHeader(run.index, run.cards.length)}
-      <h1 class="verdict" id="verdict" tabindex="-1">${esc(t(verdict))}</h1>
+      <div class="quiz-verdict">
+        <span class="rq-mark ${right ? 'good' : 'bad'}" aria-hidden="true">${right ? '\u2713' : '\u2715'}</span>
+        <div>
+          <h1 class="verdict" id="verdict" tabindex="-1">${esc(t(verdict))}</h1>
+          ${right ? `<p class="quiz-auto">${esc(t('Next question starts automatically'))}…</p>` : ''}
+        </div>
+      </div>
       <div class="quiz-route">
         <div class="p-line">${esc(serviceName(response.svc, response.destinationModifier))} &middot; ${esc(response.state)}</div>
         <div class="p-code">${renderRoutingCode(response.code)}</div>
       </div>
+      <p class="lab-eyebrow">${esc(t('Answer'))}</p>
       <div class="answer-compare">
         <div class="answer-row"><span>${esc(t('Your choice'))}</span>${response.answered ? beltChip(response.answered, 'answer') : `<strong>${esc(t('No choice'))}</strong>`}</div>
         <div class="answer-row"><span>${esc(t('Correct belt'))}</span>${beltChip(response.correctBelt, 'answer')}</div>
       </div>
       <p class="why">${esc(language.explanation(response))}</p>
-      ${right ? `<p class="quiz-auto">${esc(t('Next question starts automatically'))}…</p>` : `<button id="continue" class="primary" type="button">${esc(t('Continue'))}</button>`}
+      ${right ? '' : `<button id="continue" class="primary" type="button">${esc(t('Continue'))}</button>`}
       ${stopPanelHtml()}
     </section>
   `);
