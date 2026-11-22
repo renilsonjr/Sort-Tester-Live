@@ -157,6 +157,8 @@ const ES = {
   'Standings': 'Clasificación',
   'Top 3': 'Los 3 primeros',
   'Your numbers': 'Tus números',
+  'counts for points': 'cuenta para los puntos',
+  'Answer': 'Respuesta',
   'Your Ranked quizzes, one by one.': 'Tus pruebas del Clasificatorio, una por una.',
   'Play Ranked': 'Jugar Clasificatorio',
   'Switch between day and night': 'Cambiar entre día y noche',
