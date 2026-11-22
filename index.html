@@ -951,6 +951,11 @@
   #auth-panel .auth-card .auth-eyebrow { color: var(--gold); }
   .auth-note { margin: 2px 0 0; color: var(--muted); font-size: 12.5px; text-align: center; }
   .auth-link { background: transparent; border: 0; color: var(--gold); font-weight: 800; font-size: 13px; width: 100%; padding: 4px; cursor: pointer; }
+  /* A quiet line under everything: who made the app (#267). */
+  .auth-footer { margin: 6px 0 0; font-size: 12.5px; text-align: center; }
+  .auth-footer-link { color: var(--muted); font-weight: 700; text-decoration: underline; text-underline-offset: 3px; padding: 8px 4px; display: inline-block; }
+  .auth-footer-link:hover { color: var(--gold); }
+  .auth-footer-link:focus-visible { outline: 3px solid var(--gold); outline-offset: 3px; border-radius: 6px; }
 
   /* The app screen is an opaque dark panel (like the mock's phone screen), so
      the UI reads crisp and dark; the ambient orbs stay behind it and only peek
