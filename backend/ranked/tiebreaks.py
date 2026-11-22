@@ -776,6 +776,17 @@ def my_tiebreak(conn, account_id) -> dict | None:
         " ORDER BY r.round_number DESC LIMIT 1",
         (group["id"], account_id),
     )
+    restarted = False
+    if open_round is not None:
+        # A confirmed outage voids the round and opens the same number
+        # again. The player is owed that fact: answers they gave, even a
+        # finished attempt, no longer count and the round is to be played.
+        restarted = migrate.fetch_one(
+            conn,
+            "SELECT 1 AS yes FROM tiebreak_rounds WHERE group_id = %s"
+            " AND round_number = %s AND status = 'void' LIMIT 1",
+            (group["id"], open_round["round_number"]),
+        ) is not None
     conn.commit()
     from backend.ranked import modes, ranks
 
@@ -796,6 +807,7 @@ def my_tiebreak(conn, account_id) -> dict | None:
             "hats": open_round["hats"],
             "seconds": modes.TIEBREAK_SECONDS[open_round["round_number"]],
             "played": open_round["attempt_id"] is not None,
+            "restarted": restarted,
             "attempt_id": open_round["attempt_id"],
         }
     return out

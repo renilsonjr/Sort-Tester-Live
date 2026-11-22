@@ -102,6 +102,27 @@ class TiebreakOutageTests(unittest.TestCase):
 
     # --- the restart ---
 
+    def test_the_player_is_told_the_round_was_restarted(self):
+        """Found walking issue #13 on 2026-11-22: the page told a player
+        whose round had just been voided that nothing else was needed."""
+        for account in (self.a, self.b):
+            migrate.execute(
+                self.conn,
+                "INSERT INTO tiebreak_group_members (group_id, account_id) VALUES (%s, %s)",
+                (self.group, account),
+            )
+        self.conn.commit()
+        before = tiebreaks.my_tiebreak(self.conn, self.a)["round"]
+        self.assertFalse(before["restarted"])
+        self._finish(self.a)
+        engine.start_tiebreak_attempt(self.conn, self.b, self.round, clock=self.clock)
+        self._outage(0, 2)
+        for account in (self.a, self.b):
+            mine = tiebreaks.my_tiebreak(self.conn, account)["round"]
+            self.assertTrue(mine["restarted"])
+            self.assertFalse(mine["played"])
+            self.assertNotEqual(mine["id"], self.round)
+
     def test_an_interrupted_round_restarts_for_everybody(self):
         self._finish(self.a)  # already done before the outage
         running = engine.start_tiebreak_attempt(self.conn, self.b, self.round, clock=self.clock)

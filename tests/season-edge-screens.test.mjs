@@ -135,3 +135,18 @@ test('a frozen season says points are final, not results, and one second is sing
 test('pressing the active tab returns to its first screen', () => {
   assert.doesNotMatch(app, /if \(button\.dataset\.nav === active\) return;/);
 });
+
+// Fifth walk (2026-11-22): a round voided by an outage.
+test('an ended tie-break attempt is not called submitted until the server agrees', () => {
+  assert.match(app, /const again = \(await api\('\/ranked\/tiebreak\/mine'\)\)\?\.tie;\s*if \(again\?\.round && !again\.round\.played\) showTiebreakInvite\(again\);\s*else showTiebreakSubmitted\(round\);/);
+});
+
+test('a restarted round says so, on the invite and on the callout', () => {
+  assert.match(app, /round\.restarted \? `<div class="board-notice" id="tb-restarted">/);
+  assert.match(app, /t\(round\.restarted\s*\? 'The round was restarted after a server outage\. Play it again before it closes\.'/);
+});
+
+test('one question to go is singular, and a season-close result says why it ended', () => {
+  assert.match(app, /t\(15 - q\.seq === 1 \? 'question to go\.' : 'questions to go\.'\)/);
+  assert.match(app, /result\.final_outcome === 'season_close' \? `<p class="lab-intro" id="rq-season-close">/);
+});
