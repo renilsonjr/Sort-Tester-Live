@@ -77,6 +77,8 @@ const FORGOT_ES = {
     'No se pudo contactar con el servidor. No se envió nada; inténtalo de nuevo en un momento.',
   'The message could not be sent. Find the owner in person.':
     'No se pudo enviar el mensaje. Busca al responsable en persona.',
+  'Made by RJ. Meet the person behind the app':
+    'Hecho por RJ. Conoce a quien está detrás de la app',
 };
 
 function forgotText(source) {
@@ -108,6 +110,7 @@ export function createAuthPanel(container, onContinueAsGuest, onLoggedIn) {
       </div>
       <div id="auth-form" class="auth-card" hidden></div>
       <p id="auth-message" class="warn"></p>
+      <p class="auth-footer"><a class="auth-footer-link" href="https://renilsonjr.pages.dev" target="_blank" rel="noopener noreferrer">${forgotText('Made by RJ. Meet the person behind the app')}</a></p>
     </div>
   `;
 
