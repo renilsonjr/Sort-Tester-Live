@@ -974,22 +974,6 @@
   .lab-top-actions { display: flex; align-items: center; gap: 7px; }
   .lab-theme-btn { background: var(--glass-surface-sub); border: 1px solid var(--glass-border); color: var(--gold); border-radius: var(--r-sm); padding: 8px 11px; font-size: 16px; line-height: 1; cursor: pointer; backdrop-filter: var(--blur-md); -webkit-backdrop-filter: var(--blur-md); }
 
-  /* Home identity block (below the banner) — badge + name + points when signed
-     in; a dashed "sign in to compete" invite for guests. */
-  .home-ident { display: flex; align-items: center; gap: 11px; background: var(--glass-surface-sub); border: 1px solid var(--glass-border); border-radius: var(--r-sm); padding: 11px 13px; }
-  .home-ident img { width: 44px; height: 44px; object-fit: contain; flex: none; }
-  .home-ident .home-ident-name { font-weight: 800; font-size: 15px; }
-  .home-ident .home-ident-sub { font-size: 12px; color: var(--muted); margin-top: 1px; }
-  .home-ident .home-ident-pts { margin-left: auto; text-align: right; }
-  .home-ident .home-ident-pts b { font-size: 16px; color: var(--gold); display: block; }
-  .home-ident .home-ident-pts span { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; }
-  .home-invite { display: flex; align-items: center; gap: 11px; background: var(--glass-surface-sub); border: 1px dashed var(--gold); border-radius: var(--r-sm); padding: 12px 13px; width: 100%; text-align: left; color: var(--ink); }
-  .home-ident .home-ident-name, .home-ident .home-ident-sub,
-  .home-invite .home-ident-name, .home-invite .home-ident-sub { display: block; }
-  .home-invite .home-invite-ic { width: 38px; height: 38px; border-radius: 11px; background: var(--soft); display: grid; place-items: center; font-size: 18px; flex: none; }
-  .home-invite .home-ident-name { font-weight: 800; font-size: 14px; }
-  .home-invite .home-ident-sub { font-size: 11.5px; color: var(--muted); margin-top: 1px; }
-  .home-invite .home-invite-go { margin-left: auto; font-size: 12px; font-weight: 800; color: var(--gold); white-space: nowrap; }
 
   /* ===== DAY (light) THEME — overrides tokens, plus the few hard-coded
      surfaces the twilight port set directly. Night stays the default. ===== */
@@ -1105,6 +1089,62 @@
   html[data-theme="day"] .rq-mark.good { background: rgba(47, 158, 107, 0.12); border-color: rgba(47, 158, 107, 0.4); }
   html[data-theme="day"] .rq-mark.bad { background: rgba(201, 82, 74, 0.1); border-color: rgba(201, 82, 74, 0.4); }
   html[data-theme="day"] .belts .belt { box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.28), 0 10px 18px -12px rgba(90, 60, 25, 0.5); }
+
+  /* ============================================================
+     Redesign v4 — compact glass header, Home in stripes, drawn icons.
+     ============================================================ */
+
+  /* Compact header that stays at the top while the page scrolls under it */
+  .lab-top { position: sticky; top: 0; z-index: 25; padding: 11px 18px; gap: 8px; background: var(--dock-bg); border-bottom: 1px solid var(--glass-border-subtle); backdrop-filter: blur(22px); -webkit-backdrop-filter: blur(22px); }
+  .lab-mark { width: 31px; height: 31px; border-radius: 10px; font-size: 12px; }
+  .lab-brand { font-size: 18px; gap: 9px; }
+  .lab-language button, .lab-theme-btn { width: 40px; min-height: 38px; border-radius: 11px; }
+  .lab-language button span:first-child { font-size: 15px; }
+  .lab-language button { font-size: 10.5px; font-weight: 900; }
+  .lab-main { padding-top: 14px; }
+
+  /* Drawn icons (dock, Home shortcuts) */
+  .lab-nav i svg, .home-short-ic svg { display: block; width: 19px; height: 19px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  .lab-nav i { display: block; }
+
+  /* Home stripes */
+  .home-screen { gap: 16px; }
+  .home-stripe { display: flex; flex-direction: column; gap: 8px; }
+  .home-stripe[hidden] { display: none; }
+  .home-spot { position: relative; overflow: hidden; padding: 18px 18px 16px; border-radius: var(--r-md); border: 1px solid var(--soft-line); background: linear-gradient(135deg, var(--soft) 0%, var(--glass-surface-sub) 62%); box-shadow: var(--glass-shadow), 0 0 28px -6px rgba(244, 189, 56, 0.32); }
+  .home-spot::before { content: ""; position: absolute; top: 0; left: 28px; right: 28px; height: 1px; background: linear-gradient(90deg, transparent, var(--glass-highlight), transparent); }
+  .home-pill { display: inline-block; margin-bottom: 10px; padding: 4px 10px; border-radius: 999px; background: var(--gold); color: #2a1c10; font-size: 10.5px; font-weight: 900; letter-spacing: .08em; text-transform: uppercase; }
+  .home-spot-title { margin: 0 0 4px; font-size: 24px; font-weight: 900; letter-spacing: -.04em; line-height: 1.12; text-transform: none; color: var(--ink); }
+  .home-spot-desc { margin: 0; color: var(--muted); font-size: 13px; font-weight: 700; line-height: 1.45; }
+  .home-spot-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--glass-border); }
+  .home-standing { min-width: 0; }
+  .home-standing small { display: block; color: var(--muted); font-size: 10px; font-weight: 900; letter-spacing: .1em; text-transform: uppercase; }
+  .home-standing b { display: block; font-size: 15px; font-weight: 900; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .home-standing b.home-standing-note { font-size: 12.5px; font-weight: 800; white-space: normal; line-height: 1.3; }
+  .home-spot-row .primary { flex: none; width: auto; padding: 11px 14px; font-size: 13.5px; white-space: nowrap; }
+
+  .home-climb { padding: 14px; border-radius: var(--r-md); background: var(--glass-surface-sub); border: 1px solid var(--glass-border); box-shadow: var(--glass-shadow); }
+  .home-tiles { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .home-tile { display: flex; flex-direction: column; align-items: center; padding: 12px 8px; border-radius: 16px; background: var(--glass-surface-sub); border: 1px solid var(--glass-border-subtle); text-align: center; perspective: 700px; }
+  .home-tile strong { margin-top: 6px; font-size: 14px; font-weight: 900; }
+  .home-tile small { color: var(--muted); font-size: 10px; font-weight: 900; letter-spacing: .1em; text-transform: uppercase; }
+  .home-obj { position: relative; width: 104px; height: 92px; display: grid; place-items: center; }
+  .home-obj-badge { width: 84px; height: 84px; object-fit: contain; transform: rotateY(-14deg) rotateX(8deg) rotateZ(-3deg); filter: drop-shadow(0 12px 16px rgba(0, 0, 0, 0.4)); }
+  .home-obj-hat { width: 104px; height: auto; transform: rotate(-4deg); filter: drop-shadow(0 12px 14px rgba(0, 0, 0, 0.42)); }
+  .home-shine { position: absolute; top: -4px; left: 16%; width: 68%; height: 34%; border-radius: 50%; background: linear-gradient(180deg, var(--glass-highlight), transparent); filter: blur(5px); pointer-events: none; z-index: 1; opacity: .7; }
+  .home-meter { height: 6px; margin-top: 14px; border-radius: 99px; overflow: hidden; }
+  .home-meter i { display: block; height: 100%; border-radius: 99px; }
+  .home-climb-note { margin: 7px 0 0; color: var(--muted); font-size: 12px; font-weight: 700; }
+
+  .home-shortcuts { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .home-short { display: flex; flex-direction: column; align-items: flex-start; gap: 3px; padding: 14px; text-align: left; color: var(--ink); border-radius: 18px; background: var(--glass-surface-sub); border: 1px solid var(--glass-border); box-shadow: var(--glass-shadow); }
+  .home-short-ic { width: 40px; height: 40px; margin-bottom: 7px; border-radius: 12px; display: grid; place-items: center; background: var(--soft); border: 1px solid var(--soft-line); color: var(--gold); }
+  .home-short strong { font-size: 15px; font-weight: 900; letter-spacing: -.02em; }
+  .home-short small { color: var(--muted); font-size: 11.5px; font-weight: 700; line-height: 1.35; }
+
+  html[data-theme="day"] .home-spot { box-shadow: var(--glass-shadow), 0 0 28px -6px rgba(201, 138, 16, 0.22); }
+  html[data-theme="day"] .home-obj-badge { filter: drop-shadow(0 12px 16px rgba(90, 60, 25, 0.3)); }
+  html[data-theme="day"] .home-obj-hat { filter: drop-shadow(0 12px 14px rgba(90, 60, 25, 0.32)); }
 
 </style>
 </head>

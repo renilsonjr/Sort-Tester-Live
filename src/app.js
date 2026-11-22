@@ -220,14 +220,22 @@ function signedIn() {
 // The bottom navigation, which changes shape with the session. Study and
 // Quiz became one Practice tab in the approved navigation: both are ways of
 // practising, and the separate Ranked tab is what costs points.
+const ICONS = {
+  home: '<svg viewBox="0 0 24 24"><path d="M3 10.5 12 3l9 7.5V20a1.5 1.5 0 0 1-1.5 1.5H15V15H9v6.5H4.5A1.5 1.5 0 0 1 3 20z"/></svg>',
+  practice: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.2"/></svg>',
+  ranked: '<svg viewBox="0 0 24 24"><path d="M7 4h10v5a5 5 0 0 1-10 0z"/><path d="M7 6H4.5a2.5 2.5 0 0 0 2.6 3.6M17 6h2.5a2.5 2.5 0 0 1-2.6 3.6"/><path d="M12 14v4M8.5 20.5h7"/></svg>',
+  profile: '<svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4.2"/><path d="M4.5 20.5a7.5 7.5 0 0 1 15 0"/></svg>',
+  chart: '<svg viewBox="0 0 24 24"><rect x="3.5" y="4" width="17" height="16" rx="2.5"/><path d="M3.5 9.5h17M9.5 9.5V20M15 9.5V20"/></svg>',
+};
+
 function navTabs() {
   const tabs = [
-    ['home', '\u2302', t('Home')],
-    ['practice', '\u2261', t('Practice')],
+    ['home', ICONS.home, t('Home')],
+    ['practice', ICONS.practice, t('Practice')],
   ];
   if (signedIn()) {
-    tabs.push(['ranked', '\u25c6', t('Ranked')]);
-    tabs.push(['profile', '\u25cf', t('Profile')]);
+    tabs.push(['ranked', ICONS.ranked, t('Ranked')]);
+    tabs.push(['profile', ICONS.profile, t('Profile')]);
   }
   return tabs;
 }
@@ -240,10 +248,11 @@ function labPage(content, active = 'home', rerender = showStart) {
           <div class="lab-brand"><span class="lab-mark">RJ</span> Sort Lab</div>
           <div class="lab-top-actions">${languageButtons()}${themeButton()}</div>
         </div>
+        ${active === 'profile' ? `
         <div class="lab-site-row">
           <div class="lab-site">UPS Saddle Brook <span aria-hidden="true">·</span> Twilight</div>
-          ${active === 'profile' ? `<button type="button" class="lab-settings-btn" id="top-settings"><span aria-hidden="true">\u2699</span> ${esc(t('Settings'))}</button>` : ''}
-        </div>
+          <button type="button" class="lab-settings-btn" id="top-settings"><span aria-hidden="true">\u2699</span> ${esc(t('Settings'))}</button>
+        </div>` : ''}
       </header>
       <main class="lab-main">${content}</main>
       <nav class="lab-nav" style="grid-template-columns: repeat(${navTabs().length}, 1fr)" aria-label="${esc(t('Main navigation'))}">
@@ -341,7 +350,7 @@ const BADGE_CAP = { Iron: 1000, Bronze: 2000, Silver: 3000, Gold: 4000 };
 // seconds and shared while in flight. Nothing here is trusted for play: the
 // server decides every attempt, and anything that can change the answer
 // (a write, an attempt request, a change of session) empties the cache.
-const CACHED_READS = new Set(['/ranked/entry', '/ranked/season']);
+const CACHED_READS = new Set(['/ranked/entry', '/ranked/season', '/ranked/profile/stats']);
 const CACHED_READ_MS = 15000;
 const readCache = new Map();
 
@@ -2324,16 +2333,12 @@ function showStart() {
   clock = null;
   const entries = log.all();
 
+  // Home in stripes: Ranked first, then the player's climb, then the two ways
+  // to practise. It opens straight on the Ranked card (the poster is gone);
+  // the prize it announced is said in the card and shown beside the badge.
   const view = labPage(`
-    <section class="lab-screen">
-      <div class="lab-hero">
-        <h1 class="sr-only">${esc(t('Home'))}</h1>
-        <figure class="lab-campaign">
-          <img src="assets/home-podium.jpg" width="860" height="484" alt="${esc(t(
-            'Sort Tester Live. Play for points. Reach the top 3. Win a UPS hat. Practice. Compete. Climb the leaderboard. A brown UPS cap above a gold winners’ podium.',
-          ))}">
-        </figure>
-      </div>
+    <section class="lab-screen home-screen">
+      <h1 class="sr-only">${esc(t('Home'))}</h1>
       <section class="lab-launch" id="launch-callout" hidden aria-live="polite">
         <i aria-hidden="true">!</i>
         <div>
@@ -2342,19 +2347,37 @@ function showStart() {
         </div>
       </section>
       <div id="home-tiebreak" hidden></div>
-      <div id="home-ident">${signedIn() ? '' : `
-        <button class="home-invite" id="home-signin" type="button">
-          <span class="home-invite-ic" aria-hidden="true">🏅</span>
-          <span><span class="home-ident-name">${esc(t('Playing as guest'))}</span><span class="home-ident-sub">${esc(t('Sign in to compete in Ranked'))}</span></span>
-          <span class="home-invite-go">${esc(t('Sign in'))} →</span>
-        </button>`}</div>
-      ${signedIn() ? `
-      <button id="home-ranked" class="primary" type="button">${esc(t('Play Ranked'))}</button>
-      <button id="home-study" class="ghost" type="button">${esc(t('Know the chart'))}</button>
-      ` : `
-      <button id="home-study" class="ghost" type="button">${esc(t('Know the chart'))}</button>
-      <button id="home-practice" class="ghost" type="button">${esc(t('Practice'))}</button>
-      `}
+      <section class="home-stripe">
+        <p class="lab-eyebrow">${esc(t('Ranked'))}</p>
+        <div class="home-spot">
+          <span class="home-pill" id="home-season" hidden></span>
+          <h2 class="home-spot-title">${esc(t('Play for the podium'))}</h2>
+          <p class="home-spot-desc">${esc(t('15 questions, ten seconds each.'))} ${esc(t('The top 3 win a UPS hat.'))}</p>
+          <div class="home-spot-row">
+            ${signedIn() ? `
+            <div class="home-standing" id="home-ident"><small>${esc(t('Your balance'))}</small><b>…</b></div>
+            <button id="home-ranked" class="primary" type="button">${esc(t('Play Ranked'))} <span aria-hidden="true">→</span></button>
+            ` : `
+            <div class="home-standing"><small>${esc(t('Playing as guest'))}</small><b class="home-standing-note">${esc(t('Sign in to compete in Ranked'))}</b></div>
+            <button id="home-signin" class="primary" type="button">${esc(t('Sign in'))} <span aria-hidden="true">→</span></button>
+            `}
+          </div>
+        </div>
+      </section>
+      ${signedIn() ? '<section class="home-stripe" id="home-climb" hidden></section>' : ''}
+      <section class="home-stripe">
+        <p class="lab-eyebrow">${esc(t('Practice'))}</p>
+        <div class="home-shortcuts">
+          <button id="home-practice" class="home-short" type="button">
+            <span class="home-short-ic" aria-hidden="true">${ICONS.practice}</span>
+            <strong>${esc(t('Practice'))}</strong><small>${esc(t('Practice never changes Ranked points.'))}</small>
+          </button>
+          <button id="home-study" class="home-short" type="button">
+            <span class="home-short-ic" aria-hidden="true">${ICONS.chart}</span>
+            <strong>${esc(t('Know the chart'))}</strong><small>${esc(t('Browse every service by state and ZIP range.'))}</small>
+          </button>
+        </div>
+      </section>
       <button id="viewlog" class="lab-log-link" type="button">${esc(t('Shift log'))}${entries.length ? ` <span>(${entries.length})</span>` : ''} <span aria-hidden="true">→</span></button>
       ${log.available ? '' : `<p class="warn">${esc(t('This phone is not saving results. Each score is shown once and then gone.'))}</p>`}
       <aside class="lab-disclaimer" aria-label="${esc(t('Independent practice'))}">
@@ -2362,13 +2385,12 @@ function showStart() {
       </aside>
     </section>
   `, 'home');
+  view.querySelector('#home-study').addEventListener('click', showStudy);
+  view.querySelector('#home-practice').addEventListener('click', showPractice);
   if (signedIn()) {
     view.querySelector('#home-ranked').addEventListener('click', showRanked);
-    view.querySelector('#home-study').addEventListener('click', showStudy);
     fillHomeIdentity(view);
   } else {
-    view.querySelector('#home-study').addEventListener('click', showStudy);
-    view.querySelector('#home-practice').addEventListener('click', showPractice);
     view.querySelector('#home-signin').addEventListener('click', () => {
       if (typeof window !== 'undefined' && typeof window.showSortLabEntry === 'function') {
         window.showSortLabEntry('');
@@ -2380,21 +2402,55 @@ function showStart() {
   if (signedIn()) fillTiebreakCallout(view.querySelector('#home-tiebreak'), { onlyToPlay: true });
 }
 
-// Signed-in Home identity block: badge + name + points, read from the same
-// ledger endpoint the Profile uses. A guest never reaches here (they see the
-// sign-in invite rendered synchronously instead).
+// How far through the current badge the balance is, as a percentage for the
+// Home meter. Each badge below Challenger spans a thousand points up to its
+// cap; Challenger has no cap, so it has no meter.
+function badgeProgress(entry) {
+  const cap = BADGE_CAP[entry.badge];
+  if (cap === undefined) return null;
+  const floor = cap - 1000;
+  return Math.max(0, Math.min(100, Math.round(((entry.points - floor) / 1000) * 100)));
+}
+
+// The signed-in parts of Home, read from the endpoints Ranked and Profile
+// already use: the season name, the balance, and the place in the standings
+// when the player has one. A guest never reaches here. Each read may fail on
+// its own; what it feeds then stays as it was rendered.
 async function fillHomeIdentity(view) {
+  const [season, entry, stats] = await Promise.all([
+    api('/ranked/season'), api('/ranked/entry'), api('/ranked/profile/stats'),
+  ]);
+  const pill = view.querySelector('#home-season');
+  if (pill && season) {
+    pill.textContent = season.phase === 'pre_season' ? t('Pre-Season') : season.label;
+    pill.hidden = false;
+  }
   const box = view.querySelector('#home-ident');
-  if (!box) return;
-  const entry = await api('/ranked/entry');
-  if (!entry) return;
-  const name = session && session.username ? `${session.username}#${session.tag}` : t('Your profile');
-  box.innerHTML = `
-    <div class="home-ident">
-      <img src="${badgeArt(entry.badge)}" alt="${esc(entry.badge)}">
-      <div><div class="home-ident-name">${esc(name)}</div><div class="home-ident-sub">${esc(entry.badge)}</div></div>
-      <div class="home-ident-pts"><b>◆ ${entry.points.toLocaleString()}</b><span>${esc(t('points'))}</span></div>
+  if (!box || !entry) return;
+  const points = `${entry.points.toLocaleString()} ${t('points')}`;
+  const placed = stats && stats.place != null;
+  box.innerHTML = `<small>${esc(t(placed ? 'Your standing' : 'Your balance'))}</small><b>${placed ? `#${esc(stats.place)} · ` : ''}${esc(points)}</b>`;
+
+  const climb = view.querySelector('#home-climb');
+  if (!climb) return;
+  const progress = badgeProgress(entry);
+  climb.innerHTML = `
+    <p class="lab-eyebrow">${esc(t('Your climb'))}</p>
+    <div class="home-climb">
+      <div class="home-tiles">
+        <div class="home-tile">
+          <div class="home-obj"><span class="home-shine" aria-hidden="true"></span><img class="home-obj-badge" src="${badgeArt(entry.badge)}" alt=""></div>
+          <strong>${esc(entry.badge)}</strong><small>${esc(t('Your badge'))}</small>
+        </div>
+        <div class="home-tile">
+          <div class="home-obj"><img class="home-obj-hat" src="assets/prize-hat.svg" alt=""></div>
+          <strong>${esc(t('UPS hat'))}</strong><small>${esc(t('Top 3 prize'))}</small>
+        </div>
+      </div>
+      ${progress === null ? '' : `<div class="profile-bar home-meter"><i style="width:${progress}%"></i></div>`}
+      <p class="home-climb-note">${esc(balanceLine(entry))}</p>
     </div>`;
+  climb.hidden = false;
 }
 
 // The season-start notice (Decision 15, placement settled 2026-11-15). It
