@@ -241,6 +241,53 @@ class TiebreakQuestionTests(unittest.TestCase):
             [],
         )
 
+    def test_with_no_fresh_set_the_tied_players_wait_in_that_one_group(self):
+        """Found walking issue #13 on 2026-11-22: the group was marked for
+        the owner but nobody was placed in it, so the prize pass took the
+        players for undecided, opened a second group for them, and left
+        the first on the owner's list with no player to choose."""
+        season = self._season("Exhausted At Freeze")
+        self.conn.commit()
+        spent = migrate.fetch_one(
+            self.conn,
+            "INSERT INTO tiebreak_groups (season_id, reason, tied_points, hats_available,"
+            " opened_at, status) VALUES (%s, 'replacement', 100, 1, %s, 'resolved') RETURNING id",
+            (season, T0),
+        )["id"]
+        for number in range(1, 11):
+            rid = migrate.fetch_one(
+                self.conn,
+                "INSERT INTO tiebreak_rounds (group_id, round_number, opened_at, deadline_at, status, hats)"
+                " VALUES (%s, %s, %s, %s, 'void', 1) RETURNING id",
+                (spent, min(number, 5), T0, T0 + timedelta(hours=24)),
+            )["id"]
+            tiebreaks.assign_round_questions(self.conn, rid, season, BANK, rng=self.rng)
+        self._tie_in(season)
+        clock = Clock(T0 + timedelta(minutes=10))
+        migrate.execute(
+            self.conn, "UPDATE seasons SET frozen_at = %s WHERE id = %s", (clock.now(), season)
+        )
+        group = tiebreaks.open_prize_tiebreaks(self.conn, season, clock=clock, bank=BANK, rng=self.rng)
+        self.conn.commit()
+
+        waiting = migrate.fetch_all(
+            self.conn,
+            "SELECT status FROM tiebreak_placements WHERE group_id = %s", (group,),
+        )
+        self.assertEqual([row["status"] for row in waiting], ["owner_selection"] * 2)
+
+        # the prize pass now sees them as waiting, and opens nothing else
+        self.assertEqual(
+            tiebreaks.finalize_prizes(self.conn, season, clock=clock, bank=BANK, rng=self.rng),
+            "pending",
+        )
+        groups = migrate.fetch_all(
+            self.conn,
+            "SELECT id FROM tiebreak_groups WHERE season_id = %s AND status = 'owner_selection'",
+            (season,),
+        )
+        self.assertEqual([row["id"] for row in groups], [group])
+
     # --- helpers ---
 
     def _tie_in(self, season):
