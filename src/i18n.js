@@ -453,6 +453,13 @@ const ES = {
   'attempt finished': 'intento terminado',
   'quit': 'abandonado',
   'ended': 'terminado',
+  // A round restarted by an outage, and small Ranked texts (walk of 2026-11-22)
+  'This round was restarted': 'Esta ronda se reinició',
+  'A server outage interrupted it, so the round starts again for everyone with new questions and a new deadline. Answers given before do not count, even a finished attempt. Play it again to stay in the tie-break.': 'Una caída del servidor la interrumpió, así que la ronda empieza de nuevo para todos con preguntas nuevas y un nuevo plazo. Las respuestas dadas antes no cuentan, ni siquiera un intento terminado. Juégala otra vez para seguir en el desempate.',
+  'The round was restarted after a server outage. Play it again before it closes.': 'La ronda se reinició después de una caída del servidor. Juégala otra vez antes de que cierre.',
+  'question to go.': 'pregunta por responder.',
+  'Easy question': 'Pregunta fácil',
+  'The season closed before you finished. What you had scored counts, with no penalty.': 'La temporada cerró antes de que terminaras. Lo que habías sumado cuenta, sin penalización.',
 };
 
 const SERVICE_ES = {

@@ -1028,6 +1028,8 @@ function showTiebreakInvite(tie) {
       <h1 class="lab-title">${esc(t('You are tied for a hat'))}</h1>
       <p class="lab-intro">${esc(t('You have the same points as another sorter. A separate quiz decides who takes the hat.'))}</p>
       ${tie.last_result ? `<p class="lab-intro" id="tb-last"><strong>${esc(lastRoundLine(tie.last_result, true))}</strong></p>` : ''}
+      ${round.restarted ? `<div class="board-notice" id="tb-restarted"><h2>${esc(t('This round was restarted'))}</h2>
+        <p>${esc(t('A server outage interrupted it, so the round starts again for everyone with new questions and a new deadline. Answers given before do not count, even a finished attempt. Play it again to stay in the tie-break.'))}</p></div>` : ''}
       <ol class="lab-rules">
         <li>${esc(t('Five Hard route questions, the same five for everyone in this round.'))}</li>
         <li>${esc(round.seconds)} ${esc(t('seconds each. Questions move on by themselves — there is no Next.'))}</li>
@@ -1076,7 +1078,12 @@ async function playTiebreak(round) {
     if (current.status === 410 || current.status === 204 || !current.data) {
       stopTimer();
       attempt.stop();
-      showTiebreakSubmitted(round);
+      // The attempt ending is not proof it was submitted: a confirmed
+      // outage voids the round and opens it again. Ask before telling the
+      // player nothing else is needed, because that would cost them the hat.
+      const again = (await api('/ranked/tiebreak/mine'))?.tie;
+      if (again?.round && !again.round.played) showTiebreakInvite(again);
+      else showTiebreakSubmitted(round);
       return;
     }
     const q = current.data;
@@ -1938,7 +1945,7 @@ function showRankedFeedback(attempt, mode, q, chosen, response, tally) {
       <h1 class="lab-title rq-verdict ${right ? 'good' : 'bad'}">${esc(verdict)}</h1>
       ${mode === 'promotion'
         ? (promoCorrect
-          ? `<p class="rq-worth">${esc(tally.correctCount)} ${esc(t('of'))} ${esc(tally.correctCount)} ${esc(t('right.'))} ${q.seq < 15 ? `${esc(15 - q.seq)} ${esc(t('questions to go.'))}` : esc(t('That was the last one.'))}</p>`
+          ? `<p class="rq-worth">${esc(tally.correctCount)} ${esc(t('of'))} ${esc(tally.correctCount)} ${esc(t('right.'))} ${q.seq < 15 ? `${esc(15 - q.seq)} ${esc(t(15 - q.seq === 1 ? 'question to go.' : 'questions to go.'))}` : esc(t('That was the last one.'))}</p>`
           : `<p class="rq-worth bad">${response.worth} ${esc(t('points'))} · ${esc(t(response.difficulty === 'easy' ? 'Easy question' : response.difficulty === 'hard' ? 'Hard question' : 'Medium question'))}</p>`)
         : `<p class="rq-worth ${right ? 'good' : 'bad'}">${response.worth > 0 ? '+' : ''}${response.worth} ${esc(t('points'))} · ${esc(t(response.difficulty === 'easy' ? 'Easy question' : response.difficulty === 'hard' ? 'Hard question' : 'Medium question'))}</p>`}
       <div class="rq-prompt"><p class="rq-service">${esc(where.service)}</p><p class="rq-code">${esc(where.code)}</p></div>
@@ -2042,6 +2049,7 @@ function showRankedResult(mode, result, tally, { quit = false, attemptId = null 
     <section class="lab-screen">
       <p class="lab-eyebrow">${esc(t('Ranked'))} · ${esc(t(quit ? 'attempt ended' : 'attempt finished'))}</p>
       <h1 class="lab-title">${esc(tally.correctCount)} ${esc(t('of'))} 15 ${esc(t('correct'))}</h1>
+      ${result.final_outcome === 'season_close' ? `<p class="lab-intro" id="rq-season-close">${esc(t('The season closed before you finished. What you had scored counts, with no penalty.'))}</p>` : ''}
       ${rankedSum(result, quit)}
       ${droppedBadge ? boardNotice(
           `${t('You are')} ${result.badge_after} ${t('again')}`,
@@ -2244,7 +2252,9 @@ async function fillTiebreakCallout(box, { onlyToPlay = false } = {}) {
     box.innerHTML = `
       <button id="tiebreak-go" class="lab-choice lab-choice-quiz" type="button">
         <span class="lab-choice-icon">◇</span>
-        <span><strong>${esc(t('You are in a prize tie-break'))}</strong><small>${esc(t('A quiz decides the hat. Play once before the round closes.'))}</small></span>
+        <span><strong>${esc(t('You are in a prize tie-break'))}</strong><small>${esc(t(round.restarted
+          ? 'The round was restarted after a server outage. Play it again before it closes.'
+          : 'A quiz decides the hat. Play once before the round closes.'))}</small></span>
         <span class="lab-arrow" aria-hidden="true">→</span>
       </button>`;
     box.querySelector('#tiebreak-go').addEventListener('click', () => showTiebreakInvite(tie));

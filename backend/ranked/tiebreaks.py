@@ -218,7 +218,19 @@ def open_prize_tiebreaks(conn, season_id, *, clock, bank=None, rng=None):
         bank = load_reviewed_bank()
     if fresh_sets_left(conn, season_id, bank) == 0:
         # No round can be played, so none is opened: the places wait for
-        # the owner, which is the settled fallback, not a failure.
+        # the owner, which is the settled fallback, not a failure. Each
+        # player is placed as waiting, like every other road to the owner:
+        # the owner's list and the prize pass both read the placements, and
+        # a group marked waiting with nobody in it is a tie nobody can
+        # settle while the prize pass opens a second group for its players.
+        for account_id in tie.account_ids:
+            migrate.execute(
+                conn,
+                "INSERT INTO tiebreak_placements"
+                " (group_id, account_id, status, decided_in_round)"
+                " VALUES (%s, %s, 'owner_selection', 1)",
+                (group_id, account_id),
+            )
         migrate.execute(
             conn,
             "UPDATE tiebreak_groups SET status = 'owner_selection' WHERE id = %s",
@@ -764,6 +776,17 @@ def my_tiebreak(conn, account_id) -> dict | None:
         " ORDER BY r.round_number DESC LIMIT 1",
         (group["id"], account_id),
     )
+    restarted = False
+    if open_round is not None:
+        # A confirmed outage voids the round and opens the same number
+        # again. The player is owed that fact: answers they gave, even a
+        # finished attempt, no longer count and the round is to be played.
+        restarted = migrate.fetch_one(
+            conn,
+            "SELECT 1 AS yes FROM tiebreak_rounds WHERE group_id = %s"
+            " AND round_number = %s AND status = 'void' LIMIT 1",
+            (group["id"], open_round["round_number"]),
+        ) is not None
     conn.commit()
     from backend.ranked import modes, ranks
 
@@ -784,6 +807,7 @@ def my_tiebreak(conn, account_id) -> dict | None:
             "hats": open_round["hats"],
             "seconds": modes.TIEBREAK_SECONDS[open_round["round_number"]],
             "played": open_round["attempt_id"] is not None,
+            "restarted": restarted,
             "attempt_id": open_round["attempt_id"],
         }
     return out
