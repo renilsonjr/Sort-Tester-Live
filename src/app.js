@@ -257,7 +257,9 @@ function labPage(content, active = 'home', rerender = showStart) {
   wireThemeButton(view);
   view.querySelector('#top-settings')?.addEventListener('click', () => showProfile('settings'));
   view.querySelectorAll('[data-nav]').forEach((button) => button.addEventListener('click', () => {
-    if (button.dataset.nav === active) return;
+    // The active tab is not skipped: a screen inside a tab (a tie-break
+    // invite, the leaderboard) carries its tab's mark, and pressing the tab
+    // is how a player expects to get back to its first screen.
     if (button.dataset.nav === 'practice') showPractice();
     else if (button.dataset.nav === 'ranked') showRanked();
     else if (button.dataset.nav === 'profile') showProfile();
@@ -305,14 +307,16 @@ function showPractice() {
 // Ranked and Profile exist as tabs for signed-in players from this slice on;
 // their screens are the next slices of #10. A placeholder that says so is
 // better than a tab that does nothing when pressed.
-function comingSoon(eyebrow, title, note, active) {
-  labPage(`
+function comingSoon(eyebrow, title, note, active, back = null) {
+  const view = labPage(`
     <section class="lab-screen">
       <p class="lab-eyebrow">${esc(eyebrow)}</p>
       <h1 class="lab-title">${esc(title)}</h1>
       <p class="lab-intro">${esc(note)}</p>
+      ${back ? `<button id="soon-back" class="ghost" type="button">${esc(t(back.label))}</button>` : ''}
     </section>
-  `, active, () => comingSoon(eyebrow, title, note, active));
+  `, active, () => comingSoon(eyebrow, title, note, active, back));
+  if (back) view.querySelector('#soon-back').addEventListener('click', back.go);
 }
 
 // Profile (#10, slice 2). Everything here is the signed-in account's own:
@@ -1023,6 +1027,7 @@ function showTiebreakInvite(tie) {
       <p class="lab-eyebrow">${esc(t('Prize tie-break'))} · ${esc(t('round'))} ${round.number}</p>
       <h1 class="lab-title">${esc(t('You are tied for a hat'))}</h1>
       <p class="lab-intro">${esc(t('You have the same points as another sorter. A separate quiz decides who takes the hat.'))}</p>
+      ${tie.last_result ? `<p class="lab-intro" id="tb-last"><strong>${esc(lastRoundLine(tie.last_result, true))}</strong></p>` : ''}
       <ol class="lab-rules">
         <li>${esc(t('Five Hard route questions, the same five for everyone in this round.'))}</li>
         <li>${esc(round.seconds)} ${esc(t('seconds each. Questions move on by themselves — there is no Next.'))}</li>
@@ -1103,8 +1108,9 @@ async function playTiebreak(round) {
     const total = round.seconds * 1000;
     const paint = () => {
       const left = deadlineMs - Date.now();
+      const secondsLeft = Math.max(0, Math.ceil(left / 1000));
       view.querySelector('#tb-time').textContent =
-        `${Math.max(0, Math.ceil(left / 1000))} ${t('seconds')}`;
+        `${secondsLeft} ${t(secondsLeft === 1 ? 'second' : 'seconds')}`;
       const fill = view.querySelector('#tb-bar-fill');
       if (fill) fill.style.width = `${Math.max(0, Math.min(100, (left / total) * 100))}%`;
       if (left <= 0) { stopTimer(); render(); }
@@ -1201,7 +1207,7 @@ async function fillSelection(panel) {
             <b>${esc(p.username)}</b> <small>#${esc(p.tag)}</small></label>
             <small class="sel-hist">${p.history.map((h) => esc(outcomeLine(h))).join(' \u00b7 ') || esc(t('No round was played.'))}</small></li>`).join('')}
         </ul>
-        <button class="primary sel-go" type="button" disabled>${esc(t('Choose'))} ${c.hats} ${esc(t('to continue'))}</button>
+        <button class="primary sel-go" type="button" disabled data-ask="${esc(t('Choose'))} ${c.hats} ${esc(t('to continue'))}">${esc(t('Choose'))} ${c.hats} ${esc(t('to continue'))}</button>
       </div>`).join('')}
   `;
   panel.querySelectorAll('.sel-case').forEach((box) => {
@@ -1209,6 +1215,8 @@ async function fillSelection(panel) {
     const go = box.querySelector('.sel-go');
     box.querySelectorAll('input[type=checkbox]').forEach((input) => input.addEventListener('change', () => {
       go.disabled = box.querySelectorAll('input:checked').length !== hats;
+      // the label asks only while something is still missing
+      go.textContent = go.disabled ? go.dataset.ask : t('Continue');
     }));
     go.addEventListener('click', () => {
       const picked = [...box.querySelectorAll('input:checked')];
@@ -1611,20 +1619,28 @@ async function fillLeaderboard(panel) {
     return;
   }
   // Top three get a 3D-style podium (mock); the rest stay in the list below.
-  const hasPodium = board.rows.length >= 3;
-  const top = board.rows.slice(0, 3);
-  const slot = (row, rank, cls) => !row ? '' : `
+  // Each pedestal carries the player's real place: with equal points the
+  // standings share a place, and a fixed 1-2-3 would rank a tie that the
+  // rules have not ranked.
+  // Once the hats are decided the podium is the three winners: a tie-break
+  // or a backfill can give a hat to a player listed below one who took none.
+  const ordered = board.prizes_final
+    ? [...board.rows.filter((row) => row.hat), ...board.rows.filter((row) => !row.hat)]
+    : board.rows;
+  const hasPodium = ordered.length >= 3;
+  const top = ordered.slice(0, 3);
+  const slot = (row, cls) => !row ? '' : `
     <div class="pslot ${cls}${row.you ? ' pslot-you' : ''}">
       ${row.hat ? '<div class="pcrown" aria-hidden="true">♛</div>' : ''}
       <div class="pdisc">${row.hat ? '♛' : esc(row.username.slice(0, 1).toUpperCase())}</div>
       <div class="pname">${esc(row.username)}</div>
       <div class="ppts">◆ ${row.points.toLocaleString()}</div>
-      <div class="ppillar">${rank}</div>
+      <div class="ppillar">${row.place}</div>
     </div>`;
   const podium = hasPodium ? `<div class="podium">
-    ${slot(top[1], 2, 'p2')}${slot(top[0], 1, 'p1')}${slot(top[2], 3, 'p3')}
+    ${slot(top[1], 'p2')}${slot(top[0], 'p1')}${slot(top[2], 'p3')}
   </div>` : '';
-  const listRows = hasPodium ? board.rows.slice(3) : board.rows;
+  const listRows = hasPodium ? ordered.slice(3) : ordered;
   const rows = listRows.map((row) => `
     <li class="${row.you ? 'board-you' : ''}${row.hat ? ' board-hat' : (row.tied ? ' board-tied' : '')}">
       <span class="board-place">${row.hat ? '♛' : row.place}</span>
@@ -1634,7 +1650,7 @@ async function fillLeaderboard(panel) {
       </span>
       <b class="board-points">${row.points.toLocaleString()}</b>
       ${row.hat ? `<span class="board-marker board-marker-hat">${esc(t('Hat winner'))}</span>`
-        : (row.tied ? `<span class="board-marker">${esc(t('Tied on points'))}</span>` : '')}
+        : (row.tied ? `<span class="board-marker">${esc(t(board.prizes_final ? 'Tied on points, no hat' : 'Tied on points'))}</span>` : '')}
     </li>
   `).join('');
   const intro = board.prizes_final
@@ -1694,7 +1710,7 @@ const SEASON_LINE = {
     open: 'The official season is open.',
     finishing: 'The season is closing. Attempts already started have five more minutes.',
     closed: 'The season is closed. Standings are provisional while settlement and any tie-breaks finish.',
-    frozen: 'Final results for this season.',
+    frozen: 'Points are final for this season.',
   },
 };
 
@@ -1737,7 +1753,10 @@ async function fillRanked(panel, title) {
   }
   title.textContent = season.phase === 'pre_season' ? t('Pre-Season') : season.label;
   const closes = season.closes_at ? new Date(season.closes_at).toLocaleString() : null;
-  const atCap = entry.mode === 'promotion';
+  // A new quiz is offered only while the season admits one. Closing and
+  // frozen seasons keep the balance and the leaderboard on the screen.
+  const open = season.status === 'open';
+  const atCap = open && entry.mode === 'promotion';
   panel.innerHTML = `
     <p class="lab-intro">${esc(t(seasonLine(season)))}</p>
     <div class="profile-balance">
@@ -1748,18 +1767,19 @@ async function fillRanked(panel, title) {
         <p class="lab-study-meta">${esc(balanceLine(entry))}</p>
       </div>
     </div>
-    ${closes ? `<p class="lab-intro">${esc(t('Closes'))}: ${esc(closes)}</p>` : ''}
+    ${closes ? `<p class="lab-intro">${esc(t(open ? 'Closes' : 'Closed'))}: ${esc(closes)}</p>` : ''}
     ${atCap ? `
     <div class="profile-promo">
       <h2>${esc(t('Promotion available'))}</h2>
       <p>${esc(t('You are at the cap, so promotion is the only Ranked quiz available. It needs a perfect 15 out of 15. Practice is available as usual and never changes these points.'))}</p>
     </div>` : ''}
     <div id="tiebreak-callout" hidden></div>
+    ${open ? `
     <button id="ranked-start" class="lab-choice lab-choice-quiz" type="button">
       <span class="lab-choice-icon">\u25c6</span>
       <span><strong>${esc(atCap ? t('Start promotion') : t('Start Ranked quiz'))}</strong><small>${esc(t('15 questions, ten seconds each.'))}</small></span>
       <span class="lab-arrow" aria-hidden="true">\u2192</span>
-    </button>
+    </button>` : ''}
     <button id="ranked-board" class="lab-choice" type="button">
       <span class="lab-choice-icon">#</span>
       <span><strong>${esc(t('Leaderboard'))}</strong><small>${esc(t('See the standings.'))}</small></span>
@@ -1768,7 +1788,7 @@ async function fillRanked(panel, title) {
   `;
   fillTiebreakCallout(panel.querySelector('#tiebreak-callout'));
   panel.querySelector('#ranked-board').addEventListener('click', showLeaderboard);
-  panel.querySelector('#ranked-start').addEventListener('click', () => {
+  panel.querySelector('#ranked-start')?.addEventListener('click', () => {
     if (atCap) showPromotionOffer(entry);
     else startRankedAttempt('normal');
   });
@@ -1803,10 +1823,15 @@ async function startRankedAttempt(mode) {
   const attempt = createAttemptClient({ fetchFn: attemptFetch });
   const started = await attempt.start('/ranked/attempts', { mode });
   if (!started.ok) {
-    const reason = started.status === 409
-      ? (started.data?.detail || t('That did not work. Nothing has started.'))
-      : t('Could not reach the server. Nothing has started.');
-    comingSoon(t('Ranked'), t('Could not start'), reason, 'ranked');
+    // The season can close between this screen loading and the tap.
+    const closed = started.status === 409 && started.data?.detail === 'No open season';
+    const reason = closed
+      ? t('The season is closed, so no new Ranked quiz can start.')
+      : started.status === 409
+        ? (started.data?.detail || t('That did not work. Nothing has started.'))
+        : t('Could not reach the server. Nothing has started.');
+    comingSoon(t('Ranked'), t('Could not start'), reason, 'ranked',
+      { label: 'Back to Ranked', go: showRanked });
     return;
   }
   attempt.startHeartbeat();
@@ -1850,6 +1875,11 @@ async function playRankedAttempt(attempt, mode, tally) {
     </div>
   `;
   view.querySelector('#rq-cancel').addEventListener('click', () => showQuitConfirm(attempt, mode, q.seq, tally));
+  // The attempt can end while this question is on screen (the season
+  // launches, the server's clock ends it). Reading it again then leads to
+  // the result. Only while this screen is the one showing: feedback for a
+  // last answer is also seen after the attempt ended, and waits for Next.
+  attempt.onGone(() => { if (view.isConnected) playRankedAttempt(attempt, mode, tally); });
   let timer = null;
   const stopTimer = () => { if (timer) clearInterval(timer); timer = null; };
   function startCountdown(deadlineMs, totalMs) {
@@ -1998,6 +2028,10 @@ function showRankedResult(mode, result, tally, { quit = false, attemptId = null 
     comingSoon(t('Ranked'), t('Could not load the result'), t('Your points are safe. Check your history from Profile.'), 'ranked');
     return;
   }
+  if (result.final_outcome === 'launch_reset') {
+    showEndedAtLaunch();
+    return;
+  }
   if (mode === 'promotion') {
     showPromotionResult(result, tally, { quit, attemptId });
     return;
@@ -2016,6 +2050,25 @@ function showRankedResult(mode, result, tally, { quit = false, attemptId = null 
       <button id="rq-done" class="ghost">${esc(t('Back to Ranked'))}</button>
     </section>
   `, 'ranked', () => showRankedResult(mode, result, tally, { quit, attemptId }));
+  view.querySelector('#rq-done').addEventListener('click', showRanked);
+  return view;
+}
+
+// An attempt that was in progress when the official season launched. It
+// was ended with no score, and the launch then reset every balance, so the
+// usual breakdown would show a balance that no longer exists.
+function showEndedAtLaunch() {
+  stopTick();
+  clock = null;
+  const view = labPage(`
+    <section class="lab-screen">
+      <p class="lab-eyebrow">${esc(t('Ranked'))} · ${esc(t('attempt ended'))}</p>
+      <h1 class="lab-title">${esc(t('The official season has started'))}</h1>
+      <p class="lab-intro">${esc(t('This attempt ended when the season started. No score was applied.'))}</p>
+      <p class="lab-intro">${esc(t('Everyone began again at 0 points and Iron.'))}</p>
+      <button id="rq-done" class="ghost">${esc(t('Back to Ranked'))}</button>
+    </section>
+  `, 'ranked', showEndedAtLaunch);
   view.querySelector('#rq-done').addEventListener('click', showRanked);
   return view;
 }
@@ -2181,7 +2234,7 @@ function showPromotionOffer(entry) {
 // exists for the handful of players tied for a hat, so it is not a tab of
 // its own: it shows up as a callout on the Ranked screen when there is a
 // round to play or a result to read, and is silent for everyone else.
-async function fillTiebreakCallout(box) {
+async function fillTiebreakCallout(box, { onlyToPlay = false } = {}) {
   if (!box) return;
   const body = await api('/ranked/tiebreak/mine');
   const tie = body?.tie;
@@ -2198,6 +2251,9 @@ async function fillTiebreakCallout(box) {
     box.hidden = false;
     return;
   }
+  // Home carries only the round still to be played: it has a deadline.
+  // Everything else is read on the Ranked screen.
+  if (onlyToPlay) return;
   if (round && round.played) {
     box.innerHTML = `<div class="board-notice"><h2>${esc(t('Your tie-break answers are in'))}</h2><p>${esc(t('Scores are hidden for everyone until the round closes. Come back then for the result.'))}</p></div>`;
     box.hidden = false;
@@ -2206,16 +2262,33 @@ async function fillTiebreakCallout(box) {
   // no open round: a result to read, or a place already settled
   const standing = tiebreakStanding(tie);
   if (standing) {
-    box.innerHTML = `<div class="board-notice"><h2>${esc(standing.title)}</h2><p>${esc(standing.text)}</p></div>`;
+    const last = tie.last_result ? ` ${lastRoundLine(tie.last_result, false)}` : '';
+    box.innerHTML = `<div class="board-notice"><h2>${esc(standing.title)}</h2><p>${esc(standing.text + last)}</p></div>`;
     box.hidden = false;
   }
 }
 
+// A player's own score in the last closed round. The server sends it only
+// once the round has closed, and only their own. ``stillTied`` is for the
+// invite to the next round, which exists because that round settled nothing.
+function lastRoundLine(last, stillTied) {
+  const mine = last.outcome === 'completed'
+    ? t('You scored {score} of 5 in round {round}.', { score: last.score, round: last.round })
+    : t(last.outcome === 'no_show'
+      ? 'You did not play round {round}.'
+      : 'You did not finish round {round}.', { round: last.round });
+  return stillTied ? `${mine} ${t('The tie is still not settled.')}` : mine;
+}
+
 function tiebreakStanding(tie) {
   if (tie.placement === 'hat') {
-    return { title: t('You won a hat'), text: t('The tie-break decided it in your favour. The leaderboard shows it once every prize place is settled.') };
+    // Says nothing about how: a quiz or the owner's selection both end here.
+    return { title: t('You won a hat'), text: t('The tie for the hat is settled in your favour. The leaderboard shows it once every prize place is settled.') };
   }
-  if (tie.placement === 'no_hat' || tie.placement === 'excluded') {
+  if (tie.placement === 'excluded') {
+    return { title: t('The tie-break is settled'), text: t('You did not complete the round, so you take no hat this season. Your points, badge and history are unchanged.') };
+  }
+  if (tie.placement === 'no_hat') {
     return { title: t('The tie-break is settled'), text: t('You did not take a hat this season. Your points, badge and history are unchanged.') };
   }
   if (tie.placement === 'owner_selection') {
@@ -2254,10 +2327,11 @@ function showStart() {
       <section class="lab-launch" id="launch-callout" hidden aria-live="polite">
         <i aria-hidden="true">!</i>
         <div>
-          <h2>${esc(t('The official season has started'))}</h2>
+          <h2 id="launch-title">${esc(t('The official season has started'))}</h2>
           <p id="launch-text"></p>
         </div>
       </section>
+      <div id="home-tiebreak" hidden></div>
       <div id="home-ident">${signedIn() ? '' : `
         <button class="home-invite" id="home-signin" type="button">
           <span class="home-invite-ic" aria-hidden="true">🏅</span>
@@ -2293,6 +2367,7 @@ function showStart() {
   }
   view.querySelector('#viewlog').addEventListener('click', showLog);
   fillLaunchCallout(view);
+  if (signedIn()) fillTiebreakCallout(view.querySelector('#home-tiebreak'), { onlyToPlay: true });
 }
 
 // Signed-in Home identity block: badge + name + points, read from the same
@@ -2330,6 +2405,18 @@ async function fillLaunchCallout(view) {
   if (!notice?.started || !notice.started_at) return;
   const started = new Date(notice.started_at).toLocaleDateString();
   const closes = notice.closes_at ? new Date(notice.closes_at).toLocaleDateString() : null;
+  // Once the season's end has passed, "has started ... ends on" is stale:
+  // nobody can start a quiz for points any more. It does not say points
+  // are final: attempts already started have five more minutes.
+  if (notice.closes_at && new Date(notice.closes_at).getTime() <= Date.now()) {
+    const ran = t('It ran from {start} to {end}.', { start: started, end: closes });
+    view.querySelector('#launch-title').textContent = t('The official season has ended');
+    view.querySelector('#launch-text').textContent = signedIn()
+      ? `${ran} ${t('The leaderboard has the results.')}`
+      : ran;
+    box.hidden = false;
+    return;
+  }
   const when = closes
     ? `${t('It started on')} ${started} ${t('and ends on')} ${closes}.`
     : `${t('It started on')} ${started}.`;
