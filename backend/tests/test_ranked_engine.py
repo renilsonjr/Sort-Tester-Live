@@ -469,6 +469,125 @@ class RankedEngineTests(unittest.TestCase):
             engine.quit_attempt(self.conn, attempt_id, clock=self.clock), "completed"
         )
 
+    # --- the server's own restart (issue #13 box 3, owner decision 2026-11-22) ---
+
+    def _server_restarted(self, seconds_after_start):
+        """Say this process came up that long after the test's starting time."""
+        engine.set_process_started_at(self.t0 + timedelta(seconds=seconds_after_start))
+        self.addCleanup(engine.set_process_started_at, None)
+
+    def test_silence_across_a_restart_voids_instead_of_disconnecting(self):
+        self.t0 = self.clock.now()
+        _, attempt_id = self._start()
+        self._server_restarted(10)  # last heard at 0s, the process came up at 10s
+        self.clock.advance(25)
+        with self.assertRaises(engine.AttemptEndedError):
+            engine.heartbeat(self.conn, attempt_id, clock=self.clock)
+        self.assertEqual(self._ending(attempt_id), ("terminal_pending", "outage_void"))
+        # the question on screen is nobody's timeout
+        self.assertIsNone(self._answer_of(attempt_id, 1))
+
+    def test_the_sweep_voids_it_too(self):
+        self.t0 = self.clock.now()
+        _, attempt_id = self._start()
+        self._server_restarted(10)
+        self.clock.advance(25)
+        engine.expire_stale_attempts(self.conn, clock=self.clock)
+        self.assertEqual(self._ending(attempt_id), ("terminal_pending", "outage_void"))
+
+    def test_a_silence_that_began_after_the_restart_is_the_players_own(self):
+        self.t0 = self.clock.now()
+        self._server_restarted(-60)  # up for a minute before the attempt began
+        _, attempt_id = self._start()
+        self.clock.advance(25)
+        engine.expire_stale_attempts(self.conn, clock=self.clock)
+        self.assertEqual(self._ending(attempt_id), ("terminal_pending", "disconnect"))
+
+    def test_abandoned_long_before_a_restart_stays_the_players_disconnect(self):
+        """Attempts end lazily. Without this, walking away from a bad quiz
+        and waiting for the next deploy would beat quitting it."""
+        self.t0 = self.clock.now()
+        _, abandoned = self._start()
+        # an hour later the server is still working: somebody else plays
+        self.clock.advance(3600)
+        other = self._make_account("LATER1")
+        engine.start_attempt(self.conn, other, clock=self.clock, bank=self.bank)
+        self._server_restarted(3700)
+        self.clock.advance(200)
+        engine.expire_stale_attempts(self.conn, clock=self.clock)
+        self.assertEqual(self._ending(abandoned), ("terminal_pending", "disconnect"))
+
+    def test_with_no_known_start_nothing_changes(self):
+        _, attempt_id = self._start()
+        self.clock.advance(25)
+        engine.expire_stale_attempts(self.conn, clock=self.clock)
+        self.assertEqual(self._ending(attempt_id), ("terminal_pending", "disconnect"))
+
+    def test_back_inside_the_grace_after_a_short_restart_plays_on(self):
+        self.t0 = self.clock.now()
+        _, attempt_id = self._start()
+        self._server_restarted(4)
+        self.clock.advance(10)  # inside 3s + 15s
+        engine.heartbeat(self.conn, attempt_id, clock=self.clock)
+        self.assertEqual(self._ending(attempt_id), ("active", None))
+
+    def test_a_restart_on_the_final_question_voids_rather_than_completes(self):
+        attempt_id = self._reach_final_question()
+        engine.set_process_started_at(self.clock.now() + timedelta(seconds=10))
+        self.addCleanup(engine.set_process_started_at, None)
+        self.clock.advance(60)
+        engine.expire_stale_attempts(self.conn, clock=self.clock)
+        self.assertEqual(self._ending(attempt_id), ("terminal_pending", "outage_void"))
+        self.assertIsNone(self._answer_of(attempt_id, 15))
+
+    def test_a_promotion_cut_off_by_a_restart_is_voided(self):
+        account_id = self._account_with_points(1000, tag="RST001")
+        attempt_id = self._begin(account_id, "promotion")
+        engine.set_process_started_at(self.clock.now() + timedelta(seconds=10))
+        self.addCleanup(engine.set_process_started_at, None)
+        self.clock.advance(25)
+        with self.assertRaises(engine.AttemptEndedError):
+            engine.heartbeat(self.conn, attempt_id, clock=self.clock)
+        self.assertEqual(self._ending(attempt_id), ("terminal_pending", "outage_void"))
+
+    def test_a_voided_restart_settles_at_zero_with_no_flag(self):
+        from backend.ranked import settlement
+
+        self.t0 = self.clock.now()
+        account_id, attempt_id = self._start()
+        engine.submit_answer(self.conn, attempt_id, 1, "NOT-A-BELT", clock=self.clock, bank=self.bank)
+        self._server_restarted(10)
+        self.clock.advance(25)
+        engine.expire_stale_attempts(self.conn, clock=self.clock)
+        settlement.settle_pending(self.conn, clock=self.clock)
+        row = migrate.fetch_one(
+            self.conn,
+            "SELECT final_outcome, adjustment FROM settlements WHERE attempt_id = %s",
+            (attempt_id,),
+        )
+        self.assertEqual((row["final_outcome"], row["adjustment"]), ("outage_void", 0))
+        self.assertEqual(
+            migrate.fetch_one(
+                self.conn, "SELECT count(*) AS n FROM connection_flags WHERE attempt_id = %s",
+                (attempt_id,),
+            )["n"], 0,
+        )
+        # and the player is free to start again
+        engine.start_attempt(self.conn, account_id, clock=self.clock, bank=self.bank)
+
+    def test_a_disconnect_already_settled_is_not_reopened_by_a_later_restart(self):
+        from backend.ranked import settlement
+
+        self.t0 = self.clock.now()
+        _, attempt_id = self._start()
+        self.clock.advance(25)
+        engine.expire_stale_attempts(self.conn, clock=self.clock)
+        settlement.settle_pending(self.conn, clock=self.clock)
+        self._server_restarted(40)
+        self.clock.advance(60)
+        engine.expire_stale_attempts(self.conn, clock=self.clock)
+        self.assertEqual(self._ending(attempt_id), ("finalized", "disconnect"))
+
     # --- promotion entry gate (slice 6) ---
 
     def _account_with_points(self, points, tag="P00001"):

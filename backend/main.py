@@ -1,5 +1,7 @@
 import os
 import re
+from contextlib import asynccontextmanager
+from datetime import datetime, timezone
 from pathlib import Path
 from urllib.parse import urlsplit
 
@@ -14,6 +16,7 @@ from backend.db import settings as db_settings
 from backend.db.entra_token import TokenUnavailable
 from backend.auth import deletion_list, settings as auth_settings
 from backend.auth.rate_limit import RegistrationLimiter
+from backend.ranked import engine as ranked_engine
 from backend.routers import auth, ranked, recovery_messages as recovery_messages_router
 
 # The repository root holds index.html, src/ and assets/.
@@ -32,7 +35,21 @@ def create_app() -> FastAPI:
     # The generated API docs list every route, owner and admin ones included,
     # so they exist only where a developer asks for them.
     docs = os.environ.get("SORT_TESTER_API_DOCS", "").strip() == "1"
+    @asynccontextmanager
+    async def lifespan(_application: FastAPI):
+        # The moment this server came up. An attempt found silent since
+        # before it, with nothing showing the server alive after its grace
+        # ran out, was cut off by the restart and not by its player (issue
+        # #13, box 3). Set here and not at import, so only a server that is
+        # really running claims to have started.
+        ranked_engine.set_process_started_at(datetime.now(timezone.utc))
+        try:
+            yield
+        finally:
+            ranked_engine.set_process_started_at(None)
+
     application = FastAPI(
+        lifespan=lifespan,
         docs_url="/docs" if docs else None,
         redoc_url="/redoc" if docs else None,
         openapi_url="/openapi.json" if docs else None,

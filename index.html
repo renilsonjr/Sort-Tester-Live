@@ -644,13 +644,6 @@
   .lab-hero h1 { font: 900 clamp(34px, 9vw, 43px)/1.06 Nunito, "Trebuchet MS", sans-serif; letter-spacing: -.055em; }
   .lab-hero p:not(.lab-eyebrow) { color: #54412f; font-size: 15px; }
   .lab-campaign img { border-radius: 0 0 26px 26px; }
-  .lab-change { margin-top: 16px; padding: 15px 16px; border: 1px solid #e4d3a8; border-radius: 19px; background: #fbf3e1; }
-  .lab-change-kicker { margin: 0 0 8px; color: var(--accent); font-size: 11px; font-weight: 900; letter-spacing: .09em; text-transform: uppercase; }
-  .lab-change-row { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
-  .lab-change-row h2 { margin: 0; color: var(--ink); font-size: 21px; font-weight: 900; letter-spacing: -.03em; text-transform: none; }
-  .lab-change-row p { margin: 2px 0 0; color: #54412f; font-size: 12px; font-weight: 800; }
-  .lab-change-row .lab-belt-chip { flex: none; min-width: 72px; border-radius: 11px; }
-  .lab-change-note { margin: 11px 0 0; padding-top: 10px; border-top: 1px solid #e4d3a8; color: #54412f; font-size: 12px; line-height: 1.45; }
   .lab-section-heading { margin: 23px 0 11px; font-size: 20px; font-weight: 900; letter-spacing: -.035em; }
   .lab-choice { margin-bottom: 10px; border-radius: 20px; padding: 15px; box-shadow: 0 5px 18px #38261b0d; }
   .lab-choice-icon, .lab-choice-quiz .lab-choice-icon { width: 49px; height: 49px; border: 0; border-radius: 16px; background: #e8efdf; color: var(--ink); font-size: 20px; font-weight: 900; }
@@ -807,7 +800,7 @@
   }
 
   /* Glass Cards across Ranked & Quiz */
-  .lab-change, .lab-choice, .auth-card, .quiz-card, .rq-cmp, .sum, .profile-balance, .board li {
+  .lab-choice, .auth-card, .quiz-card, .rq-cmp, .sum, .profile-balance, .board li {
     background: var(--glass-surface-sub);
     backdrop-filter: var(--blur-md); -webkit-backdrop-filter: var(--blur-md);
     border: 1px solid var(--glass-border);
@@ -847,7 +840,7 @@
   :root { --r-md: 22px; --r-sm: 14px; }
 
   /* Crisper glass cards with a soft top highlight */
-  .lab-change, .lab-choice, .auth-card, .quiz-card, .rq-cmp, .sum,
+  .lab-choice, .auth-card, .quiz-card, .rq-cmp, .sum,
   .profile-balance, .board li, .reauth-card, .owner-form, .cases li, .approved li {
     background: rgba(48, 32, 22, 0.62);
     border: 1px solid rgba(255, 255, 255, 0.11);
@@ -860,8 +853,6 @@
   .lab-campaign img { display: block; width: 100%; height: auto; border-radius: var(--r-md); border: 1px solid rgba(255, 255, 255, 0.08); }
 
   /* Gold eyebrows / section headings */
-  .lab-change-kicker { color: var(--gold); text-transform: uppercase; letter-spacing: .14em; font-weight: 900; font-size: 11px; }
-  .lab-change-note { color: var(--muted); }
 
   /* Choice cards — gold-tinted icon and gold arrow (mock .choice) */
   .lab-choice { border-radius: var(--r-sm); padding: 14px; gap: 12px; box-shadow: 0 10px 26px -12px rgba(0,0,0,0.6); }
@@ -910,8 +901,6 @@
   .profile-bar i { background: linear-gradient(90deg, var(--gold), #ffe08a); }
 
   /* Profile laid out like the mock: centered badge, stats grid, climb row */
-  .pf-hero { display: flex; flex-direction: column; align-items: center; gap: 8px; text-align: center; }
-  .pf-badge { width: 92px; height: 92px; object-fit: contain; filter: drop-shadow(0 6px 16px rgba(0, 0, 0, 0.45)) drop-shadow(0 0 14px rgba(244, 189, 56, 0.22)); }
   .pf-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; }
   .pf-stat { padding: 14px; border-radius: var(--r-sm); text-align: center; background: var(--glass-surface-sub); border: 1px solid var(--glass-border); }
   .pf-stat b { display: block; font-size: 24px; font-weight: 900; }
@@ -974,22 +963,6 @@
   .lab-top-actions { display: flex; align-items: center; gap: 7px; }
   .lab-theme-btn { background: var(--glass-surface-sub); border: 1px solid var(--glass-border); color: var(--gold); border-radius: var(--r-sm); padding: 8px 11px; font-size: 16px; line-height: 1; cursor: pointer; backdrop-filter: var(--blur-md); -webkit-backdrop-filter: var(--blur-md); }
 
-  /* Home identity block (below the banner) — badge + name + points when signed
-     in; a dashed "sign in to compete" invite for guests. */
-  .home-ident { display: flex; align-items: center; gap: 11px; background: var(--glass-surface-sub); border: 1px solid var(--glass-border); border-radius: var(--r-sm); padding: 11px 13px; }
-  .home-ident img { width: 44px; height: 44px; object-fit: contain; flex: none; }
-  .home-ident .home-ident-name { font-weight: 800; font-size: 15px; }
-  .home-ident .home-ident-sub { font-size: 12px; color: var(--muted); margin-top: 1px; }
-  .home-ident .home-ident-pts { margin-left: auto; text-align: right; }
-  .home-ident .home-ident-pts b { font-size: 16px; color: var(--gold); display: block; }
-  .home-ident .home-ident-pts span { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; }
-  .home-invite { display: flex; align-items: center; gap: 11px; background: var(--glass-surface-sub); border: 1px dashed var(--gold); border-radius: var(--r-sm); padding: 12px 13px; width: 100%; text-align: left; color: var(--ink); }
-  .home-ident .home-ident-name, .home-ident .home-ident-sub,
-  .home-invite .home-ident-name, .home-invite .home-ident-sub { display: block; }
-  .home-invite .home-invite-ic { width: 38px; height: 38px; border-radius: 11px; background: var(--soft); display: grid; place-items: center; font-size: 18px; flex: none; }
-  .home-invite .home-ident-name { font-weight: 800; font-size: 14px; }
-  .home-invite .home-ident-sub { font-size: 11.5px; color: var(--muted); margin-top: 1px; }
-  .home-invite .home-invite-go { margin-left: auto; font-size: 12px; font-weight: 800; color: var(--gold); white-space: nowrap; }
 
   /* ===== DAY (light) THEME — overrides tokens, plus the few hard-coded
      surfaces the twilight port set directly. Night stays the default. ===== */
@@ -1012,7 +985,7 @@
   html[data-theme="day"] .orb-amber { opacity: 0.1; }
   html[data-theme="day"] .orb-blue { opacity: 0.08; }
   /* Hard-coded card surfaces from the port → light for day */
-  html[data-theme="day"] .lab-change, html[data-theme="day"] .lab-choice,
+  html[data-theme="day"] .lab-choice,
   html[data-theme="day"] .auth-card, html[data-theme="day"] .quiz-card,
   html[data-theme="day"] .rq-cmp, html[data-theme="day"] .sum,
   html[data-theme="day"] .profile-balance, html[data-theme="day"] .board li,
@@ -1085,7 +1058,6 @@
   .pf-stat b { font-size: 26px; letter-spacing: -.02em; font-variant-numeric: tabular-nums; }
   .pf-stat small { display: block; margin-top: 3px; font-size: 10px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; }
   .pf-climb { padding: 14px 16px 16px; }
-  .pf-history { align-self: center; min-width: 62%; padding: 13px 28px; border-radius: 999px; }
 
   /* Home: the notice, shift log and disclaimer follow the theme */
   .lab-launch { margin-top: 0; border-radius: var(--r-sm); background: var(--soft); border-color: var(--soft-line); }
@@ -1105,6 +1077,106 @@
   html[data-theme="day"] .rq-mark.good { background: rgba(47, 158, 107, 0.12); border-color: rgba(47, 158, 107, 0.4); }
   html[data-theme="day"] .rq-mark.bad { background: rgba(201, 82, 74, 0.1); border-color: rgba(201, 82, 74, 0.4); }
   html[data-theme="day"] .belts .belt { box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.28), 0 10px 18px -12px rgba(90, 60, 25, 0.5); }
+
+  /* ============================================================
+     Redesign v4 — compact glass header, Home in stripes, drawn icons.
+     ============================================================ */
+
+  /* Compact header that stays at the top while the page scrolls under it */
+  .lab-top { position: sticky; top: 0; z-index: 25; padding: 11px 18px; gap: 8px; background: var(--dock-bg); border-bottom: 1px solid var(--glass-border-subtle); backdrop-filter: blur(22px); -webkit-backdrop-filter: blur(22px); }
+  .lab-mark { width: 31px; height: 31px; border-radius: 10px; font-size: 12px; }
+  .lab-brand { font-size: 18px; gap: 9px; }
+  .lab-language button, .lab-theme-btn { width: 40px; min-height: 38px; border-radius: 11px; }
+  .lab-language button span:first-child { font-size: 15px; }
+  .lab-language button { font-size: 10.5px; font-weight: 900; }
+  .lab-main { padding-top: 14px; }
+
+  /* Drawn icons (dock, Home shortcuts) */
+  .lab-nav i svg, .home-short-ic svg, .lab-choice-icon svg { display: block; width: 19px; height: 19px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  .lab-nav i { display: block; }
+
+  /* Home stripes */
+  .home-screen { gap: 16px; }
+  .home-stripe { display: flex; flex-direction: column; gap: 8px; }
+  .home-stripe[hidden] { display: none; }
+  .home-spot { position: relative; overflow: hidden; padding: 18px 18px 16px; border-radius: var(--r-md); border: 1px solid var(--soft-line); background: linear-gradient(135deg, var(--soft) 0%, var(--glass-surface-sub) 62%); box-shadow: var(--glass-shadow), 0 0 28px -6px rgba(244, 189, 56, 0.32); }
+  .home-spot::before { content: ""; position: absolute; top: 0; left: 28px; right: 28px; height: 1px; background: linear-gradient(90deg, transparent, var(--glass-highlight), transparent); }
+  .home-pill { display: inline-block; margin-bottom: 10px; padding: 4px 10px; border-radius: 999px; background: var(--gold); color: #2a1c10; font-size: 10.5px; font-weight: 900; letter-spacing: .08em; text-transform: uppercase; }
+  .home-spot-title { margin: 0 0 4px; font-size: 24px; font-weight: 900; letter-spacing: -.04em; line-height: 1.12; text-transform: none; color: var(--ink); }
+  .home-spot-desc { margin: 0; color: var(--muted); font-size: 13px; font-weight: 700; line-height: 1.45; }
+  .home-spot-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--glass-border); }
+  .home-standing { min-width: 0; }
+  .home-standing small { display: block; color: var(--muted); font-size: 10px; font-weight: 900; letter-spacing: .1em; text-transform: uppercase; }
+  .home-standing b { display: block; font-size: 15px; font-weight: 900; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .home-standing b.home-standing-note { font-size: 12.5px; font-weight: 800; white-space: normal; line-height: 1.3; }
+  .home-spot-row .primary { flex: none; width: auto; padding: 11px 14px; font-size: 13.5px; white-space: nowrap; }
+
+  .home-climb { padding: 14px; border-radius: var(--r-md); background: var(--glass-surface-sub); border: 1px solid var(--glass-border); box-shadow: var(--glass-shadow); }
+  .home-tiles { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .home-tile { display: flex; flex-direction: column; align-items: center; padding: 12px 8px; border-radius: 16px; background: var(--glass-surface-sub); border: 1px solid var(--glass-border-subtle); text-align: center; perspective: 700px; }
+  .home-tile strong { margin-top: 6px; font-size: 14px; font-weight: 900; }
+  .home-tile small { color: var(--muted); font-size: 10px; font-weight: 900; letter-spacing: .1em; text-transform: uppercase; }
+  .home-obj { position: relative; width: 104px; height: 92px; display: grid; place-items: center; }
+  .home-obj-badge { width: 84px; height: 84px; object-fit: contain; transform: rotateY(-14deg) rotateX(8deg) rotateZ(-3deg); filter: drop-shadow(0 12px 16px rgba(0, 0, 0, 0.4)); }
+  .home-obj-hat { width: 104px; height: auto; transform: rotate(-4deg); filter: drop-shadow(0 12px 14px rgba(0, 0, 0, 0.42)); }
+  .home-shine { position: absolute; top: -4px; left: 16%; width: 68%; height: 34%; border-radius: 50%; background: linear-gradient(180deg, var(--glass-highlight), transparent); filter: blur(5px); pointer-events: none; z-index: 1; opacity: .7; }
+  .home-meter { height: 6px; margin-top: 14px; border-radius: 99px; overflow: hidden; }
+  .home-meter i { display: block; height: 100%; border-radius: 99px; }
+  .home-climb-note { margin: 7px 0 0; color: var(--muted); font-size: 12px; font-weight: 700; }
+
+  .home-shortcuts { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .home-short { display: flex; flex-direction: column; align-items: flex-start; gap: 3px; padding: 14px; text-align: left; color: var(--ink); border-radius: 18px; background: var(--glass-surface-sub); border: 1px solid var(--glass-border); box-shadow: var(--glass-shadow); }
+  .home-short-ic { width: 40px; height: 40px; margin-bottom: 7px; border-radius: 12px; display: grid; place-items: center; background: var(--soft); border: 1px solid var(--soft-line); color: var(--gold); }
+  .home-short strong { font-size: 15px; font-weight: 900; letter-spacing: -.02em; }
+  .home-short small { color: var(--muted); font-size: 11.5px; font-weight: 700; line-height: 1.35; }
+
+  html[data-theme="day"] .home-spot { box-shadow: var(--glass-shadow), 0 0 28px -6px rgba(201, 138, 16, 0.22); }
+  html[data-theme="day"] .home-obj-badge { filter: drop-shadow(0 12px 16px rgba(90, 60, 25, 0.3)); }
+  html[data-theme="day"] .home-obj-hat { filter: drop-shadow(0 12px 14px rgba(90, 60, 25, 0.32)); }
+
+  /* ============================================================
+     Redesign v5 — Practice, Ranked, Leaderboard and Profile in the
+     Home-in-stripes style. Presentation only.
+     ============================================================ */
+  .tab-title { font-size: 24px; letter-spacing: -.04em; line-height: 1.12; }
+  .tab-intro { margin: -6px 0 0; font-size: 13px; font-weight: 700; line-height: 1.45; }
+  .home-stripe .lab-choice { margin-bottom: 0; }
+  .tab-chip { float: right; margin-top: -3px; padding: 3px 9px; border-radius: 999px; background: var(--soft); border: 1px solid var(--soft-line); color: var(--ink); font-size: 10px; letter-spacing: .06em; }
+
+  /* Ranked: season, balance, progress and the way to play in one card */
+  .rk-bal { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+  .rk-bal .lab-study-meta { margin: 0; }
+  .rk-spot .profile-points { margin: 2px 0 0; font-size: 34px; font-variant-numeric: tabular-nums; }
+  .rk-spot .profile-points i { font-style: normal; font-size: 15px; font-weight: 800; letter-spacing: 0; color: var(--muted); }
+  .rk-obj, .pf-ident-obj { width: 76px; height: 76px; flex: none; }
+  .rk-obj .home-obj-badge, .pf-ident-obj .home-obj-badge { width: 72px; height: 72px; }
+  .rk-spot .primary { width: 100%; margin-top: 14px; padding: 13px 16px; font-size: 14.5px; }
+  .rk-fine { margin: 8px 0 0; text-align: center; color: var(--muted); font-size: 11.5px; font-weight: 700; }
+  .rk-note { margin: 0; color: var(--muted); font-size: 12px; font-weight: 700; line-height: 1.5; }
+  #ranked-panel { display: flex; flex-direction: column; gap: 14px; }
+  #ranked-panel > .lab-intro { margin: 0; }
+
+  /* Leaderboard: the podium in a card of its own */
+  #board-panel { display: flex; flex-direction: column; gap: 14px; }
+  #board-panel > .lab-intro { margin-bottom: 0; }
+  .podium-card { padding: 14px 12px 0; border-radius: var(--r-md); background: var(--glass-surface-sub); border: 1px solid var(--glass-border); box-shadow: var(--glass-shadow); overflow: hidden; }
+  .podium-card .podium { margin: 0; }
+
+  /* Profile: identity card, then numbers, climb and history */
+  .pf-ident { display: flex; align-items: center; gap: 12px; padding: 14px; border-radius: var(--r-md); background: var(--glass-surface-sub); border: 1px solid var(--glass-border); box-shadow: var(--glass-shadow); }
+  .pf-ident-obj:empty { display: none; }
+  .pf-ident-text { min-width: 0; }
+  .pf-ident .lab-title { font-size: 26px; overflow-wrap: anywhere; }
+  .pf-ident .lab-intro { margin: 2px 0 0; font-size: 13px; font-weight: 700; }
+  .pf-climb .pf-badges { margin-top: 0; }
+
+  /* Notices (not in the standings, could not load, tie-break restarted…) were
+     a cream card with a faint title at night; they follow the theme now. */
+  .board-notice { border: 1px solid var(--soft-line); border-radius: var(--r-sm); background: var(--soft); }
+  .board-notice h2 { color: var(--ink); }
+  .board-notice p { color: var(--muted); }
+  .board-notice-bad { border-color: rgba(240, 138, 138, 0.45); background: rgba(240, 138, 138, 0.12); }
+  #board-panel > .board-notice { margin-top: 0; }
 
 </style>
 </head>

@@ -150,3 +150,12 @@ test('one question to go is singular, and a season-close result says why it ende
   assert.match(app, /t\(15 - q\.seq === 1 \? 'question to go\.' : 'questions to go\.'\)/);
   assert.match(app, /result\.final_outcome === 'season_close' \? `<p class="lab-intro" id="rq-season-close">/);
 });
+
+// Box 3 (2026-11-22): an attempt voided by a server restart or outage.
+test('a voided attempt says it does not count, before the promotion branch', () => {
+  const result = app.slice(app.indexOf('function showRankedResult'));
+  assert.match(result, /final_outcome === 'outage_void'\) \{\s*showVoidedByOutage\(\);/);
+  assert.ok(result.indexOf("'outage_void'") < result.indexOf("mode === 'promotion'"));
+  assert.match(app, /function showVoidedByOutage\(\)/);
+  assert.match(app, /'This attempt does not count'/);
+});

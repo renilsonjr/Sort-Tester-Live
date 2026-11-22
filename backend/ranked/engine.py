@@ -32,6 +32,75 @@ from backend.ranked_bank.selection import select_assignment
 HEARTBEAT_LOSS_SECONDS = 3
 GRACE_SECONDS = 15
 
+# When this server process started, or ``None`` when nobody has said.
+#
+# Owner decision 2026-11-22 (issue #13, box 3): the app's own restart is the
+# trusted evidence of a common outage; there are no external probes. An
+# attempt that went silent *before* this process started and is found past
+# its grace deadline was cut off by the server going away, not by the
+# player, so it is voided with a zero adjustment instead of being charged
+# as a disconnect. A silence that began after the start is the player's own.
+#
+# That alone would be far too generous: attempts are ended lazily, so one
+# abandoned days ago would be voided by the next deploy, and walking away
+# from a bad quiz would beat quitting it. So the silence must also reach
+# the outage: the attempt's grace deadline must not be older than the last
+# thing the server is known to have done before this process started (an
+# answer accepted, an attempt started, a login). If the server went on
+# working after this player's deadline, the silence was their own.
+#
+# Known and accepted: a player who dropped by themselves within those last
+# seconds before a restart (a deploy is one) is voided too. A database
+# outage with no restart is not seen here.
+#
+# ``backend.main`` sets it when the server really starts and clears it when
+# it stops. Left at ``None`` the engine behaves as it did before, which is
+# what tests with their own clock want.
+_process_started_at: datetime | None = None
+# (process start it was read for, moment or None): read once per process.
+# Safe to keep: these are timestamps of rows written before the start, and
+# no such row can be written afterwards.
+_activity_before_start: tuple | None = None
+
+
+def set_process_started_at(moment: datetime | None) -> None:
+    global _process_started_at, _activity_before_start
+    _process_started_at = moment
+    _activity_before_start = None
+
+
+def _last_activity_before_start(conn):
+    global _activity_before_start
+    started = _process_started_at
+    if _activity_before_start is None or _activity_before_start[0] != started:
+        row = migrate.fetch_one(
+            conn,
+            "SELECT GREATEST("
+            " (SELECT max(accepted_at) FROM attempt_answers WHERE accepted_at < %s),"
+            " (SELECT max(started_at) FROM attempts WHERE started_at < %s),"
+            " (SELECT max(created_at) FROM sessions WHERE created_at < %s)) AS at",
+            (started, started, started),
+        )
+        _activity_before_start = (started, row["at"])
+    return _activity_before_start[1]
+
+
+def _cut_off_by_restart(conn, heard_at, deadline) -> bool:
+    if _process_started_at is None or heard_at >= _process_started_at:
+        return False
+    alive_until = _last_activity_before_start(conn)
+    return alive_until is None or deadline >= alive_until
+
+
+class _At:
+    """A clock fixed at one moment, for code that asks a clock the time."""
+
+    def __init__(self, moment):
+        self._moment = moment
+
+    def now(self):
+        return self._moment
+
 
 class EngineError(Exception):
     """Base class for ranked engine errors."""
@@ -560,12 +629,19 @@ def expire_stale_attempts(conn, *, clock, account_id=None) -> None:
     if account_id is not None:
         sql += " AND account_id = %s"
         params = (account_id,)
+    restarted_rounds = []
     for row in migrate.fetch_all(conn, sql + " FOR UPDATE", params):
         if now >= _loss_at(row["heard_at"]):
             _record_event(conn, row["id"], "loss", _loss_at(row["heard_at"]))
+        deadline = _grace_deadline(row["heard_at"])
+        # before the final-question rule: a question that ran out while the
+        # server was away is not the player's timeout
+        if now >= deadline and _cut_off_by_restart(conn, row["heard_at"], deadline):
+            if _void_for_restart(conn, row["id"], deadline):
+                restarted_rounds.append(row["heard_at"])
+            continue
         if _complete_if_final_question_timed_out(conn, row["id"], now):
             continue
-        deadline = _grace_deadline(row["heard_at"])
         if now >= deadline:
             _finalize_disconnect(conn, row["id"], deadline, now)
         elif row["state"] == "active" and now >= _loss_at(row["heard_at"]):
@@ -576,6 +652,9 @@ def expire_stale_attempts(conn, *, clock, account_id=None) -> None:
                 (deadline, row["id"]),
             )
     conn.commit()
+    # after the commit, so the rows above stay locked until they are written
+    for heard_at in restarted_rounds:
+        _restart_tiebreak_rounds(conn, heard_at, now)
 
 
 def _loss_at(heard_at) -> datetime:
@@ -612,11 +691,19 @@ def _sync_connection(conn, attempt_id, now, *, touch) -> None:
     lost = now >= _loss_at(row["heard_at"])
     if lost:
         _record_event(conn, attempt_id, "loss", _loss_at(row["heard_at"]))
+    deadline = _grace_deadline(row["heard_at"])
+    if now >= deadline and _cut_off_by_restart(conn, row["heard_at"], deadline):
+        # the server restarted during the silence: nobody's disconnect, and
+        # not a timeout either, even on the final question
+        round_too = _void_for_restart(conn, attempt_id, deadline)
+        conn.commit()
+        if round_too:
+            _restart_tiebreak_rounds(conn, row["heard_at"], now)
+        raise AttemptEndedError("attempt ended: the server restarted")
     # checked before grace: the final question's deadline always comes first
     if _complete_if_final_question_timed_out(conn, attempt_id, now):
         conn.commit()
         raise AttemptEndedError("attempt ended: final question timed out")
-    deadline = _grace_deadline(row["heard_at"])
     if now >= deadline:
         # finalization wins over a request arriving at or after the deadline
         _finalize_disconnect(conn, attempt_id, deadline, now)
@@ -658,6 +745,42 @@ def _finalize_tiebreak(conn, attempt_id, now) -> None:
         "UPDATE attempts SET state = 'finalized', settled_at = %s"
         " WHERE id = %s AND mode = 'tiebreak' AND state = 'terminal_pending'",
         (now, attempt_id),
+    )
+
+
+def _void_for_restart(conn, attempt_id, deadline) -> bool:
+    """End an attempt the server's own restart cut off.
+
+    An ordinary or promotion attempt becomes ``outage_void``, which
+    settlement applies as a zero adjustment with no flag, exactly as for an
+    outage the owner records. Answers already given stay as history and the
+    open question is left unanswered: it is nobody's timeout.
+
+    Returns True for a tie-break attempt, which is not ended here: an
+    interruption restarts its whole round for everyone (settled Decisions
+    9-10), and the caller does that once its own transaction is committed.
+    Does not commit.
+    """
+    if _is_tiebreak(conn, attempt_id):
+        return True
+    migrate.execute(
+        conn,
+        "UPDATE attempts SET state = 'terminal_pending',"
+        " final_outcome = 'outage_void', grace_deadline_at = %s"
+        " WHERE id = %s AND state IN ('active', 'grace')",
+        (deadline, attempt_id),
+    )
+    return False
+
+
+def _restart_tiebreak_rounds(conn, heard_at, now) -> None:
+    """Restart the open rounds a restart of this server interrupted: those
+    with an attempt running between the last time it was heard and the
+    moment this process started. Commits."""
+    from backend.ranked import tiebreaks  # tiebreaks is built on this module's callers
+
+    tiebreaks.void_rounds_for_outage(
+        conn, outage_start=heard_at, outage_end=_process_started_at, clock=_At(now)
     )
 
 

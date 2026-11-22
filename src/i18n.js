@@ -146,6 +146,18 @@ const ES = {
   'Playing as guest': 'Jugando como invitado',
   'Sign in to compete in Ranked': 'Inicia sesión para competir en el Clasificatorio',
   'Sign in': 'Iniciar sesión',
+  'Play for the podium': 'Juega por el podio',
+  'The top 3 win a UPS hat.': 'Los 3 primeros ganan una gorra de UPS.',
+  'Your standing': 'Tu posición',
+  'Your badge': 'Tu insignia',
+  'UPS hat': 'Gorra de UPS',
+  'Top 3 prize': 'Premio del top 3',
+  'Learn': 'Aprende',
+  'Test yourself': 'Ponte a prueba',
+  'Standings': 'Clasificación',
+  'Top 3': 'Los 3 primeros',
+  'Your numbers': 'Tus números',
+  'Your Ranked quizzes, one by one.': 'Tus pruebas del Clasificatorio, una por una.',
   'Play Ranked': 'Jugar Clasificatorio',
   'Switch between day and night': 'Cambiar entre día y noche',
   'Know the chart': 'Conoce la tabla',
@@ -460,6 +472,10 @@ const ES = {
   'question to go.': 'pregunta por responder.',
   'Easy question': 'Pregunta fácil',
   'The season closed before you finished. What you had scored counts, with no penalty.': 'La temporada cerró antes de que terminaras. Lo que habías sumado cuenta, sin penalización.',
+  // An attempt voided by a server outage or restart (issue #13, box 3)
+  'This attempt does not count': 'Este intento no cuenta',
+  'The server stopped while you were playing, so the attempt was cancelled. No score was applied and your points are exactly as they were.': 'El servidor se detuvo mientras jugabas, así que el intento se canceló. No se aplicó ninguna puntuación y tus puntos quedan exactamente como estaban.',
+  'You can start again when you are ready.': 'Puedes empezar de nuevo cuando quieras.',
 };
 
 const SERVICE_ES = {
