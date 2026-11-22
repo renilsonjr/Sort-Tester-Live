@@ -68,11 +68,13 @@ grant new tables to the app role, close it), before the image is swapped.
 6. **Swap the image.** This changes the live app.
 
    ```bash
-   az containerapp update -g rg-sort-tester-staging -n ca-sort-app-stg --image acrsortstgzp6nl6c3wplfy.azurecr.io/sort-tester-live-app@sha256:<digest> --revision-suffix <short-word> --query "{revision:properties.latestRevisionName, image:properties.template.containers[0].image, state:properties.provisioningState}" -o jsonc
+   az containerapp update -g rg-sort-tester-staging -n ca-sort-app-stg --image <acr-name>.azurecr.io/sort-tester-live-app@sha256:<digest> --revision-suffix <short-word> --query "{revision:properties.latestRevisionName, image:properties.template.containers[0].image, state:properties.provisioningState}" -o jsonc
    ```
 
-   It keeps every setting, secret reference, identity, the custom domain
-   and its certificate. Expect `Succeeded`.
+   `<acr-name>` is the registry in the image line that step 5 printed;
+   real resource names are kept out of this repository on purpose. The
+   swap keeps every setting, secret reference, identity, the custom
+   domain and its certificate. Expect `Succeeded`.
 
 7. **Check from the served files, without signing in.** For each file the
    change touched under `src/`:
@@ -109,7 +111,7 @@ PR #300 through a real swap has not been observed yet.
 Rolling back is the same swap, with the image written down in step 5:
 
 ```bash
-az containerapp update -g rg-sort-tester-staging -n ca-sort-app-stg --image acrsortstgzp6nl6c3wplfy.azurecr.io/sort-tester-live-app@sha256:<previous-digest> --revision-suffix <short-word>
+az containerapp update -g rg-sort-tester-staging -n ca-sort-app-stg --image <acr-name>.azurecr.io/sort-tester-live-app@sha256:<previous-digest> --revision-suffix <short-word>
 ```
 
 Then check as in step 7, against the commit that image was built from.
