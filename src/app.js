@@ -1203,7 +1203,7 @@ async function fillSelection(panel) {
             <b>${esc(p.username)}</b> <small>#${esc(p.tag)}</small></label>
             <small class="sel-hist">${p.history.map((h) => esc(outcomeLine(h))).join(' \u00b7 ') || esc(t('No round was played.'))}</small></li>`).join('')}
         </ul>
-        <button class="primary sel-go" type="button" disabled>${esc(t('Choose'))} ${c.hats} ${esc(t('to continue'))}</button>
+        <button class="primary sel-go" type="button" disabled data-ask="${esc(t('Choose'))} ${c.hats} ${esc(t('to continue'))}">${esc(t('Choose'))} ${c.hats} ${esc(t('to continue'))}</button>
       </div>`).join('')}
   `;
   panel.querySelectorAll('.sel-case').forEach((box) => {
@@ -1211,6 +1211,8 @@ async function fillSelection(panel) {
     const go = box.querySelector('.sel-go');
     box.querySelectorAll('input[type=checkbox]').forEach((input) => input.addEventListener('change', () => {
       go.disabled = box.querySelectorAll('input:checked').length !== hats;
+      // the label asks only while something is still missing
+      go.textContent = go.disabled ? go.dataset.ask : t('Continue');
     }));
     go.addEventListener('click', () => {
       const picked = [...box.querySelectorAll('input:checked')];
@@ -1613,18 +1615,21 @@ async function fillLeaderboard(panel) {
     return;
   }
   // Top three get a 3D-style podium (mock); the rest stay in the list below.
+  // Each pedestal carries the player's real place: with equal points the
+  // standings share a place, and a fixed 1-2-3 would rank a tie that the
+  // rules have not ranked.
   const hasPodium = board.rows.length >= 3;
   const top = board.rows.slice(0, 3);
-  const slot = (row, rank, cls) => !row ? '' : `
+  const slot = (row, cls) => !row ? '' : `
     <div class="pslot ${cls}${row.you ? ' pslot-you' : ''}">
       ${row.hat ? '<div class="pcrown" aria-hidden="true">♛</div>' : ''}
       <div class="pdisc">${row.hat ? '♛' : esc(row.username.slice(0, 1).toUpperCase())}</div>
       <div class="pname">${esc(row.username)}</div>
       <div class="ppts">◆ ${row.points.toLocaleString()}</div>
-      <div class="ppillar">${rank}</div>
+      <div class="ppillar">${row.place}</div>
     </div>`;
   const podium = hasPodium ? `<div class="podium">
-    ${slot(top[1], 2, 'p2')}${slot(top[0], 1, 'p1')}${slot(top[2], 3, 'p3')}
+    ${slot(top[1], 'p2')}${slot(top[0], 'p1')}${slot(top[2], 'p3')}
   </div>` : '';
   const listRows = hasPodium ? board.rows.slice(3) : board.rows;
   const rows = listRows.map((row) => `
@@ -1636,7 +1641,7 @@ async function fillLeaderboard(panel) {
       </span>
       <b class="board-points">${row.points.toLocaleString()}</b>
       ${row.hat ? `<span class="board-marker board-marker-hat">${esc(t('Hat winner'))}</span>`
-        : (row.tied ? `<span class="board-marker">${esc(t('Tied on points'))}</span>` : '')}
+        : (row.tied ? `<span class="board-marker">${esc(t(board.prizes_final ? 'Tied on points, no hat' : 'Tied on points'))}</span>` : '')}
     </li>
   `).join('');
   const intro = board.prizes_final
@@ -2293,7 +2298,7 @@ function showStart() {
       <section class="lab-launch" id="launch-callout" hidden aria-live="polite">
         <i aria-hidden="true">!</i>
         <div>
-          <h2>${esc(t('The official season has started'))}</h2>
+          <h2 id="launch-title">${esc(t('The official season has started'))}</h2>
           <p id="launch-text"></p>
         </div>
       </section>
@@ -2369,6 +2374,18 @@ async function fillLaunchCallout(view) {
   if (!notice?.started || !notice.started_at) return;
   const started = new Date(notice.started_at).toLocaleDateString();
   const closes = notice.closes_at ? new Date(notice.closes_at).toLocaleDateString() : null;
+  // Once the season's end has passed, "has started ... ends on" is stale:
+  // nobody can start a quiz for points any more. It does not say points
+  // are final: attempts already started have five more minutes.
+  if (notice.closes_at && new Date(notice.closes_at).getTime() <= Date.now()) {
+    const ran = t('It ran from {start} to {end}.', { start: started, end: closes });
+    view.querySelector('#launch-title').textContent = t('The official season has ended');
+    view.querySelector('#launch-text').textContent = signedIn()
+      ? `${ran} ${t('The leaderboard has the results.')}`
+      : ran;
+    box.hidden = false;
+    return;
+  }
   const when = closes
     ? `${t('It started on')} ${started} ${t('and ends on')} ${closes}.`
     : `${t('It started on')} ${started}.`;
