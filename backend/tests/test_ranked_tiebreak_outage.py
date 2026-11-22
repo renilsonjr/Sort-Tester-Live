@@ -100,6 +100,28 @@ class TiebreakOutageTests(unittest.TestCase):
             (self.group,),
         )
 
+    # --- the server's own restart (issue #13 box 3) ---
+
+    def test_a_restart_of_the_server_restarts_the_round_for_everybody(self):
+        self._finish(self.a)
+        running = engine.start_tiebreak_attempt(self.conn, self.b, self.round, clock=self.clock)
+        engine.set_process_started_at(self.t0 + timedelta(seconds=10))
+        self.addCleanup(engine.set_process_started_at, None)
+        self.clock.moment = self.t0 + timedelta(seconds=40)
+        with self.assertRaises(engine.AttemptEndedError):
+            engine.heartbeat(self.conn, running, clock=self.clock)
+        status = migrate.fetch_one(
+            self.conn, "SELECT status FROM tiebreak_rounds WHERE id = %s", (self.round,)
+        )["status"]
+        self.assertEqual(status, "void")
+        live = self._live_round()
+        self.assertIsNotNone(live)
+        self.assertEqual(live["round_number"], 4)
+        ended = migrate.fetch_one(
+            self.conn, "SELECT state, final_outcome FROM attempts WHERE id = %s", (running,)
+        )
+        self.assertEqual((ended["state"], ended["final_outcome"]), ("finalized", "outage_void"))
+
     # --- the restart ---
 
     def test_the_player_is_told_the_round_was_restarted(self):
