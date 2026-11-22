@@ -2961,7 +2961,9 @@ function showCard() {
       if (!view.isConnected || bailOpen || run.finished || run.index !== cardIndex) return;
       stopTick();
       const current = currentCard(run);
-      const isRight = current && (button.dataset.belt === current.belt);
+      // currentCard() returns { card, options }; the belt lives on the card.
+      // Reading it off the wrapper made every answer look wrong (#263).
+      const isRight = Boolean(current) && button.dataset.belt === current.card.belt;
       if (isRight) {
         button.classList.add('belt-correct');
         playCorrectSfx();
