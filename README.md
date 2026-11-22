@@ -17,8 +17,8 @@ The app is a single FastAPI service that serves both the browser app and its `/a
 Install Git and Python 3, then clone the repository:
 
 ```sh
-git clone https://github.com/renilsonjr/Sort-Tester-Live.git
-cd Sort-Tester-Live
+git clone https://github.com/renilsonjr/sortquiz.git
+cd sortquiz
 ```
 
 On macOS/Linux:
