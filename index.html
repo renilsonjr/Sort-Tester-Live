@@ -3,7 +3,23 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Sort Lab · Saddle Brook Twilight</title>
+<title>Sort Quiz</title>
+<meta name="description" content="Learn the sort chart, play Ranked quizzes and climb the leaderboard.">
+<!-- Tab and home-screen icons: the yellow RJ mark (#266). The PNGs and the
+     preview picture are drawn by tools/make_site_images.py. -->
+<link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32.png">
+<link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
+<!-- What a message shows when the address is pasted into it. The picture's
+     address is absolute: messaging apps fetch it themselves. -->
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://sortquiz.app/">
+<meta property="og:title" content="Sort Quiz">
+<meta property="og:description" content="Learn the sort chart, play Ranked quizzes and climb the leaderboard.">
+<meta property="og:image" content="https://sortquiz.app/assets/og-preview.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
 <style>
   @font-face {
     font-family: Nunito;
@@ -293,7 +309,7 @@
   .exportnote.bad { color: var(--bad); }
   .logclean { grid-column: 1 / -1; font-size: 13px; color: var(--good); font-weight: 600; margin-top: 4px; }
 
-  /* Approved Sort Lab home and study design. The timed card stays on its own
+  /* Approved Sort Quiz home and study design. The timed card stays on its own
      full-height screen so the belt buttons remain in thumb reach. */
   .lab-shell { min-height: 100dvh; display: flex; flex-direction: column; }
   .lab-top { display: flex; flex-direction: column; gap: 8px; padding: 25px 22px 18px; }

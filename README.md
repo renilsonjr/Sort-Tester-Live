@@ -1,4 +1,4 @@
-# Sort Tester Live / Sort Lab
+# Sort Tester Live / Sort Quiz
 
 Phone-friendly sorting practice for UPS Saddle Brook Twilight routes. The current app includes a searchable study chart, timed multiple-choice quizzes, English/Spanish text, a device-local shift log, and Excel export.
 

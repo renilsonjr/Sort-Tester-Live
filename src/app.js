@@ -267,7 +267,7 @@ function labPage(content, active = 'home', rerender = showStart) {
     <div class="lab-shell">
       <header class="lab-top">
         <div class="lab-top-row">
-          <div class="lab-brand"><span class="lab-mark">RJ</span> Sort Lab</div>
+          <div class="lab-brand"><span class="lab-mark">RJ</span> Sort Quiz</div>
           <div class="lab-top-actions">${languageButtons()}${soundButton()}${themeButton()}</div>
         </div>
         ${active === 'profile' ? `

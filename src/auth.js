@@ -93,7 +93,7 @@ export function createAuthPanel(container, onContinueAsGuest, onLoggedIn) {
     <div class="auth-screen">
       <div class="brandmark" aria-hidden="true">RJ</div>
       <div class="auth-head">
-        <h1 class="auth-title">Sort Lab</h1>
+        <h1 class="auth-title">Sort Quiz</h1>
         <p class="auth-sub">Learn the chart. Play Ranked. Climb the leaderboard.</p>
       </div>
       <div id="auth-choices" class="auth-card">
