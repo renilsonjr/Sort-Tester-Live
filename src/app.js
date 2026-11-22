@@ -257,7 +257,9 @@ function labPage(content, active = 'home', rerender = showStart) {
   wireThemeButton(view);
   view.querySelector('#top-settings')?.addEventListener('click', () => showProfile('settings'));
   view.querySelectorAll('[data-nav]').forEach((button) => button.addEventListener('click', () => {
-    if (button.dataset.nav === active) return;
+    // The active tab is not skipped: a screen inside a tab (a tie-break
+    // invite, the leaderboard) carries its tab's mark, and pressing the tab
+    // is how a player expects to get back to its first screen.
     if (button.dataset.nav === 'practice') showPractice();
     else if (button.dataset.nav === 'ranked') showRanked();
     else if (button.dataset.nav === 'profile') showProfile();
@@ -1025,6 +1027,7 @@ function showTiebreakInvite(tie) {
       <p class="lab-eyebrow">${esc(t('Prize tie-break'))} · ${esc(t('round'))} ${round.number}</p>
       <h1 class="lab-title">${esc(t('You are tied for a hat'))}</h1>
       <p class="lab-intro">${esc(t('You have the same points as another sorter. A separate quiz decides who takes the hat.'))}</p>
+      ${tie.last_result ? `<p class="lab-intro" id="tb-last"><strong>${esc(lastRoundLine(tie.last_result, true))}</strong></p>` : ''}
       <ol class="lab-rules">
         <li>${esc(t('Five Hard route questions, the same five for everyone in this round.'))}</li>
         <li>${esc(round.seconds)} ${esc(t('seconds each. Questions move on by themselves — there is no Next.'))}</li>
@@ -1105,8 +1108,9 @@ async function playTiebreak(round) {
     const total = round.seconds * 1000;
     const paint = () => {
       const left = deadlineMs - Date.now();
+      const secondsLeft = Math.max(0, Math.ceil(left / 1000));
       view.querySelector('#tb-time').textContent =
-        `${Math.max(0, Math.ceil(left / 1000))} ${t('seconds')}`;
+        `${secondsLeft} ${t(secondsLeft === 1 ? 'second' : 'seconds')}`;
       const fill = view.querySelector('#tb-bar-fill');
       if (fill) fill.style.width = `${Math.max(0, Math.min(100, (left / total) * 100))}%`;
       if (left <= 0) { stopTimer(); render(); }
@@ -1618,8 +1622,13 @@ async function fillLeaderboard(panel) {
   // Each pedestal carries the player's real place: with equal points the
   // standings share a place, and a fixed 1-2-3 would rank a tie that the
   // rules have not ranked.
-  const hasPodium = board.rows.length >= 3;
-  const top = board.rows.slice(0, 3);
+  // Once the hats are decided the podium is the three winners: a tie-break
+  // or a backfill can give a hat to a player listed below one who took none.
+  const ordered = board.prizes_final
+    ? [...board.rows.filter((row) => row.hat), ...board.rows.filter((row) => !row.hat)]
+    : board.rows;
+  const hasPodium = ordered.length >= 3;
+  const top = ordered.slice(0, 3);
   const slot = (row, cls) => !row ? '' : `
     <div class="pslot ${cls}${row.you ? ' pslot-you' : ''}">
       ${row.hat ? '<div class="pcrown" aria-hidden="true">♛</div>' : ''}
@@ -1631,7 +1640,7 @@ async function fillLeaderboard(panel) {
   const podium = hasPodium ? `<div class="podium">
     ${slot(top[1], 'p2')}${slot(top[0], 'p1')}${slot(top[2], 'p3')}
   </div>` : '';
-  const listRows = hasPodium ? board.rows.slice(3) : board.rows;
+  const listRows = hasPodium ? ordered.slice(3) : ordered;
   const rows = listRows.map((row) => `
     <li class="${row.you ? 'board-you' : ''}${row.hat ? ' board-hat' : (row.tied ? ' board-tied' : '')}">
       <span class="board-place">${row.hat ? '♛' : row.place}</span>
@@ -1701,7 +1710,7 @@ const SEASON_LINE = {
     open: 'The official season is open.',
     finishing: 'The season is closing. Attempts already started have five more minutes.',
     closed: 'The season is closed. Standings are provisional while settlement and any tie-breaks finish.',
-    frozen: 'Final results for this season.',
+    frozen: 'Points are final for this season.',
   },
 };
 
@@ -2225,7 +2234,7 @@ function showPromotionOffer(entry) {
 // exists for the handful of players tied for a hat, so it is not a tab of
 // its own: it shows up as a callout on the Ranked screen when there is a
 // round to play or a result to read, and is silent for everyone else.
-async function fillTiebreakCallout(box) {
+async function fillTiebreakCallout(box, { onlyToPlay = false } = {}) {
   if (!box) return;
   const body = await api('/ranked/tiebreak/mine');
   const tie = body?.tie;
@@ -2242,6 +2251,9 @@ async function fillTiebreakCallout(box) {
     box.hidden = false;
     return;
   }
+  // Home carries only the round still to be played: it has a deadline.
+  // Everything else is read on the Ranked screen.
+  if (onlyToPlay) return;
   if (round && round.played) {
     box.innerHTML = `<div class="board-notice"><h2>${esc(t('Your tie-break answers are in'))}</h2><p>${esc(t('Scores are hidden for everyone until the round closes. Come back then for the result.'))}</p></div>`;
     box.hidden = false;
@@ -2250,16 +2262,33 @@ async function fillTiebreakCallout(box) {
   // no open round: a result to read, or a place already settled
   const standing = tiebreakStanding(tie);
   if (standing) {
-    box.innerHTML = `<div class="board-notice"><h2>${esc(standing.title)}</h2><p>${esc(standing.text)}</p></div>`;
+    const last = tie.last_result ? ` ${lastRoundLine(tie.last_result, false)}` : '';
+    box.innerHTML = `<div class="board-notice"><h2>${esc(standing.title)}</h2><p>${esc(standing.text + last)}</p></div>`;
     box.hidden = false;
   }
 }
 
+// A player's own score in the last closed round. The server sends it only
+// once the round has closed, and only their own. ``stillTied`` is for the
+// invite to the next round, which exists because that round settled nothing.
+function lastRoundLine(last, stillTied) {
+  const mine = last.outcome === 'completed'
+    ? t('You scored {score} of 5 in round {round}.', { score: last.score, round: last.round })
+    : t(last.outcome === 'no_show'
+      ? 'You did not play round {round}.'
+      : 'You did not finish round {round}.', { round: last.round });
+  return stillTied ? `${mine} ${t('The tie is still not settled.')}` : mine;
+}
+
 function tiebreakStanding(tie) {
   if (tie.placement === 'hat') {
-    return { title: t('You won a hat'), text: t('The tie-break decided it in your favour. The leaderboard shows it once every prize place is settled.') };
+    // Says nothing about how: a quiz or the owner's selection both end here.
+    return { title: t('You won a hat'), text: t('The tie for the hat is settled in your favour. The leaderboard shows it once every prize place is settled.') };
   }
-  if (tie.placement === 'no_hat' || tie.placement === 'excluded') {
+  if (tie.placement === 'excluded') {
+    return { title: t('The tie-break is settled'), text: t('You did not complete the round, so you take no hat this season. Your points, badge and history are unchanged.') };
+  }
+  if (tie.placement === 'no_hat') {
     return { title: t('The tie-break is settled'), text: t('You did not take a hat this season. Your points, badge and history are unchanged.') };
   }
   if (tie.placement === 'owner_selection') {
@@ -2302,6 +2331,7 @@ function showStart() {
           <p id="launch-text"></p>
         </div>
       </section>
+      <div id="home-tiebreak" hidden></div>
       <div id="home-ident">${signedIn() ? '' : `
         <button class="home-invite" id="home-signin" type="button">
           <span class="home-invite-ic" aria-hidden="true">🏅</span>
@@ -2337,6 +2367,7 @@ function showStart() {
   }
   view.querySelector('#viewlog').addEventListener('click', showLog);
   fillLaunchCallout(view);
+  if (signedIn()) fillTiebreakCallout(view.querySelector('#home-tiebreak'), { onlyToPlay: true });
 }
 
 // Signed-in Home identity block: badge + name + points, read from the same

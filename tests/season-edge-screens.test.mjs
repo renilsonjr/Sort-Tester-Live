@@ -100,3 +100,38 @@ test('the tie and season-end sentences exist in Spanish', () => {
     assert.ok(i18n.includes(`'${key}':`), `no Spanish for: ${key}`);
   }
 });
+
+// Third walk (2026-11-22): what a tied player is told, and who stands on
+// the final podium.
+test('a tie-break player is told their own score once the round has closed', () => {
+  assert.match(app, /function lastRoundLine\(last, stillTied\)/);
+  assert.match(app, /tie\.last_result \? `<p class="lab-intro" id="tb-last">/);
+  assert.match(app, /const last = tie\.last_result \? ` \$\{lastRoundLine\(tie\.last_result, false\)\}` : '';/);
+  assert.match(app, /'The tie is still not settled\.'/);
+});
+
+test('an excluded Challenger is told why, and a hat is not credited to a quiz the owner decided', () => {
+  assert.match(app, /tie\.placement === 'excluded'\) \{\s*return \{ title: t\('The tie-break is settled'\), text: t\('You did not complete the round, so you take no hat this season\./);
+  assert.doesNotMatch(app, /The tie-break decided it in your favour/);
+});
+
+test('the final podium holds the hat winners, not the first three rows', () => {
+  assert.match(app, /const ordered = board\.prizes_final\s*\? \[\.\.\.board\.rows\.filter\(\(row\) => row\.hat\), \.\.\.board\.rows\.filter\(\(row\) => !row\.hat\)\]\s*: board\.rows;/);
+  assert.match(app, /const top = ordered\.slice\(0, 3\);/);
+  assert.match(app, /const listRows = hasPodium \? ordered\.slice\(3\) : ordered;/);
+});
+
+test('Home tells a signed-in player about a tie-break round still to play', () => {
+  assert.match(app, /<div id="home-tiebreak" hidden><\/div>/);
+  assert.match(app, /if \(signedIn\(\)\) fillTiebreakCallout\(view\.querySelector\('#home-tiebreak'\), \{ onlyToPlay: true \}\);/);
+  assert.match(app, /if \(onlyToPlay\) return;/);
+});
+
+test('a frozen season says points are final, not results, and one second is singular', () => {
+  assert.match(app, /frozen: 'Points are final for this season\.'/);
+  assert.match(app, /t\(secondsLeft === 1 \? 'second' : 'seconds'\)/);
+});
+
+test('pressing the active tab returns to its first screen', () => {
+  assert.doesNotMatch(app, /if \(button\.dataset\.nav === active\) return;/);
+});
