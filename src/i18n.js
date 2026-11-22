@@ -160,6 +160,7 @@ const ES = {
   'Your Ranked quizzes, one by one.': 'Tus pruebas del Clasificatorio, una por una.',
   'Play Ranked': 'Jugar Clasificatorio',
   'Switch between day and night': 'Cambiar entre día y noche',
+  'Sound on or off': 'Activar o desactivar el sonido',
   'Know the chart': 'Conoce la tabla',
   'Browse every service by state and ZIP range.': 'Consulta cada servicio por estado y rango de ZIP.',
   'Take a quiz': 'Haz una prueba',

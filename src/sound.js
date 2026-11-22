@@ -10,6 +10,10 @@ let soundEnabled = true;
 let bgmPlaying = false;
 let bgmTimer = null;
 let bgmIndex = 0;
+// Whether the screen on show is one that plays music (the Ranked quiz). The
+// melody actually sounds only while this, the sound switch and a visible tab
+// all agree; syncMusic() is the one place that decides.
+let musicWanted = false;
 
 // Read initial state from localStorage if available
 try {
@@ -36,9 +40,8 @@ export function setSoundEnabled(enabled) {
   } catch {
     // Ignore storage write errors
   }
-  if (!soundEnabled && bgmPlaying) {
-    stopBgm();
-  }
+  if (!soundEnabled) stopBgm();
+  else if (musicWanted) syncMusic();
   return soundEnabled;
 }
 
@@ -97,6 +100,22 @@ export function installAudioUnlock(target) {
 }
 
 if (typeof document !== 'undefined') installAudioUnlock(document);
+
+export function syncMusic() {
+  const hidden = typeof document !== 'undefined' && document.hidden === true;
+  if (musicWanted && soundEnabled && !hidden) startBgm();
+  else stopBgm();
+}
+
+export function setMusicWanted(wanted) {
+  musicWanted = Boolean(wanted);
+  syncMusic();
+}
+
+// A hidden tab goes quiet and picks the melody back up on return.
+if (typeof document !== 'undefined' && typeof document.addEventListener === 'function') {
+  document.addEventListener('visibilitychange', syncMusic);
+}
 
 export function playTone(freq, type = 'sine', duration = 0.15, delay = 0, gainLevel = 0.15) {
   if (!soundEnabled) return;
