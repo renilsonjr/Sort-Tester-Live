@@ -13,7 +13,7 @@ import * as support from './support.js';
 import { logout } from './auth.js';
 import { idleVerdict } from './idle.js';
 import { createAttemptClient } from './attemptClient.js';
-import { playCorrectSfx, playIncorrectSfx, isSoundEnabled, toggleSound } from './sound.js';
+import { playCorrectSfx, playIncorrectSfx, isSoundEnabled, toggleSound, setMusicWanted } from './sound.js';
 
 const app = document.getElementById('app');
 const log = createShiftLog(typeof localStorage === 'undefined' ? null : localStorage);
@@ -161,6 +161,9 @@ function render(node) {
   document.documentElement.lang = language.code;
   app.className = node.classList.contains('lab-shell') ? 'lab-page' : 'quiz-page';
   app.replaceChildren(node);
+  // Music belongs to the Ranked quiz screens only (#264). Deciding it here,
+  // on every screen change, means no way out of a quiz can leave it playing.
+  setMusicWanted(Boolean(node.querySelector?.('[data-ranked-music]')));
   window.scrollTo(0, 0);
 }
 
@@ -208,6 +211,22 @@ function wireThemeButton(view) {
 }
 if (typeof document !== 'undefined') applyTheme(currentTheme());
 
+// One switch for all sound: answer effects everywhere and the Ranked music.
+function soundIcon(on) { return on ? '🔊' : '🔇'; }
+function soundButton() {
+  const on = isSoundEnabled();
+  return `<button type="button" class="lab-theme-btn" data-sound-toggle aria-label="${esc(t('Sound on or off'))}" aria-pressed="${on}">${soundIcon(on)}</button>`;
+}
+function wireSoundButton(view) {
+  const button = view.querySelector('[data-sound-toggle]');
+  if (!button) return;
+  button.addEventListener('click', () => {
+    const on = toggleSound();
+    button.textContent = soundIcon(on);
+    button.setAttribute('aria-pressed', String(on));
+  });
+}
+
 // Who is using the app: null until the auth panel says. A guest gets Home
 // and Practice; a signed-in player also gets Ranked and Profile (#10, from
 // the navigation approved in #15).
@@ -249,7 +268,7 @@ function labPage(content, active = 'home', rerender = showStart) {
       <header class="lab-top">
         <div class="lab-top-row">
           <div class="lab-brand"><span class="lab-mark">RJ</span> Sort Lab</div>
-          <div class="lab-top-actions">${languageButtons()}${themeButton()}</div>
+          <div class="lab-top-actions">${languageButtons()}${soundButton()}${themeButton()}</div>
         </div>
         ${active === 'profile' ? `
         <div class="lab-site-row">
@@ -267,6 +286,7 @@ function labPage(content, active = 'home', rerender = showStart) {
   render(view);
   wireLanguageButtons(view, rerender);
   wireThemeButton(view);
+  wireSoundButton(view);
   view.querySelector('#top-settings')?.addEventListener('click', () => showProfile('settings'));
   view.querySelectorAll('[data-nav]').forEach((button) => button.addEventListener('click', () => {
     // The active tab is not skipped: a screen inside a tab (a tie-break
@@ -1916,7 +1936,7 @@ async function playRankedAttempt(attempt, mode, tally) {
   }
   const q = current.data;
   const view = labPage(`
-    <section class="lab-screen" id="rq-play">
+    <section class="lab-screen" id="rq-play" data-ranked-music>
       <div class="tb-top">
         <span class="lab-eyebrow" id="rq-count">${esc(t('Question'))} ${q.seq} ${esc(t('of'))} 15</span>
         <div class="rq-ring" id="rq-clock" role="timer" aria-label="${esc(t('seconds'))}"><span id="rq-ring-num"></span></div>
@@ -1999,7 +2019,7 @@ function showRankedFeedback(attempt, mode, q, chosen, response, tally) {
     ? (mode === 'promotion' ? t('Correct · still perfect') : t('Correct'))
     : (response.outcome === 'timeout' ? t('Time ran out') : t('Review this route'));
   const view = labPage(`
-    <section class="lab-screen">
+    <section class="lab-screen" data-ranked-music>
       <div class="rq-mark ${right ? 'good' : 'bad'}" aria-hidden="true">${right ? '\u2713' : '\u2715'}</div>
       <h1 class="lab-title rq-verdict ${right ? 'good' : 'bad'}">${esc(verdict)}</h1>
       ${mode === 'promotion'

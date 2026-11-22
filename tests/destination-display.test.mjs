@@ -63,6 +63,7 @@ function appHarness(values = new Map()) {
     document, localStorage: storage, window: { scrollTo() {}, XLSX },
     requestAnimationFrame: callback => { frame = callback; return 1; }, cancelAnimationFrame() {},
     clearTimeout() {}, setTimeout: () => 1,
+    setMusicWanted() {}, isSoundEnabled: () => true, toggleSound: () => true,
   };
   const evaluate = expression => runInNewContext(expression, context);
   evaluate(source);

@@ -45,6 +45,7 @@ function renderSavedLog(overrides = {}) {
   runInNewContext(`${source}\nshowLog();`, {
     document, window: { scrollTo() {} }, localStorage: storage,
     createShiftLog, createLanguage, SERVICE_LABEL, ...destination,
+    setMusicWanted() {},
   });
   return markup;
 }
