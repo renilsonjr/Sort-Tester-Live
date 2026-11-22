@@ -226,6 +226,9 @@ const ICONS = {
   ranked: '<svg viewBox="0 0 24 24"><path d="M7 4h10v5a5 5 0 0 1-10 0z"/><path d="M7 6H4.5a2.5 2.5 0 0 0 2.6 3.6M17 6h2.5a2.5 2.5 0 0 1-2.6 3.6"/><path d="M12 14v4M8.5 20.5h7"/></svg>',
   profile: '<svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4.2"/><path d="M4.5 20.5a7.5 7.5 0 0 1 15 0"/></svg>',
   chart: '<svg viewBox="0 0 24 24"><rect x="3.5" y="4" width="17" height="16" rx="2.5"/><path d="M3.5 9.5h17M9.5 9.5V20M15 9.5V20"/></svg>',
+  quiz: '<svg viewBox="0 0 24 24"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 2M9.5 2.5h5"/></svg>',
+  board: '<svg viewBox="0 0 24 24"><path d="M5 20V11M12 20V5M19 20v-6"/></svg>',
+  history: '<svg viewBox="0 0 24 24"><path d="M4 12a8 8 0 1 0 2.6-5.9L4 8.5"/><path d="M4 4v4.5h4.5M12 8v4.5l3 1.8"/></svg>',
 };
 
 function navTabs() {
@@ -295,18 +298,24 @@ function showPractice() {
   const view = labPage(`
     <section class="lab-screen">
       <p class="lab-eyebrow">${esc(t('Practice'))}</p>
-      <h1 class="lab-title">${esc(t('Study and practice'))}</h1>
-      <p class="lab-intro">${esc(t('Practice never changes Ranked points.'))}</p>
-      <button id="study" class="lab-choice" type="button">
-        <span class="lab-choice-icon">01</span>
-        <span><strong>${esc(t('Know the chart'))}</strong><small>${esc(t('Browse every service by state and ZIP range.'))}</small></span>
-        <span class="lab-arrow" aria-hidden="true">→</span>
-      </button>
-      <button id="quiz" class="lab-choice lab-choice-quiz" type="button">
-        <span class="lab-choice-icon">02</span>
-        <span><strong>${esc(t('Take a quiz'))}</strong><small>${esc(t('Start with Ground, then build up to the full chart.'))}</small></span>
-        <span class="lab-arrow" aria-hidden="true">→</span>
-      </button>
+      <h1 class="lab-title tab-title">${esc(t('Study and practice'))}</h1>
+      <p class="lab-intro tab-intro">${esc(t('Practice never changes Ranked points.'))}</p>
+      <section class="home-stripe">
+        <p class="lab-eyebrow">${esc(t('Learn'))}</p>
+        <button id="study" class="lab-choice" type="button">
+          <span class="lab-choice-icon" aria-hidden="true">${ICONS.chart}</span>
+          <span><strong>${esc(t('Know the chart'))}</strong><small>${esc(t('Browse every service by state and ZIP range.'))}</small></span>
+          <span class="lab-arrow" aria-hidden="true">→</span>
+        </button>
+      </section>
+      <section class="home-stripe">
+        <p class="lab-eyebrow">${esc(t('Test yourself'))}</p>
+        <button id="quiz" class="lab-choice lab-choice-quiz" type="button">
+          <span class="lab-choice-icon" aria-hidden="true">${ICONS.quiz}</span>
+          <span><strong>${esc(t('Take a quiz'))}</strong><small>${esc(t('Start with Ground, then build up to the full chart.'))}</small></span>
+          <span class="lab-arrow" aria-hidden="true">→</span>
+        </button>
+      </section>
     </section>
   `, 'practice', showPractice);
   view.querySelector('#study').addEventListener('click', showStudy);
@@ -506,8 +515,13 @@ function showProfile(tab = 'overview') {
   const view = labPage(`
     <section class="lab-screen">
       <p class="lab-eyebrow">${esc(t('Profile'))}</p>
-      <h1 class="lab-title" id="profile-name">${esc(session?.username ?? '\u2026')}</h1>
-      <p class="lab-intro" id="profile-tag">${session?.tag ? esc(`${t('Tag')} #${session.tag}`) : ''}</p>
+      <div class="pf-ident">
+        <div class="home-obj pf-ident-obj" id="profile-badge"></div>
+        <div class="pf-ident-text">
+          <h1 class="lab-title" id="profile-name">${esc(session?.username ?? '\u2026')}</h1>
+          <p class="lab-intro" id="profile-tag">${session?.tag ? esc(`${t('Tag')} #${session.tag}`) : ''}</p>
+        </div>
+      </div>
       <div id="profile-panel"><p class="lab-intro">${esc(t('Loading\u2026'))}</p></div>
     </section>
   `, 'profile', () => showProfile(tab));
@@ -559,29 +573,43 @@ async function fillOverview(panel) {
     : DASH;
   const place = stats && stats.place != null ? `#${stats.place}` : DASH;
   const tagEl = panel.closest('.lab-screen')?.querySelector('#profile-tag');
-  if (tagEl) tagEl.textContent = `${tagEl.textContent} \u00b7 ${entry.badge} \u00b7 ${entry.points.toLocaleString()} ${t('points')}`;
+  if (tagEl) tagEl.textContent = `${tagEl.textContent} \u00b7 ${entry.badge}`;
+  // The badge sits beside the name in the identity card above the panel.
+  const badgeSlot = panel.closest('.lab-screen')?.querySelector('#profile-badge');
+  if (badgeSlot) {
+    badgeSlot.innerHTML = `<span class="home-shine" aria-hidden="true"></span><img class="home-obj-badge" src="${badgeArt(entry.badge)}" alt="${esc(entry.badge)}">`;
+  }
+  const progress = badgeProgress(entry);
   panel.innerHTML = `
-    <div class="pf-hero">
-      <img class="pf-badge" src="${badgeArt(entry.badge)}" alt="${esc(entry.badge)}">
-    </div>
+    <section class="home-stripe">
+    <p class="lab-eyebrow">${esc(t('Your numbers'))}</p>
     <div class="pf-stats">
       <div class="pf-stat"><b>${entry.points.toLocaleString()}</b><small>${esc(t('Points'))}</small></div>
       <div class="pf-stat"><b>${esc(bestRanked)}</b><small>${esc(t('Best Ranked'))}</small></div>
       <div class="pf-stat"><b>${DASH}</b><small>${esc(t('Practices'))}</small></div>
       <div class="pf-stat"><b>${esc(place)}</b><small>${esc(t('Place'))}</small></div>
     </div>
+    </section>
     ${entry.mode === 'promotion' ? `
     <div class="profile-promo">
       <h2>${esc(t('Promotion available'))}</h2>
       <p>${esc(t('A perfect 15 out of 15 quiz moves you up. Start promotion is on the Ranked screen; nothing starts from here.'))}</p>
     </div>` : ''}
+    <section class="home-stripe">
+    <p class="lab-eyebrow">${esc(t('Your climb'))}</p>
     <div class="pf-climb">
-      <p class="lab-change-kicker">${esc(t('Your climb'))}</p>
       <div class="pf-badges">
         ${[...BADGES].reverse().map(([name]) => `<img class="${name === entry.badge ? '' : 'off'}" src="${badgeArt(name)}" alt="${esc(name)}">`).join('')}
       </div>
+      ${progress === null ? '' : `<div class="profile-bar home-meter"><i style="width:${progress}%"></i></div>`}
+      <p class="home-climb-note">${esc(balanceLine(entry))}</p>
     </div>
-    <button id="pf-history" class="ghost pf-history" type="button">${esc(t('See history'))}</button>
+    </section>
+    <button id="pf-history" class="lab-choice" type="button">
+      <span class="lab-choice-icon" aria-hidden="true">${ICONS.history}</span>
+      <span><strong>${esc(t('See history'))}</strong><small>${esc(t('Your Ranked quizzes, one by one.'))}</small></span>
+      <span class="lab-arrow" aria-hidden="true">→</span>
+    </button>
   `;
   panel.querySelector('#pf-history').addEventListener('click', () => showProfile('history'));
 }
@@ -1593,7 +1621,7 @@ function showLeaderboard() {
   const view = labPage(`
     <section class="lab-screen">
       <p class="lab-eyebrow">${esc(t('Ranked'))}</p>
-      <h1 class="lab-title">${esc(t('Leaderboard'))}</h1>
+      <h1 class="lab-title tab-title">${esc(t('Leaderboard'))}</h1>
       <div id="board-panel"><p class="lab-intro" role="status">${esc(t('Loading the standings…'))}</p></div>
       <button id="board-back" class="ghost">${esc(t('Back to Ranked'))}</button>
     </section>
@@ -1693,11 +1721,25 @@ async function fillLeaderboard(panel) {
       t('You are not in the standings'),
       t('Your points and badge count as usual and are on your profile. The competition is for Primary Sort on the Twilight shift, approved by the owner. Ask the owner if that should be you.'),
     );
+  // The podium and the list each get a stripe. The player's place rides on the
+  // first stripe shown, so it is in view without looking for their own row.
+  const placeChip = board.your_place
+    ? `<span class="tab-chip">${esc(t('Your place'))}: ${esc(board.your_place)}</span>` : '';
+  const podiumStripe = podium ? `
+    <section class="home-stripe">
+      <p class="lab-eyebrow">${esc(t('Top 3'))}${rows ? '' : placeChip}</p>
+      <div class="podium-card">${podium}</div>
+    </section>` : '';
+  const listStripe = rows ? `
+    <section class="home-stripe">
+      <p class="lab-eyebrow">${esc(t('Standings'))}${placeChip}</p>
+      <ol class="board">${rows}</ol>
+    </section>` : '';
   panel.innerHTML = `
     ${preSeasonLine}
-    <p class="lab-intro">${esc(intro)}</p>
-    ${podium}
-    <ol class="board">${rows}</ol>
+    <p class="lab-intro tab-intro">${esc(intro)}</p>
+    ${podiumStripe}
+    ${listStripe}
     ${placeLine}
     ${board.eligible ? '' : notInStandings}
   `;
@@ -1740,7 +1782,7 @@ function showRanked() {
   const view = labPage(`
     <section class="lab-screen">
       <p class="lab-eyebrow">${esc(t('Ranked'))}</p>
-      <h1 class="lab-title" id="ranked-title">\u2026</h1>
+      <h1 class="lab-title sr-only" id="ranked-title">\u2026</h1>
       <div id="ranked-panel"><p class="lab-intro">${esc(t('Loading\u2026'))}</p></div>
     </section>
   `, 'ranked', showRanked);
@@ -1759,7 +1801,7 @@ async function fillRanked(panel, title) {
     panel.innerHTML = `
       <p class="notice">${esc(t('Could not load the season. Your points are safe.'))}</p>
       <button id="ranked-board" class="lab-choice" type="button">
-        <span class="lab-choice-icon">#</span>
+        <span class="lab-choice-icon" aria-hidden="true">${ICONS.board}</span>
         <span><strong>${esc(t('Leaderboard'))}</strong><small>${esc(t('See the standings.'))}</small></span>
         <span class="lab-arrow" aria-hidden="true">→</span>
       </button>
@@ -1767,21 +1809,31 @@ async function fillRanked(panel, title) {
     panel.querySelector('#ranked-board').addEventListener('click', showLeaderboard);
     return;
   }
-  title.textContent = season.phase === 'pre_season' ? t('Pre-Season') : season.label;
+  const seasonName = season.phase === 'pre_season' ? t('Pre-Season') : season.label;
+  title.textContent = seasonName;
   const closes = season.closes_at ? new Date(season.closes_at).toLocaleString() : null;
   // A new quiz is offered only while the season admits one. Closing and
   // frozen seasons keep the balance and the leaderboard on the screen.
   const open = season.status === 'open';
   const atCap = open && entry.mode === 'promotion';
+  const progress = badgeProgress(entry);
+  // One card carries the season, the balance, how far the badge has to go and
+  // the way to play; the standings are the stripe under it.
   panel.innerHTML = `
-    <p class="lab-intro">${esc(t(seasonLine(season)))}</p>
-    <div class="profile-balance">
-      <img class="profile-badge" src="${badgeArt(entry.badge)}" alt="">
-      <div>
-        <p class="lab-study-meta">${esc(t('Your balance'))}</p>
-        <p class="profile-points">${entry.points.toLocaleString()} ${esc(t('points'))}</p>
-        <p class="lab-study-meta">${esc(balanceLine(entry))}</p>
+    <div class="home-spot rk-spot">
+      <span class="home-pill">${esc(seasonName)}</span>
+      <div class="rk-bal">
+        <div>
+          <p class="lab-study-meta">${esc(t('Your balance'))}</p>
+          <p class="profile-points">${entry.points.toLocaleString()} <i>${esc(t('points'))}</i></p>
+        </div>
+        <div class="home-obj rk-obj"><span class="home-shine" aria-hidden="true"></span><img class="home-obj-badge" src="${badgeArt(entry.badge)}" alt=""></div>
       </div>
+      ${progress === null ? '' : `<div class="profile-bar home-meter"><i style="width:${progress}%"></i></div>`}
+      <p class="home-climb-note">${esc(balanceLine(entry))}</p>
+      ${open ? `
+      <button id="ranked-start" class="primary" type="button">${esc(atCap ? t('Start promotion') : t('Start Ranked quiz'))} <span aria-hidden="true">\u2192</span></button>
+      <p class="rk-fine">${esc(t('15 questions, ten seconds each.'))}</p>` : ''}
     </div>
     ${closes ? `<p class="lab-intro">${esc(t(open ? 'Closes' : 'Closed'))}: ${esc(closes)}</p>` : ''}
     ${atCap ? `
@@ -1790,17 +1842,15 @@ async function fillRanked(panel, title) {
       <p>${esc(t('You are at the cap, so promotion is the only Ranked quiz available. It needs a perfect 15 out of 15. Practice is available as usual and never changes these points.'))}</p>
     </div>` : ''}
     <div id="tiebreak-callout" hidden></div>
-    ${open ? `
-    <button id="ranked-start" class="lab-choice lab-choice-quiz" type="button">
-      <span class="lab-choice-icon">\u25c6</span>
-      <span><strong>${esc(atCap ? t('Start promotion') : t('Start Ranked quiz'))}</strong><small>${esc(t('15 questions, ten seconds each.'))}</small></span>
-      <span class="lab-arrow" aria-hidden="true">\u2192</span>
-    </button>` : ''}
-    <button id="ranked-board" class="lab-choice" type="button">
-      <span class="lab-choice-icon">#</span>
-      <span><strong>${esc(t('Leaderboard'))}</strong><small>${esc(t('See the standings.'))}</small></span>
-      <span class="lab-arrow" aria-hidden="true">→</span>
-    </button>
+    <section class="home-stripe">
+      <p class="lab-eyebrow">${esc(t('Standings'))}</p>
+      <button id="ranked-board" class="lab-choice" type="button">
+        <span class="lab-choice-icon" aria-hidden="true">${ICONS.board}</span>
+        <span><strong>${esc(t('Leaderboard'))}</strong><small>${esc(t('See the standings.'))}</small></span>
+        <span class="lab-arrow" aria-hidden="true">→</span>
+      </button>
+    </section>
+    <p class="rk-note">${esc(t(seasonLine(season)))}</p>
   `;
   fillTiebreakCallout(panel.querySelector('#tiebreak-callout'));
   panel.querySelector('#ranked-board').addEventListener('click', showLeaderboard);

@@ -644,13 +644,6 @@
   .lab-hero h1 { font: 900 clamp(34px, 9vw, 43px)/1.06 Nunito, "Trebuchet MS", sans-serif; letter-spacing: -.055em; }
   .lab-hero p:not(.lab-eyebrow) { color: #54412f; font-size: 15px; }
   .lab-campaign img { border-radius: 0 0 26px 26px; }
-  .lab-change { margin-top: 16px; padding: 15px 16px; border: 1px solid #e4d3a8; border-radius: 19px; background: #fbf3e1; }
-  .lab-change-kicker { margin: 0 0 8px; color: var(--accent); font-size: 11px; font-weight: 900; letter-spacing: .09em; text-transform: uppercase; }
-  .lab-change-row { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
-  .lab-change-row h2 { margin: 0; color: var(--ink); font-size: 21px; font-weight: 900; letter-spacing: -.03em; text-transform: none; }
-  .lab-change-row p { margin: 2px 0 0; color: #54412f; font-size: 12px; font-weight: 800; }
-  .lab-change-row .lab-belt-chip { flex: none; min-width: 72px; border-radius: 11px; }
-  .lab-change-note { margin: 11px 0 0; padding-top: 10px; border-top: 1px solid #e4d3a8; color: #54412f; font-size: 12px; line-height: 1.45; }
   .lab-section-heading { margin: 23px 0 11px; font-size: 20px; font-weight: 900; letter-spacing: -.035em; }
   .lab-choice { margin-bottom: 10px; border-radius: 20px; padding: 15px; box-shadow: 0 5px 18px #38261b0d; }
   .lab-choice-icon, .lab-choice-quiz .lab-choice-icon { width: 49px; height: 49px; border: 0; border-radius: 16px; background: #e8efdf; color: var(--ink); font-size: 20px; font-weight: 900; }
@@ -807,7 +800,7 @@
   }
 
   /* Glass Cards across Ranked & Quiz */
-  .lab-change, .lab-choice, .auth-card, .quiz-card, .rq-cmp, .sum, .profile-balance, .board li {
+  .lab-choice, .auth-card, .quiz-card, .rq-cmp, .sum, .profile-balance, .board li {
     background: var(--glass-surface-sub);
     backdrop-filter: var(--blur-md); -webkit-backdrop-filter: var(--blur-md);
     border: 1px solid var(--glass-border);
@@ -847,7 +840,7 @@
   :root { --r-md: 22px; --r-sm: 14px; }
 
   /* Crisper glass cards with a soft top highlight */
-  .lab-change, .lab-choice, .auth-card, .quiz-card, .rq-cmp, .sum,
+  .lab-choice, .auth-card, .quiz-card, .rq-cmp, .sum,
   .profile-balance, .board li, .reauth-card, .owner-form, .cases li, .approved li {
     background: rgba(48, 32, 22, 0.62);
     border: 1px solid rgba(255, 255, 255, 0.11);
@@ -860,8 +853,6 @@
   .lab-campaign img { display: block; width: 100%; height: auto; border-radius: var(--r-md); border: 1px solid rgba(255, 255, 255, 0.08); }
 
   /* Gold eyebrows / section headings */
-  .lab-change-kicker { color: var(--gold); text-transform: uppercase; letter-spacing: .14em; font-weight: 900; font-size: 11px; }
-  .lab-change-note { color: var(--muted); }
 
   /* Choice cards — gold-tinted icon and gold arrow (mock .choice) */
   .lab-choice { border-radius: var(--r-sm); padding: 14px; gap: 12px; box-shadow: 0 10px 26px -12px rgba(0,0,0,0.6); }
@@ -910,8 +901,6 @@
   .profile-bar i { background: linear-gradient(90deg, var(--gold), #ffe08a); }
 
   /* Profile laid out like the mock: centered badge, stats grid, climb row */
-  .pf-hero { display: flex; flex-direction: column; align-items: center; gap: 8px; text-align: center; }
-  .pf-badge { width: 92px; height: 92px; object-fit: contain; filter: drop-shadow(0 6px 16px rgba(0, 0, 0, 0.45)) drop-shadow(0 0 14px rgba(244, 189, 56, 0.22)); }
   .pf-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; }
   .pf-stat { padding: 14px; border-radius: var(--r-sm); text-align: center; background: var(--glass-surface-sub); border: 1px solid var(--glass-border); }
   .pf-stat b { display: block; font-size: 24px; font-weight: 900; }
@@ -996,7 +985,7 @@
   html[data-theme="day"] .orb-amber { opacity: 0.1; }
   html[data-theme="day"] .orb-blue { opacity: 0.08; }
   /* Hard-coded card surfaces from the port → light for day */
-  html[data-theme="day"] .lab-change, html[data-theme="day"] .lab-choice,
+  html[data-theme="day"] .lab-choice,
   html[data-theme="day"] .auth-card, html[data-theme="day"] .quiz-card,
   html[data-theme="day"] .rq-cmp, html[data-theme="day"] .sum,
   html[data-theme="day"] .profile-balance, html[data-theme="day"] .board li,
@@ -1069,7 +1058,6 @@
   .pf-stat b { font-size: 26px; letter-spacing: -.02em; font-variant-numeric: tabular-nums; }
   .pf-stat small { display: block; margin-top: 3px; font-size: 10px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; }
   .pf-climb { padding: 14px 16px 16px; }
-  .pf-history { align-self: center; min-width: 62%; padding: 13px 28px; border-radius: 999px; }
 
   /* Home: the notice, shift log and disclaimer follow the theme */
   .lab-launch { margin-top: 0; border-radius: var(--r-sm); background: var(--soft); border-color: var(--soft-line); }
@@ -1104,7 +1092,7 @@
   .lab-main { padding-top: 14px; }
 
   /* Drawn icons (dock, Home shortcuts) */
-  .lab-nav i svg, .home-short-ic svg { display: block; width: 19px; height: 19px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  .lab-nav i svg, .home-short-ic svg, .lab-choice-icon svg { display: block; width: 19px; height: 19px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
   .lab-nav i { display: block; }
 
   /* Home stripes */
@@ -1145,6 +1133,50 @@
   html[data-theme="day"] .home-spot { box-shadow: var(--glass-shadow), 0 0 28px -6px rgba(201, 138, 16, 0.22); }
   html[data-theme="day"] .home-obj-badge { filter: drop-shadow(0 12px 16px rgba(90, 60, 25, 0.3)); }
   html[data-theme="day"] .home-obj-hat { filter: drop-shadow(0 12px 14px rgba(90, 60, 25, 0.32)); }
+
+  /* ============================================================
+     Redesign v5 — Practice, Ranked, Leaderboard and Profile in the
+     Home-in-stripes style. Presentation only.
+     ============================================================ */
+  .tab-title { font-size: 24px; letter-spacing: -.04em; line-height: 1.12; }
+  .tab-intro { margin: -6px 0 0; font-size: 13px; font-weight: 700; line-height: 1.45; }
+  .home-stripe .lab-choice { margin-bottom: 0; }
+  .tab-chip { float: right; margin-top: -3px; padding: 3px 9px; border-radius: 999px; background: var(--soft); border: 1px solid var(--soft-line); color: var(--ink); font-size: 10px; letter-spacing: .06em; }
+
+  /* Ranked: season, balance, progress and the way to play in one card */
+  .rk-bal { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+  .rk-bal .lab-study-meta { margin: 0; }
+  .rk-spot .profile-points { margin: 2px 0 0; font-size: 34px; font-variant-numeric: tabular-nums; }
+  .rk-spot .profile-points i { font-style: normal; font-size: 15px; font-weight: 800; letter-spacing: 0; color: var(--muted); }
+  .rk-obj, .pf-ident-obj { width: 76px; height: 76px; flex: none; }
+  .rk-obj .home-obj-badge, .pf-ident-obj .home-obj-badge { width: 72px; height: 72px; }
+  .rk-spot .primary { width: 100%; margin-top: 14px; padding: 13px 16px; font-size: 14.5px; }
+  .rk-fine { margin: 8px 0 0; text-align: center; color: var(--muted); font-size: 11.5px; font-weight: 700; }
+  .rk-note { margin: 0; color: var(--muted); font-size: 12px; font-weight: 700; line-height: 1.5; }
+  #ranked-panel { display: flex; flex-direction: column; gap: 14px; }
+  #ranked-panel > .lab-intro { margin: 0; }
+
+  /* Leaderboard: the podium in a card of its own */
+  #board-panel { display: flex; flex-direction: column; gap: 14px; }
+  #board-panel > .lab-intro { margin-bottom: 0; }
+  .podium-card { padding: 14px 12px 0; border-radius: var(--r-md); background: var(--glass-surface-sub); border: 1px solid var(--glass-border); box-shadow: var(--glass-shadow); overflow: hidden; }
+  .podium-card .podium { margin: 0; }
+
+  /* Profile: identity card, then numbers, climb and history */
+  .pf-ident { display: flex; align-items: center; gap: 12px; padding: 14px; border-radius: var(--r-md); background: var(--glass-surface-sub); border: 1px solid var(--glass-border); box-shadow: var(--glass-shadow); }
+  .pf-ident-obj:empty { display: none; }
+  .pf-ident-text { min-width: 0; }
+  .pf-ident .lab-title { font-size: 26px; overflow-wrap: anywhere; }
+  .pf-ident .lab-intro { margin: 2px 0 0; font-size: 13px; font-weight: 700; }
+  .pf-climb .pf-badges { margin-top: 0; }
+
+  /* Notices (not in the standings, could not load, tie-break restarted…) were
+     a cream card with a faint title at night; they follow the theme now. */
+  .board-notice { border: 1px solid var(--soft-line); border-radius: var(--r-sm); background: var(--soft); }
+  .board-notice h2 { color: var(--ink); }
+  .board-notice p { color: var(--muted); }
+  .board-notice-bad { border-color: rgba(240, 138, 138, 0.45); background: rgba(240, 138, 138, 0.12); }
+  #board-panel > .board-notice { margin-top: 0; }
 
 </style>
 </head>
