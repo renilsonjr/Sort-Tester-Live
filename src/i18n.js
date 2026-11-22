@@ -466,6 +466,10 @@ const ES = {
   'question to go.': 'pregunta por responder.',
   'Easy question': 'Pregunta fácil',
   'The season closed before you finished. What you had scored counts, with no penalty.': 'La temporada cerró antes de que terminaras. Lo que habías sumado cuenta, sin penalización.',
+  // An attempt voided by a server outage or restart (issue #13, box 3)
+  'This attempt does not count': 'Este intento no cuenta',
+  'The server stopped while you were playing, so the attempt was cancelled. No score was applied and your points are exactly as they were.': 'El servidor se detuvo mientras jugabas, así que el intento se canceló. No se aplicó ninguna puntuación y tus puntos quedan exactamente como estaban.',
+  'You can start again when you are ready.': 'Puedes empezar de nuevo cuando quieras.',
 };
 
 const SERVICE_ES = {

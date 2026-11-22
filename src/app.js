@@ -2048,6 +2048,12 @@ function showRankedResult(mode, result, tally, { quit = false, attemptId = null 
     showEndedAtLaunch();
     return;
   }
+  // Voided by a server outage or restart: no score, in any mode, and a
+  // promotion is not lost. Said before the promotion branch for that reason.
+  if (result.final_outcome === 'outage_void') {
+    showVoidedByOutage();
+    return;
+  }
   if (mode === 'promotion') {
     showPromotionResult(result, tally, { quit, attemptId });
     return;
@@ -2086,6 +2092,22 @@ function showEndedAtLaunch() {
       <button id="rq-done" class="ghost">${esc(t('Back to Ranked'))}</button>
     </section>
   `, 'ranked', showEndedAtLaunch);
+  view.querySelector('#rq-done').addEventListener('click', showRanked);
+  return view;
+}
+
+function showVoidedByOutage() {
+  stopTick();
+  clock = null;
+  const view = labPage(`
+    <section class="lab-screen">
+      <p class="lab-eyebrow">${esc(t('Ranked'))} · ${esc(t('attempt ended'))}</p>
+      <h1 class="lab-title">${esc(t('This attempt does not count'))}</h1>
+      <p class="lab-intro">${esc(t('The server stopped while you were playing, so the attempt was cancelled. No score was applied and your points are exactly as they were.'))}</p>
+      <p class="lab-intro">${esc(t('You can start again when you are ready.'))}</p>
+      <button id="rq-done" class="ghost">${esc(t('Back to Ranked'))}</button>
+    </section>
+  `, 'ranked', showVoidedByOutage);
   view.querySelector('#rq-done').addEventListener('click', showRanked);
   return view;
 }

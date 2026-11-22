@@ -130,3 +130,16 @@ class DeletionListStartupTests(unittest.TestCase):
 
     def test_password_mode_starts_without_one(self) -> None:
         self._create(SORT_TESTER_DB_AUTH="", SORT_TESTER_DELETION_LIST_URL="")
+
+
+class ProcessStartTests(unittest.TestCase):
+    """The engine learns the start time from a server that really starts,
+    and forgets it when that server stops (issue #13, box 3)."""
+
+    def test_only_a_running_server_claims_to_have_started(self) -> None:
+        from backend.ranked import engine
+
+        self.assertIsNone(engine._process_started_at)
+        with TestClient(main.app):
+            self.assertIsNotNone(engine._process_started_at)
+        self.assertIsNone(engine._process_started_at)
