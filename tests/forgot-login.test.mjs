@@ -1,4 +1,4 @@
-// "Forgot my login?" on the sign-in screen (issue #251). The form leaves the
+// "Forgot my Quiz Code?" on the sign-in screen (issue #251). The form leaves the
 // owner a message and nothing else: it must never say whether an account
 // exists, and it must say the same fixed sentence for every accepted message.
 import test, { after } from 'node:test';

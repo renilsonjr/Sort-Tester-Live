@@ -134,7 +134,7 @@ def main(argv=None) -> int:
         if args.command == "reissue-login-id":
             result = reissue_owner_login_id(conn)
             print(
-                f"New login ID for {result['username']} (tag {result['tag']}):"
+                f"New Quiz Code for {result['username']} (tag {result['tag']}):"
                 f"\n\n    {result['login_id']}\n\n"
                 "It is shown once and cannot be recovered. Every session of"
                 " that account has been signed out."

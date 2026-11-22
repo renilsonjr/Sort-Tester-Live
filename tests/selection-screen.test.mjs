@@ -48,7 +48,7 @@ test('the confirmation names who takes no hat, and going back is the easy answer
   assert.match(confirm, /id="sel-record" class="ghost owner-danger"/);
 });
 
-test('recording asks for the login ID when the server wants it', () => {
+test('recording asks for the Quiz Code when the server wants it', () => {
   assert.match(fn('function confirmSelection'), /apiSendOwner\('POST', `\/ranked\/owner\/selections\//);
 });
 

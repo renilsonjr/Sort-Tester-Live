@@ -24,7 +24,7 @@ test('Owner tools reaches recovery, and it is no longer a stub', () => {
 });
 
 test('finding an account is a separate step from issuing anything', () => {
-  // Opening a recovery asserts nothing; it must not hand over a login ID.
+  // Opening a recovery asserts nothing; it must not hand over a Quiz Code.
   const find = fn('async function findForRecovery');
   assert.match(find, /POST', '\/ranked\/owner\/recoveries'/);
   assert.doesNotMatch(find, /handover/);
@@ -52,18 +52,18 @@ test('the second step says what a handover costs before it happens', () => {
   assert.match(check, /approves nothing for prizes/);
 });
 
-test('the login ID is shown once and the screen says so', () => {
+test('the Quiz Code is shown once and the screen says so', () => {
   const shown = fn('function showHandover');
   assert.match(shown, /shown once and cannot be shown again/);
   assert.match(shown, /every signed-in device stopped working/);
 });
 
-test('the handover screen never stores or re-fetches the login ID', () => {
+test('the handover screen never stores or re-fetches the Quiz Code', () => {
   const shown = fn('function showHandover');
   assert.doesNotMatch(shown, /localStorage|sessionStorage|api\(|apiSend\(/);
 });
 
-test('the login ID is readable at arm’s length', () => {
+test('the Quiz Code is readable at arm’s length', () => {
   assert.match(page, /\.handover-id \{ font: 900 26px/);
   assert.match(page, /user-select: all/);
 });
