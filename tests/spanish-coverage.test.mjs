@@ -18,6 +18,11 @@ function literalKeys() {
   // t(condition ? 'one' : 'other')
   const chosen = /\bt\(\s*[^'"`)][^)]*?\?\s*'((?:[^'\\]|\\.)*)'\s*:\s*'((?:[^'\\]|\\.)*)'/gs;
   for (const m of source.matchAll(chosen)) { keys.add(read(m[1])); keys.add(read(m[2])); }
+  // t(a ? 'one' : b ? 'two' : 'three'): every quoted choice inside the call
+  const call = /\bt\(\s*([a-zA-Z_.!(][^;`]*?\?[^;`]*?)\)\)?[,;)}\s]/g;
+  for (const m of source.matchAll(call)) {
+    for (const s of m[1].matchAll(/[?:]\s*'((?:[^'\\]|\\.)*)'/g)) keys.add(read(s[1]));
+  }
   return [...keys];
 }
 
