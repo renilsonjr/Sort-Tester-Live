@@ -2631,6 +2631,7 @@ function showDeckPicker(name) {
 
   const view = labPage(`
     <section class="lab-screen">
+      <button id="picker-back" class="ghost" type="button">← ${esc(t('Back'))}</button>
       <h1 class="lab-title">${esc(t('Pick a test'))}</h1>
       <div class="decks">
         ${DECKS.filter((deck) => deck.questionCount).map((deck, index) => `
@@ -2672,6 +2673,9 @@ function showDeckPicker(name) {
       showCard();
     });
   });
+  // The controls below sit under the whole list, out of sight on a phone, so
+  // the way back to Practice is also offered before it (#262).
+  view.querySelector('#picker-back').addEventListener('click', showPractice);
   view.querySelector('#back').addEventListener('click', () => showNameEntry(name));
   view.querySelector('#main-page').addEventListener('click', showStart);
   view.querySelector('#viewlog')?.addEventListener('click', showLog);
