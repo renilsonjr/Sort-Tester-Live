@@ -218,7 +218,19 @@ def open_prize_tiebreaks(conn, season_id, *, clock, bank=None, rng=None):
         bank = load_reviewed_bank()
     if fresh_sets_left(conn, season_id, bank) == 0:
         # No round can be played, so none is opened: the places wait for
-        # the owner, which is the settled fallback, not a failure.
+        # the owner, which is the settled fallback, not a failure. Each
+        # player is placed as waiting, like every other road to the owner:
+        # the owner's list and the prize pass both read the placements, and
+        # a group marked waiting with nobody in it is a tie nobody can
+        # settle while the prize pass opens a second group for its players.
+        for account_id in tie.account_ids:
+            migrate.execute(
+                conn,
+                "INSERT INTO tiebreak_placements"
+                " (group_id, account_id, status, decided_in_round)"
+                " VALUES (%s, %s, 'owner_selection', 1)",
+                (group_id, account_id),
+            )
         migrate.execute(
             conn,
             "UPDATE tiebreak_groups SET status = 'owner_selection' WHERE id = %s",
