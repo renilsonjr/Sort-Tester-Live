@@ -88,3 +88,26 @@ class OwnerRecoveryMessageTests(unittest.TestCase):
     def test_an_unknown_or_malformed_id_is_not_found(self):
         self.assertEqual(self._resolve(self.owner, uuid4()).status_code, 404)
         self.assertEqual(self._resolve(self.owner, "not-a-uuid").status_code, 404)
+
+    def test_a_message_resolved_long_ago_is_gone_from_the_inbox(self):
+        self._leave("resolved long ago")
+        self._leave("resolved just now")
+        migrate.execute(
+            self.conn,
+            "UPDATE recovery_messages SET created_at = now() - interval '40 days',"
+            " resolved_at = now() - interval '31 days'"
+            " WHERE body = 'resolved long ago'",
+        )
+        migrate.execute(
+            self.conn,
+            "UPDATE recovery_messages SET resolved_at = now()"
+            " WHERE body = 'resolved just now'",
+        )
+        self.conn.commit()
+
+        bodies = [m["body"] for m in self.owner.get(LIST).json()["messages"]]
+
+        self.assertEqual(bodies, ["resolved just now"])
+        left = migrate.fetch_one(self.conn, "SELECT count(*) AS n FROM recovery_messages")
+        self.assertEqual(left["n"], 1)
+

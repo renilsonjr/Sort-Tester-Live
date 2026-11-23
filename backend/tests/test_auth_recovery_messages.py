@@ -127,3 +127,42 @@ class RecoveryMessageTests(unittest.TestCase):
         self.assertFalse(
             recovery_messages.resolve(self.conn, self.owner, uuid4(), clock=self.clock)
         )
+
+    # --- retention ---
+
+    def _resolved(self, body, *, days_ago):
+        self.clock.moment = T0 - timedelta(days=days_ago)
+        self._leave(body)
+        message_id = migrate.fetch_one(
+            self.conn, "SELECT id FROM recovery_messages WHERE body = %s", (body,)
+        )["id"]
+        recovery_messages.resolve(self.conn, self.owner, message_id, clock=self.clock)
+        self.clock.moment = T0
+
+    def test_a_message_goes_thirty_days_after_it_was_resolved(self):
+        self._resolved("resolved 31 days ago", days_ago=31)
+        self._resolved("resolved 29 days ago", days_ago=29)
+
+        removed = recovery_messages.purge_resolved(self.conn, clock=self.clock)
+
+        self.assertEqual(removed, 1)
+        self.assertEqual(self._bodies(), ["resolved 29 days ago"])
+
+    def test_a_message_still_waiting_is_never_deleted_by_age(self):
+        self.clock.moment = T0 - timedelta(days=400)
+        self._leave("still waiting after a year")
+        self.clock.moment = T0
+
+        removed = recovery_messages.purge_resolved(self.conn, clock=self.clock)
+
+        self.assertEqual(removed, 0)
+        self.assertEqual(self._bodies(), ["still waiting after a year"])
+
+    def test_the_retention_period_is_thirty_days(self):
+        self.assertEqual(recovery_messages.RESOLVED_RETENTION_DAYS, 30)
+
+    def test_nothing_due_deletes_nothing(self):
+        self._leave("fresh")
+        self.assertEqual(
+            recovery_messages.purge_resolved(self.conn, clock=self.clock), 0
+        )

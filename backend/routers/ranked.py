@@ -94,6 +94,9 @@ def get_db():
         # account, so they go a day after they die. One DELETE that
         # matches nothing on an idle server.
         auth_sessions.purge_expired_sessions(conn)
+        # a recovery message is free text and may name a person: it goes
+        # thirty days after the owner marked it resolved
+        recovery_messages.purge_resolved(conn, clock=_CLOCK)
         yield conn
 
 
@@ -917,6 +920,10 @@ def list_recovery_messages(
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden"
         ) from None
+    # this route only reads, but the retention sweep that ran before it may
+    # have deleted old resolved messages: keep that, so what the owner no
+    # longer sees is really gone and not just hidden for this request
+    conn.commit()
     return {
         "open": sum(1 for row in rows if row["resolved_at"] is None),
         "messages": [
