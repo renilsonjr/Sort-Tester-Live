@@ -4,7 +4,7 @@ import { SERVICE_LABEL } from './questions.js?v=chart-destination-20261108-r2';
 import { DECKS, deckById, deckLabel } from './decks.js?v=chart-destination-20261108-r2';
 import { CARD_SECONDS, createRun, currentCard, answerCard, timeoutCard, summarize } from './quiz.js?v=chart-destination-20261108-r2';
 import { createClock } from './clock.js';
-import { createShiftLog } from './shiftLog.js';
+import { createShiftLog, practiceCountLabel } from './shiftLog.js';
 import { saveWorkbook } from './exportFile.js';
 import { CHART, searchChart } from './study.js?v=chart-destination-20261108-r2';
 import { selectLevelCards } from './levels.js?v=chart-destination-20261108-r2';
@@ -585,9 +585,11 @@ async function fillOverview(panel) {
   }
   // Profile laid out like the mock: badge, a stats grid, the climb, and a way
   // into history. Points come from the ledger; Best Ranked and Place come from
-  // the account-private stats endpoint (#218). Practices is not tracked by the
-  // backend yet, so it stays a placeholder. A failed stats read leaves the two
-  // it feeds as a dash rather than failing the whole screen.
+  // the account-private stats endpoint (#218). Practice leaves nothing on the
+  // server, so Practices is the count of finished sessions in this device's
+  // shift log, and the line under the grid says so (owner decision
+  // 2026-11-22). A failed stats read leaves the two it feeds as a dash rather
+  // than failing the whole screen.
   const DASH = '\u2014';
   const stats = await api('/ranked/profile/stats');
   const bestRanked = stats && stats.best_ranked
@@ -608,9 +610,10 @@ async function fillOverview(panel) {
     <div class="pf-stats">
       <div class="pf-stat"><b>${entry.points.toLocaleString()}</b><small>${esc(t('Points'))}</small></div>
       <div class="pf-stat"><b>${esc(bestRanked)}</b><small>${esc(t('Best Ranked'))}</small></div>
-      <div class="pf-stat"><b>${DASH}</b><small>${esc(t('Practices'))}</small></div>
+      <div class="pf-stat"><b>${esc(log.available ? practiceCountLabel(log.all()) : DASH)}</b><small>${esc(t('Practices'))}</small></div>
       <div class="pf-stat"><b>${esc(place)}</b><small>${esc(t('Place'))}</small></div>
     </div>
+    <p class="pf-stats-note">${esc(t('Practices counts the sessions in the Shift log on this device.'))}</p>
     </section>
     ${entry.mode === 'promotion' ? `
     <div class="profile-promo">
