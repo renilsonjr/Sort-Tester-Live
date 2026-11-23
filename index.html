@@ -1333,7 +1333,11 @@
      route code and the answers at opposite ends of the eye's travel.
      --------------------------------------------------------------------- */
   @media (min-width: 900px) {
-    #app.lab-page { max-width: 1040px; border-radius: 22px; margin-block: 24px; min-height: calc(100dvh - 48px); }
+    /* The shell fills the window: the sidebar is chrome and belongs against
+       the edge, like every app with one. The reading width is held further
+       in, on the content itself (--desk-col below), so a wide monitor buys
+       room for columns and never a 1300px-long sentence. */
+    #app.lab-page { max-width: none; border-radius: 0; margin-block: 0; min-height: 100dvh; }
 
     /* The DOM order is header, main, nav. Grid areas place the nav first
        without moving it in the markup, so the tab order still reads
@@ -1342,11 +1346,24 @@
       display: grid;
       grid-template-columns: 232px minmax(0, 1fr);
       grid-template-areas: "nav top" "nav main";
-      align-content: start;
+      /* No align-content here. The default stretches the rows, which is what
+         carries the sidebar to the bottom of the window on a short screen
+         such as Practice. `start` packed the rows and left the sidebar
+         floating with the page background under it. */
+      min-height: 100dvh;
     }
     .lab-top { grid-area: top; }
     /* No dock at the bottom any more, so none of its clearance either. */
     .lab-main { grid-area: main; padding-top: 4px; padding-inline: 30px; padding-bottom: 34px; }
+
+    /* One reading column, shared by the header row and the screen below it so
+       the two line up. Wider than the old 808px card, because lists and the
+       leaderboard use the room; forms and the quiz keep their own narrower
+       caps further down and stay centred inside this one. */
+    .lab-shell { --desk-col: 1080px; }
+    /* width:100% matters: .lab-top-row is a flex item, and margin-inline:auto
+       alone cancels the stretch and shrinks it to its contents. */
+    .lab-top-row, .lab-main > .lab-screen { width: 100%; max-width: var(--desk-col); margin-inline: auto; }
     .lab-nav {
       grid-area: nav;
       position: static !important;
@@ -1362,7 +1379,11 @@
       border-right: 1px solid var(--glass-border) !important;
       border-radius: 0 !important;
       box-shadow: none !important;
-      background: rgba(28, 19, 13, 0.45) !important;
+      /* The token, not a literal. This is the same dock that sits at the
+         bottom on a phone, so it takes the dock's own colour, and that one
+         is redefined for the day theme. The literal it replaced was a dark
+         brown at 45%, which over the cream day background turned grey. */
+      background: var(--dock-bg) !important;
     }
     .lab-nav button {
       display: flex !important;
