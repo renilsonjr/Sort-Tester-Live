@@ -1128,6 +1128,43 @@
   .lab-language button { font-size: 10.5px; font-weight: 900; }
   .lab-main { padding-top: 14px; }
 
+  /* The header controls draw at 40x38 so the compact header stays compact,
+     but a finger needs 44x44. The drawn box keeps its size and the tappable
+     box is pushed out to 44x44 with a pseudo-element: 2px either side (40+4)
+     and 3px top and bottom (38+6).
+
+     Those numbers are not free choices. The buttons sit 6 to 7px apart, so
+     2px of horizontal growth each leaves 2 to 3px between neighbours and no
+     two hit areas ever overlap. Growing the buttons themselves to 44x44
+     instead would add 16px across a row that already ends 18px from the edge
+     of a 375px screen, and would squeeze the app name beside it.
+
+     The width below is 40px on purpose: the quiz header drew these at 38px,
+     which made the hit area 42px wide there and the one measurement that
+     matters inconsistent between screens. (`.card-header` carries the same
+     38px, but no screen renders that class any more, so it is left alone.) */
+  .quiz-topline .lab-language button { width: 40px; }
+  .lab-language button, .lab-theme-btn { position: relative; }
+  .lab-language button::after,
+  .lab-theme-btn::after {
+    content: "";
+    position: absolute;
+    /* Sized outright, not with a negative inset. An absolutely positioned
+       child resolves its offsets against the padding box, which has already
+       had the 1px border and the 2px padding taken off it, so `inset: -3px
+       -2px` measured 40x40 instead of the 44x44 it reads like. Centring a box
+       of a stated size does not care what the button's border or padding are.
+       Measured after this change: 44x44, and a point 1.5px outside the drawn
+       edge hit-tests to the button on all four sides. */
+    top: 50%;
+    left: 50%;
+    width: 44px;
+    height: 44px;
+    transform: translate(-50%, -50%);
+    /* Out of flow, so it is not a flex or grid item and changes no layout.
+       No background: this is a hit area, not something to look at. */
+  }
+
   /* Drawn icons (dock, Home shortcuts) */
   .lab-nav i svg, .home-short-ic svg, .lab-choice-icon svg { display: block; width: 19px; height: 19px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
   .lab-nav i { display: block; }
