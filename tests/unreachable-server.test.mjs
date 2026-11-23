@@ -88,3 +88,15 @@ test('the Settings tab offers a way out', () => {
   assert.match(source, /Log out/);
   assert.match(source, /#profile-logout'\)\.addEventListener\('click', \(\) => signOut\(\)\)/);
 });
+
+test('sign-in does not call a Quiz Code invalid when it was never checked', () => {
+  const source = readFileSync(new URL('../src/auth.js', import.meta.url), 'utf8');
+  const doLogin = source.slice(source.indexOf('async function doLogin'));
+  const refused = doLogin.indexOf('result.status === 429 || result.status === 503');
+  const invalid = doLogin.indexOf('Invalid Quiz Code. Please try again.');
+  assert.ok(refused > 0 && refused < invalid);
+  assert.match(
+    doLogin.slice(refused, invalid),
+    /Too many attempts\. Wait a moment and try again\./,
+  );
+});

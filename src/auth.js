@@ -141,6 +141,11 @@ export function createAuthPanel(container, onContinueAsGuest, onLoggedIn) {
       if (onLoggedIn) onLoggedIn(result.data);
     } else if (result.status === 0) {
       showMessage('Could not reach the server. Your Quiz Code is fine; try again in a moment.', true);
+    } else if (result.status === 429 || result.status === 503) {
+      // Refused before the Quiz Code was looked at: too many tries from this
+      // network, or the server had too many to check at once. Saying
+      // "invalid" here would send someone with the right code to recovery.
+      showMessage('Too many attempts. Wait a moment and try again.', true);
     } else {
       showMessage('Invalid Quiz Code. Please try again.', true);
     }
