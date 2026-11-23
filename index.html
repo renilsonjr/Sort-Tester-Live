@@ -696,7 +696,11 @@
   .lab-nav button[aria-current="page"] { box-shadow: none; background: #f7eac7; color: var(--accent); }
   .lab-nav i { font-size: 20px; }
   .lab-service-tabs { display: flex; flex-wrap: wrap; gap: 7px; }
-  .lab-service-tabs button { min-height: 40px; border-radius: 999px; padding: 9px 13px; font-size: 12px; font-weight: 900; }
+  /* 44px, not 40: these are the chart's filters, tapped with a gloved thumb.
+     Only the height ever failed -- the labels make every chip at least 71px
+     wide -- so the padding is untouched and nothing re-wraps. The row grows
+     8px in all, on a screen whose list is over 8000px long. */
+  .lab-service-tabs button { min-height: 44px; border-radius: 999px; padding: 9px 13px; font-size: 12px; font-weight: 900; }
   .lab-service-tabs button[aria-pressed="true"] { border-color: var(--accent); background: var(--accent); }
   .lab-chart-search, .lab-main input { border-radius: 14px; background: var(--panel); }
   .lab-chart-heading { border-color: var(--accent); }
