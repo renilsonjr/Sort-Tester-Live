@@ -41,7 +41,13 @@
     --accent: #38261b; --accent-ink: #fffdf8;
     --gold: #f4bd38; --gold-line: #b47d15;
     --soft: rgba(244, 189, 56, 0.14); --soft-line: rgba(244, 189, 56, 0.3);
-    --focus: #6db6ff; --good: #6cd39a; --bad: #f08a8a;
+    /* The focus ring follows the gold, which the day theme redefines to a
+       darker #c98a10 that reads on cream. It used to be #6db6ff -- the only
+       blue in a brown-and-gold app, and it showed on the sign-in code field,
+       the new-account username, the quiz name field and the chart search
+       (#327). The ring sits 4px outside the control, so it lands on the page
+       background, not on a gold button, in both themes. */
+    --focus: var(--gold); --good: #6cd39a; --bad: #f08a8a;
   }
   * { box-sizing: border-box; }
 
@@ -359,9 +365,15 @@
   .lab-top-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
   .lab-language { display: flex; gap: 4px; margin-left: auto; flex: none; }
   .lab-language button { display: flex; flex-direction: column; align-items: center; justify-content: center; width: 44px; min-height: 44px; padding: 2px; border: 1px solid var(--line); border-radius: 5px; background: var(--panel); color: var(--ink); font: 800 10px/1.1 Arial, Helvetica, sans-serif; cursor: pointer; }
-  .lab-language button span:first-child { font-size: 19px; line-height: 1.25; }
+  /* This used to size the flag emoji that sat above the label. The flags are
+     gone (#326): a flag is not a language -- Spanish is not only Spain's --
+     and an 11px flag is harder to read than two letters. The rule now sizes
+     the label itself, which is the only child left. */
+  .lab-language button span:first-child { font-size: 13px; line-height: 1.1; }
   .lab-language button[aria-pressed="true"] { border: 2px solid var(--ink); background: #f7eac7; }
-  .lab-language button:focus-visible { outline: 3px solid #175e94; outline-offset: 2px; }
+  /* This was a second blue, hardcoded -- #175e94 -- so the token change alone
+     would have left the language buttons ringed in blue (#327). */
+  .lab-language button:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
   .quiz-language { display: flex; justify-content: flex-end; margin-bottom: 6px; }
   .lab-site { color: var(--muted); font-size: 11px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; }
   .lab-brand { display: flex; align-items: center; gap: 10px; font: 700 20px "Space Grotesk", sans-serif; letter-spacing: -.05em; white-space: nowrap; }
@@ -977,7 +989,13 @@
   .pf-stat { padding: 14px; border-radius: var(--r-sm); text-align: center; background: var(--glass-surface-sub); border: 1px solid var(--glass-border); }
   .pf-stat b { display: block; font-size: 24px; font-weight: 900; }
   .pf-stat small { font-size: 11px; color: var(--muted); }
-  .pf-stats-note { margin-top: 8px; font-size: 11px; color: var(--muted); text-align: center; }
+  /* #328 listed this as a fourth block floating with no card. It is not a
+     block: it is the caption for the four tiles directly above it, and a card
+     with a gold eyebrow of its own would make a footnote look like a section.
+     What it was missing is the tie to what it explains, so it is pulled up
+     against the tiles and indented to their edge instead of sitting centred
+     in the gap between two sections. */
+  .pf-stats-note { margin: 2px 2px 0; font-size: 11px; line-height: 1.45; color: var(--muted); text-align: left; }
   .pf-climb { padding: 14px; border-radius: var(--r-md); background: var(--glass-surface-sub); border: 1px solid var(--glass-border); }
   .pf-badges { display: flex; justify-content: space-between; gap: 8px; margin-top: 9px; }
   .pf-badges img { width: 46px; height: 46px; object-fit: contain; filter: drop-shadow(0 3px 7px rgba(0, 0, 0, 0.4)); }
@@ -1049,6 +1067,11 @@
     --ink: #2b1c10; --muted: #7a6650; --line: rgba(120, 90, 50, 0.18);
     --accent: #f3e7d3; --accent-ink: #2b1c10;
     --gold: #c98a10; --gold-line: #a9740d;
+    /* NOT var(--gold) here. Measured against the cream page the day gold is
+       2.52:1, under the 3:1 a focus ring needs; this deeper brown-gold -- the
+       eyebrow colour -- measures 5.05:1 and still reads as the same family.
+       At night the ring is the plain gold at 10.04:1 (#327). */
+    --focus: #8a5a12;
     --soft: rgba(201, 138, 16, 0.14); --soft-line: rgba(201, 138, 16, 0.32);
     --good: #2f9e6b; --bad: #c9524a;
     --glass-surface: rgba(255, 255, 255, 0.74); --glass-surface-sub: rgba(255, 252, 246, 0.92);
@@ -1168,7 +1191,19 @@
   .lab-launch p { color: var(--muted); }
   .lab-log-link { color: var(--ink); padding: 12px 4px; }
   .lab-log-link span:last-child { color: var(--gold); }
-  .lab-disclaimer { background: transparent; border: 1px solid var(--glass-border-subtle); border-radius: var(--r-sm); color: var(--muted); font-size: 11.5px; }
+  /* #328 asked for a glass surface and a gold eyebrow here. The surface, yes:
+     a transparent box with a hairline around it reads as a gap with a line in
+     it rather than a thing. The eyebrow, no -- this is the legal small print,
+     and a gold heading would announce it above the Practice shortcuts that
+     are the point of the screen. It takes the subdued surface, not the one
+     the cards use. */
+  .lab-disclaimer { background: var(--glass-surface-sub); backdrop-filter: var(--blur-md); -webkit-backdrop-filter: var(--blur-md); border: 1px solid var(--glass-border-subtle); border-radius: var(--r-sm); color: var(--muted); font-size: 11.5px; }
+
+  /* The season line on Ranked, which stood on the bare background under the
+     Standings card (#328). Same surface as the disclaimer: it is a status
+     line, not an announcement, and the gold banner on Home is the one that
+     announces. */
+  .rk-note { margin: 0; padding: 12px 14px; background: var(--glass-surface-sub); backdrop-filter: var(--blur-md); -webkit-backdrop-filter: var(--blur-md); border: 1px solid var(--glass-border-subtle); border-radius: var(--r-sm); color: var(--muted); font-size: 12px; line-height: 1.5; }
   .lab-disclaimer strong { color: var(--ink); }
 
   /* Dock: the active pill sits inside the bar instead of spilling over it */
@@ -1190,8 +1225,9 @@
   .lab-mark { width: 31px; height: 31px; border-radius: 10px; font-size: 12px; }
   .lab-brand { font-size: 18px; gap: 9px; }
   .lab-language button, .lab-theme-btn { width: 40px; min-height: 38px; border-radius: 11px; }
-  .lab-language button span:first-child { font-size: 15px; }
-  .lab-language button { font-size: 10.5px; font-weight: 900; }
+  /* Sized the flag before the flags were dropped (#326); now it is the label. */
+  .lab-language button span:first-child { font-size: 13px; }
+  .lab-language button { font-weight: 900; }
   .lab-main { padding-top: 14px; }
 
   /* The header controls draw at 40x38 so the compact header stays compact,
@@ -1232,7 +1268,11 @@
   }
 
   /* Drawn icons (dock, Home shortcuts) */
-  .lab-nav i svg, .home-short-ic svg, .lab-choice-icon svg { display: block; width: 19px; height: 19px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  .lab-nav i svg, .home-short-ic svg, .lab-choice-icon svg, .lab-btn-ic svg { display: block; width: 19px; height: 19px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  /* The header's sound and theme icons join that family instead of being
+     system emoji (#326). `currentColor` is what makes one drawing serve every
+     state: the button already sets the gold, and the day theme redefines it. */
+  .lab-btn-ic { display: grid; place-items: center; }
   .lab-nav i { display: block; }
 
   /* Home stripes */
