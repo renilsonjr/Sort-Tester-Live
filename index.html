@@ -76,8 +76,15 @@
   .avatar-pick { min-height: 56px; font-size: 26px; line-height: 1; border: 1px solid var(--line); border-radius: 14px; background: var(--panel); cursor: pointer; }
   .avatar-pick[aria-pressed="true"] { border-color: var(--gold); box-shadow: inset 0 0 0 2px var(--gold); }
   .avatar-pick:focus-visible { outline: 3px solid var(--gold); outline-offset: 2px; }
-  .pf-avatar:not(:empty) { margin-right: 8px; }
-  .board-avatar { margin-right: 6px; }
+  /* The chosen icon (#272). It replaces a letter, so it was drawn at a
+     letter's size and left most of the podium disc empty; the owner asked
+     for it to fill the circle. Emoji carry their own padding, so ~0.78 of
+     the disc is what actually touches the edges. */
+  .pdisc.has-avatar { font-size: 36px; line-height: 1; }
+  .pslot.p1 .pdisc.has-avatar { font-size: 44px; line-height: 1; }
+  /* The profile keeps the podium's size, which is what the owner asked for. */
+  .pf-avatar:not(:empty) { display: block; font-size: 36px; line-height: 1; margin: 0 0 2px; }
+  .board-avatar { margin-right: 8px; font-size: 22px; line-height: 1; vertical-align: -3px; }
   .warn { margin: 0; color: var(--muted); font-size: 13px; }
   .disclaimer {
     margin: 8px 0 0; padding: 14px 16px; border: 1px solid var(--line);

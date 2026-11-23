@@ -1943,7 +1943,7 @@ async function fillLeaderboard(panel) {
   const slot = (row, cls) => !row ? '' : `
     <div class="pslot ${cls}${row.you ? ' pslot-you' : ''}">
       ${row.hat ? '<div class="pcrown" aria-hidden="true">♛</div>' : ''}
-      <div class="pdisc">${row.hat ? '♛' : (avatarEmoji(row.avatar) || esc(row.username.slice(0, 1).toUpperCase()))}</div>
+      <div class="pdisc${!row.hat && avatarEmoji(row.avatar) ? ' has-avatar' : ''}">${row.hat ? '♛' : (avatarEmoji(row.avatar) || esc(row.username.slice(0, 1).toUpperCase()))}</div>
       <div class="pname">${esc(row.username)}</div>
       <div class="ppts">◆ ${row.points.toLocaleString()}</div>
       <div class="ppillar">${row.place}</div>
