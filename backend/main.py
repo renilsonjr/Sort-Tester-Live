@@ -117,7 +117,12 @@ def create_app() -> FastAPI:
 
     @application.get("/health")
     def health() -> dict[str, str]:
-        return {"status": "ok"}
+        # The version rides on the one route that needs no session, because
+        # the Profile screen and an uptime check both read it (#274). Nothing
+        # else goes here: no commit, no host, no database name.
+        from backend.version import VERSION
+
+        return {"status": "ok", "version": VERSION}
 
     # Same-origin frontend: serve ONLY this allowlist (the home page and the
     # src/ and assets/ folders), never the repository root. Registered after

@@ -1013,6 +1013,7 @@ async function fillSettings(panel) {
       <span><strong>${esc(t('Delete account'))}</strong><small>${esc(t('Removes your profile, history and points.'))}</small></span>
       <span class="lab-arrow" aria-hidden="true">\u2192</span>
     </button>
+    <p class="profile-version" id="profile-version"></p>
   `;
   panel.querySelector('#profile-support').addEventListener('click', showSupport);
   panel.querySelector('#profile-logout').addEventListener('click', () => signOut());
@@ -1022,6 +1023,18 @@ async function fillSettings(panel) {
   // One account in the whole app is the owner's. For everybody else the
   // row stays absent rather than disabled: a locked door still says there
   // is a room. The server refuses the calls regardless of this.
+  // The version of the app actually serving this page (#274). Asked for
+  // rather than written in, so it cannot drift from what is running; the
+  // line stays empty if the server does not answer.
+  // Fetched directly: /health sits outside /api, which is the prefix api()
+  // adds, so api('/health') would ask for /api/health and get a 404.
+  fetch('/health', { credentials: 'same-origin' })
+    .then((answer) => (answer.ok ? answer.json() : null))
+    .then((health) => {
+      const line = panel.querySelector('#profile-version');
+      if (line && health?.version) line.textContent = `${t('Version')} ${health.version}`;
+    })
+    .catch(() => {});
   const owner = panel.querySelector('#profile-owner');
   owner.addEventListener('click', showOwnerTools);
   const me = await api('/auth/me');
