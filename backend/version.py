@@ -7,9 +7,12 @@ actually running and not the one that happened to be in the file when their
 page was built.
 
 **The suffix is not decoration.** ``-dev`` means "this is being prepared,
-and no tag exists for it yet". The owner decided on 2026-11-23 to cut
-``v0.1.0`` only once issue #273 is finished, so until that tag exists this
-must not claim to be ``0.1.0``.
+and no tag exists for it yet"; a bare number means a tag exists for exactly
+this commit. ``0.1.0`` was cut on 2026-11-23, once issue #273 closed, and
+marks the app as the pilot was given it.
+
+After a release ships, the next change bumps this back to a ``-dev`` number,
+so ``main`` never claims to be a release that has already gone out.
 
 Cutting a release is three things that have to agree, and this file is the
 first of them:
@@ -26,4 +29,4 @@ What the numbers mean (owner's rule, #274):
 * **major** (0.x -> 1.0): reserved for when the app is past its pilot.
 """
 
-VERSION = "0.1.0-dev"
+VERSION = "0.1.0"
