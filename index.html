@@ -1319,6 +1319,11 @@
      is a flex column with a 16px gap -- so the stripes they wrap would lose
      the space between them on a phone. The phone must not change (#273). */
   .home-split, .board-split { display: contents; }
+  /* Same reason, same trick: the chart's controls are grouped so the desktop
+     can put them in a column beside the list, and the group dissolves below
+     the breakpoint so the phone still sees them as plain children of
+     .lab-screen with its own 16px gap between them. */
+  .chart-aside { display: contents; }
 
   /* ---------------------------------------------------------------------
      Desktop (#273, mock approved 2026-11-23).
@@ -1333,7 +1338,11 @@
      route code and the answers at opposite ends of the eye's travel.
      --------------------------------------------------------------------- */
   @media (min-width: 900px) {
-    #app.lab-page { max-width: 1040px; border-radius: 22px; margin-block: 24px; min-height: calc(100dvh - 48px); }
+    /* The shell fills the window: the sidebar is chrome and belongs against
+       the edge, like every app with one. The reading width is held further
+       in, on the content itself (--desk-col below), so a wide monitor buys
+       room for columns and never a 1300px-long sentence. */
+    #app.lab-page { max-width: none; border-radius: 0; margin-block: 0; min-height: 100dvh; }
 
     /* The DOM order is header, main, nav. Grid areas place the nav first
        without moving it in the markup, so the tab order still reads
@@ -1342,11 +1351,24 @@
       display: grid;
       grid-template-columns: 232px minmax(0, 1fr);
       grid-template-areas: "nav top" "nav main";
-      align-content: start;
+      /* No align-content here. The default stretches the rows, which is what
+         carries the sidebar to the bottom of the window on a short screen
+         such as Practice. `start` packed the rows and left the sidebar
+         floating with the page background under it. */
+      min-height: 100dvh;
     }
     .lab-top { grid-area: top; }
     /* No dock at the bottom any more, so none of its clearance either. */
     .lab-main { grid-area: main; padding-top: 4px; padding-inline: 30px; padding-bottom: 34px; }
+
+    /* One reading column, shared by the header row and the screen below it so
+       the two line up. Wider than the old 808px card, because lists and the
+       leaderboard use the room; forms and the quiz keep their own narrower
+       caps further down and stay centred inside this one. */
+    .lab-shell { --desk-col: 1080px; }
+    /* width:100% matters: .lab-top-row is a flex item, and margin-inline:auto
+       alone cancels the stretch and shrinks it to its contents. */
+    .lab-top-row, .lab-main > .lab-screen { width: 100%; max-width: var(--desk-col); margin-inline: auto; }
     .lab-nav {
       grid-area: nav;
       position: static !important;
@@ -1362,7 +1384,11 @@
       border-right: 1px solid var(--glass-border) !important;
       border-radius: 0 !important;
       box-shadow: none !important;
-      background: rgba(28, 19, 13, 0.45) !important;
+      /* The token, not a literal. This is the same dock that sits at the
+         bottom on a phone, so it takes the dock's own colour, and that one
+         is redefined for the day theme. The literal it replaced was a dark
+         brown at 45%, which over the cream day background turned grey. */
+      background: var(--dock-bg) !important;
     }
     .lab-nav button {
       display: flex !important;
@@ -1401,6 +1427,80 @@
        three players or fewer everybody is on the podium, and half the width
        would sit empty beside it. */
     .board-split-two { display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr); gap: 20px; align-items: start; }
+
+    /* ---- Practice: the two shelves side by side -------------------------
+       The shelves hold one card each, so stacked they left a 1080px-wide
+       button around 310px of content. Side by side each card gets a column
+       of about 530px, which is close to the 560px the forms use. */
+    .screen-practice {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 16px 18px;
+      align-content: start;
+    }
+    .screen-practice > .lab-eyebrow,
+    .screen-practice > .lab-title,
+    .screen-practice > .lab-intro { grid-column: 1 / -1; }
+
+    /* ---- Know the chart: the controls beside the list -------------------
+       The list is 91 rows and over 8000px tall. Putting the service tabs and
+       the search in a sticky column means the reader keeps their filters
+       while scrolling it, which is the only reason this screen earns a
+       second column at all. */
+    .screen-chart {
+      display: grid;
+      grid-template-columns: minmax(0, 320px) minmax(0, 1fr);
+      gap: 14px 26px;
+      align-content: start;
+    }
+    .screen-chart > .lab-eyebrow,
+    .screen-chart > .lab-title,
+    .screen-chart > .lab-intro,
+    .screen-chart > .lab-disclaimer { grid-column: 1 / -1; }
+    .screen-chart > .chart-aside {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      position: sticky;
+      /* Clears the sticky header, whose bottom edge measures 61px here.
+         At 18px the service tabs slid underneath it while scrolling. */
+      top: 74px;
+      align-self: start;
+    }
+    .screen-chart > #chart-rows { grid-column: 2; }
+
+    /* ---- Profile: the numbers beside the climb --------------------------
+       Only the panel splits. The identity banner above it stays full width,
+       because it reads as a header for both columns. */
+    .screen-profile > #profile-panel {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 16px 18px;
+      align-items: start;
+    }
+    .screen-profile > #profile-panel > #pf-history { grid-column: 1 / -1; }
+
+    /* ---- Owner tools: the actions in two columns ------------------------ */
+    .screen-owner {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px 18px;
+      align-content: start;
+    }
+    .screen-owner > .lab-eyebrow,
+    .screen-owner > .lab-title,
+    .screen-owner > .lab-intro,
+    .screen-owner > .ghost,
+    .screen-owner > .lab-disclaimer { grid-column: 1 / -1; }
+
+    /* ---- Promotion: a decision, so it stays narrow ----------------------
+       Offer, result and celebration are all one choice or one verdict. They
+       follow the form rule, not the list rule.
+
+       The `.lab-main >` is load-bearing, not decoration: the --desk-col rule
+       above is `.lab-main > .lab-screen`, two classes, so a bare
+       `.screen-promo` loses to it and the screen stayed 1080px wide. */
+    .lab-main > .screen-promo { max-width: 560px; }
 
     /* Narrow on purpose. */
     #rq-play { max-width: 560px; margin-inline: auto; }
