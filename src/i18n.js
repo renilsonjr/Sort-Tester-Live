@@ -272,6 +272,7 @@ const ES = {
   'Sign out my other devices': 'Cerrar sesión en mis otros dispositivos',
   'Ends every other phone or computer signed in to your account. This one stays.': 'Cierra la sesión en todos los demás teléfonos u ordenadores de tu cuenta. Este sigue abierto.',
   'Your Quiz Code keeps working. Anyone using it elsewhere has to enter it again.': 'Tu Quiz Code sigue funcionando. Quien lo esté usando en otro sitio tendrá que escribirlo de nuevo.',
+  'If someone else knows your Quiz Code, ask the owner in person for a new one.': 'Si otra persona conoce tu Quiz Code, pide uno nuevo al dueño en persona.',
   'No other device was signed in.': 'No había ningún otro dispositivo con la sesión abierta.',
   '{count} other device was signed out.': 'Se cerró la sesión en {count} dispositivo más.',
   '{count} other devices were signed out.': 'Se cerró la sesión en {count} dispositivos más.',
