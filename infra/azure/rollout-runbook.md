@@ -268,13 +268,21 @@ minutes.
 
 ## 5. Public rollout authorization
 
-Opening the competition to all employees is the owner's separate decision,
-taken after the evidence in issue #13. It is not implied by any merge,
-publish or deploy in this file.
+Two separate owner decisions, and neither is implied by any merge, publish
+or deploy in this file.
 
-- Authorized by the owner on: **not yet**
-- Launch moment chosen: **not yet**
+**The app is open to its public, the employees.** Authorized by the owner
+on **2026-11-22**. This covers what already runs at the app's address:
+accounts, Practice and Ranked in Pre-Season. In the owner's words, the
+public here is the employees, and this is not the official season.
 
-Open on issue #13 when this was written: the outage item (box 3), the
-note-expiry and provider-erasure checks (box 4) and the 30-player load
-measurement (box 5).
+**The official season has not been launched.** Launch moment chosen:
+**not yet**. The launch resets every balance and opens the competition for
+the hats; it is tracked in issue #258 and done with section 3 of this file.
+
+State of issue #13 when the authorization was given: the outage item
+(box 3) and the 30-player load item (box 5) were ticked on the owner's
+decision with their limits written beside them (no correction for an
+outage without a restart; about 13 to 16 simultaneous players within the
+1-second target on the current replica). Still open: the note-expiry
+observation of box 4.

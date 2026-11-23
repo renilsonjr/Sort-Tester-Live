@@ -281,13 +281,18 @@ class StandingsTests(unittest.TestCase):
     # --- what the board must not carry ---
 
     def test_a_row_carries_no_private_field(self):
-        """Tickets, flags and connection details never reach the board."""
+        """Tickets, flags and connection details never reach the board.
+
+        ``avatar`` joined the list in #272. It is not private: it is a key
+        from a fixed set of fifteen, chosen by the player to be shown here,
+        and it carries nothing they typed.
+        """
         account_id = self._account("dock_owl", 900)
         self._attempt(account_id)
         row = self._board()[0]
         self.assertEqual(
             set(row.__dict__),
-            {"place", "account_id", "username", "tag", "points", "badge", "tied"},
+            {"place", "account_id", "username", "tag", "points", "badge", "tied", "avatar"},
         )
 
 

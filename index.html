@@ -69,6 +69,15 @@
   h2 { font-size: 12px; margin: 6px 0 0; text-transform: uppercase; letter-spacing: 0.12em; color: var(--muted); font-weight: 600; }
   .sub { margin: -10px 0 0; color: var(--muted); font-size: 14px; }
   .notice { margin: 0; color: var(--bad); font-size: 14px; font-weight: 600; }
+  /* The same line after an action that worked: a result, not a warning. */
+  .notice.done { color: var(--good); }
+  /* The fifteen profile icons (#272): a tappable grid, 48px targets. */
+  .avatar-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin: 4px 0 10px; }
+  .avatar-pick { min-height: 56px; font-size: 26px; line-height: 1; border: 1px solid var(--line); border-radius: 14px; background: var(--panel); cursor: pointer; }
+  .avatar-pick[aria-pressed="true"] { border-color: var(--gold); box-shadow: inset 0 0 0 2px var(--gold); }
+  .avatar-pick:focus-visible { outline: 3px solid var(--gold); outline-offset: 2px; }
+  .pf-avatar:not(:empty) { margin-right: 8px; }
+  .board-avatar { margin-right: 6px; }
   .warn { margin: 0; color: var(--muted); font-size: 13px; }
   .disclaimer {
     margin: 8px 0 0; padding: 14px 16px; border: 1px solid var(--line);
@@ -391,6 +400,9 @@
      quieter button and keeping the approval is the easy one. */
   .owner-danger { color: var(--bad); border-color: #d8b6b6; }
   .owner-note { margin-top: 2px; }
+  .acct-you { flex: none; color: var(--muted); font-size: 12px; font-weight: 800; }
+  .acct-name { font-size: 20px; font-weight: 900; overflow-wrap: anywhere; }
+  .acct-meta { color: var(--muted); font-size: 13px; }
   /* The login ID is read out loud from a phone held at arm's length, so
      it is large, spaced and selectable rather than pretty. */
   /* Case review (#11). A case is a card: who, what they said, the
@@ -921,6 +933,7 @@
   .pf-stat { padding: 14px; border-radius: var(--r-sm); text-align: center; background: var(--glass-surface-sub); border: 1px solid var(--glass-border); }
   .pf-stat b { display: block; font-size: 24px; font-weight: 900; }
   .pf-stat small { font-size: 11px; color: var(--muted); }
+  .pf-stats-note { margin-top: 8px; font-size: 11px; color: var(--muted); text-align: center; }
   .pf-climb { padding: 14px; border-radius: var(--r-md); background: var(--glass-surface-sub); border: 1px solid var(--glass-border); }
   .pf-badges { display: flex; justify-content: space-between; gap: 8px; margin-top: 9px; }
   .pf-badges img { width: 46px; height: 46px; object-fit: contain; filter: drop-shadow(0 3px 7px rgba(0, 0, 0, 0.4)); }

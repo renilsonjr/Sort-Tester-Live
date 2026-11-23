@@ -4,6 +4,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
+import { practiceCountLabel } from '../src/shiftLog.js';
 
 const app = readFileSync(new URL('../src/app.js', import.meta.url), 'utf8');
 const i18n = readFileSync(new URL('../src/i18n.js', import.meta.url), 'utf8');
@@ -36,4 +37,21 @@ test('every Profile stat label has a Spanish translation', () => {
     assert.ok(app.includes(`t('${label}')`), `app.js does not use t('${label}')`);
     assert.ok(i18n.includes(`'${label}': '`), `no Spanish for: ${label}`);
   }
+});
+
+test('Practices counts this device\'s finished sessions, not a dash', () => {
+  const body = overview();
+  assert.match(body, /practiceCountLabel\(log\.all\(\)\)/);
+  // and the screen says where the number comes from, in both languages
+  const note = 'Practices counts the sessions in the Shift log on this device.';
+  assert.ok(body.includes(`t('${note}')`));
+  assert.ok(i18n.includes(`'${note}': '`));
+});
+
+test('the Practices number is the log length, and a full log says so', () => {
+  assert.equal(practiceCountLabel([]), '0');
+  assert.equal(practiceCountLabel([{}, {}, {}]), '3');
+  assert.equal(practiceCountLabel(new Array(199).fill({})), '199');
+  assert.equal(practiceCountLabel(new Array(200).fill({})), '200+');
+  assert.equal(practiceCountLabel(null), '0');
 });

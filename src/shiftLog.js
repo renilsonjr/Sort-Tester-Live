@@ -1,6 +1,14 @@
 const KEY = 'sortTest.shiftLog.v1';
 const CAP = 200;
 
+// What the Profile's Practices tile shows (#218): how many finished Practice
+// sessions this device's log holds. The log keeps the newest CAP sessions,
+// so a full log says "200+" rather than a number it cannot know.
+export function practiceCountLabel(entries) {
+  const count = Array.isArray(entries) ? entries.length : 0;
+  return count >= CAP ? `${CAP}+` : String(count);
+}
+
 export function createShiftLog(storage) {
   let available = true;
 

@@ -47,6 +47,27 @@ def _revoke_beyond_cap(conn, account_id: UUID, now: datetime) -> None:
     )
 
 
+def revoke_other_account_sessions(conn, account_id: UUID, keep_session_id: UUID) -> int:
+    """Revoke this account's active sessions except the one given; return how many.
+
+    The player's own remedy when they think somebody else has their Quiz
+    Code (#270). It ends the other devices and leaves the one in their hand
+    signed in, so the act of protecting the account does not also lock them
+    out of it. The Quiz Code itself is untouched: only the owner can issue a
+    new one, through recovery.
+    """
+    now = datetime.now(timezone.utc)
+    result = migrate.execute(
+        conn,
+        """
+        UPDATE sessions SET revoked_at = %s
+        WHERE account_id = %s AND id <> %s AND revoked_at IS NULL
+        """,
+        (now, account_id, keep_session_id),
+    )
+    return getattr(result, "rowcount", 0)
+
+
 def purge_expired_sessions(conn) -> int:
     """Delete session rows that expired more than the grace period ago.
 

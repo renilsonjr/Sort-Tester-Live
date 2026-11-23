@@ -1,10 +1,11 @@
 import { BELT_STYLE } from './belts.js';
+import { AVATARS, avatarEmoji } from './avatars.js';
 import { formatDestinationLabel } from './destination.js?v=chart-destination-20261108-r2';
 import { SERVICE_LABEL } from './questions.js?v=chart-destination-20261108-r2';
 import { DECKS, deckById, deckLabel } from './decks.js?v=chart-destination-20261108-r2';
 import { CARD_SECONDS, createRun, currentCard, answerCard, timeoutCard, summarize } from './quiz.js?v=chart-destination-20261108-r2';
 import { createClock } from './clock.js';
-import { createShiftLog } from './shiftLog.js';
+import { createShiftLog, practiceCountLabel } from './shiftLog.js';
 import { saveWorkbook } from './exportFile.js';
 import { CHART, searchChart } from './study.js?v=chart-destination-20261108-r2';
 import { selectLevelCards } from './levels.js?v=chart-destination-20261108-r2';
@@ -406,12 +407,14 @@ async function apiRead(path) {
   } catch {
     return null;
   }
-  // The server enforces the same idle window. When it has already ended the
-  // session, every screen would otherwise show "could not load" as if the
-  // server were broken; the player is sent to the entry screen instead,
-  // told why.
+  // The server ended this session. Every screen would otherwise show
+  // "could not load" as if the server were broken, so the player is sent to
+  // the entry screen instead. No reason is named: a 401 can be the idle
+  // window, the eight-hour limit, or the player ending this device from
+  // another one (#270), and nothing here can tell which. The app's own idle
+  // timer does know, and says so in checkIdle.
   if (response.status === 401 && signedIn()) {
-    signOut(t('Your session ended because the app sat untouched. Log in to carry on.'));
+    signOut(t('Your session ended. Log in to carry on.'));
     return null;
   }
   if (!response.ok) return null;
@@ -538,6 +541,7 @@ function showProfile(tab = 'overview') {
       <div class="pf-ident">
         <div class="home-obj pf-ident-obj" id="profile-badge"></div>
         <div class="pf-ident-text">
+          <span id="profile-avatar-mark" class="pf-avatar" aria-hidden="true"></span>
           <h1 class="lab-title" id="profile-name">${esc(session?.username ?? '\u2026')}</h1>
           <p class="lab-intro" id="profile-tag">${session?.tag ? esc(`${t('Tag')} #${session.tag}`) : ''}</p>
         </div>
@@ -555,11 +559,19 @@ function showProfile(tab = 'overview') {
 // panel's own request starts at once instead of waiting behind /auth/me.
 // Only a session without them (which no entry path produces) asks the server.
 async function fillProfile(view, panel, tab) {
+  // The player's own icon, beside their name, on every tab. It comes off
+  // the session like the name does, so no request is made for it; empty
+  // until they choose one, which leaves the header as it was before #272.
+  paintProfileAvatar(view, session?.avatar);
   if (!session?.username || !session?.tag) {
     api('/auth/me').then((me) => {
       if (!me) return;
       view.querySelector('#profile-name').textContent = me.username;
       view.querySelector('#profile-tag').textContent = `${t('Tag')} #${me.tag}`;
+      // the icon rides on the session like the name does, so this only
+      // runs on the path that was already asking the server anyway (#272)
+      if (session) session.avatar = me.avatar;
+      paintProfileAvatar(view, me.avatar);
     });
   }
   if (tab === 'overview') return fillOverview(panel);
@@ -583,9 +595,11 @@ async function fillOverview(panel) {
   }
   // Profile laid out like the mock: badge, a stats grid, the climb, and a way
   // into history. Points come from the ledger; Best Ranked and Place come from
-  // the account-private stats endpoint (#218). Practices is not tracked by the
-  // backend yet, so it stays a placeholder. A failed stats read leaves the two
-  // it feeds as a dash rather than failing the whole screen.
+  // the account-private stats endpoint (#218). Practice leaves nothing on the
+  // server, so Practices is the count of finished sessions in this device's
+  // shift log, and the line under the grid says so (owner decision
+  // 2026-11-22). A failed stats read leaves the two it feeds as a dash rather
+  // than failing the whole screen.
   const DASH = '\u2014';
   const stats = await api('/ranked/profile/stats');
   const bestRanked = stats && stats.best_ranked
@@ -594,7 +608,7 @@ async function fillOverview(panel) {
   const place = stats && stats.place != null ? `#${stats.place}` : DASH;
   const tagEl = panel.closest('.lab-screen')?.querySelector('#profile-tag');
   if (tagEl) tagEl.textContent = `${tagEl.textContent} \u00b7 ${entry.badge}`;
-  // The badge sits beside the name in the identity card above the panel.
+    // The badge sits beside the name in the identity card above the panel.
   const badgeSlot = panel.closest('.lab-screen')?.querySelector('#profile-badge');
   if (badgeSlot) {
     badgeSlot.innerHTML = `<span class="home-shine" aria-hidden="true"></span><img class="home-obj-badge" src="${badgeArt(entry.badge)}" alt="${esc(entry.badge)}">`;
@@ -606,9 +620,10 @@ async function fillOverview(panel) {
     <div class="pf-stats">
       <div class="pf-stat"><b>${entry.points.toLocaleString()}</b><small>${esc(t('Points'))}</small></div>
       <div class="pf-stat"><b>${esc(bestRanked)}</b><small>${esc(t('Best Ranked'))}</small></div>
-      <div class="pf-stat"><b>${DASH}</b><small>${esc(t('Practices'))}</small></div>
+      <div class="pf-stat"><b>${esc(log.available ? practiceCountLabel(log.all()) : DASH)}</b><small>${esc(t('Practices'))}</small></div>
       <div class="pf-stat"><b>${esc(place)}</b><small>${esc(t('Place'))}</small></div>
     </div>
+    <p class="pf-stats-note">${esc(t('Practices counts the sessions in the Shift log on this device.'))}</p>
     </section>
     ${entry.mode === 'promotion' ? `
     <div class="profile-promo">
@@ -779,6 +794,105 @@ const DELETE_ACK = 'I agree to delete my account. I understand that deleting it 
 const DELETE_CONSEQUENCE = 'After deletion is completed, your profile, quiz history and points are removed. A new account starts at 0 points / Iron.';
 const DELETE_DISCLOSURE = 'Your profile, quiz history and points are deleted. We keep only a private season-ineligibility record until prizes are finalized.';
 
+// An account may be signed in on five devices at once, on purpose
+// (auth.sessions.MAX_ACTIVE_SESSIONS). This is the player's own remedy when
+// they think somebody else has their Quiz Code: end the others, keep this
+// one. The server asks for the Quiz Code first, so a stolen session alone
+// cannot sign the real player out (#270).
+// Choosing the icon shown on the profile and the leaderboard (#272). The
+// account stores a key from a fixed set of fifteen; nothing a player types
+// reaches a screen this way.
+function paintProfileAvatar(root, key) {
+  const mark = root?.querySelector('#profile-avatar-mark');
+  if (mark) mark.textContent = avatarEmoji(key);
+}
+
+function showAvatarPicker(chosen = undefined, message = null) {
+  stopTick();
+  clock = null;
+  const view = labPage(`
+    <section class="lab-screen">
+      <p class="lab-eyebrow">${esc(t('Profile'))}</p>
+      <h1 class="lab-title">${esc(t('Choose a profile icon'))}</h1>
+      <p class="lab-intro">${esc(t('Shown on your profile and the leaderboard.'))}</p>
+      <div class="avatar-grid" id="av-grid" role="group" aria-label="${esc(t('Choose a profile icon'))}">
+        ${AVATARS.map(([key, glyph]) => `
+          <button type="button" class="avatar-pick" data-avatar="${esc(key)}" aria-pressed="false" aria-label="${esc(key)}">${glyph}</button>`).join('')}
+      </div>
+      <p class="notice" id="av-said" role="status" hidden></p>
+      <button id="av-none" class="ghost" type="button">${esc(t('No icon'))}</button>
+      <button id="av-back" class="ghost" type="button">${esc(t('Back'))}</button>
+    </section>
+  `, 'profile', () => showAvatarPicker(chosen, message));
+
+  const said = view.querySelector('#av-said');
+  const mark = (key) => {
+    view.querySelectorAll('.avatar-pick').forEach((button) => {
+      button.setAttribute('aria-pressed', String(button.dataset.avatar === key));
+    });
+  };
+  const tell = (text, done = false) => {
+    said.hidden = false;
+    said.classList.toggle('done', done);
+    said.textContent = text;
+  };
+  if (message) tell(message, true);
+
+  // what the account already has, so the row in use shows as pressed
+  mark(chosen === undefined ? (session?.avatar ?? null) : chosen);
+
+  const save = async (key) => {
+    const result = await apiSend('PUT', '/auth/avatar', { avatar: key });
+    if (!result.ok) { tell(result.reason || t('That did not work.')); return; }
+    if (session) session.avatar = key;
+    mark(key);
+    tell(key === null ? t('Icon removed.') : t('Icon saved.'), true);
+  };
+  view.querySelectorAll('.avatar-pick').forEach((button) => {
+    button.addEventListener('click', () => save(button.dataset.avatar));
+  });
+  view.querySelector('#av-none').addEventListener('click', () => save(null));
+  view.querySelector('#av-back').addEventListener('click', () => showProfile('settings'));
+  return view;
+}
+
+function showSignOutOthers() {
+  stopTick();
+  clock = null;
+  const view = labPage(`
+    <section class="lab-screen">
+      <p class="lab-eyebrow">${esc(t('Settings'))}</p>
+      <h1 class="lab-title">${esc(t('Sign out my other devices'))}</h1>
+      <p class="lab-intro">${esc(t('Ends every other phone or computer signed in to your account. This one stays.'))}</p>
+      <p class="lab-intro">${esc(t('Your Quiz Code keeps working. Anyone using it elsewhere has to enter it again.'))}</p>
+      <p class="notice" id="signout-others-said" role="status" hidden></p>
+      <button id="signout-others-go" class="primary" type="button">${esc(t('Sign out my other devices'))}</button>
+      <button id="signout-others-cancel" class="ghost" type="button">${esc(t('Cancel'))}</button>
+    </section>
+  `, 'profile', showSignOutOthers);
+
+  const said = view.querySelector('#signout-others-said');
+  const go = view.querySelector('#signout-others-go');
+  view.querySelector('#signout-others-cancel').addEventListener('click', () => showProfile('settings'));
+  go.addEventListener('click', async () => {
+    go.disabled = true;
+    const result = await apiSendOwner('POST', '/auth/sessions/revoke-others');
+    said.hidden = false;
+    if (!result.ok) {
+      said.classList.remove('done');
+      said.textContent = `${result.reason || t('That did not work.')} ${t('Nothing was changed.')}`;
+      go.disabled = false;
+      return;
+    }
+    said.classList.add('done');
+    const ended = result.data?.ended ?? 0;
+    said.textContent = ended === 0
+      ? t('No other device was signed in.')
+      : t(ended === 1 ? '{count} other device was signed out.' : '{count} other devices were signed out.', { count: ended });
+  });
+  return view;
+}
+
 function showDeleteAccount() {
   stopTick();
   clock = null;
@@ -884,6 +998,16 @@ async function fillSettings(panel) {
       <span><strong>${esc(t('Log out'))}</strong><small>${esc(t('Ends this session on this device. Your points and history stay.'))}</small></span>
       <span class="lab-arrow" aria-hidden="true">\u2192</span>
     </button>
+    <button id="profile-avatar" class="lab-choice" type="button">
+      <span class="lab-choice-icon" id="profile-avatar-now">\u25cb</span>
+      <span><strong>${esc(t('Profile icon'))}</strong><small>${esc(t('Shown on your profile and the leaderboard.'))}</small></span>
+      <span class="lab-arrow" aria-hidden="true">\u2192</span>
+    </button>
+    <button id="profile-signout-others" class="lab-choice" type="button">
+      <span class="lab-choice-icon">\u29c9</span>
+      <span><strong>${esc(t('Sign out my other devices'))}</strong><small>${esc(t('Ends every other phone or computer signed in to your account. This one stays.'))}</small></span>
+      <span class="lab-arrow" aria-hidden="true">\u2192</span>
+    </button>
     <button id="profile-delete" class="lab-choice lab-choice-quiz" type="button">
       <span class="lab-choice-icon">!</span>
       <span><strong>${esc(t('Delete account'))}</strong><small>${esc(t('Removes your profile, history and points.'))}</small></span>
@@ -892,6 +1016,8 @@ async function fillSettings(panel) {
   `;
   panel.querySelector('#profile-support').addEventListener('click', showSupport);
   panel.querySelector('#profile-logout').addEventListener('click', () => signOut());
+  panel.querySelector('#profile-avatar').addEventListener('click', () => showAvatarPicker());
+  panel.querySelector('#profile-signout-others').addEventListener('click', showSignOutOthers);
   panel.querySelector('#profile-delete').addEventListener('click', showDeleteAccount);
   // One account in the whole app is the owner's. For everybody else the
   // row stays absent rather than disabled: a locked door still says there
@@ -905,9 +1031,11 @@ async function fillSettings(panel) {
 // Owner tools (#11), built to the screens approved on 2026-11-15.
 //
 // Scoped on purpose: approving prize eligibility, approving access
-// recovery in person, and reviewing cases. There is no player list, no
-// points screen, no history browser and no ban button, because the owner
-// was never granted those. What is missing here is missing on purpose.
+// recovery in person, reviewing cases, and removing an account that should
+// not exist (#271). The account list carries a name, a tag and a date and
+// nothing of a player's record: there is still no points screen and no
+// history browser, because the owner was never granted those. What is
+// missing here is missing on purpose.
 function showOwnerTools() {
   stopTick();
   clock = null;
@@ -941,9 +1069,15 @@ function showOwnerTools() {
         <span><strong>${esc(t('Case review'))}</strong><small>${esc(t('Tickets players opened, and connection flags.'))}</small></span>
         <span class="lab-arrow" aria-hidden="true">→</span>
       </button>
+      <button id="owner-accounts" class="lab-choice" type="button">
+        <span class="lab-choice-icon">\u2715</span>
+        <span><strong>${esc(t('Accounts'))}</strong><small>${esc(t('Remove an account that should not exist.'))}</small></span>
+        <span class="lab-arrow" aria-hidden="true">\u2192</span>
+      </button>
       <button id="owner-back" class="ghost">${esc(t('Back to Profile'))}</button>
     </section>
   `, 'profile', showOwnerTools);
+  view.querySelector('#owner-accounts').addEventListener('click', () => showOwnerAccounts());
   view.querySelector('#owner-eligibility').addEventListener('click', () => showOwnerEligibility());
   view.querySelector('#owner-recovery').addEventListener('click', () => showRecovery());
   view.querySelector('#owner-messages').addEventListener('click', () => showRecoveryMessages());
@@ -1069,6 +1203,119 @@ function confirmWithdraw(accountId, username) {
       result.ok ? `${t('Withdrawn')}: ${username}.` : (result.reason || t('That did not work. Nothing has been changed.')),
       !result.ok,
     );
+  });
+  return view;
+}
+
+// Accounts (#271). The owner removes an account that should not exist: a
+// test, a duplicate, somebody who left. It is the player's own deletion
+// with a different person asking, so it ends the same way and cannot be
+// undone; the tag typed by hand is what stops a slip on a long list.
+function showOwnerAccounts(message = null, bad = false) {
+  stopTick();
+  clock = null;
+  const view = labPage(`
+    <section class="lab-screen">
+      <p class="lab-eyebrow">${esc(t('Owner'))}</p>
+      <h1 class="lab-title">${esc(t('Accounts'))}</h1>
+      ${message ? `<div class="board-notice${bad ? ' board-notice-bad' : ''}" role="status"><p>${esc(message)}</p></div>` : ''}
+      <div id="acct-panel"><p class="lab-intro" role="status">${esc(t('Loading…'))}</p></div>
+      <button id="acct-back" class="ghost">${esc(t('Back to Owner tools'))}</button>
+    </section>
+  `, 'profile', () => showOwnerAccounts(message, bad));
+  view.querySelector('#acct-back').addEventListener('click', showOwnerTools);
+  fillOwnerAccounts(view.querySelector('#acct-panel'));
+  return view;
+}
+
+function accountRowLine(row) {
+  const parts = [`#${row.tag}`, `${t('created')} ${new Date(row.created_at).toLocaleDateString()}`];
+  if (row.approved) parts.push(t('Approved for prizes'));
+  if (row.has_played) parts.push(t('Has played'));
+  return parts.join(' \u00b7 ');
+}
+
+async function fillOwnerAccounts(panel) {
+  const body = await api('/ranked/owner/accounts');
+  if (!body) {
+    panel.innerHTML = `<div class="board-notice board-notice-bad"><h2>${esc(t('Could not load the accounts'))}</h2><p>${esc(t('Nothing has been changed. Try again in a moment.'))}</p></div>`;
+    return;
+  }
+  const accounts = body.accounts ?? [];
+  panel.innerHTML = `
+    <p class="lab-intro">${esc(t('Every account, newest first. This list shows a name, a tag and a date, and nothing of anybody’s points or history.'))}</p>
+    <label class="field"><span>${esc(t('Find by name or tag'))}</span>
+      <input id="acct-find" type="search" autocomplete="off"></label>
+    <h2 class="owner-count">${esc(t('Accounts'))} (${accounts.length})</h2>
+    <ul class="approved" id="acct-list">${accounts.map((row) => `
+      <li data-find="${esc(`${row.username} ${row.tag}`.toLowerCase())}">
+        <span class="approved-who">
+          <b>${esc(row.username)}</b>
+          <small>${esc(accountRowLine(row))}</small>
+        </span>
+        ${row.is_owner
+          ? `<small class="acct-you">${esc(t('You'))}</small>`
+          : `<button class="ghost owner-danger acct-delete" type="button" data-account="${esc(row.account_id)}">${esc(t('Delete'))}</button>`}
+      </li>`).join('')}</ul>
+    <p class="lab-intro" id="acct-none" hidden>${esc(t('No account matches.'))}</p>
+  `;
+  const byId = new Map(accounts.map((row) => [row.account_id, row]));
+  panel.querySelectorAll('.acct-delete').forEach((button) => {
+    button.addEventListener('click', () => confirmOwnerDelete(byId.get(button.dataset.account)));
+  });
+  const find = panel.querySelector('#acct-find');
+  find.addEventListener('input', () => {
+    const wanted = find.value.trim().replace(/^#/, '').toLowerCase();
+    let shown = 0;
+    panel.querySelectorAll('#acct-list li').forEach((item) => {
+      item.hidden = !item.dataset.find.includes(wanted);
+      if (!item.hidden) shown += 1;
+    });
+    panel.querySelector('#acct-none').hidden = shown > 0;
+  });
+}
+
+function confirmOwnerDelete(row) {
+  const view = labPage(`
+    <section class="lab-screen">
+      <p class="lab-eyebrow">${esc(t('Owner'))}</p>
+      <h1 class="lab-title">${esc(t('Delete this account?'))}</h1>
+      <div class="owner-form">
+        <p class="acct-name"><b>${esc(row.username)}</b></p>
+        <p class="acct-meta">${esc(accountRowLine(row))}</p>
+      </div>
+      <div class="delete-warn">
+        <h2>${esc(t('This cannot be undone'))}</h2>
+        <p>${esc(t('This person is signed out at once and their profile, points and history are removed. They leave the leaderboard, and whoever was below them moves up.'))}</p>
+        ${row.approved ? `<p>${esc(t('This account is approved for prizes. Deleting it takes this sorter out of this season: they cannot be approved again, on this or any other account.'))}</p>` : ''}
+      </div>
+      <label class="field">
+        <span>${esc(t('Type this account’s tag to confirm'))}</span>
+        <input id="acct-tag" type="text" autocomplete="off" autocapitalize="characters">
+      </label>
+      <p class="notice" id="acct-error" hidden></p>
+      <button id="acct-keep" class="primary" type="button">${esc(t('Keep it'))}</button>
+      <button id="acct-go" class="ghost owner-danger" type="button" disabled>${esc(t('Delete account'))}</button>
+    </section>
+  `, 'profile', () => confirmOwnerDelete(row));
+  const typed = view.querySelector('#acct-tag');
+  const go = view.querySelector('#acct-go');
+  const error = view.querySelector('#acct-error');
+  const cleaned = () => typed.value.trim().replace(/^#/, '').trim().toUpperCase();
+  typed.addEventListener('input', () => { go.disabled = cleaned() !== row.tag; });
+  view.querySelector('#acct-keep').addEventListener('click', () => showOwnerAccounts());
+  go.addEventListener('click', async () => {
+    go.disabled = true;
+    const result = await apiSendOwner('POST', `/ranked/owner/accounts/${row.account_id}/delete`, {
+      confirm_tag: typed.value,
+    });
+    if (result.ok) {
+      showOwnerAccounts(`${t('Deleted')}: ${row.username} #${row.tag}.`);
+      return;
+    }
+    go.disabled = cleaned() !== row.tag;
+    error.textContent = result.reason || t('That did not work. Nothing has been changed.');
+    error.hidden = false;
   });
   return view;
 }
@@ -1696,7 +1943,7 @@ async function fillLeaderboard(panel) {
   const slot = (row, cls) => !row ? '' : `
     <div class="pslot ${cls}${row.you ? ' pslot-you' : ''}">
       ${row.hat ? '<div class="pcrown" aria-hidden="true">♛</div>' : ''}
-      <div class="pdisc">${row.hat ? '♛' : esc(row.username.slice(0, 1).toUpperCase())}</div>
+      <div class="pdisc">${row.hat ? '♛' : (avatarEmoji(row.avatar) || esc(row.username.slice(0, 1).toUpperCase()))}</div>
       <div class="pname">${esc(row.username)}</div>
       <div class="ppts">◆ ${row.points.toLocaleString()}</div>
       <div class="ppillar">${row.place}</div>
@@ -1709,7 +1956,7 @@ async function fillLeaderboard(panel) {
     <li class="${row.you ? 'board-you' : ''}${row.hat ? ' board-hat' : (row.tied ? ' board-tied' : '')}">
       <span class="board-place">${row.hat ? '♛' : row.place}</span>
       <span class="board-who">
-        <b>${esc(row.username)}</b>
+        <b>${avatarEmoji(row.avatar) ? `<span class="board-avatar" aria-hidden="true">${avatarEmoji(row.avatar)}</span>` : ''}${esc(row.username)}</b>
         <small>#${esc(row.tag)} · ${esc(row.badge)}${row.you ? ` · ${esc(t('your place'))}` : ''}</small>
       </span>
       <b class="board-points">${row.points.toLocaleString()}</b>
@@ -1905,17 +2152,56 @@ async function attemptFetch(...args) {
   }
 }
 
+// How long to wait before trying again on our own, after the server says a
+// previous match is still closing. The server ends a page that went quiet
+// 15 seconds after its last heartbeat (engine.GRACE_SECONDS); one second
+// more keeps us on the far side of it (#269).
+const GRACE_RETRY_MS = 16000;
+
+// A player who left the tab mid-match comes back to a match the server has
+// already closed, or is about to: for those seconds, starting a new one is
+// refused. Saying so, and trying again, beats printing the server's own
+// English phrase on a screen with nowhere to go (#269).
+function showPreparingNextMatch(mode) {
+  const view = labPage(`
+    <section class="lab-screen">
+      <p class="lab-eyebrow">${esc(t('Ranked'))}</p>
+      <h1 class="lab-title">${esc(t('Preparing your next match'))}</h1>
+      <p class="lab-intro">${esc(t('Your last match is still closing. This takes a few seconds.'))}</p>
+      <button id="rq-retry" class="primary" type="button">${esc(t('Try again'))}</button>
+      <button id="rq-retry-back" class="ghost" type="button">${esc(t('Back to Ranked'))}</button>
+    </section>
+  `, 'ranked', () => showPreparingNextMatch(mode));
+  const again = () => { if (view.isConnected) startRankedAttempt(mode); };
+  view.querySelector('#rq-retry').addEventListener('click', again);
+  view.querySelector('#rq-retry-back').addEventListener('click', showRanked);
+  // and on its own, once the closing window has passed, so a player who
+  // simply waits is taken into the match without touching anything
+  setTimeout(again, GRACE_RETRY_MS);
+  return view;
+}
+
 async function startRankedAttempt(mode) {
   const attempt = createAttemptClient({ fetchFn: attemptFetch });
   const started = await attempt.start('/ranked/attempts', { mode });
   if (!started.ok) {
-    // The season can close between this screen loading and the tap.
-    const closed = started.status === 409 && started.data?.detail === 'No open season';
-    const reason = closed
+    // Every refusal the server can give here, said in the player's own
+    // language. Its `detail` is an English phrase for the log, never a
+    // sentence to show (#269).
+    const detail = started.status === 409 ? started.data?.detail : null;
+    if (detail === 'Active attempt exists') {
+      showPreparingNextMatch(mode);
+      return;
+    }
+    const reason = detail === 'No open season'
       ? t('The season is closed, so no new Ranked quiz can start.')
-      : started.status === 409
-        ? (started.data?.detail || t('That did not work. Nothing has started.'))
-        : t('Could not reach the server. Nothing has started.');
+      : detail === 'Promotion required'
+        ? t('You are at the cap, so the next Ranked quiz is a promotion.')
+        : detail === 'Promotion not available'
+          ? t('Promotion needs you at the cap. Play ordinary Ranked to get there.')
+          : started.status === 409
+            ? t('That did not work. Nothing has started.')
+            : t('Could not reach the server. Nothing has started.');
     comingSoon(t('Ranked'), t('Could not start'), reason, 'ranked',
       { label: 'Back to Ranked', go: showRanked });
     return;
@@ -2013,9 +2299,9 @@ function showRankedFeedback(attempt, mode, q, chosen, response, tally) {
   const right = response.outcome === 'correct';
   const where = destinationLine(q);
   const promoCorrect = mode === 'promotion' && right;
-  // A wrong answer does not end a promotion attempt: the engine plays out
-  // all fifteen, the pass is gone and each mistake still deducts its
-  // ordinary points (backend.ranked.scoring._promotion_result).
+  // A wrong or late answer ends a promotion attempt on the spot (#268):
+  // the engine completes it with that answer, nothing else is asked, and
+  // the one miss deducts its ordinary points. `response.finished` is true.
   const promoLost = mode === 'promotion' && !right;
   const verdict = right
     ? (mode === 'promotion' ? t('Correct · still perfect') : t('Correct'))
@@ -2046,10 +2332,10 @@ function showRankedFeedback(attempt, mode, q, chosen, response, tally) {
           t('It keeps the attempt alive. Only passing all fifteen changes your balance, and it sets you to the next cap.'),
         ) : `<p class="rq-why">${esc(language.code === 'es' ? response.explanation_es : response.explanation_en)}</p>`}
       ${promoLost ? boardNotice(
-          t('This promotion is lost'),
-          t('Promotion needs all fifteen right. The attempt plays out, and every mistake from here still takes points off your balance.'),
+          t('This promotion ends here'),
+          t('Promotion needs all fifteen right, so it stops at the first miss. This mistake takes its points off your balance. Reach the cap again to try next time.'),
         ) : ''}
-      <button id="rq-next" class="primary" type="button">${esc(t('Next'))}</button>
+      <button id="rq-next" class="primary" type="button">${esc(t(promoLost ? 'See the result' : 'Next'))}</button>
     </section>
   `, 'ranked', () => showRankedFeedback(attempt, mode, q, chosen, response, tally));
   view.querySelector('#rq-next').addEventListener('click', async () => {
@@ -2145,6 +2431,7 @@ function showRankedResult(mode, result, tally, { quit = false, attemptId = null 
         <div class="profile-bar home-meter"><i style="width:${Math.round((tally.correctCount / 15) * 100)}%"></i></div>
       </div>
       ${result.final_outcome === 'season_close' ? `<p class="lab-intro" id="rq-season-close">${esc(t('The season closed before you finished. What you had scored counts, with no penalty.'))}</p>` : ''}
+      ${result.final_outcome === 'disconnect' ? `<p class="lab-intro" id="rq-disconnect">${esc(t('The app lost contact with the server, so the match was closed. Questions already answered counted; one left unanswered counted as a timeout.'))}</p>` : ''}
       <p class="lab-eyebrow">${esc(t('Points'))}</p>
       ${rankedSum(result, quit)}
       ${droppedBadge ? boardNotice(
@@ -2335,7 +2622,7 @@ function showPromotionOffer(entry) {
       </div>
       <ol class="lab-rules">
         <li>${esc(t('15 questions. You need every one of them right.'))}</li>
-        <li>${esc(t('One wrong answer or timeout and the promotion is lost. The attempt still plays out, and mistakes deduct points.'))}</li>
+        <li>${esc(t('One wrong answer or timeout ends the promotion right there, and that mistake deducts its points.'))}</li>
         <li>${esc(t('Losing points drops you below the cap, so promotion is not available again until you earn them back.'))}</li>
         <li>${esc(t('Passing sets you to'))} ${((BADGE_CAP[entry.badge] ?? entry.points) + 1).toLocaleString()} ${esc(t('points and'))} ${esc(next || entry.badge)}.</li>
       </ol>

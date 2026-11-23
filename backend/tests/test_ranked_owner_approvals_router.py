@@ -185,13 +185,15 @@ class OwnerApprovalsRouterTests(unittest.TestCase):
             {"account_id", "username", "tag", "roster_reference", "established_at"},
         )
 
-    def test_there_is_no_player_listing_endpoint_here(self):
-        """The owner may approve a tag they were given; they cannot browse
-        the players, because no such power was granted."""
+    def test_there_is_no_player_record_endpoint_here(self):
+        """The owner cannot browse players' records, because no such power
+        was granted. Since the owner decision of 2026-11-22 (#271) there is
+        a list of accounts, to choose one to delete; what it may carry is
+        pinned in test_owner_account_deletion, and it is not a record."""
         for path in (
             "/api/ranked/owner/players",
-            "/api/ranked/owner/accounts",
             "/api/ranked/owner/history",
+            "/api/ranked/owner/points",
         ):
             with self.subTest(path=path):
                 self.assertEqual(self.owner.get(path).status_code, 404)
