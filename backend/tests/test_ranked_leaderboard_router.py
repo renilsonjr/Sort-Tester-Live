@@ -235,7 +235,7 @@ class LeaderboardRouterTests(unittest.TestCase):
         self.assertEqual([row["hat"] for row in body["rows"]], [False])
         self.assertEqual(
             set(body["rows"][0]),
-            {"place", "username", "tag", "points", "badge", "tied", "you", "hat"},
+            {"place", "username", "tag", "points", "badge", "avatar", "tied", "you", "hat"},
         )
 
     def test_pre_season_hides_a_deleted_player(self):
@@ -277,14 +277,18 @@ class LeaderboardRouterTests(unittest.TestCase):
         self.assertEqual([row["tied"] for row in rows], [True, True, False])
 
     def test_a_row_carries_no_private_field(self):
-        """No account id, no ticket, no flag, no timestamp of any kind."""
+        """No account id, no ticket, no flag, no timestamp of any kind.
+
+        ``avatar`` joined the row in #272: a key from a fixed set of fifteen
+        that the player chose to be shown here, carrying nothing they typed.
+        """
         season_id = self._official_season()
         me = self._sign_in(self.client, "dock_owl")
         self._make_eligible(me, season_id, 900)
         row = self.client.get("/api/ranked/leaderboard").json()["rows"][0]
         self.assertEqual(
             set(row),
-            {"place", "username", "tag", "points", "badge", "tied", "you", "hat"},
+            {"place", "username", "tag", "points", "badge", "avatar", "tied", "you", "hat"},
         )
 
     def test_the_board_says_nothing_about_a_deleted_player(self):

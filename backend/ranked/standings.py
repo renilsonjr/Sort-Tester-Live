@@ -57,6 +57,9 @@ class Standing:
     points: int
     badge: str
     tied: bool
+    # the key of the icon this player chose, or None (#272). A key, never
+    # the emoji and never anything a player typed.
+    avatar: str | None = None
 
 
 def eligible_accounts(conn, season_id) -> list[UUID]:
@@ -91,7 +94,7 @@ def eligible_accounts(conn, season_id) -> list[UUID]:
 # depends on it. Everything else -- not deleted, one completed Ranked quiz
 # in that season, the order -- is the same on purpose.
 _BOARD_SQL = """
-    SELECT a.id, a.username, a.tag, COALESCE(b.current_points, 0) AS points
+    SELECT a.id, a.username, a.tag, a.avatar, COALESCE(b.current_points, 0) AS points
     FROM accounts a
     {approval_join}
     LEFT JOIN balances b ON b.account_id = a.id
@@ -195,6 +198,7 @@ def place_rows(rows) -> list[Standing]:
                 points=points,
                 badge=ranks.badge_for(points),
                 tied=False,
+                avatar=row.get("avatar"),
             )
         )
     # A row is tied when it shares its place with another row.

@@ -71,6 +71,13 @@
   .notice { margin: 0; color: var(--bad); font-size: 14px; font-weight: 600; }
   /* The same line after an action that worked: a result, not a warning. */
   .notice.done { color: var(--good); }
+  /* The fifteen profile icons (#272): a tappable grid, 48px targets. */
+  .avatar-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin: 4px 0 10px; }
+  .avatar-pick { min-height: 56px; font-size: 26px; line-height: 1; border: 1px solid var(--line); border-radius: 14px; background: var(--panel); cursor: pointer; }
+  .avatar-pick[aria-pressed="true"] { border-color: var(--gold); box-shadow: inset 0 0 0 2px var(--gold); }
+  .avatar-pick:focus-visible { outline: 3px solid var(--gold); outline-offset: 2px; }
+  .pf-avatar:not(:empty) { margin-right: 8px; }
+  .board-avatar { margin-right: 6px; }
   .warn { margin: 0; color: var(--muted); font-size: 13px; }
   .disclaimer {
     margin: 8px 0 0; padding: 14px 16px; border: 1px solid var(--line);
