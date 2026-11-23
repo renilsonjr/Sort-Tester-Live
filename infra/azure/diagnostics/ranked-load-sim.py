@@ -37,6 +37,11 @@ STOP RULE. `run` stops starting and playing quizzes, and says why, when:
 - the file named by --stop-file exists (create it to stop by hand); or
 - Ctrl-C.
 
+Against a hosted app use --ramp-seconds: a login costs the server seconds
+of password hashing, so thirty logins in one second measure the sign-in
+and not the play. On 2026-11-23 the hosted run was stopped by the slow
+rule with 16 players in, with a 2-minute and with a 10-minute ramp alike.
+
 A stopped run still writes its report. Attempts left open end by the
 app's own rules when their account is next heard from, so wait a minute
 before `reconcile`.
@@ -327,7 +332,12 @@ async def play_one(run, client, me, username, end_at):
         run.finished.setdefault(username, []).append(aid)
 
 
-async def player(run, me, account, end_at):
+async def player(run, me, account, end_at, wait=0.0):
+    # players arrive one after another: a login costs the server seconds of
+    # password hashing, and thirty people do not sign in within one second
+    await pause(run, wait)
+    if run.stop.is_set():
+        return
     async with run.client() as client:
         username = await run.login(client, account)
         if username is None:
@@ -368,12 +378,13 @@ async def do_run(args):
     started = time.time()
     end_at = started + args.seconds
     guard = asyncio.create_task(watchdog(run, started, args.stop_file))
-    await asyncio.gather(*(player(run, i, account, end_at) for i, account in enumerate(accounts)))
+    step = args.ramp_seconds / len(accounts)
+    await asyncio.gather(*(player(run, i, account, end_at, i * step) for i, account in enumerate(accounts)))
     reason = run.stopped_because
     run.stop.set()
     await guard
     report = {
-        "players": len(accounts), "planned_seconds": args.seconds,
+        "players": len(accounts), "planned_seconds": args.seconds, "ramp_seconds": args.ramp_seconds,
         "wall_seconds": round(time.time() - started, 1),
         "stopped_early": reason, "counters": run.counters,
         **run.summary(), "finished_attempts": run.finished,
@@ -553,6 +564,8 @@ def _arguments(argv=None):
     run = step("run", "play Ranked quizzes and measure")
     run.add_argument("--players", type=int, default=0, help="use only the first N accounts (0: all)")
     run.add_argument("--seconds", type=float, default=900.0, help="how long players keep starting quizzes")
+    run.add_argument("--ramp-seconds", type=float, default=0.0,
+                     help="spread the logins over this long; --seconds counts from the start, ramp included")
     run.add_argument("--out", required=True, help="where to write the JSON report")
     run.add_argument("--stop-file", default="", help="the run stops when this file exists")
     reconcile = step("reconcile", "check balances against histories")
