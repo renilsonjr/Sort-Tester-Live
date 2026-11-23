@@ -13,7 +13,7 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
 from pydantic import BaseModel, Field
 
-from backend.auth import eligibility, reauth, recovery, recovery_messages
+from backend.auth import deletion, eligibility, reauth, recovery, recovery_messages
 from backend.auth.deletion import purge_deleted_accounts
 from backend.auth.service import get_account_by_session
 from backend.auth import sessions as auth_sessions
@@ -747,6 +747,98 @@ def withdraw_approval(
 # exists, so the two steps are separate calls rather than one.
 class RecoveryOpenRequest(BaseModel):
     tag: str
+
+
+class OwnerDeletionLookup(BaseModel):
+    tag: str
+
+
+class OwnerDeletionRequest(BaseModel):
+    tag: str
+    acknowledge: bool = False
+
+
+def _deletion_target(conn, payload_tag: str):
+    """Resolve the tag the owner typed, or refuse this one deletion (422)."""
+    try:
+        return eligibility.account_id_for_tag(conn, payload_tag)
+    except eligibility.EligibilityError as error:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=error.reason
+        ) from None
+
+
+def _deletion_refusal(error: deletion.DeletionError) -> HTTPException:
+    if isinstance(error, deletion.NotOwnerError):
+        return HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden")
+    if isinstance(error, deletion.OwnerAccountError):
+        return HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="The owner account cannot be deleted.",
+        )
+    return HTTPException(
+        status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+        detail="There is no active account with that tag.",
+    )
+
+
+@router.post("/owner/deletions/lookup")
+def look_up_account_to_delete(
+    request: Request,
+    payload: OwnerDeletionLookup,
+    account: dict = Depends(_current_account),
+    conn=Depends(get_db),
+):
+    """Who the owner is about to delete, so the screen can show it first.
+
+    Narrow on purpose (#271): the name and tag to check against the person,
+    plus whether this deletion takes anything off the leaderboard. It is not
+    a player lookup -- the caller must already know the tag, and no points,
+    history or answers are returned.
+    """
+    _require_owner(account)
+    _require_recent_reauth(request, conn)
+    target_id = _deletion_target(conn, payload.tag)
+    try:
+        return deletion.describe_for_owner(conn, account["id"], target_id)
+    except deletion.DeletionError as error:
+        raise _deletion_refusal(error) from None
+
+
+@router.post("/owner/deletions")
+def delete_account_as_owner(
+    request: Request,
+    payload: OwnerDeletionRequest,
+    account: dict = Depends(_current_account),
+    conn=Depends(get_db),
+):
+    """Delete an account that should not exist. Cannot be undone.
+
+    The same deletion a player can ask for (#47), authorised by the owner's
+    own Quiz Code instead of the player's. The account is locked out at once
+    and purged on the next auth request.
+    """
+    _require_owner(account)
+    _require_recent_reauth(request, conn)
+    if payload.acknowledge is not True:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="Acknowledge that deletion cannot be undone",
+        )
+    target_id = _deletion_target(conn, payload.tag)
+    tag = migrate.fetch_one(
+        conn, "SELECT tag FROM accounts WHERE id = %s", (target_id,)
+    )["tag"]
+    try:
+        deletion.owner_delete(conn, account["id"], target_id, clock=_CLOCK)
+    except deletion.DeletionError as error:
+        raise _deletion_refusal(error) from None
+    except deletion.deletion_list.DeletionListUnavailable:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="The deletion record could not be written. Nothing was deleted.",
+        ) from None
+    return {"deleted": True, "tag": tag}
 
 
 @router.get("/owner/recoveries")

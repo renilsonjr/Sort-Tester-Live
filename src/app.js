@@ -958,6 +958,77 @@ async function fillSettings(panel) {
 // recovery in person, and reviewing cases. There is no player list, no
 // points screen, no history browser and no ban button, because the owner
 // was never granted those. What is missing here is missing on purpose.
+// Deleting somebody else's account (#271). Two steps on purpose: the owner
+// types the tag the sorter read out, reads back who that is, and only then
+// is the deletion offered. The server asks for the owner's Quiz Code before
+// either step, so a borrowed signed-in phone cannot do this.
+function showOwnerDeleteAccount() {
+  stopTick();
+  clock = null;
+  let found = null;
+  const view = labPage(`
+    <section class="lab-screen">
+      <p class="lab-eyebrow">${esc(t('Owner'))}</p>
+      <h1 class="lab-title">${esc(t('Delete an account'))}</h1>
+      <p class="lab-intro">${esc(t('Deleting removes the account, its points and its history. It cannot be undone.'))}</p>
+      <label class="field"><span>${esc(t('Player tag'))}</span>
+        <input id="od-tag" type="text" autocomplete="off" spellcheck="false" placeholder="ABC123"></label>
+      <button id="od-look" class="primary" type="button">${esc(t('Look up'))}</button>
+      <div id="od-found" hidden></div>
+      <p class="notice" id="od-said" role="status" hidden></p>
+      <button id="od-back" class="ghost" type="button">${esc(t('Back'))}</button>
+    </section>
+  `, 'profile', showOwnerDeleteAccount);
+
+  const card = view.querySelector('#od-found');
+  const said = view.querySelector('#od-said');
+  const look = view.querySelector('#od-look');
+  view.querySelector('#od-back').addEventListener('click', showOwnerTools);
+
+  const tell = (message, done = false) => {
+    said.hidden = false;
+    said.classList.toggle('done', done);
+    said.textContent = message;
+  };
+
+  look.addEventListener('click', async () => {
+    const tag = view.querySelector('#od-tag').value.trim();
+    card.hidden = true;
+    said.hidden = true;
+    if (!tag) { tell(t('A player tag is required.')); return; }
+    look.disabled = true;
+    const result = await apiSendOwner('POST', '/ranked/owner/deletions/lookup', { tag });
+    look.disabled = false;
+    if (!result.ok) { tell(result.reason || t('That did not work.')); return; }
+    found = result.data;
+    card.innerHTML = `
+      <div class="sum">
+        <div><span>${esc(t('Name'))}</span><b>${esc(found.username)}</b></div>
+        <div><span>${esc(t('Tag'))}</span><b>#${esc(found.tag)}</b></div>
+      </div>
+      ${found.finished_attempts > 0 ? `<p class="notice">${esc(t('{count} finished Ranked matches will leave the leaderboard.', { count: found.finished_attempts }))}</p>` : ''}
+      ${found.approved_for_prizes ? `<p class="notice">${esc(t('This account is approved for prizes this season.'))}</p>` : ''}
+      <label class="delete-ack">
+        <input type="checkbox" id="od-ack">
+        <span>${esc(t('I understand this cannot be undone.'))}</span>
+      </label>
+      <button id="od-go" class="primary delete-danger" type="button" disabled>${esc(t('Delete an account'))}</button>`;
+    card.hidden = false;
+    const ack = card.querySelector('#od-ack');
+    const go = card.querySelector('#od-go');
+    ack.addEventListener('change', () => { go.disabled = !ack.checked; });
+    go.addEventListener('click', async () => {
+      go.disabled = true;
+      const gone = await apiSendOwner('POST', '/ranked/owner/deletions', { tag: found.tag, acknowledge: true });
+      if (!gone.ok) { tell(gone.reason || t('That did not work.')); go.disabled = false; return; }
+      card.hidden = true;
+      view.querySelector('#od-tag').value = '';
+      tell(t('Account deleted.'), true);
+    });
+  });
+  return view;
+}
+
 function showOwnerTools() {
   stopTick();
   clock = null;
@@ -991,6 +1062,11 @@ function showOwnerTools() {
         <span><strong>${esc(t('Case review'))}</strong><small>${esc(t('Tickets players opened, and connection flags.'))}</small></span>
         <span class="lab-arrow" aria-hidden="true">→</span>
       </button>
+      <button id="owner-delete" class="lab-choice lab-choice-quiz" type="button">
+        <span class="lab-choice-icon">!</span>
+        <span><strong>${esc(t('Delete an account'))}</strong><small>${esc(t('Remove a test, duplicate or former sorter’s account.'))}</small></span>
+        <span class="lab-arrow" aria-hidden="true">\u2192</span>
+      </button>
       <button id="owner-back" class="ghost">${esc(t('Back to Profile'))}</button>
     </section>
   `, 'profile', showOwnerTools);
@@ -1005,6 +1081,7 @@ function showOwnerTools() {
     }
   });
   view.querySelector('#owner-cases').addEventListener('click', () => showCases());
+  view.querySelector('#owner-delete').addEventListener('click', () => showOwnerDeleteAccount());
   view.querySelector('#owner-select').addEventListener('click', () => showSelection());
   // the row says when something is waiting, so the owner does not have to
   // open the screen to find out
