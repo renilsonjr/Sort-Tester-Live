@@ -442,29 +442,10 @@
   .belts .belt:disabled { opacity: .5; }
   .belts .belt.picked { opacity: 1; outline: 3px solid var(--ink); outline-offset: 2px; }
 
-  /* Interactive quiz feedback: correct green glow & incorrect red shake */
-  .belt.belt-correct {
-    opacity: 1 !important;
-    animation: correctGlow 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
-    z-index: 2;
-  }
-  .belt.belt-incorrect {
-    opacity: 1 !important;
-    animation: incorrectShake 0.5s ease-in-out forwards;
-    z-index: 2;
-  }
-
-  @keyframes correctGlow {
-    0% { box-shadow: 0 0 0 0 rgba(34, 100, 66, 0.9); transform: scale(1); }
-    40% { box-shadow: 0 0 0 6px rgba(34, 100, 66, 0.4), 0 0 26px 8px var(--good); transform: scale(1.04); filter: brightness(1.15); }
-    100% { box-shadow: 0 0 0 4px rgba(34, 100, 66, 0.7), 0 0 16px 3px var(--good); transform: scale(1.02); }
-  }
-
-  @keyframes incorrectShake {
-    0%, 100% { box-shadow: 0 0 0 0 rgba(161, 45, 45, 0.8); transform: translateX(0); }
-    20%, 60% { box-shadow: 0 0 0 5px rgba(161, 45, 45, 0.4), 0 0 20px 4px var(--bad); transform: translateX(-5px); filter: brightness(1.15); }
-    40%, 80% { box-shadow: 0 0 0 5px rgba(161, 45, 45, 0.4), 0 0 20px 4px var(--bad); transform: translateX(5px); filter: brightness(1.15); }
-  }
+  /* The quiz feedback rules and their keyframes used to be declared twice,
+     identically, here and ~400 lines further down. The second copy won, so
+     nothing ever looked wrong -- the risk was editing one and leaving the
+     other behind. Only the later copy survives (#350). */
   .lab-rules { margin: 4px 0 10px 0; padding-left: 20px; color: var(--ink); font-size: 14px; line-height: 1.5; display: flex; flex-direction: column; gap: 6px; }
 
   /* Ranked and promotion feedback/result (built to the screens approved
@@ -842,28 +823,41 @@
     box-shadow: var(--glass-shadow);
   }
 
-  /* Interactive quiz feedback: correct green glow & incorrect red shake */
+  /* Interactive quiz feedback: the belt settles onto a coloured ring.
+
+     Both of these fire on EVERY answer -- up to 30 times in one Hard quiz --
+     so they are deliberately quiet. What they used to do:
+
+     - correctGlow ran 0.6s on cubic-bezier(.175,.885,.32,1.275), a curve that
+       ends above 1, so it overshot and sprang back, and the keyframes pushed
+       the belt to scale(1.04) on the way. A bounce is a poor fit for anything
+       this frequent, and it should never be the thing a player waits out.
+     - incorrectShake slid the belt +/-5px sideways for half a second, during
+       a timed quiz, at the moment the player is already under pressure.
+
+     Neither animation was the only signal, and still is not: right and wrong
+     also carry the ring colour, the sound, and the feedback screen. The
+     movement was the part that added nothing. (#346, #347) */
   .belt.belt-correct {
     opacity: 1 !important;
-    animation: correctGlow 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+    animation: correctGlow 0.35s ease-out forwards;
     z-index: 2;
   }
   .belt.belt-incorrect {
     opacity: 1 !important;
-    animation: incorrectShake 0.5s ease-in-out forwards;
+    animation: incorrectSettle 0.2s ease-out forwards;
     z-index: 2;
   }
 
   @keyframes correctGlow {
-    0% { box-shadow: 0 0 0 0 rgba(34, 100, 66, 0.9); transform: scale(1); }
-    40% { box-shadow: 0 0 0 6px rgba(34, 100, 66, 0.4), 0 0 26px 8px var(--good); transform: scale(1.04); filter: brightness(1.15); }
-    100% { box-shadow: 0 0 0 4px rgba(34, 100, 66, 0.7), 0 0 16px 3px var(--good); transform: scale(1.02); }
+    from { box-shadow: 0 0 0 0 rgba(34, 100, 66, 0.9); }
+    to { box-shadow: 0 0 0 4px rgba(34, 100, 66, 0.7), 0 0 16px 3px var(--good); }
   }
 
-  @keyframes incorrectShake {
-    0%, 100% { box-shadow: 0 0 0 0 rgba(161, 45, 45, 0.8); transform: translateX(0); }
-    20%, 60% { box-shadow: 0 0 0 5px rgba(161, 45, 45, 0.4), 0 0 20px 4px var(--bad); transform: translateX(-5px); filter: brightness(1.15); }
-    40%, 80% { box-shadow: 0 0 0 5px rgba(161, 45, 45, 0.4), 0 0 20px 4px var(--bad); transform: translateX(5px); filter: brightness(1.15); }
+  /* Renamed from incorrectShake, which is what it used to do. */
+  @keyframes incorrectSettle {
+    from { box-shadow: 0 0 0 0 rgba(161, 45, 45, 0.8); }
+    to { box-shadow: 0 0 0 4px rgba(161, 45, 45, 0.7), 0 0 16px 3px var(--bad); }
   }
 
   /* ============================================================
@@ -1072,7 +1066,36 @@
   #rq-question .lab-study-meta { margin: 0; text-align: center; letter-spacing: .14em; font-weight: 800; }
   .belts { gap: 10px; margin: 10px 0; }
   .belts .belt { min-height: clamp(66px, 10.5dvh, 100px); border-radius: 16px; letter-spacing: .06em; box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.22), 0 10px 20px -12px rgba(0, 0, 0, 0.6); }
-  .belts .belt:active { transform: scale(.97); }
+  /* 0.96 like every other control. It was the one thing in the app that gave
+     press feedback, and it used a value of its own. */
+  .belts .belt:active { transform: scale(.96); }
+
+  /* Press feedback (#345). Nothing but the belts responded to a finger:
+     Continue, Start Ranked quiz, Log in, the Practice cards and the dock all
+     stayed completely still. On a phone that small give is the only
+     confirmation a player gets before the screen changes.
+
+     0.96 exactly: below 0.95 the press reads as exaggerated. The transition
+     names its properties rather than `all`, so nothing else starts animating
+     by accident, and it is short enough not to lag behind the finger.
+
+     The reduced-motion block above already turns every transition off, so
+     this needs no guard of its own.
+
+     `.belt` is in the list on its own account. The Ranked quiz draws its
+     belts inside `.belts`, which already had both a transition and a press,
+     but the Practice quiz draws them inside `.options`, so that pair never
+     reached them -- the two quizzes felt different under the same finger.
+     `.belts .belt` is the more specific rule and keeps its own 0.15s
+     transform transition; this one only reaches the Practice belts. */
+  .primary, .ghost, .lab-choice, .home-short, .lab-nav button, .belt {
+    transition-property: transform, background-color, color, box-shadow;
+    transition-duration: .12s;
+    transition-timing-function: ease-out;
+  }
+  .primary:active, .ghost:active, .lab-choice:active,
+  .home-short:active, .lab-nav button:active, .belt:active { transform: scale(.96); }
+  .primary:disabled:active, .ghost:disabled:active { transform: none; }
 
   /* Ranked feedback: a verdict mark where the avatar used to be */
   .rq-mark { width: 56px; height: 56px; margin: 4px auto 0; border-radius: 50%; display: grid; place-items: center; font-size: 26px; font-weight: 900; line-height: 1; }
