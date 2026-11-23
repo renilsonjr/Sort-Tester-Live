@@ -15,7 +15,8 @@ from backend import http_hardening, origin_guard
 from backend.db import settings as db_settings
 from backend.db.entra_token import TokenUnavailable
 from backend.auth import deletion_list, settings as auth_settings
-from backend.auth.rate_limit import RegistrationLimiter
+from backend.auth.rate_limit import AddressAttemptLimiter, RegistrationLimiter
+from backend.auth.verification_gate import VerificationBusy
 from backend.ranked import engine as ranked_engine
 from backend.routers import auth, ranked, recovery_messages as recovery_messages_router
 
@@ -62,6 +63,9 @@ def create_app() -> FastAPI:
     application.state.recovery_message_limiter = RegistrationLimiter(
         per_client=3, per_client_window=3600.0, total=50, total_window=86400.0
     )
+
+    # failed Quiz Code checks from one address (owner cap: 20 in 5 minutes)
+    application.state.address_attempt_limiter = AddressAttemptLimiter()
 
     app_origin = os.environ.get("SORT_TESTER_APP_ORIGIN", "").strip()
 
@@ -113,6 +117,16 @@ def create_app() -> FastAPI:
         return JSONResponse(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
             content={"detail": "database temporarily unavailable"},
+        )
+
+    @application.exception_handler(VerificationBusy)
+    def _verification_busy(_request: Request, _exc: Exception) -> JSONResponse:
+        # Too many Quiz Code checks were already under way. This one never
+        # started, so nothing changed and it can simply be sent again.
+        return JSONResponse(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            content={"detail": "busy; try again in a moment"},
+            headers={"Retry-After": "5"},
         )
 
     @application.get("/health")
