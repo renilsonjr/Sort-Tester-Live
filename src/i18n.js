@@ -169,6 +169,11 @@ const ES = {
   'Take a quiz': 'Haz una prueba',
   'Start with Ground, then build up to the full chart.': 'Empieza con Ground y avanza hasta toda la tabla.',
   'Shift log': 'Registro del turno',
+  // The Shift log and the Ranked season line stood loose on the background
+  // with no heading; they now sit in a stripe like every other block (#328).
+  'Your sessions': 'Tus sesiones',
+  'Your practice results saved on this phone.': 'Tus resultados de práctica guardados en este teléfono.',
+  'Season': 'Temporada',
   'This phone is not saving results. Each score is shown once and then gone.': 'Este teléfono no guarda los resultados. Cada nota se muestra una sola vez.',
   'Made by RJ.': 'Creado por RJ.',
   'Not affiliated with or endorsed by UPS. This practice does not replace any required UPS test or training. Follow your current worksite chart and instructions.': 'No está afiliado a UPS ni cuenta con su aprobación. Esta práctica no reemplaza ninguna prueba ni capacitación obligatoria de UPS. Sigue la tabla y las instrucciones vigentes en tu lugar de trabajo.',
