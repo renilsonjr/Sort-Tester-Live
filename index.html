@@ -1313,6 +1313,110 @@
 
   html[data-theme="day"] .score-line { box-shadow: var(--glass-shadow), 0 0 28px -6px rgba(201, 138, 16, 0.22); }
 
+
+  /* The two desktop wrappers are invisible to layout until the breakpoint.
+     Without this they would be one flex item each inside .lab-screen, which
+     is a flex column with a 16px gap -- so the stripes they wrap would lose
+     the space between them on a phone. The phone must not change (#273). */
+  .home-split, .board-split { display: contents; }
+
+  /* ---------------------------------------------------------------------
+     Desktop (#273, mock approved 2026-11-23).
+
+     One breakpoint, and it is the last block in the stylesheet so it wins on
+     equal specificity. Below 900px nothing here applies: the phone keeps its
+     bottom dock and its single column, untouched.
+
+     The rule the whole thing follows: width is given only where it helps.
+     Lists and dashboards get a second column; forms and the quiz stay narrow,
+     because four belt buttons stretched across a wide screen would put the
+     route code and the answers at opposite ends of the eye's travel.
+     --------------------------------------------------------------------- */
+  @media (min-width: 900px) {
+    #app.lab-page { max-width: 1040px; border-radius: 22px; margin-block: 24px; min-height: calc(100dvh - 48px); }
+
+    /* The DOM order is header, main, nav. Grid areas place the nav first
+       without moving it in the markup, so the tab order still reads
+       header -> content -> navigation. */
+    .lab-shell {
+      display: grid;
+      grid-template-columns: 232px minmax(0, 1fr);
+      grid-template-areas: "nav top" "nav main";
+      align-content: start;
+    }
+    .lab-top { grid-area: top; }
+    /* No dock at the bottom any more, so none of its clearance either. */
+    .lab-main { grid-area: main; padding-top: 4px; padding-inline: 30px; padding-bottom: 34px; }
+    .lab-nav {
+      grid-area: nav;
+      position: static !important;
+      width: auto !important;
+      height: auto !important;
+      transform: none !important;
+      display: grid !important;
+      grid-template-columns: 1fr !important;
+      align-content: start;
+      gap: 4px !important;
+      padding: 18px 14px !important;
+      border: 0 !important;
+      border-right: 1px solid var(--glass-border) !important;
+      border-radius: 0 !important;
+      box-shadow: none !important;
+      background: rgba(28, 19, 13, 0.45) !important;
+    }
+    .lab-nav button {
+      display: flex !important;
+      /* the dock stacks icon over label; a sidebar row reads left to right */
+      flex-direction: row !important;
+      align-items: center !important;
+      justify-content: flex-start !important;
+      gap: 11px;
+      height: auto !important;
+      min-height: 44px !important;
+      padding: 11px 12px !important;
+      border-radius: 12px !important;
+      font-size: 15px !important;
+      text-align: left;
+    }
+    .lab-nav i { margin: 0 !important; width: 22px; text-align: center; }
+
+    /* Home: the hero keeps the left, what you tap sits beside it, and the
+       climb spans both. `display: contents` above means the phone never
+       sees this wrapper at all. */
+    .home-split {
+      display: grid;
+      grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
+      grid-template-areas: "hero actions" "climb climb";
+      gap: 18px;
+      align-items: start;
+    }
+    .home-split-hero { grid-area: hero; }
+    .home-split-actions { grid-area: actions; }
+    .home-split-climb { grid-area: climb; }
+    .home-shortcuts { grid-template-columns: 1fr; }
+
+    /* Leaderboard: the podium and the standings together, so a player sees
+       their own row without scrolling past the top three. */
+    /* Two columns only when there is a list to put in the second one: with
+       three players or fewer everybody is on the podium, and half the width
+       would sit empty beside it. */
+    .board-split-two { display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr); gap: 20px; align-items: start; }
+
+    /* Narrow on purpose. */
+    #rq-play { max-width: 560px; margin-inline: auto; }
+    .lab-screen > .lab-choice, .auth-screen { max-width: 560px; margin-inline: auto; }
+    .lab-screen .field, .lab-screen .glass-input { max-width: 560px; }
+
+    /* A keyboard is a desktop certainty, so the key that answers is drawn on
+       the belt and focus is always visible. */
+    .belt-key::before { content: attr(data-key); }
+    .belt-key {
+      display: inline-grid; place-items: center; min-width: 22px; height: 22px;
+      margin-left: 9px; padding: 0 6px; border-radius: 6px; vertical-align: 2px;
+      background: rgba(0, 0, 0, 0.35); font-size: 12px; font-weight: 800;
+    }
+    :focus-visible { outline: 3px solid var(--focus); outline-offset: 3px; }
+  }
 </style>
 </head>
 <body>
