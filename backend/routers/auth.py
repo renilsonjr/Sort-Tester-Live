@@ -273,6 +273,39 @@ class DeleteAccountRequest(BaseModel):
     acknowledge: bool = False
 
 
+@router.post("/sessions/revoke-others")
+def revoke_other_sessions(
+    request: Request,
+    account: dict = Depends(_current_account),
+):
+    """End every other device signed in to this account, keeping this one.
+
+    Behind the same re-entry gate as the owner's guarded actions: a stolen
+    session alone must not be enough to sign the real player out, so the
+    Quiz Code is asked for first (#270).
+    """
+    from backend.auth import reauth
+    from backend.auth.sessions import revoke_other_account_sessions
+    from backend.ranked.clock import system_clock
+
+    raw_token = request.cookies.get("sort_tester_session") or ""
+    with _db_connection() as conn:
+        try:
+            reauth.require_recent(conn, raw_token, clock=system_clock())
+        except reauth.ReauthRequired:
+            raise HTTPException(
+                status_code=status.HTTP_428_PRECONDITION_REQUIRED,
+                detail=(
+                    "Re-enter your Quiz Code to continue. It stays confirmed"
+                    " on this device for five minutes."
+                ),
+            ) from None
+        session = reauth._session(conn, raw_token)
+        ended = revoke_other_account_sessions(conn, account["id"], session["id"])
+        conn.commit()
+    return {"ended": ended}
+
+
 @router.post("/account/delete", status_code=status.HTTP_202_ACCEPTED)
 def delete_account(
     request: Request,

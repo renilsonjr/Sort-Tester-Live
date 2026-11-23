@@ -779,6 +779,48 @@ const DELETE_ACK = 'I agree to delete my account. I understand that deleting it 
 const DELETE_CONSEQUENCE = 'After deletion is completed, your profile, quiz history and points are removed. A new account starts at 0 points / Iron.';
 const DELETE_DISCLOSURE = 'Your profile, quiz history and points are deleted. We keep only a private season-ineligibility record until prizes are finalized.';
 
+// An account may be signed in on five devices at once, on purpose
+// (auth.sessions.MAX_ACTIVE_SESSIONS). This is the player's own remedy when
+// they think somebody else has their Quiz Code: end the others, keep this
+// one. The server asks for the Quiz Code first, so a stolen session alone
+// cannot sign the real player out (#270).
+function showSignOutOthers() {
+  stopTick();
+  clock = null;
+  const view = labPage(`
+    <section class="lab-screen">
+      <p class="lab-eyebrow">${esc(t('Settings'))}</p>
+      <h1 class="lab-title">${esc(t('Sign out my other devices'))}</h1>
+      <p class="lab-intro">${esc(t('Ends every other phone or computer signed in to your account. This one stays.'))}</p>
+      <p class="lab-intro">${esc(t('Your Quiz Code keeps working. Anyone using it elsewhere has to enter it again.'))}</p>
+      <p class="notice" id="signout-others-said" role="status" hidden></p>
+      <button id="signout-others-go" class="primary" type="button">${esc(t('Sign out my other devices'))}</button>
+      <button id="signout-others-cancel" class="ghost" type="button">${esc(t('Cancel'))}</button>
+    </section>
+  `, 'profile', showSignOutOthers);
+
+  const said = view.querySelector('#signout-others-said');
+  const go = view.querySelector('#signout-others-go');
+  view.querySelector('#signout-others-cancel').addEventListener('click', () => showProfile('settings'));
+  go.addEventListener('click', async () => {
+    go.disabled = true;
+    const result = await apiSendOwner('POST', '/auth/sessions/revoke-others');
+    said.hidden = false;
+    if (!result.ok) {
+      said.classList.remove('done');
+      said.textContent = `${result.reason || t('That did not work.')} ${t('Nothing was changed.')}`;
+      go.disabled = false;
+      return;
+    }
+    said.classList.add('done');
+    const ended = result.data?.ended ?? 0;
+    said.textContent = ended === 0
+      ? t('No other device was signed in.')
+      : t(ended === 1 ? '{count} other device was signed out.' : '{count} other devices were signed out.', { count: ended });
+  });
+  return view;
+}
+
 function showDeleteAccount() {
   stopTick();
   clock = null;
@@ -884,6 +926,11 @@ async function fillSettings(panel) {
       <span><strong>${esc(t('Log out'))}</strong><small>${esc(t('Ends this session on this device. Your points and history stay.'))}</small></span>
       <span class="lab-arrow" aria-hidden="true">\u2192</span>
     </button>
+    <button id="profile-signout-others" class="lab-choice" type="button">
+      <span class="lab-choice-icon">\u29c9</span>
+      <span><strong>${esc(t('Sign out my other devices'))}</strong><small>${esc(t('Ends every other phone or computer signed in to your account. This one stays.'))}</small></span>
+      <span class="lab-arrow" aria-hidden="true">\u2192</span>
+    </button>
     <button id="profile-delete" class="lab-choice lab-choice-quiz" type="button">
       <span class="lab-choice-icon">!</span>
       <span><strong>${esc(t('Delete account'))}</strong><small>${esc(t('Removes your profile, history and points.'))}</small></span>
@@ -892,6 +939,7 @@ async function fillSettings(panel) {
   `;
   panel.querySelector('#profile-support').addEventListener('click', showSupport);
   panel.querySelector('#profile-logout').addEventListener('click', () => signOut());
+  panel.querySelector('#profile-signout-others').addEventListener('click', showSignOutOthers);
   panel.querySelector('#profile-delete').addEventListener('click', showDeleteAccount);
   // One account in the whole app is the owner's. For everybody else the
   // row stays absent rather than disabled: a locked door still says there
