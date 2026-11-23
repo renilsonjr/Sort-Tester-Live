@@ -170,8 +170,8 @@ function render(node) {
 
 function languageButtons() {
   return `<div class="lab-language" role="group" aria-label="Language / Idioma">
-    <button type="button" data-language="en" aria-label="English" aria-pressed="${language.code === 'en'}"><span aria-hidden="true">🇺🇸</span><span>EN</span></button>
-    <button type="button" data-language="es" aria-label="Español" aria-pressed="${language.code === 'es'}"><span aria-hidden="true">🇪🇸</span><span>ES</span></button>
+    <button type="button" data-language="en" aria-label="English" aria-pressed="${language.code === 'en'}"><span>EN</span></button>
+    <button type="button" data-language="es" aria-label="Español" aria-pressed="${language.code === 'es'}"><span>ES</span></button>
   </div>`;
 }
 
@@ -195,10 +195,12 @@ function applyTheme(theme) {
   if (root && typeof root.setAttribute === 'function') root.setAttribute('data-theme', next);
   try { localStorage.setItem('sortlab-theme', next); } catch { /* private mode: live with the default */ }
 }
-function themeIcon(theme) { return theme === 'day' ? '☀️' : '🌙'; }
+// Drawn icons, not emoji: see ICONS below (#326). The button shows the theme
+// it is IN, as it always did -- a moon at night, a sun by day.
+function themeIcon(theme) { return theme === 'day' ? ICONS.day : ICONS.night; }
 function themeButton() {
   const day = currentTheme() === 'day';
-  return `<button type="button" class="lab-theme-btn" data-theme-toggle aria-label="${esc(t('Switch between day and night'))}" aria-pressed="${day}">${themeIcon(day ? 'day' : 'night')}</button>`;
+  return `<button type="button" class="lab-theme-btn" data-theme-toggle aria-label="${esc(t('Switch between day and night'))}" aria-pressed="${day}"><span class="lab-btn-ic" aria-hidden="true">${themeIcon(day ? 'day' : 'night')}</span></button>`;
 }
 function wireThemeButton(view) {
   const button = view.querySelector('[data-theme-toggle]');
@@ -206,24 +208,26 @@ function wireThemeButton(view) {
   button.addEventListener('click', () => {
     const next = currentTheme() === 'day' ? 'night' : 'day';
     applyTheme(next);
-    button.textContent = themeIcon(next);
+    // innerHTML, not textContent: the icon is drawn markup now, and
+    // textContent would print the SVG source into the button.
+    button.innerHTML = `<span class="lab-btn-ic" aria-hidden="true">${themeIcon(next)}</span>`;
     button.setAttribute('aria-pressed', String(next === 'day'));
   });
 }
 if (typeof document !== 'undefined') applyTheme(currentTheme());
 
 // One switch for all sound: answer effects everywhere and the Ranked music.
-function soundIcon(on) { return on ? '🔊' : '🔇'; }
+function soundIcon(on) { return on ? ICONS.soundOn : ICONS.soundOff; }
 function soundButton() {
   const on = isSoundEnabled();
-  return `<button type="button" class="lab-theme-btn" data-sound-toggle aria-label="${esc(t('Sound on or off'))}" aria-pressed="${on}">${soundIcon(on)}</button>`;
+  return `<button type="button" class="lab-theme-btn" data-sound-toggle aria-label="${esc(t('Sound on or off'))}" aria-pressed="${on}"><span class="lab-btn-ic" aria-hidden="true">${soundIcon(on)}</span></button>`;
 }
 function wireSoundButton(view) {
   const button = view.querySelector('[data-sound-toggle]');
   if (!button) return;
   button.addEventListener('click', () => {
     const on = toggleSound();
-    button.textContent = soundIcon(on);
+    button.innerHTML = `<span class="lab-btn-ic" aria-hidden="true">${soundIcon(on)}</span>`;
     button.setAttribute('aria-pressed', String(on));
   });
 }
@@ -249,6 +253,14 @@ const ICONS = {
   quiz: '<svg viewBox="0 0 24 24"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 2M9.5 2.5h5"/></svg>',
   board: '<svg viewBox="0 0 24 24"><path d="M5 20V11M12 20V5M19 20v-6"/></svg>',
   history: '<svg viewBox="0 0 24 24"><path d="M4 12a8 8 0 1 0 2.6-5.9L4 8.5"/><path d="M4 4v4.5h4.5M12 8v4.5l3 1.8"/></svg>',
+  // The header used to show system emoji -- a speaker that renders grey and
+  // muddy next to the gold, and a moon every platform draws differently
+  // (#326). These are drawn on the same 24x24 grid, with the same stroke, so
+  // the header and the dock read as one set.
+  soundOn: '<svg viewBox="0 0 24 24"><path d="M4 9.5h3.5L12 5.5v13L7.5 14.5H4z"/><path d="M16 9a4.5 4.5 0 0 1 0 6M18.8 6.5a8 8 0 0 1 0 11"/></svg>',
+  soundOff: '<svg viewBox="0 0 24 24"><path d="M4 9.5h3.5L12 5.5v13L7.5 14.5H4z"/><path d="m16.5 10 5 4M21.5 10l-5 4"/></svg>',
+  night: '<svg viewBox="0 0 24 24"><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4 8.5 8.5 0 1 0 20 14.5z"/></svg>',
+  day: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4.2"/><path d="M12 3v2.2M12 18.8V21M3 12h2.2M18.8 12H21M5.6 5.6l1.6 1.6M16.8 16.8l1.6 1.6M18.4 5.6l-1.6 1.6M7.2 16.8l-1.6 1.6"/></svg>',
 };
 
 function navTabs() {
@@ -2135,7 +2147,10 @@ async function fillRanked(panel, title) {
         <span class="lab-arrow" aria-hidden="true">→</span>
       </button>
     </section>
-    <p class="rk-note">${esc(t(seasonLine(season)))}</p>
+    <section class="home-stripe">
+      <p class="lab-eyebrow">${esc(t('Season'))}</p>
+      <p class="rk-note">${esc(t(seasonLine(season)))}</p>
+    </section>
   `;
   fillTiebreakCallout(panel.querySelector('#tiebreak-callout'));
   panel.querySelector('#ranked-board').addEventListener('click', showLeaderboard);
@@ -2812,7 +2827,14 @@ function showStart() {
         </div>
       </section>
       </div>
-      <button id="viewlog" class="lab-log-link" type="button">${esc(t('Shift log'))}${entries.length ? ` <span>(${entries.length})</span>` : ''} <span aria-hidden="true">→</span></button>
+      <section class="home-stripe">
+        <p class="lab-eyebrow">${esc(t('Your sessions'))}</p>
+        <button id="viewlog" class="lab-choice" type="button">
+          <span class="lab-choice-icon" aria-hidden="true">${ICONS.history}</span>
+          <span><strong>${esc(t('Shift log'))}${entries.length ? ` (${entries.length})` : ''}</strong><small>${esc(t('Your practice results saved on this phone.'))}</small></span>
+          <span class="lab-arrow" aria-hidden="true">→</span>
+        </button>
+      </section>
       ${log.available ? '' : `<p class="warn">${esc(t('This phone is not saving results. Each score is shown once and then gone.'))}</p>`}
       <aside class="lab-disclaimer" aria-label="${esc(t('Independent practice'))}">
         <strong>${esc(t('Made by RJ.'))}</strong> ${esc(t('Not affiliated with or endorsed by UPS. This practice does not replace any required UPS test or training. Follow your current worksite chart and instructions.'))}
