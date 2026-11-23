@@ -59,7 +59,9 @@ grant new tables to the app role, close it), before the image is swapped.
    and deploy. When it succeeds, the image digest is in its log as
    `imageSha256=<64 hex characters>`.
 
-5. **Read what is live. This is the rollback; write it down.**
+5. **Read what is live. This is the rollback; write it down, and add it to
+   [[releases]] — Azure deletes the revision, so this table is the only
+   place the digest survives.**
 
    ```bash
    az containerapp show -g rg-sort-tester-staging -n ca-sort-app-stg --query "{revision:properties.latestRevisionName, ready:properties.latestReadyRevisionName, image:properties.template.containers[0].image}" -o jsonc
@@ -116,13 +118,32 @@ az containerapp update -g rg-sort-tester-staging -n ca-sort-app-stg --image <acr
 
 Then check as in step 7, against the commit that image was built from.
 
-**Which digest?** [[releases]] records every deploy with the migration it
-needs. Walk up from the live row while the migration number stays the same;
-the last such row is the oldest image that can still serve this database.
+**Read what is live first. Do not trust a digest you wrote down earlier:**
 
-**Not a traffic split.** The app runs in single-revision mode, so
-`az containerapp ingress traffic set --revision-weight ...` is refused. A
-rollback is the deploy above, pointed at an older digest.
+```bash
+az containerapp revision list -n ca-sort-app-stg -g rg-sort-tester-staging \
+  --query "[?properties.active].{revision:name, image:properties.template.containers[0].image}" -o table
+```
+
+On 2026-11-23 a rollback line was handed over built from the last revision
+*known to the person writing it*, which by then was two deploys old. It would
+have rolled back further than anyone intended. Reading takes one command.
+
+**Which digest to go back to?** [[releases]] records every deploy with the
+migration it needs. Walk up from the live row while the migration number
+stays the same; the last such row is the oldest image that can still serve
+this database.
+
+**There is no older revision to return to.** Single-revision mode removes the
+previous one — checked on 2026-11-23, when `revision list` returned only the
+active row. The image in the registry is what survives, so [[releases]] is
+the rollback path and not a convenience. If a digest is missing from it, the
+publish workflow's log still has it:
+`gh run view <id> --log | grep -oE "imageSha256=[0-9a-f]{64}"`.
+
+**Not a traffic split.** `az containerapp ingress traffic set --revision-weight ...`
+is refused on this app for the same reason. A rollback is the deploy above,
+pointed at an older digest.
 
 Limits:
 
