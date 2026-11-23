@@ -2,15 +2,20 @@ import ipaddress
 import os
 import threading
 import time
-from collections import defaultdict
-from dataclasses import dataclass, field
+from collections import OrderedDict, defaultdict
+from dataclasses import dataclass
 
 
 @dataclass
 class _AttemptBucket:
-    failures: int = 0
-    first_failure_at: float = field(default_factory=time.monotonic)
-    last_failure_at: float = field(default_factory=time.monotonic)
+    failures: int
+    first_failure_at: float
+    last_failure_at: float
+
+
+# Far more keys than the pilot produces in a window, and small enough that
+# the table stays a few megabytes however many distinct keys are offered.
+MAX_TRACKED_KEYS = 10_000
 
 
 class LoginRateLimiter:
@@ -19,6 +24,9 @@ class LoginRateLimiter:
     Keys are typically a source identifier such as IP address or a
     combination of IP + target lookup key. After a threshold of failures
     within a window, further attempts are blocked until the window expires.
+
+    The table is bounded: a key whose window has passed is dropped, and at
+    most ``max_keys`` are kept, the ones that failed longest ago going first.
 
     This is suitable for a single-instance pilot. A distributed deployment
     would need a shared store such as Redis.
@@ -29,37 +37,57 @@ class LoginRateLimiter:
         max_failures: int = 10,
         window_seconds: float = 300.0,
         lockout_seconds: float = 300.0,
+        max_keys: int = MAX_TRACKED_KEYS,
+        clock=time.monotonic,
     ):
         self.max_failures = max_failures
         self.window_seconds = window_seconds
         self.lockout_seconds = lockout_seconds
-        self._buckets: dict[str, _AttemptBucket] = defaultdict(_AttemptBucket)
+        self.max_keys = max_keys
+        self._clock = clock
+        # Ordered by last failure, oldest first, so both kinds of forgetting
+        # only ever look at the front.
+        self._buckets: OrderedDict[str, _AttemptBucket] = OrderedDict()
         self._lock = threading.Lock()
 
-    def is_allowed(self, key: str) -> bool:
-        now = time.monotonic()
+    def __len__(self) -> int:
         with self._lock:
-            bucket = self._buckets[key]
-            # If no failures or window has passed, reset.
-            if bucket.failures == 0 or now - bucket.first_failure_at > self.window_seconds:
+            return len(self._buckets)
+
+    def is_allowed(self, key: str) -> bool:
+        now = self._clock()
+        with self._lock:
+            # Looking a key up never stores it: only a failure does.
+            bucket = self._buckets.get(key)
+            if bucket is None or now - bucket.first_failure_at > self.window_seconds:
                 return True
             if bucket.failures >= self.max_failures:
                 # Still within lockout window?
-                if now - bucket.last_failure_at < self.lockout_seconds:
-                    return False
-                return True
+                return now - bucket.last_failure_at >= self.lockout_seconds
             return True
 
     def record_failure(self, key: str) -> None:
-        now = time.monotonic()
+        now = self._clock()
         with self._lock:
-            bucket = self._buckets[key]
-            if bucket.failures == 0 or now - bucket.first_failure_at > self.window_seconds:
-                bucket.failures = 1
-                bucket.first_failure_at = now
+            bucket = self._buckets.get(key)
+            if bucket is None or now - bucket.first_failure_at > self.window_seconds:
+                self._buckets[key] = _AttemptBucket(1, now, now)
             else:
                 bucket.failures += 1
-            bucket.last_failure_at = now
+                bucket.last_failure_at = now
+            self._buckets.move_to_end(key)
+            self._forget(now)
+
+    def _forget(self, now: float) -> None:
+        """Drop keys that can no longer block anything, then keep to the cap."""
+        keep_for = max(self.window_seconds, self.lockout_seconds)
+        while self._buckets:
+            oldest = next(iter(self._buckets.values()))
+            if now - oldest.last_failure_at <= keep_for:
+                break
+            self._buckets.popitem(last=False)
+        while len(self._buckets) > self.max_keys:
+            self._buckets.popitem(last=False)
 
     def record_success(self, key: str) -> None:
         """Clear the failures counted against one key.
@@ -70,8 +98,79 @@ class LoginRateLimiter:
         attacker a fresh run of guesses at another (audit H-2).
         """
         with self._lock:
-            if key in self._buckets:
-                self._buckets[key].failures = 0
+            self._buckets.pop(key, None)
+
+
+class AddressAttemptLimiter:
+    """In-memory cap on failed sign-in checks from one network address.
+
+    Owner decision, 2026-11-23: at most 20 failed checks in 5 minutes from
+    one address, whatever Quiz Codes were tried. A check that succeeds does
+    not count, so a whole shift signing in over shared workplace Wi-Fi is
+    never held back by it.
+
+    A check is counted when it starts (``reserve``) and given back if it
+    turns out not to be a failure (``release``). Counting first is what
+    makes the cap hold for requests that arrive together: the twenty-first
+    is refused before it costs anything, even while the first twenty are
+    still being checked.
+
+    Bounded like ``LoginRateLimiter``, and for the same single-instance
+    pilot: counts reset when the process restarts.
+    """
+
+    def __init__(
+        self,
+        max_attempts: int = 20,
+        window_seconds: float = 300.0,
+        max_keys: int = MAX_TRACKED_KEYS,
+        clock=time.monotonic,
+    ):
+        self.max_attempts = max_attempts
+        self.window_seconds = window_seconds
+        self.max_keys = max_keys
+        self._clock = clock
+        self._attempts: OrderedDict[str, list[float]] = OrderedDict()
+        self._lock = threading.Lock()
+
+    def __len__(self) -> int:
+        with self._lock:
+            return len(self._attempts)
+
+    def reserve(self, key: str) -> bool:
+        """Count one check for ``key`` if it fits; False means refuse it."""
+        now = self._clock()
+        with self._lock:
+            self._forget(now)
+            recent = [
+                t for t in self._attempts.get(key, ()) if now - t < self.window_seconds
+            ]
+            if len(recent) >= self.max_attempts:
+                self._attempts[key] = recent
+                return False
+            recent.append(now)
+            self._attempts[key] = recent
+            self._attempts.move_to_end(key)
+            while len(self._attempts) > self.max_keys:
+                self._attempts.popitem(last=False)
+            return True
+
+    def release(self, key: str) -> None:
+        """Give back the most recent check counted for ``key``."""
+        with self._lock:
+            attempts = self._attempts.get(key)
+            if attempts:
+                attempts.pop()
+                if not attempts:
+                    del self._attempts[key]
+
+    def _forget(self, now: float) -> None:
+        # Ordered by latest check, oldest first: stop at the first live one.
+        while self._attempts:
+            key, attempts = next(iter(self._attempts.items()))
+            if attempts and now - attempts[-1] < self.window_seconds:
+                break
+            del self._attempts[key]
 
 
 # Singleton for the application process.
