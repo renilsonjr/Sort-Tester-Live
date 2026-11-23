@@ -66,6 +66,7 @@ const ES = {
   'Points': 'Puntos',
   'Best Ranked': 'Mejor Clasificatorio',
   'Practices': 'Prácticas',
+  'Practices counts the sessions in the Shift log on this device.': 'Prácticas cuenta las sesiones del Registro del turno de este dispositivo.',
   'Place': 'Puesto',
   'Your climb': 'Tu ascenso',
   'See history': 'Ver historial',
