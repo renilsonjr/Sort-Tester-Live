@@ -14,7 +14,9 @@ from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
 from pydantic import BaseModel, Field
 
 from backend.auth import eligibility, reauth, recovery, recovery_messages
+from backend.auth import deletion as account_deletion
 from backend.auth.deletion import purge_deleted_accounts
+from backend.auth.deletion_list import DeletionListUnavailable
 from backend.auth.service import get_account_by_session
 from backend.auth import sessions as auth_sessions
 from backend.db import migrate, pool, settings
@@ -739,6 +741,75 @@ def withdraw_approval(
         raise HTTPException(status_code=code, detail=error.reason) from None
     conn.commit()
     return None
+
+
+# Deleting an account that should not exist (#271): tests, duplicates,
+# people who left. The rule lives in backend/auth/deletion.py. The list is
+# the one place the owner sees accounts at all, and it carries nothing of a
+# player's record.
+class OwnerDeleteRequest(BaseModel):
+    confirm_tag: str = ""
+
+
+@router.get("/owner/accounts")
+def list_accounts(account: dict = Depends(_current_account), conn=Depends(get_db)):
+    try:
+        rows = account_deletion.accounts_for_owner(conn, account["id"])
+    except account_deletion.NotOwnerError:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden") from None
+    return {
+        "accounts": [
+            {
+                "account_id": str(row["account_id"]),
+                "username": row["username"],
+                "tag": row["tag"],
+                "created_at": _utc(row["created_at"]),
+                "is_owner": row["is_owner"],
+                "approved": row["approved"],
+                "has_played": row["has_played"],
+            }
+            for row in rows
+        ]
+    }
+
+
+@router.post("/owner/accounts/{account_id}/delete", status_code=status.HTTP_202_ACCEPTED)
+def delete_account_as_owner(
+    request: Request,
+    account_id: str,
+    payload: OwnerDeleteRequest,
+    account: dict = Depends(_current_account),
+    conn=Depends(get_db),
+):
+    """Delete another account. Irreversible, so: owner only, the login ID
+    entered again recently, and that account's tag typed to confirm."""
+    _require_owner(account)
+    _require_recent_reauth(request, conn)
+    try:
+        target = UUID(account_id)
+    except ValueError:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Not found") from None
+    try:
+        deleted = account_deletion.delete_by_owner(
+            conn, account["id"], target, payload.confirm_tag, clock=_CLOCK
+        )
+    except account_deletion.NotOwnerError:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden") from None
+    except account_deletion.NoSuchAccountError:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Not found") from None
+    except account_deletion.OwnerAccountError:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="The owner account cannot be deleted",
+        ) from None
+    except account_deletion.WrongTagError:
+        raise _unprocessable("That tag does not match this account. Nothing was changed.") from None
+    except DeletionListUnavailable:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Deletion is temporarily unavailable. Nothing was changed; try again shortly.",
+        ) from None
+    return {"status": "accepted", "username": deleted["username"], "tag": deleted["tag"]}
 
 
 # Access recovery (#11, box 2). The rule lives in backend/auth/recovery.py:

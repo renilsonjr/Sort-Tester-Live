@@ -955,9 +955,11 @@ async function fillSettings(panel) {
 // Owner tools (#11), built to the screens approved on 2026-11-15.
 //
 // Scoped on purpose: approving prize eligibility, approving access
-// recovery in person, and reviewing cases. There is no player list, no
-// points screen, no history browser and no ban button, because the owner
-// was never granted those. What is missing here is missing on purpose.
+// recovery in person, reviewing cases, and removing an account that should
+// not exist (#271). The account list carries a name, a tag and a date and
+// nothing of a player's record: there is still no points screen and no
+// history browser, because the owner was never granted those. What is
+// missing here is missing on purpose.
 function showOwnerTools() {
   stopTick();
   clock = null;
@@ -991,9 +993,15 @@ function showOwnerTools() {
         <span><strong>${esc(t('Case review'))}</strong><small>${esc(t('Tickets players opened, and connection flags.'))}</small></span>
         <span class="lab-arrow" aria-hidden="true">→</span>
       </button>
+      <button id="owner-accounts" class="lab-choice" type="button">
+        <span class="lab-choice-icon">\u2715</span>
+        <span><strong>${esc(t('Accounts'))}</strong><small>${esc(t('Remove an account that should not exist.'))}</small></span>
+        <span class="lab-arrow" aria-hidden="true">\u2192</span>
+      </button>
       <button id="owner-back" class="ghost">${esc(t('Back to Profile'))}</button>
     </section>
   `, 'profile', showOwnerTools);
+  view.querySelector('#owner-accounts').addEventListener('click', () => showOwnerAccounts());
   view.querySelector('#owner-eligibility').addEventListener('click', () => showOwnerEligibility());
   view.querySelector('#owner-recovery').addEventListener('click', () => showRecovery());
   view.querySelector('#owner-messages').addEventListener('click', () => showRecoveryMessages());
@@ -1119,6 +1127,119 @@ function confirmWithdraw(accountId, username) {
       result.ok ? `${t('Withdrawn')}: ${username}.` : (result.reason || t('That did not work. Nothing has been changed.')),
       !result.ok,
     );
+  });
+  return view;
+}
+
+// Accounts (#271). The owner removes an account that should not exist: a
+// test, a duplicate, somebody who left. It is the player's own deletion
+// with a different person asking, so it ends the same way and cannot be
+// undone; the tag typed by hand is what stops a slip on a long list.
+function showOwnerAccounts(message = null, bad = false) {
+  stopTick();
+  clock = null;
+  const view = labPage(`
+    <section class="lab-screen">
+      <p class="lab-eyebrow">${esc(t('Owner'))}</p>
+      <h1 class="lab-title">${esc(t('Accounts'))}</h1>
+      ${message ? `<div class="board-notice${bad ? ' board-notice-bad' : ''}" role="status"><p>${esc(message)}</p></div>` : ''}
+      <div id="acct-panel"><p class="lab-intro" role="status">${esc(t('Loading…'))}</p></div>
+      <button id="acct-back" class="ghost">${esc(t('Back to Owner tools'))}</button>
+    </section>
+  `, 'profile', () => showOwnerAccounts(message, bad));
+  view.querySelector('#acct-back').addEventListener('click', showOwnerTools);
+  fillOwnerAccounts(view.querySelector('#acct-panel'));
+  return view;
+}
+
+function accountRowLine(row) {
+  const parts = [`#${row.tag}`, `${t('created')} ${new Date(row.created_at).toLocaleDateString()}`];
+  if (row.approved) parts.push(t('Approved for prizes'));
+  if (row.has_played) parts.push(t('Has played'));
+  return parts.join(' \u00b7 ');
+}
+
+async function fillOwnerAccounts(panel) {
+  const body = await api('/ranked/owner/accounts');
+  if (!body) {
+    panel.innerHTML = `<div class="board-notice board-notice-bad"><h2>${esc(t('Could not load the accounts'))}</h2><p>${esc(t('Nothing has been changed. Try again in a moment.'))}</p></div>`;
+    return;
+  }
+  const accounts = body.accounts ?? [];
+  panel.innerHTML = `
+    <p class="lab-intro">${esc(t('Every account, newest first. This list shows a name, a tag and a date, and nothing of anybody’s points or history.'))}</p>
+    <label class="field"><span>${esc(t('Find by name or tag'))}</span>
+      <input id="acct-find" type="search" autocomplete="off"></label>
+    <h2 class="owner-count">${esc(t('Accounts'))} (${accounts.length})</h2>
+    <ul class="approved" id="acct-list">${accounts.map((row) => `
+      <li data-find="${esc(`${row.username} ${row.tag}`.toLowerCase())}">
+        <span class="approved-who">
+          <b>${esc(row.username)}</b>
+          <small>${esc(accountRowLine(row))}</small>
+        </span>
+        ${row.is_owner
+          ? `<small class="acct-you">${esc(t('You'))}</small>`
+          : `<button class="ghost owner-danger acct-delete" type="button" data-account="${esc(row.account_id)}">${esc(t('Delete'))}</button>`}
+      </li>`).join('')}</ul>
+    <p class="lab-intro" id="acct-none" hidden>${esc(t('No account matches.'))}</p>
+  `;
+  const byId = new Map(accounts.map((row) => [row.account_id, row]));
+  panel.querySelectorAll('.acct-delete').forEach((button) => {
+    button.addEventListener('click', () => confirmOwnerDelete(byId.get(button.dataset.account)));
+  });
+  const find = panel.querySelector('#acct-find');
+  find.addEventListener('input', () => {
+    const wanted = find.value.trim().replace(/^#/, '').toLowerCase();
+    let shown = 0;
+    panel.querySelectorAll('#acct-list li').forEach((item) => {
+      item.hidden = !item.dataset.find.includes(wanted);
+      if (!item.hidden) shown += 1;
+    });
+    panel.querySelector('#acct-none').hidden = shown > 0;
+  });
+}
+
+function confirmOwnerDelete(row) {
+  const view = labPage(`
+    <section class="lab-screen">
+      <p class="lab-eyebrow">${esc(t('Owner'))}</p>
+      <h1 class="lab-title">${esc(t('Delete this account?'))}</h1>
+      <div class="owner-form">
+        <p class="acct-name"><b>${esc(row.username)}</b></p>
+        <p class="acct-meta">${esc(accountRowLine(row))}</p>
+      </div>
+      <div class="delete-warn">
+        <h2>${esc(t('This cannot be undone'))}</h2>
+        <p>${esc(t('This person is signed out at once and their profile, points and history are removed. They leave the leaderboard, and whoever was below them moves up.'))}</p>
+        ${row.approved ? `<p>${esc(t('This account is approved for prizes. Deleting it takes this sorter out of this season: they cannot be approved again, on this or any other account.'))}</p>` : ''}
+      </div>
+      <label class="field">
+        <span>${esc(t('Type this account’s tag to confirm'))}</span>
+        <input id="acct-tag" type="text" autocomplete="off" autocapitalize="characters">
+      </label>
+      <p class="notice" id="acct-error" hidden></p>
+      <button id="acct-keep" class="primary" type="button">${esc(t('Keep it'))}</button>
+      <button id="acct-go" class="ghost owner-danger" type="button" disabled>${esc(t('Delete account'))}</button>
+    </section>
+  `, 'profile', () => confirmOwnerDelete(row));
+  const typed = view.querySelector('#acct-tag');
+  const go = view.querySelector('#acct-go');
+  const error = view.querySelector('#acct-error');
+  const cleaned = () => typed.value.trim().replace(/^#/, '').trim().toUpperCase();
+  typed.addEventListener('input', () => { go.disabled = cleaned() !== row.tag; });
+  view.querySelector('#acct-keep').addEventListener('click', () => showOwnerAccounts());
+  go.addEventListener('click', async () => {
+    go.disabled = true;
+    const result = await apiSendOwner('POST', `/ranked/owner/accounts/${row.account_id}/delete`, {
+      confirm_tag: typed.value,
+    });
+    if (result.ok) {
+      showOwnerAccounts(`${t('Deleted')}: ${row.username} #${row.tag}.`);
+      return;
+    }
+    go.disabled = cleaned() !== row.tag;
+    error.textContent = result.reason || t('That did not work. Nothing has been changed.');
+    error.hidden = false;
   });
   return view;
 }
