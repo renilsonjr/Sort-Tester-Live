@@ -49,6 +49,8 @@ Newest first. `Version` is what `backend/version.py` held at that commit.
 
 | Date | Version | Commit | Image digest | Migration | Revision | What went in |
 |---|---|---|---|---|---|---|
+| 2026-11-23 | **0.1.0** | `0b294fe` | `79799130…` | 0039 | `v010` | **Release 0.1.0**, tagged `v0.1.0`. Plus resolved recovery messages deleted after 30 days (#364) and a finishing pass (#343, #348, #349) |
+| 2026-11-23 | 0.1.0-dev | `db3a914` | — | 0039 | — | Documentation only (#362): the real digests and why this table is the only way back. Never deployed on its own |
 | 2026-11-23 | 0.1.0-dev | `fd017f3` | `9ddea543…` | 0039 | `polish1` | The five desktop screens that had none, the sidebar and shell fixes, the polish pass, and this version record (#273, #274, #341, #342, #344, #360) |
 | 2026-11-23 | — | `26e0611` | `c201053c…` | 0039 | `limits1` | Quiz Code check limits and dependency updates |
 | 2026-11-23 | — | `8fcb263` | `032b58de…` | 0039 | `desk1` | Desktop shell: sidebar, wider column, Home and leaderboard in two columns, keyboard in the Ranked quiz (#273) |
@@ -89,11 +91,12 @@ it — not a note taken at deploy time — is the record to trust.
 
 ## Cutting a release
 
-The owner decided on 2026-11-23 that **`v0.1.0` waits for issue #273 to
-finish** — five screens still have no desktop layout. Until then the string
-stays `0.1.0-dev`, which is the honest answer to "what is this?".
+**`v0.1.0` was cut on 2026-11-23**, once #273 closed, and is live as revision
+`v010`. The string on `main` is now `0.1.1-dev`: the next change is a patch
+until something says otherwise, and `main` must never claim to be a release
+that has already shipped.
 
-When the time comes:
+The steps, for next time:
 
 1. Drop the `-dev` suffix in `backend/version.py`, in its own pull request.
 2. Merge it, and let CI pass on `main`.
