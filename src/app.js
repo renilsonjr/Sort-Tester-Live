@@ -1905,17 +1905,56 @@ async function attemptFetch(...args) {
   }
 }
 
+// How long to wait before trying again on our own, after the server says a
+// previous match is still closing. The server ends a page that went quiet
+// 15 seconds after its last heartbeat (engine.GRACE_SECONDS); one second
+// more keeps us on the far side of it (#269).
+const GRACE_RETRY_MS = 16000;
+
+// A player who left the tab mid-match comes back to a match the server has
+// already closed, or is about to: for those seconds, starting a new one is
+// refused. Saying so, and trying again, beats printing the server's own
+// English phrase on a screen with nowhere to go (#269).
+function showPreparingNextMatch(mode) {
+  const view = labPage(`
+    <section class="lab-screen">
+      <p class="lab-eyebrow">${esc(t('Ranked'))}</p>
+      <h1 class="lab-title">${esc(t('Preparing your next match'))}</h1>
+      <p class="lab-intro">${esc(t('Your last match is still closing. This takes a few seconds.'))}</p>
+      <button id="rq-retry" class="primary" type="button">${esc(t('Try again'))}</button>
+      <button id="rq-retry-back" class="ghost" type="button">${esc(t('Back to Ranked'))}</button>
+    </section>
+  `, 'ranked', () => showPreparingNextMatch(mode));
+  const again = () => { if (view.isConnected) startRankedAttempt(mode); };
+  view.querySelector('#rq-retry').addEventListener('click', again);
+  view.querySelector('#rq-retry-back').addEventListener('click', showRanked);
+  // and on its own, once the closing window has passed, so a player who
+  // simply waits is taken into the match without touching anything
+  setTimeout(again, GRACE_RETRY_MS);
+  return view;
+}
+
 async function startRankedAttempt(mode) {
   const attempt = createAttemptClient({ fetchFn: attemptFetch });
   const started = await attempt.start('/ranked/attempts', { mode });
   if (!started.ok) {
-    // The season can close between this screen loading and the tap.
-    const closed = started.status === 409 && started.data?.detail === 'No open season';
-    const reason = closed
+    // Every refusal the server can give here, said in the player's own
+    // language. Its `detail` is an English phrase for the log, never a
+    // sentence to show (#269).
+    const detail = started.status === 409 ? started.data?.detail : null;
+    if (detail === 'Active attempt exists') {
+      showPreparingNextMatch(mode);
+      return;
+    }
+    const reason = detail === 'No open season'
       ? t('The season is closed, so no new Ranked quiz can start.')
-      : started.status === 409
-        ? (started.data?.detail || t('That did not work. Nothing has started.'))
-        : t('Could not reach the server. Nothing has started.');
+      : detail === 'Promotion required'
+        ? t('You are at the cap, so the next Ranked quiz is a promotion.')
+        : detail === 'Promotion not available'
+          ? t('Promotion needs you at the cap. Play ordinary Ranked to get there.')
+          : started.status === 409
+            ? t('That did not work. Nothing has started.')
+            : t('Could not reach the server. Nothing has started.');
     comingSoon(t('Ranked'), t('Could not start'), reason, 'ranked',
       { label: 'Back to Ranked', go: showRanked });
     return;
@@ -2145,6 +2184,7 @@ function showRankedResult(mode, result, tally, { quit = false, attemptId = null 
         <div class="profile-bar home-meter"><i style="width:${Math.round((tally.correctCount / 15) * 100)}%"></i></div>
       </div>
       ${result.final_outcome === 'season_close' ? `<p class="lab-intro" id="rq-season-close">${esc(t('The season closed before you finished. What you had scored counts, with no penalty.'))}</p>` : ''}
+      ${result.final_outcome === 'disconnect' ? `<p class="lab-intro" id="rq-disconnect">${esc(t('The app lost contact with the server, so the match was closed. Questions already answered counted; one left unanswered counted as a timeout.'))}</p>` : ''}
       <p class="lab-eyebrow">${esc(t('Points'))}</p>
       ${rankedSum(result, quit)}
       ${droppedBadge ? boardNotice(

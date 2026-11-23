@@ -475,6 +475,12 @@ const ES = {
   'The round was restarted after a server outage. Play it again before it closes.': 'La ronda se reinició después de una caída del servidor. Juégala otra vez antes de que cierre.',
   'question to go.': 'pregunta por responder.',
   'Easy question': 'Pregunta fácil',
+  'Preparing your next match': 'Preparando tu próxima partida',
+  'Your last match is still closing. This takes a few seconds.': 'Tu última partida todavía se está cerrando. Esto tarda unos segundos.',
+  'Try again': 'Intentar de nuevo',
+  'You are at the cap, so the next Ranked quiz is a promotion.': 'Estás en el tope, así que la próxima prueba del Clasificatorio es un ascenso.',
+  'Promotion needs you at the cap. Play ordinary Ranked to get there.': 'El ascenso necesita que estés en el tope. Juega el Clasificatorio normal para llegar.',
+  'The app lost contact with the server, so the match was closed. Questions already answered counted; one left unanswered counted as a timeout.': 'La app perdió contacto con el servidor, así que la partida se cerró. Las preguntas ya respondidas contaron; una sin responder contó como tiempo agotado.',
   'The season closed before you finished. What you had scored counts, with no penalty.': 'La temporada cerró antes de que terminaras. Lo que habías sumado cuenta, sin penalización.',
   // An attempt voided by a server outage or restart (issue #13, box 3)
   'This attempt does not count': 'Este intento no cuenta',
