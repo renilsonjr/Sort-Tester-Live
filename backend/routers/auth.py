@@ -7,8 +7,10 @@ from pydantic import BaseModel, Field
 from backend.auth.rate_limit import _client_key, _login_rate_key, get_login_rate_limiter
 from backend.auth.service import (
     admin_regenerate_login_id,
+    check_login_candidates,
+    find_login_candidates,
     get_account_by_session,
-    login_with_id,
+    open_login_session,
     register_account,
 )
 from backend.auth.deletion_list import DeletionListUnavailable
@@ -37,6 +39,36 @@ def _db_connection():
     pool.init_pool(settings.app_database_url(), auth_mode=settings.db_auth_mode())
     with pool.checkout() as conn:
         yield conn
+
+
+class _CountedCheck:
+    failed = False
+
+    def mark_failed(self) -> None:
+        self.failed = True
+
+
+@contextmanager
+def _counted_check(request: Request):
+    """Count one Quiz Code check against the caller's address.
+
+    Refused with 429 before anything else happens when the address has used
+    its allowance (``AddressAttemptLimiter``). The count is kept only if the
+    block marks the check as failed; a check that succeeds, or that never
+    ran because the request ended some other way, is given back.
+    """
+    attempts = request.app.state.address_attempt_limiter
+    client = _client_key(request)
+    if not attempts.reserve(client):
+        raise HTTPException(
+            status_code=status.HTTP_429_TOO_MANY_REQUESTS, detail="Too many requests"
+        )
+    check = _CountedCheck()
+    try:
+        yield check
+    finally:
+        if not check.failed:
+            attempts.release(client)
 
 
 def get_db():
@@ -145,22 +177,32 @@ def login(request: Request, response: Response, payload: LoginRequest):
     if not limiter.is_allowed(rate_key):
         raise HTTPException(status_code=status.HTTP_429_TOO_MANY_REQUESTS, detail="Too many requests")
 
-    with _db_connection() as conn:
-        auth_settings = get_auth_settings()
-        result = login_with_id(
-            conn,
-            payload.login_id,
-            ttl_seconds=auth_settings.session_ttl_seconds,
-            ip_address=None,
-            user_agent=None,
-        )
-        if result is None:
+    auth_settings = get_auth_settings()
+    with _counted_check(request) as check:
+        # Three steps, and no connection held during the middle one: the
+        # verification is the slow part, and a connection kept through it
+        # is one that nobody else can use.
+        with _db_connection() as conn:
+            normalized, candidates = find_login_candidates(conn, payload.login_id)
+        candidate = check_login_candidates(normalized, candidates)
+        if candidate is None:
+            check.mark_failed()
             limiter.record_failure(rate_key)
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized")
-        limiter.record_success(rate_key)
-        token, _ = result
-        account = get_account_by_session(conn, token)
-        conn.commit()
+        with _db_connection() as conn:
+            result = open_login_session(
+                conn,
+                candidate,
+                ttl_seconds=auth_settings.session_ttl_seconds,
+                ip_address=None,
+                user_agent=None,
+            )
+            if result is None:
+                raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized")
+            limiter.record_success(rate_key)
+            token, _ = result
+            account = get_account_by_session(conn, token)
+            conn.commit()
     if account is None:
         # the account can be deleted between creating the session and
         # reading it back; indexing into None here made that a 500 and a
@@ -294,7 +336,7 @@ def reauthenticate_session(
     rate_key = _login_rate_key(request, payload.login_id)
     if not limiter.is_allowed(rate_key):
         raise HTTPException(status_code=status.HTTP_429_TOO_MANY_REQUESTS, detail="Too many requests")
-    with _db_connection() as conn:
+    with _counted_check(request) as check, _db_connection() as conn:
         try:
             reauth.reauthenticate(
                 conn,
@@ -303,6 +345,7 @@ def reauthenticate_session(
                 clock=system_clock(),
             )
         except reauth.WrongLoginId:
+            check.mark_failed()
             limiter.record_failure(rate_key)
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
@@ -369,10 +412,11 @@ def delete_account(
     rate_key = _login_rate_key(request, payload.login_id)
     if not limiter.is_allowed(rate_key):
         raise HTTPException(status_code=status.HTTP_429_TOO_MANY_REQUESTS, detail="Too many requests")
-    with _db_connection() as conn:
+    with _counted_check(request) as check, _db_connection() as conn:
         try:
             request_deletion(conn, account["id"], payload.login_id)
         except WrongLoginIdError:
+            check.mark_failed()
             limiter.record_failure(rate_key)
             raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden") from None
         except OwnerAccountError:
