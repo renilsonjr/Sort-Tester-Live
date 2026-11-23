@@ -62,6 +62,8 @@ class LoginResponse(BaseModel):
     account_id: str
     username: str
     tag: str
+    # carried here so the profile can draw it without a second request (#272)
+    avatar: str | None = None
 
 
 class AdminRegenerateRequest(BaseModel):
@@ -77,6 +79,13 @@ class AccountResponse(BaseModel):
     username: str
     tag: str
     is_owner: bool
+    # the key of the icon this player chose, or None if they never did (#272)
+    avatar: str | None = None
+
+
+class AvatarRequest(BaseModel):
+    # None clears the choice; any other value must be one of the fifteen
+    avatar: str | None = None
 
 
 def _purge_pending_deletions():
@@ -168,7 +177,12 @@ def login(request: Request, response: Response, payload: LoginRequest):
         path="/",
         max_age=auth_settings.session_ttl_seconds,
     )
-    return {"account_id": str(account["id"]), "username": account["username"], "tag": account["tag"]}
+    return {
+        "account_id": str(account["id"]),
+        "username": account["username"],
+        "tag": account["tag"],
+        "avatar": account["avatar"],
+    }
 
 
 @router.post("/logout", status_code=status.HTTP_204_NO_CONTENT)
@@ -193,7 +207,37 @@ def me(account: dict = Depends(_current_account)):
         "username": account["username"],
         "tag": account["tag"],
         "is_owner": account["is_owner"],
+        "avatar": account["avatar"],
     }
+
+
+@router.put("/avatar", status_code=status.HTTP_204_NO_CONTENT)
+def set_avatar(
+    payload: AvatarRequest,
+    account: dict = Depends(_current_account),
+):
+    """Choose the icon shown on this player's profile and the leaderboard.
+
+    There is no account id in the route: it acts on the session's own
+    account and nothing else. The value stored is a key from
+    ``backend.auth.avatars``; anything not on that list is refused, so no
+    text a player typed can ever reach a screen this way (#272).
+    """
+    from backend.auth import avatars
+
+    if payload.avatar is not None and not avatars.is_allowed(payload.avatar):
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="That is not one of the icons.",
+        )
+    with _db_connection() as conn:
+        migrate.execute(
+            conn,
+            "UPDATE accounts SET avatar = %s WHERE id = %s AND deleted_at IS NULL",
+            (payload.avatar, account["id"]),
+        )
+        conn.commit()
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
 @router.post("/admin/regenerate", response_model=AdminRegenerateResponse)

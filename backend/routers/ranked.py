@@ -603,6 +603,7 @@ def leaderboard(account: dict = Depends(_current_account), conn=Depends(get_db))
                 "tag": row.tag,
                 "points": row.points,
                 "badge": row.badge,
+                "avatar": row.avatar,
                 "tied": row.tied,
                 "you": row.account_id == account["id"],
                 "hat": row.account_id in winners,

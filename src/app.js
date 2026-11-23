@@ -1,4 +1,5 @@
 import { BELT_STYLE } from './belts.js';
+import { AVATARS, avatarEmoji } from './avatars.js';
 import { formatDestinationLabel } from './destination.js?v=chart-destination-20261108-r2';
 import { SERVICE_LABEL } from './questions.js?v=chart-destination-20261108-r2';
 import { DECKS, deckById, deckLabel } from './decks.js?v=chart-destination-20261108-r2';
@@ -540,6 +541,7 @@ function showProfile(tab = 'overview') {
       <div class="pf-ident">
         <div class="home-obj pf-ident-obj" id="profile-badge"></div>
         <div class="pf-ident-text">
+          <span id="profile-avatar-mark" class="pf-avatar" aria-hidden="true"></span>
           <h1 class="lab-title" id="profile-name">${esc(session?.username ?? '\u2026')}</h1>
           <p class="lab-intro" id="profile-tag">${session?.tag ? esc(`${t('Tag')} #${session.tag}`) : ''}</p>
         </div>
@@ -557,11 +559,19 @@ function showProfile(tab = 'overview') {
 // panel's own request starts at once instead of waiting behind /auth/me.
 // Only a session without them (which no entry path produces) asks the server.
 async function fillProfile(view, panel, tab) {
+  // The player's own icon, beside their name, on every tab. It comes off
+  // the session like the name does, so no request is made for it; empty
+  // until they choose one, which leaves the header as it was before #272.
+  paintProfileAvatar(view, session?.avatar);
   if (!session?.username || !session?.tag) {
     api('/auth/me').then((me) => {
       if (!me) return;
       view.querySelector('#profile-name').textContent = me.username;
       view.querySelector('#profile-tag').textContent = `${t('Tag')} #${me.tag}`;
+      // the icon rides on the session like the name does, so this only
+      // runs on the path that was already asking the server anyway (#272)
+      if (session) session.avatar = me.avatar;
+      paintProfileAvatar(view, me.avatar);
     });
   }
   if (tab === 'overview') return fillOverview(panel);
@@ -596,7 +606,7 @@ async function fillOverview(panel) {
   const place = stats && stats.place != null ? `#${stats.place}` : DASH;
   const tagEl = panel.closest('.lab-screen')?.querySelector('#profile-tag');
   if (tagEl) tagEl.textContent = `${tagEl.textContent} \u00b7 ${entry.badge}`;
-  // The badge sits beside the name in the identity card above the panel.
+    // The badge sits beside the name in the identity card above the panel.
   const badgeSlot = panel.closest('.lab-screen')?.querySelector('#profile-badge');
   if (badgeSlot) {
     badgeSlot.innerHTML = `<span class="home-shine" aria-hidden="true"></span><img class="home-obj-badge" src="${badgeArt(entry.badge)}" alt="${esc(entry.badge)}">`;
@@ -786,6 +796,63 @@ const DELETE_DISCLOSURE = 'Your profile, quiz history and points are deleted. We
 // they think somebody else has their Quiz Code: end the others, keep this
 // one. The server asks for the Quiz Code first, so a stolen session alone
 // cannot sign the real player out (#270).
+// Choosing the icon shown on the profile and the leaderboard (#272). The
+// account stores a key from a fixed set of fifteen; nothing a player types
+// reaches a screen this way.
+function paintProfileAvatar(root, key) {
+  const mark = root?.querySelector('#profile-avatar-mark');
+  if (mark) mark.textContent = avatarEmoji(key);
+}
+
+function showAvatarPicker(chosen = undefined, message = null) {
+  stopTick();
+  clock = null;
+  const view = labPage(`
+    <section class="lab-screen">
+      <p class="lab-eyebrow">${esc(t('Profile'))}</p>
+      <h1 class="lab-title">${esc(t('Choose a profile icon'))}</h1>
+      <p class="lab-intro">${esc(t('Shown on your profile and the leaderboard.'))}</p>
+      <div class="avatar-grid" id="av-grid" role="group" aria-label="${esc(t('Choose a profile icon'))}">
+        ${AVATARS.map(([key, glyph]) => `
+          <button type="button" class="avatar-pick" data-avatar="${esc(key)}" aria-pressed="false" aria-label="${esc(key)}">${glyph}</button>`).join('')}
+      </div>
+      <p class="notice" id="av-said" role="status" hidden></p>
+      <button id="av-none" class="ghost" type="button">${esc(t('No icon'))}</button>
+      <button id="av-back" class="ghost" type="button">${esc(t('Back'))}</button>
+    </section>
+  `, 'profile', () => showAvatarPicker(chosen, message));
+
+  const said = view.querySelector('#av-said');
+  const mark = (key) => {
+    view.querySelectorAll('.avatar-pick').forEach((button) => {
+      button.setAttribute('aria-pressed', String(button.dataset.avatar === key));
+    });
+  };
+  const tell = (text, done = false) => {
+    said.hidden = false;
+    said.classList.toggle('done', done);
+    said.textContent = text;
+  };
+  if (message) tell(message, true);
+
+  // what the account already has, so the row in use shows as pressed
+  mark(chosen === undefined ? (session?.avatar ?? null) : chosen);
+
+  const save = async (key) => {
+    const result = await apiSend('PUT', '/auth/avatar', { avatar: key });
+    if (!result.ok) { tell(result.reason || t('That did not work.')); return; }
+    if (session) session.avatar = key;
+    mark(key);
+    tell(key === null ? t('Icon removed.') : t('Icon saved.'), true);
+  };
+  view.querySelectorAll('.avatar-pick').forEach((button) => {
+    button.addEventListener('click', () => save(button.dataset.avatar));
+  });
+  view.querySelector('#av-none').addEventListener('click', () => save(null));
+  view.querySelector('#av-back').addEventListener('click', () => showProfile('settings'));
+  return view;
+}
+
 function showSignOutOthers() {
   stopTick();
   clock = null;
@@ -928,6 +995,11 @@ async function fillSettings(panel) {
       <span><strong>${esc(t('Log out'))}</strong><small>${esc(t('Ends this session on this device. Your points and history stay.'))}</small></span>
       <span class="lab-arrow" aria-hidden="true">\u2192</span>
     </button>
+    <button id="profile-avatar" class="lab-choice" type="button">
+      <span class="lab-choice-icon" id="profile-avatar-now">\u25cb</span>
+      <span><strong>${esc(t('Profile icon'))}</strong><small>${esc(t('Shown on your profile and the leaderboard.'))}</small></span>
+      <span class="lab-arrow" aria-hidden="true">\u2192</span>
+    </button>
     <button id="profile-signout-others" class="lab-choice" type="button">
       <span class="lab-choice-icon">\u29c9</span>
       <span><strong>${esc(t('Sign out my other devices'))}</strong><small>${esc(t('Ends every other phone or computer signed in to your account. This one stays.'))}</small></span>
@@ -941,6 +1013,7 @@ async function fillSettings(panel) {
   `;
   panel.querySelector('#profile-support').addEventListener('click', showSupport);
   panel.querySelector('#profile-logout').addEventListener('click', () => signOut());
+  panel.querySelector('#profile-avatar').addEventListener('click', () => showAvatarPicker());
   panel.querySelector('#profile-signout-others').addEventListener('click', showSignOutOthers);
   panel.querySelector('#profile-delete').addEventListener('click', showDeleteAccount);
   // One account in the whole app is the owner's. For everybody else the
@@ -1867,7 +1940,7 @@ async function fillLeaderboard(panel) {
   const slot = (row, cls) => !row ? '' : `
     <div class="pslot ${cls}${row.you ? ' pslot-you' : ''}">
       ${row.hat ? '<div class="pcrown" aria-hidden="true">♛</div>' : ''}
-      <div class="pdisc">${row.hat ? '♛' : esc(row.username.slice(0, 1).toUpperCase())}</div>
+      <div class="pdisc">${row.hat ? '♛' : (avatarEmoji(row.avatar) || esc(row.username.slice(0, 1).toUpperCase()))}</div>
       <div class="pname">${esc(row.username)}</div>
       <div class="ppts">◆ ${row.points.toLocaleString()}</div>
       <div class="ppillar">${row.place}</div>
@@ -1880,7 +1953,7 @@ async function fillLeaderboard(panel) {
     <li class="${row.you ? 'board-you' : ''}${row.hat ? ' board-hat' : (row.tied ? ' board-tied' : '')}">
       <span class="board-place">${row.hat ? '♛' : row.place}</span>
       <span class="board-who">
-        <b>${esc(row.username)}</b>
+        <b>${avatarEmoji(row.avatar) ? `<span class="board-avatar" aria-hidden="true">${avatarEmoji(row.avatar)}</span>` : ''}${esc(row.username)}</b>
         <small>#${esc(row.tag)} · ${esc(row.badge)}${row.you ? ` · ${esc(t('your place'))}` : ''}</small>
       </span>
       <b class="board-points">${row.points.toLocaleString()}</b>
