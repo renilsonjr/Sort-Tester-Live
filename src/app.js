@@ -1462,7 +1462,7 @@ function destinationLine(q, tag) {
 
 function beltButton(belt) {
   const style = BELT_STYLE[belt] || { bg: '#333', fg: '#fff' };
-  return `<button type="button" class="belt" data-belt="${esc(belt)}" style="background:${style.bg};color:${style.fg}">${esc(belt)}</button>`;
+  return `<button type="button" class="belt" data-belt="${esc(belt)}" style="background:${style.bg};color:${style.fg}">${esc(belt)}<span class="belt-key" aria-hidden="true"></span></button>`;
 }
 
 // Prize selection (#24, slice 6), built to the screen approved on
@@ -1943,7 +1943,7 @@ async function fillLeaderboard(panel) {
   const slot = (row, cls) => !row ? '' : `
     <div class="pslot ${cls}${row.you ? ' pslot-you' : ''}">
       ${row.hat ? '<div class="pcrown" aria-hidden="true">♛</div>' : ''}
-      <div class="pdisc">${row.hat ? '♛' : (avatarEmoji(row.avatar) || esc(row.username.slice(0, 1).toUpperCase()))}</div>
+      <div class="pdisc${!row.hat && avatarEmoji(row.avatar) ? ' has-avatar' : ''}">${row.hat ? '♛' : (avatarEmoji(row.avatar) || esc(row.username.slice(0, 1).toUpperCase()))}</div>
       <div class="pname">${esc(row.username)}</div>
       <div class="ppts">◆ ${row.points.toLocaleString()}</div>
       <div class="ppillar">${row.place}</div>
@@ -2002,11 +2002,16 @@ async function fillLeaderboard(panel) {
       <p class="lab-eyebrow">${esc(t('Standings'))}${placeChip}</p>
       <ol class="board">${rows}</ol>
     </section>` : '';
+  // The wrapper is `display: contents` until the desktop breakpoint, so on a
+  // phone it changes nothing at all; above it the podium and the standings
+  // sit side by side (#273).
   panel.innerHTML = `
     ${preSeasonLine}
     <p class="lab-intro tab-intro">${esc(intro)}</p>
-    ${podiumStripe}
-    ${listStripe}
+    <div class="board-split${rows ? ' board-split-two' : ''}">
+      <div class="board-split-podium">${podiumStripe}</div>
+      <div class="board-split-list">${listStripe}</div>
+    </div>
     ${placeLine}
     ${board.eligible ? '' : notInStandings}
   `;
@@ -2249,6 +2254,30 @@ async function playRankedAttempt(attempt, mode, tally) {
     </div>
   `;
   view.querySelector('#rq-cancel').addEventListener('click', () => showQuitConfirm(attempt, mode, q.seq, tally));
+  // A desktop means a keyboard (#273). 1-4 answer in the order the belts are
+  // drawn, Escape asks to cancel. The number is drawn on each belt so nobody
+  // has to discover it; CSS hides it below the desktop breakpoint.
+  const belts = [...view.querySelectorAll('.belt')];
+  belts.forEach((button, index) => {
+    button.querySelector('.belt-key')?.setAttribute('data-key', String(index + 1));
+  });
+  const onKey = (event) => {
+    // The screen is replaced, not unmounted, so this is where a listener from
+    // a question that is gone takes itself off rather than piling up.
+    if (!view.isConnected) { document.removeEventListener('keydown', onKey); return; }
+    if (event.metaKey || event.ctrlKey || event.altKey) return;
+    if (event.key === 'Escape') {
+      event.preventDefault();
+      view.querySelector('#rq-cancel').click();
+      return;
+    }
+    const index = Number(event.key) - 1;
+    if (!Number.isInteger(index) || index < 0 || index >= belts.length) return;
+    if (belts[index].disabled) return;
+    event.preventDefault();
+    belts[index].click();
+  };
+  document.addEventListener('keydown', onKey);
   // The attempt can end while this question is on screen (the season
   // launches, the server's clock ends it). Reading it again then leads to
   // the result. Only while this screen is the one showing: feedback for a
@@ -2737,7 +2766,8 @@ function showStart() {
         </div>
       </section>
       <div id="home-tiebreak" hidden></div>
-      <section class="home-stripe">
+      <div class="home-split">
+      <section class="home-stripe home-split-hero">
         <p class="lab-eyebrow">${esc(t('Ranked'))}</p>
         <div class="home-spot">
           <span class="home-pill" id="home-season" hidden></span>
@@ -2754,8 +2784,8 @@ function showStart() {
           </div>
         </div>
       </section>
-      ${signedIn() ? '<section class="home-stripe" id="home-climb" hidden></section>' : ''}
-      <section class="home-stripe">
+      ${signedIn() ? '<section class="home-stripe home-split-climb" id="home-climb" hidden></section>' : ''}
+      <section class="home-stripe home-split-actions">
         <p class="lab-eyebrow">${esc(t('Practice'))}</p>
         <div class="home-shortcuts">
           <button id="home-practice" class="home-short" type="button">
@@ -2768,6 +2798,7 @@ function showStart() {
           </button>
         </div>
       </section>
+      </div>
       <button id="viewlog" class="lab-log-link" type="button">${esc(t('Shift log'))}${entries.length ? ` <span>(${entries.length})</span>` : ''} <span aria-hidden="true">→</span></button>
       ${log.available ? '' : `<p class="warn">${esc(t('This phone is not saving results. Each score is shown once and then gone.'))}</p>`}
       <aside class="lab-disclaimer" aria-label="${esc(t('Independent practice'))}">

@@ -1,0 +1,308 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sort Quiz · Desktop layout mock</title>
+<style>
+  @font-face { font-family: Nunito; src: url("../assets/nunito-variable.ttf") format("truetype"); font-weight: 200 1000; font-display: swap; }
+  :root {
+    --bg: #140d09; --panel: #241811;
+    --ink: #fffdf8; --muted: #c9bbab; --line: rgba(255,255,255,.12);
+    --gold: #f4bd38; --gold-line: #b47d15;
+    --soft: rgba(244,189,56,.14); --soft-line: rgba(244,189,56,.3);
+    --good: #6cd39a; --bad: #f08a8a;
+    --glass-surface: rgba(38,26,18,.62); --glass-surface-sub: rgba(56,38,27,.5);
+    --glass-border: rgba(255,255,255,.14);
+    --glass-shadow: 0 16px 40px -4px rgba(0,0,0,.5), 0 4px 12px rgba(0,0,0,.3);
+    --blur-lg: blur(24px);
+    /* The one number the whole thing turns on. */
+    --desk: 1040px;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; color: var(--ink);
+    font: 16px/1.5 Nunito, "Trebuchet MS", sans-serif;
+    background: radial-gradient(130% 90% at 50% -10%, #2b1b11 0%, #160d07 52%, #0a0504 100%) fixed;
+  }
+  h1, h2, h3, .brand { font-family: "Space Grotesk", Nunito, sans-serif; letter-spacing: -.03em; }
+
+  /* ---- the page that explains the mock, not part of the app ---- */
+  .sheet { max-width: 1180px; margin: 0 auto; padding: 36px 24px 90px; }
+  .sheet > header { margin-bottom: 10px; }
+  .sheet h1 { font-size: 32px; margin: 0 0 6px; }
+  .sheet .lede { color: var(--muted); margin: 0 0 4px; max-width: 70ch; }
+  .note { border-left: 3px solid var(--gold-line); padding: 10px 0 10px 14px; margin: 22px 0; color: var(--muted); max-width: 78ch; }
+  .note b { color: var(--ink); }
+  .screen-label { margin: 46px 0 12px; font-size: 12px; letter-spacing: .18em; text-transform: uppercase; color: var(--gold); font-weight: 800; }
+  .screen-label small { display: block; letter-spacing: 0; text-transform: none; font-size: 14px; color: var(--muted); font-weight: 600; margin-top: 4px; }
+
+  /* ---- the desktop app shell being proposed ---- */
+  .app {
+    display: grid; grid-template-columns: 232px minmax(0, 1fr);
+    min-height: 560px; max-width: var(--desk); margin: 0 auto;
+    background: var(--glass-surface); backdrop-filter: var(--blur-lg);
+    border: 1px solid var(--glass-border); border-radius: 22px;
+    box-shadow: var(--glass-shadow); overflow: hidden;
+  }
+  .side { border-right: 1px solid var(--glass-border); padding: 20px 16px; background: rgba(28,19,13,.45); }
+  .brand { display: flex; align-items: center; gap: 10px; font-size: 19px; font-weight: 900; margin-bottom: 4px; }
+  .mark { width: 34px; height: 34px; border-radius: 11px; display: grid; place-items: center;
+          background: linear-gradient(135deg, var(--gold), #d89115); color: #2a1c10; font: 900 14px/1 Arial, sans-serif; }
+  .site { color: var(--muted); font-size: 11px; letter-spacing: .1em; text-transform: uppercase; margin: 0 0 18px 44px; }
+  .side nav { display: grid; gap: 4px; }
+  .side a { display: flex; align-items: center; gap: 11px; padding: 11px 12px; border-radius: 12px;
+            color: var(--muted); text-decoration: none; font-weight: 800; font-size: 15px; }
+  .side a i { width: 22px; text-align: center; font-style: normal; font-size: 17px; }
+  .side a[aria-current] { background: var(--soft); color: var(--ink); }
+  .side .foot { margin-top: 26px; padding-top: 16px; border-top: 1px solid var(--line); display: grid; gap: 4px; }
+  .side .foot a { font-size: 13px; padding: 8px 12px; }
+
+  .main { padding: 26px 30px 34px; min-width: 0; }
+  .eyebrow { margin: 0; font-size: 11px; letter-spacing: .18em; text-transform: uppercase; color: var(--gold); font-weight: 800; }
+  .title { font-size: 30px; margin: 6px 0 14px; }
+  .intro { color: var(--muted); margin: 0 0 18px; max-width: 62ch; }
+  .card { background: var(--glass-surface-sub); border: 1px solid var(--glass-border); border-radius: 18px; padding: 18px; }
+  .btn { display: block; width: 100%; text-align: center; padding: 14px; border-radius: 14px; border: 1px solid var(--glass-border);
+         background: transparent; color: var(--ink); font: inherit; font-weight: 900; cursor: pointer; }
+  .btn.primary { background: var(--gold); border-color: var(--gold-line); color: #2a1c10; }
+  .cols { display: grid; gap: 20px; }
+  .cols.two { grid-template-columns: minmax(0, 1.15fr) minmax(0, .85fr); }
+  .cols.half { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+
+  /* sign-in */
+  .signin { display: grid; place-items: center; padding: 54px 24px; }
+  .signin-card { width: 100%; max-width: 420px; text-align: center; }
+  .signin-card .mark { width: 60px; height: 60px; border-radius: 19px; font-size: 24px; margin: 0 auto 14px; }
+  .signin-card h2 { font-size: 27px; margin: 0 0 4px; }
+  .signin-card p { color: var(--muted); margin: 0 0 20px; }
+  .field { width: 100%; padding: 14px; border-radius: 14px; border: 1px solid var(--glass-border);
+           background: rgba(0,0,0,.22); color: var(--ink); font: inherit; margin-bottom: 10px; }
+  .link { background: none; border: 0; color: var(--gold); font: inherit; font-weight: 800; font-size: 13px; padding: 6px; cursor: pointer; }
+  .footlink { margin-top: 18px; font-size: 12.5px; }
+  .footlink a { color: var(--muted); text-underline-offset: 3px; }
+
+  /* home */
+  .hero { position: relative; border-radius: 18px; overflow: hidden; border: 1px solid var(--glass-border);
+          background: linear-gradient(135deg, #3a2714, #1d130b); padding: 26px; min-height: 196px; display: flex; flex-direction: column; justify-content: center; }
+  .hero h2 { font-size: 30px; margin: 0 0 8px; max-width: 16ch; }
+  .hero p { color: var(--muted); margin: 0; max-width: 42ch; }
+  .tile { display: flex; gap: 14px; align-items: center; }
+  .tile i { width: 46px; height: 46px; border-radius: 14px; display: grid; place-items: center; font-style: normal;
+            background: var(--soft); border: 1px solid var(--soft-line); font-size: 20px; flex: none; }
+  .tile b { display: block; font-size: 17px; }
+  .tile small { color: var(--muted); }
+  .stack { display: grid; gap: 12px; }
+
+  /* quiz */
+  .quizwrap { display: grid; place-items: center; }
+  .quiz { width: 100%; max-width: 560px; }
+  .quiztop { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+  .ring { width: 54px; height: 54px; border-radius: 50%; display: grid; place-items: center; font-weight: 900; font-size: 19px;
+          border: 3px solid var(--gold); color: var(--gold); }
+  .bar { height: 5px; border-radius: 5px; background: rgba(255,255,255,.1); overflow: hidden; margin-bottom: 18px; }
+  .bar i { display: block; height: 100%; width: 40%; background: var(--gold); }
+  .route { text-align: center; padding: 20px; border-radius: 18px; background: var(--glass-surface-sub); border: 1px solid var(--glass-border); }
+  .route small { color: var(--muted); letter-spacing: .1em; text-transform: uppercase; font-size: 11px; font-weight: 800; }
+  .route b { display: block; font-size: 50px; line-height: 1.1; letter-spacing: -.03em; }
+  .cue { text-align: center; color: var(--muted); margin: 16px 0 12px; font-size: 13px; letter-spacing: .12em; text-transform: uppercase; font-weight: 800; }
+  .belts { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .belt { padding: 20px; border-radius: 15px; border: 0; font: inherit; font-weight: 900; font-size: 17px; color: #fff; cursor: pointer; }
+  .kbd { display: inline-grid; place-items: center; min-width: 20px; height: 20px; padding: 0 5px; margin-left: 8px; border-radius: 5px;
+         background: rgba(0,0,0,.35); font-size: 11px; font-weight: 800; vertical-align: 2px; }
+
+  /* leaderboard */
+  .podium { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; align-items: end; }
+  .slot { text-align: center; }
+  .disc { width: 60px; height: 60px; margin: 0 auto 8px; border-radius: 50%; display: grid; place-items: center;
+          font-size: 44px; line-height: 1; background: var(--glass-surface-sub); border: 2px solid var(--glass-border); }
+  .slot.first .disc { width: 74px; height: 74px; font-size: 56px; border-color: var(--gold); box-shadow: 0 0 18px rgba(244,189,56,.5); }
+  .slot b { display: block; font-size: 15px; }
+  .slot small { color: var(--gold); font-weight: 800; }
+  .pillar { margin-top: 10px; border-radius: 12px 12px 0 0; background: linear-gradient(180deg, rgba(244,189,56,.22), rgba(244,189,56,.05));
+            border: 1px solid var(--soft-line); border-bottom: 0; display: grid; place-items: center; font-size: 26px; font-weight: 900; }
+  .slot.first .pillar { height: 104px; } .slot.second .pillar { height: 76px; } .slot.third .pillar { height: 58px; }
+  .board { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+  .board li { display: grid; grid-template-columns: 34px 1fr auto; align-items: center; gap: 12px;
+              padding: 12px 14px; border-radius: 14px; background: var(--glass-surface-sub); border: 1px solid var(--glass-border); }
+  .board .place { font-weight: 900; color: var(--muted); }
+  .board .who b { display: block; font-size: 15px; }
+  .board .who small { color: var(--muted); font-size: 12px; }
+  .board .av { font-size: 22px; line-height: 1; margin-right: 8px; vertical-align: -3px; }
+  .board .pts { font-weight: 900; }
+  .board li.you { border-color: var(--soft-line); background: var(--soft); }
+
+  @media (max-width: 900px) {
+    .app { grid-template-columns: 1fr; }
+    .side { border-right: 0; border-bottom: 1px solid var(--glass-border); }
+    .cols.two, .cols.half { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<div class="sheet">
+  <header>
+    <h1>Desktop layout — for approval</h1>
+    <p class="lede">Issue #273, step 1. Nothing in the app has changed; this page is a drawing. The phone layout stays exactly as it is today and is not touched by any of this.</p>
+  </header>
+
+  <div class="note">
+    <b>The idea in one line:</b> the bottom dock becomes a left sidebar, and the content gets room to breathe — but only where width actually helps. The quiz stays a narrow column on purpose: four belt buttons stretched across 1000px would be worse to use, not better.
+  </div>
+
+  <p class="screen-label">1 · Sign in
+    <small>Stays centred and narrow. A login form gains nothing from width; what the space buys is calm.</small>
+  </p>
+  <div class="app">
+    <div class="side">
+      <div class="brand"><span class="mark">RJ</span> Sort Quiz</div>
+      <p class="site">UPS Saddle Brook · Twilight</p>
+    </div>
+    <div class="main signin">
+      <div class="signin-card">
+        <div class="mark">RJ</div>
+        <h2>Sort Quiz</h2>
+        <p>Learn the chart. Play Ranked. Climb the leaderboard.</p>
+        <div class="card">
+          <input class="field" placeholder="Your Quiz Code">
+          <button class="btn primary">Log in with Quiz Code</button>
+          <div style="height:8px"></div>
+          <button class="btn">Continue as guest</button>
+          <p style="color:var(--muted);font-size:12.5px;margin:10px 0 2px">Ranked needs a Quiz Code. Guests get Practice only.</p>
+          <button class="link">Need a Quiz Code? Create an account</button><br>
+          <button class="link">Forgot my Quiz Code?</button>
+        </div>
+        <p class="footlink"><a href="#">Made by RJ. Meet the person behind the app</a></p>
+      </div>
+    </div>
+  </div>
+
+  <p class="screen-label">2 · Home
+    <small>Two columns: the hero keeps its weight on the left, and what you actually tap sits on the right instead of below the fold.</small>
+  </p>
+  <div class="app">
+    <div class="side">
+      <div class="brand"><span class="mark">RJ</span> Sort Quiz</div>
+      <p class="site">UPS Saddle Brook · Twilight</p>
+      <nav>
+        <a href="#" aria-current="page"><i>⌂</i> Home</a>
+        <a href="#"><i>≡</i> Practice</a>
+        <a href="#"><i>◆</i> Ranked</a>
+        <a href="#"><i>●</i> Profile</a>
+      </nav>
+      <div class="foot">
+        <a href="#"><i>🔊</i> Sound on</a>
+        <a href="#"><i>🌙</i> Night</a>
+        <a href="#"><i>🇺🇸</i> English</a>
+      </div>
+    </div>
+    <div class="main">
+      <p class="eyebrow">Ranked</p>
+      <h2 class="title">Play for the podium</h2>
+      <div class="cols two">
+        <div class="hero">
+          <h2>Reach the top 3.</h2>
+          <p>15 questions, ten seconds each. The top 3 win a UPS hat.</p>
+        </div>
+        <div class="stack">
+          <div class="card tile"><i>◆</i><span><b>Start Ranked quiz</b><small>Counts for points</small></span></div>
+          <div class="card tile"><i>≡</i><span><b>Practice</b><small>Never changes Ranked points</small></span></div>
+          <div class="card tile"><i>▦</i><span><b>Know the chart</b><small>Every service by state and ZIP</small></span></div>
+        </div>
+      </div>
+      <div class="cols half" style="margin-top:20px">
+        <div class="card tile"><i>🏆</i><span><b>Leaderboard</b><small>See the standings</small></span></div>
+        <div class="card tile"><i>⏱</i><span><b>Shift log</b><small>This device's sessions</small></span></div>
+      </div>
+    </div>
+  </div>
+
+  <p class="screen-label">3 · Ranked quiz
+    <small>Deliberately narrow, and centred. Width here would hurt: the eye would travel between the route code and the belts.</small>
+  </p>
+  <div class="app">
+    <div class="side">
+      <div class="brand"><span class="mark">RJ</span> Sort Quiz</div>
+      <p class="site">UPS Saddle Brook · Twilight</p>
+      <nav>
+        <a href="#"><i>⌂</i> Home</a>
+        <a href="#"><i>≡</i> Practice</a>
+        <a href="#" aria-current="page"><i>◆</i> Ranked</a>
+        <a href="#"><i>●</i> Profile</a>
+      </nav>
+    </div>
+    <div class="main quizwrap">
+      <div class="quiz">
+        <div class="quiztop">
+          <span class="eyebrow">Question 4 of 15</span>
+          <div class="ring">7</div>
+        </div>
+        <div class="bar"><i></i></div>
+        <div class="route">
+          <small>Ground · Ordinary · TX</small>
+          <b>763</b>
+        </div>
+        <p class="cue">Where does this go?</p>
+        <div class="belts">
+          <button class="belt" style="background:#111">BLACK <span class="kbd">1</span></button>
+          <button class="belt" style="background:#c8b037;color:#2a1c10">YELLOW <span class="kbd">2</span></button>
+          <button class="belt" style="background:#b8912c;color:#2a1c10">GOLD <span class="kbd">3</span></button>
+          <button class="belt" style="background:#9e2b2b">RED <span class="kbd">4</span></button>
+        </div>
+        <p style="text-align:center;color:var(--muted);font-size:12.5px;margin-top:14px">Keys 1–4 answer. Esc opens Cancel.</p>
+      </div>
+    </div>
+  </div>
+
+  <p class="screen-label">4 · Leaderboard
+    <small>Where width genuinely pays: podium and standings side by side, so you see your own row without scrolling past the top three.</small>
+  </p>
+  <div class="app">
+    <div class="side">
+      <div class="brand"><span class="mark">RJ</span> Sort Quiz</div>
+      <p class="site">UPS Saddle Brook · Twilight</p>
+      <nav>
+        <a href="#"><i>⌂</i> Home</a>
+        <a href="#"><i>≡</i> Practice</a>
+        <a href="#" aria-current="page"><i>◆</i> Ranked</a>
+        <a href="#"><i>●</i> Profile</a>
+      </nav>
+    </div>
+    <div class="main">
+      <p class="eyebrow">Ranked</p>
+      <h2 class="title">Leaderboard</h2>
+      <div class="cols two">
+        <div>
+          <div class="card">
+            <div class="podium">
+              <div class="slot second"><div class="disc">🦊</div><b>walk_2204</b><small>◆ 700</small><div class="pillar">2</div></div>
+              <div class="slot first"><div class="disc">🦁</div><b>board_me</b><small>◆ 1,001</small><div class="pillar">1</div></div>
+              <div class="slot third"><div class="disc">🐼</div><b>walk_2423</b><small>◆ 500</small><div class="pillar">3</div></div>
+            </div>
+          </div>
+          <p class="intro" style="margin-top:14px">Standings update after each settled Ranked quiz, not once a day.</p>
+        </div>
+        <div>
+          <p class="eyebrow" style="margin-bottom:8px">Standings</p>
+          <ul class="board">
+            <li><span class="place">4</span><span class="who"><b><span class="av">🐢</span>board6870</b><small>#EK9DG0 · Iron</small></span><span class="pts">300</span></li>
+            <li class="you"><span class="place">5</span><span class="who"><b><span class="av">🐙</span>you</b><small>#OO1NZ6 · Iron · your place</small></span><span class="pts">200</span></li>
+            <li><span class="place">6</span><span class="who"><b><span class="av">🐧</span>daytester</b><small>#LFXO4S · Iron</small></span><span class="pts">150</span></li>
+            <li><span class="place">7</span><span class="who"><b>AngelCha</b><small>#O4UY7K · Iron</small></span><span class="pts">90</span></li>
+            <li><span class="place">8</span><span class="who"><b>andrewp</b><small>#QDAM8R · Iron</small></span><span class="pts">60</span></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="note" style="margin-top:46px">
+    <b>What this would mean in practice.</b> One breakpoint at 900px: below it, nothing changes at all — the phone keeps its bottom dock and single column. Above it, the dock moves to the side and three screens gain a second column (Home, Leaderboard, Profile). The quiz, the chart and the forms stay narrow and centred.
+    <br><br>
+    <b>The keyboard.</b> Desktop means a keyboard, so the quiz gets number keys 1–4 for the belts and Esc for Cancel, with a visible focus ring everywhere. That is the third box on the issue and it is drawn here on purpose.
+    <br><br>
+    <b>Not drawn yet:</b> Practice, the chart, promotion, Profile and Owner tools. They follow the same two rules — forms and quizzes narrow, lists and dashboards two columns — and I would draw them in the PR that implements each.
+  </div>
+</div>
+</body>
+</html>
