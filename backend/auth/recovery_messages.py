@@ -13,13 +13,20 @@ is the whole rule for that message:
   ``MAX_UNRESOLVED`` unread at once, so the table cannot be filled from
   outside however many addresses the messages come from.
 * **Only the owner reads it.**
+* **It is not kept for good.** A message is free text and may name a
+  person. Once the owner has marked it resolved it has done its job, and
+  it is deleted ``RESOLVED_RETENTION_DAYS`` days later. One still waiting
+  for the owner is never deleted by age.
 """
+from datetime import timedelta
 from uuid import UUID
 
 from backend.db import migrate
 
 MAX_LENGTH = 500
 MAX_UNRESOLVED = 100
+# Owner decision, 2026-11-23.
+RESOLVED_RETENTION_DAYS = 30
 
 
 class MessageRefused(Exception):
@@ -97,3 +104,18 @@ def resolve(conn, owner_account_id: UUID, message_id: UUID, *, clock) -> bool:
     return migrate.fetch_one(
         conn, "SELECT id FROM recovery_messages WHERE id = %s", (message_id,)
     ) is not None
+
+
+def purge_resolved(conn, *, clock) -> int:
+    """Delete messages resolved more than the retention period ago.
+
+    Returns how many were deleted. Committing is the caller's. On a server
+    with nothing due this is one DELETE that matches nothing.
+    """
+    result = migrate.execute(
+        conn,
+        "DELETE FROM recovery_messages"
+        " WHERE resolved_at IS NOT NULL AND resolved_at < %s",
+        (clock.now() - timedelta(days=RESOLVED_RETENTION_DAYS),),
+    )
+    return getattr(result, "rowcount", 0)
