@@ -48,7 +48,9 @@ class StaticFrontendTests(unittest.TestCase):
                 self.assertEqual(self.client.get(path).status_code, 404)
 
     def test_api_routes_still_answer(self) -> None:
-        self.assertEqual(self.client.get("/health").json(), {"status": "ok"})
+        # this test is about routing, not the body; the version joined that
+        # body in #274 and has its own checks in test_version.py
+        self.assertEqual(self.client.get("/health").json()["status"], "ok")
         # an /api path that does not exist stays a JSON 404, not the home page
         response = self.client.get("/api/does-not-exist")
         self.assertEqual(response.status_code, 404)

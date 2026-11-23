@@ -116,6 +116,14 @@ az containerapp update -g rg-sort-tester-staging -n ca-sort-app-stg --image <acr
 
 Then check as in step 7, against the commit that image was built from.
 
+**Which digest?** [[releases]] records every deploy with the migration it
+needs. Walk up from the live row while the migration number stays the same;
+the last such row is the oldest image that can still serve this database.
+
+**Not a traffic split.** The app runs in single-revision mode, so
+`az containerapp ingress traffic set --revision-weight ...` is refused. A
+rollback is the deploy above, pointed at an older digest.
+
 Limits:
 
 - **This rolls back code, not data.** Points settled, accounts created

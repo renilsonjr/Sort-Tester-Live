@@ -54,7 +54,7 @@ jobs:
           done
           if [ ! -f /tmp/health.json ]; then echo 'Container did not respond in time'; docker logs "$container"; exit 1; fi
           body=$(cat /tmp/health.json)
-          if [ "$body" != '{"status":"ok"}' ]; then echo "Unexpected /health body: $body"; exit 1; fi
+          if ! python3 -c 'import json,sys; sys.exit(0 if json.loads(sys.argv[1]).get("status") == "ok" else 1)' "$body"; then echo "Unexpected /health body: $body"; exit 1; fi
           code=$(curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:18000/does-not-exist)
           if [ "$code" != '404' ]; then echo "Expected HTTP 404 for unknown route, got $code"; exit 1; fi
           echo 'Spike image passed smoke tests'

@@ -131,7 +131,7 @@ jobs:
             echo 'Uvicorn did not respond within 15 seconds.' >&2
             exit 1
           fi
-          if [ "$body" != '{"status":"ok"}' ]; then
+          if ! python3 -c 'import json,sys; sys.exit(0 if json.loads(sys.argv[1]).get("status") == "ok" else 1)' "$body"; then
             echo "Unexpected health response: $body" >&2
             exit 1
           fi
