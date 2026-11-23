@@ -897,7 +897,12 @@
   /* Gold eyebrows / section headings */
 
   /* Choice cards — gold-tinted icon and gold arrow (mock .choice) */
-  .lab-choice { border-radius: var(--r-sm); padding: 14px; gap: 12px; box-shadow: 0 10px 26px -12px rgba(0,0,0,0.6); }
+  /* 26px, not the --r-sm token: outer radius = inner radius + padding, and
+     the icon tile inside is 12px with 14px of padding around it. At 14px the
+     card's own corner was tighter than the tile it holds, which is what made
+     it look pinched. The token itself is untouched -- nine other rules use
+     it, and most of them hold nothing nested. */
+  .lab-choice { border-radius: 26px; padding: 14px; gap: 12px; box-shadow: 0 10px 26px -12px rgba(0,0,0,0.6); }
   .lab-choice-icon, .lab-choice-quiz .lab-choice-icon {
     background: rgba(244, 189, 56, 0.14); border: 1px solid rgba(244, 189, 56, 0.32);
     color: var(--gold); border-radius: 12px; width: 44px; height: 44px; font-size: 16px; font-weight: 800;
@@ -1180,7 +1185,10 @@
   .home-screen { gap: 16px; }
   .home-stripe { display: flex; flex-direction: column; gap: 8px; }
   .home-stripe[hidden] { display: none; }
-  .home-spot { position: relative; overflow: hidden; padding: 18px 18px 16px; border-radius: var(--r-md); border: 1px solid var(--soft-line); background: linear-gradient(135deg, var(--soft) 0%, var(--glass-surface-sub) 62%); box-shadow: var(--glass-shadow), 0 0 28px -6px rgba(244, 189, 56, 0.32); }
+  /* 32px: the Play Ranked button inside carries the 14px --r-sm radius, and
+     the card pads it by 18px. (The bottom padding is 16px, so the two lower
+     corners run 2px over-round -- not worth a second radius to chase.) */
+  .home-spot { position: relative; overflow: hidden; padding: 18px 18px 16px; border-radius: 32px; border: 1px solid var(--soft-line); background: linear-gradient(135deg, var(--soft) 0%, var(--glass-surface-sub) 62%); box-shadow: var(--glass-shadow), 0 0 28px -6px rgba(244, 189, 56, 0.32); }
   .home-spot::before { content: ""; position: absolute; top: 0; left: 28px; right: 28px; height: 1px; background: linear-gradient(90deg, transparent, var(--glass-highlight), transparent); }
   .home-pill { display: inline-block; margin-bottom: 10px; padding: 4px 10px; border-radius: 999px; background: var(--gold); color: #2a1c10; font-size: 10.5px; font-weight: 900; letter-spacing: .08em; text-transform: uppercase; }
   .home-spot-title { margin: 0 0 4px; font-size: 24px; font-weight: 900; letter-spacing: -.04em; line-height: 1.12; text-transform: none; color: var(--ink); }
@@ -1206,7 +1214,8 @@
   .home-climb-note { margin: 7px 0 0; color: var(--muted); font-size: 12px; font-weight: 700; }
 
   .home-shortcuts { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-  .home-short { display: flex; flex-direction: column; align-items: flex-start; gap: 3px; padding: 14px; text-align: left; color: var(--ink); border-radius: 18px; background: var(--glass-surface-sub); border: 1px solid var(--glass-border); box-shadow: var(--glass-shadow); }
+  /* 26px: the icon square below is 12px, with 14px of padding around it. */
+  .home-short { display: flex; flex-direction: column; align-items: flex-start; gap: 3px; padding: 14px; text-align: left; color: var(--ink); border-radius: 26px; background: var(--glass-surface-sub); border: 1px solid var(--glass-border); box-shadow: var(--glass-shadow); }
   .home-short-ic { width: 40px; height: 40px; margin-bottom: 7px; border-radius: 12px; display: grid; place-items: center; background: var(--soft); border: 1px solid var(--soft-line); color: var(--gold); }
   .home-short strong { font-size: 15px; font-weight: 900; letter-spacing: -.02em; }
   .home-short small { color: var(--muted); font-size: 11.5px; font-weight: 700; line-height: 1.35; }
