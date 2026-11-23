@@ -406,12 +406,14 @@ async function apiRead(path) {
   } catch {
     return null;
   }
-  // The server enforces the same idle window. When it has already ended the
-  // session, every screen would otherwise show "could not load" as if the
-  // server were broken; the player is sent to the entry screen instead,
-  // told why.
+  // The server ended this session. Every screen would otherwise show
+  // "could not load" as if the server were broken, so the player is sent to
+  // the entry screen instead. No reason is named: a 401 can be the idle
+  // window, the eight-hour limit, or the player ending this device from
+  // another one (#270), and nothing here can tell which. The app's own idle
+  // timer does know, and says so in checkIdle.
   if (response.status === 401 && signedIn()) {
-    signOut(t('Your session ended because the app sat untouched. Log in to carry on.'));
+    signOut(t('Your session ended. Log in to carry on.'));
     return null;
   }
   if (!response.ok) return null;

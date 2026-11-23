@@ -252,7 +252,7 @@ const ES = {
   'messages waiting.': 'mensajes en espera.',
   // Ranked, tie-breaks, promotion, session and owner screens: everything
   // app.js said in English only (issue #13, box 7 walk of 2026-11-22)
-  'Your session ended because the app sat untouched. Log in to carry on.': 'Tu sesión terminó porque la app estuvo sin uso. Inicia sesión para continuar.',
+  'Your session ended. Log in to carry on.': 'Tu sesión terminó. Inicia sesión para continuar.',
   'Could not reach the server. Nothing has been changed.': 'No se pudo conectar con el servidor. No se ha cambiado nada.',
   'Confirm it is you': 'Confirma que eres tú',
   'Re-enter your Quiz Code to continue. It stays confirmed on this device for five minutes.': 'Vuelve a escribir tu Quiz Code para continuar. Queda confirmado en este dispositivo durante cinco minutos.',
