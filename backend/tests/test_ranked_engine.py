@@ -676,6 +676,89 @@ class RankedEngineTests(unittest.TestCase):
         self.assertEqual((row["state"], row["final_outcome"]),
                          ("terminal_pending", "completed"))
 
+    # --- promotion ends at the first miss (issue #268) ---
+
+    def _answer_count(self, attempt_id):
+        return migrate.fetch_one(
+            self.conn,
+            "SELECT COUNT(*) AS n FROM attempt_answers WHERE attempt_id = %s",
+            (attempt_id,),
+        )["n"]
+
+    def test_a_wrong_answer_ends_a_promotion_at_once(self):
+        account_id = self._account_with_points(1000)
+        attempt_id = self._begin(account_id, "promotion")
+        self._play_one(attempt_id, 1)
+        self._play_one(attempt_id, 2)
+        result = engine.submit_answer(
+            self.conn, attempt_id, 3, WRONG, clock=self.clock, bank=self.bank
+        )
+        self.assertEqual(result.outcome, "wrong")
+        self.assertTrue(result.finished)
+        row = self._attempt_row(attempt_id)
+        self.assertEqual((row["state"], row["final_outcome"]),
+                         ("terminal_pending", "completed"))
+        # nothing after the miss was ever sent
+        self.assertEqual(self._answer_count(attempt_id), 3)
+        with self.assertRaises(engine.AttemptEndedError):
+            engine.advance(self.conn, attempt_id, clock=self.clock)
+        with self.assertRaises(engine.AttemptEndedError):
+            engine.current_question(
+                self.conn, attempt_id, clock=self.clock, bank=self.bank
+            )
+
+    def test_an_answer_sent_too_late_ends_a_promotion_at_once(self):
+        account_id = self._account_with_points(1000)
+        attempt_id = self._begin(account_id, "promotion")
+        self.clock.advance(11)
+        result = engine.submit_answer(
+            self.conn, attempt_id, 1, CORRECT, clock=self.clock, bank=self.bank
+        )
+        self.assertEqual(result.outcome, "timeout")
+        self.assertTrue(result.finished)
+        self.assertEqual(self._attempt_row(attempt_id)["final_outcome"], "completed")
+
+    def test_next_on_a_timed_out_promotion_question_ends_it_and_sends_nothing(self):
+        account_id = self._account_with_points(1000)
+        attempt_id = self._begin(account_id, "promotion")
+        self.clock.advance(11)
+        with self.assertRaises(engine.AttemptEndedError):
+            engine.advance(self.conn, attempt_id, clock=self.clock)
+        row = self._attempt_row(attempt_id)
+        self.assertEqual((row["state"], row["final_outcome"]),
+                         ("terminal_pending", "completed"))
+        self.assertEqual(self._answer_count(attempt_id), 1)
+        answer = migrate.fetch_one(
+            self.conn,
+            "SELECT answer FROM attempt_answers WHERE attempt_id = %s AND seq = 1",
+            (attempt_id,),
+        )
+        self.assertEqual(answer["answer"], "timeout")
+
+    def test_the_miss_that_ends_a_promotion_costs_only_its_own_points(self):
+        from backend.ranked import scoring, settlement
+
+        account_id = self._account_with_points(1000)
+        attempt_id = self._begin(account_id, "promotion")
+        self._play_one(attempt_id, 1)
+        result = engine.submit_answer(
+            self.conn, attempt_id, 2, WRONG, clock=self.clock, bank=self.bank
+        )
+        settled = settlement.settle_attempt(self.conn, attempt_id, clock=self.clock)
+        self.assertEqual(settled.adjustment, result.worth)
+        self.assertEqual(settled.adjustment, scoring.answer_points(result.difficulty, "wrong"))
+        self.assertLess(settled.adjustment, 0)
+        # off the cap now, so another promotion has to be earned in Ranked
+        self.assertEqual(engine.entry_status(self.conn, account_id).mode, "normal")
+
+    def test_a_wrong_answer_does_not_end_an_ordinary_attempt(self):
+        _, attempt_id = self._start()
+        result = engine.submit_answer(
+            self.conn, attempt_id, 1, WRONG, clock=self.clock, bank=self.bank
+        )
+        self.assertFalse(result.finished)
+        self.assertEqual(engine.advance(self.conn, attempt_id, clock=self.clock).next_seq, 2)
+
     def test_unknown_mode_is_refused(self):
         self._open_season()
         account_id = self._make_account()

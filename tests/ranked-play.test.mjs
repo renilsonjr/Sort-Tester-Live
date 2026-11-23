@@ -72,15 +72,22 @@ test('ordinary feedback shows the worth and the right belt; promotion does not p
   assert.match(feedback, /A right answer in promotion adds no points/);
 });
 
-test('a wrong promotion answer loses the promotion but not the attempt', () => {
-  // the engine plays out all fifteen and keeps deducting
-  // (backend.ranked.scoring._promotion_result), so the page must not stop
-  // the attempt or promise that the quiz is over
+test('a wrong promotion answer ends the promotion there and then', () => {
+  // owner decision (#268): the engine completes a promotion at its first
+  // miss, so the page says it is over, promises nothing more will be asked,
+  // and leads to the result instead of a next question
   const feedback = fn('function showRankedFeedback');
-  assert.match(feedback, /This promotion is lost/);
-  assert.match(feedback, /still takes points off your balance/);
-  assert.doesNotMatch(feedback, /promoFailed/);
-  assert.doesNotMatch(app, /A wrong answer or a timeout ends the attempt/);
+  assert.match(feedback, /This promotion ends here/);
+  assert.match(feedback, /it stops at the first miss/);
+  assert.match(feedback, /Reach the cap again to try next time/);
+  assert.match(feedback, /t\(promoLost \? 'See the result' : 'Next'\)/);
+  // the page never decides the ending by itself: it follows the server
+  assert.match(feedback, /if \(response\.finished\) \{\s*attempt\.stop\(\);\s*showRankedResult/);
+  assert.doesNotMatch(app, /plays out|still takes points off your balance/);
+});
+
+test('the promotion rules shown before starting say it ends at the first miss', () => {
+  assert.match(app, /One wrong answer or timeout ends the promotion right there, and that mistake deducts its points\./);
 });
 
 test('a timeout says no choice was sent, instead of inventing one', () => {

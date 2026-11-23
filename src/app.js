@@ -2013,9 +2013,9 @@ function showRankedFeedback(attempt, mode, q, chosen, response, tally) {
   const right = response.outcome === 'correct';
   const where = destinationLine(q);
   const promoCorrect = mode === 'promotion' && right;
-  // A wrong answer does not end a promotion attempt: the engine plays out
-  // all fifteen, the pass is gone and each mistake still deducts its
-  // ordinary points (backend.ranked.scoring._promotion_result).
+  // A wrong or late answer ends a promotion attempt on the spot (#268):
+  // the engine completes it with that answer, nothing else is asked, and
+  // the one miss deducts its ordinary points. `response.finished` is true.
   const promoLost = mode === 'promotion' && !right;
   const verdict = right
     ? (mode === 'promotion' ? t('Correct · still perfect') : t('Correct'))
@@ -2046,10 +2046,10 @@ function showRankedFeedback(attempt, mode, q, chosen, response, tally) {
           t('It keeps the attempt alive. Only passing all fifteen changes your balance, and it sets you to the next cap.'),
         ) : `<p class="rq-why">${esc(language.code === 'es' ? response.explanation_es : response.explanation_en)}</p>`}
       ${promoLost ? boardNotice(
-          t('This promotion is lost'),
-          t('Promotion needs all fifteen right. The attempt plays out, and every mistake from here still takes points off your balance.'),
+          t('This promotion ends here'),
+          t('Promotion needs all fifteen right, so it stops at the first miss. This mistake takes its points off your balance. Reach the cap again to try next time.'),
         ) : ''}
-      <button id="rq-next" class="primary" type="button">${esc(t('Next'))}</button>
+      <button id="rq-next" class="primary" type="button">${esc(t(promoLost ? 'See the result' : 'Next'))}</button>
     </section>
   `, 'ranked', () => showRankedFeedback(attempt, mode, q, chosen, response, tally));
   view.querySelector('#rq-next').addEventListener('click', async () => {
@@ -2335,7 +2335,7 @@ function showPromotionOffer(entry) {
       </div>
       <ol class="lab-rules">
         <li>${esc(t('15 questions. You need every one of them right.'))}</li>
-        <li>${esc(t('One wrong answer or timeout and the promotion is lost. The attempt still plays out, and mistakes deduct points.'))}</li>
+        <li>${esc(t('One wrong answer or timeout ends the promotion right there, and that mistake deducts its points.'))}</li>
         <li>${esc(t('Losing points drops you below the cap, so promotion is not available again until you earn them back.'))}</li>
         <li>${esc(t('Passing sets you to'))} ${((BADGE_CAP[entry.badge] ?? entry.points) + 1).toLocaleString()} ${esc(t('points and'))} ${esc(next || entry.badge)}.</li>
       </ol>

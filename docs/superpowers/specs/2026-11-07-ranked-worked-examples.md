@@ -4,6 +4,26 @@
 
 **Controlling policy:** [[2026-11-07-ranked-decision-record]]. Technical defaults and operational evidence gates: [[2026-11-07-ranked-security-operations-design]]. Build order: [[2026-11-06-ranked-roadmap]]. Do not reinterpret a future verification target as a passing feature test.
 
+## Amendment, 2026-11-22: a promotion ends at its first miss (#268)
+
+The owner decided that a promotion attempt stops at its first wrong or late
+answer instead of playing out all fifteen questions. Nothing is asked after
+the miss, and that one mistake deducts its ordinary points, as before.
+
+The arithmetic below is unchanged: a miss still costs its own difficulty's
+amount and correct answers still add nothing. What changed is how many
+mistakes one attempt can hold, which is now at most one. Two rows above are
+affected:
+
+- **Example 3** (14/15, one Easy mistake) stays reachable, but only when the
+  mistake is the fifteenth answer.
+- **Example 13** (one mistake, then Quit) can no longer happen: the attempt
+  has already ended when the mistake is recorded, so there is nothing left to
+  quit. Its Disconnect/grace half still holds for an attempt abandoned while
+  every answer so far is correct.
+
+The approved rows are left as they were written and confirmed on 2026-11-07.
+
 ## Reading the arithmetic
 
 “Raw score” means the ordinary difficulty-weighted performance score. A promotion stores that performance separately, but its applied adjustment gives correct answers zero and deducts for mistakes/timeouts; perfect completion instead sets cap+1. The one current balance, not raw performance, determines badge and standings. A partial score is the accepted/resolved result so far, not the potential result of unanswered questions. Except where an example explicitly includes a later timeout, partial-score arithmetic assumes no further deductions before settlement.
