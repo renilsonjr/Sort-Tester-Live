@@ -6,6 +6,7 @@ from argon2 import PasswordHasher
 from argon2.exceptions import VerifyMismatchError
 
 from backend.auth.settings import AuthSettings
+from backend.auth.verification_gate import get_verification_gate
 
 
 def normalize_login_id(login_id: str) -> str:
@@ -54,7 +55,8 @@ def hash_login_id(login_id: str, settings: AuthSettings | None = None) -> str:
     if settings is None:
         settings = AuthSettings()
     normalized = normalize_login_id(login_id)
-    return _hasher(settings).hash(normalized)
+    with get_verification_gate().turn():
+        return _hasher(settings).hash(normalized)
 
 
 def verify_login_id(login_id: str, encoded_hash: str, settings: AuthSettings | None = None) -> bool:
@@ -66,7 +68,8 @@ def verify_login_id(login_id: str, encoded_hash: str, settings: AuthSettings | N
     except ValueError:
         return False
     try:
-        _hasher(settings).verify(encoded_hash, normalized)
+        with get_verification_gate().turn():
+            _hasher(settings).verify(encoded_hash, normalized)
         return True
     except VerifyMismatchError:
         return False

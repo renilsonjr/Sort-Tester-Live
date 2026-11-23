@@ -74,6 +74,74 @@ def register_account(conn, username: str) -> tuple[UUID, str]:
     return account_id, login_id
 
 
+def find_login_candidates(conn, login_id: str) -> tuple[str | None, list[dict]]:
+    """Read the credentials a login ID could match. Checks nothing.
+
+    Returns (normalized login ID, candidate rows); the normalized form is
+    None when the ID is too malformed to name a credential at all.
+    """
+    try:
+        normalized = normalize_login_id(login_id)
+    except ValueError:
+        return None, []
+    candidates = migrate.fetch_all(
+        conn,
+        """
+        SELECT lc.id, lc.account_id, lc.verifier
+        FROM login_credentials lc
+        WHERE lc.lookup_key = %s AND lc.revoked_at IS NULL
+        """,
+        (derive_lookup_key(normalized),),
+    )
+    return normalized, candidates
+
+
+def check_login_candidates(normalized: str | None, candidates: list[dict]) -> dict | None:
+    """Return the candidate the login ID verifies against, or None.
+
+    Needs no database connection, so a caller can give its connection back
+    before the expensive part and take one again afterwards.
+
+    Every path performs one Argon2 verification, a dummy one when there is
+    nothing real to check, so that timing does not reveal whether a lookup
+    key exists in the database.
+    """
+    if normalized is None:
+        verify_login_id("DAAA-AAAA-AAAA-AAAA", _get_dummy_verifier(), _settings)
+        return None
+    if not candidates:
+        verify_login_id(normalized, _get_dummy_verifier(), _settings)
+        return None
+    for candidate in candidates:
+        if verify_login_id(normalized, candidate["verifier"], _settings):
+            return candidate
+    return None
+
+
+def open_login_session(
+    conn,
+    candidate: dict,
+    ttl_seconds: int,
+    ip_address: str | None,
+    user_agent: str | None,
+) -> tuple[str, UUID] | None:
+    """Create the session for a verified candidate.
+
+    The credential is read again first: it was verified without a
+    connection held, and one revoked in that moment must not sign anyone in.
+    """
+    still_valid = migrate.fetch_one(
+        conn,
+        "SELECT 1 FROM login_credentials WHERE id = %s AND revoked_at IS NULL",
+        (candidate["id"],),
+    )
+    if still_valid is None:
+        return None
+    return create_session(
+        conn, candidate["account_id"], ttl_seconds, ip_address, user_agent
+    )
+
+
 def login_with_id(
     conn,
     login_id: str,
@@ -81,36 +149,17 @@ def login_with_id(
     ip_address: str | None,
     user_agent: str | None,
 ) -> tuple[str, UUID] | None:
-    """Authenticate with a login ID and create a session.
+    """Authenticate with a login ID and create a session, on one connection.
 
-    The failure path performs a dummy Argon2 verification so that timing does
-    not reveal whether a lookup key exists in the database.
+    The sign-in route runs the same three steps itself so that it holds no
+    connection during the verification; this is the single-connection form
+    for callers that are already inside a transaction.
     """
-    try:
-        normalized = normalize_login_id(login_id)
-    except ValueError:
-        # Normalize failure still performs a dummy verify to keep timing similar.
-        verify_login_id("DAAA-AAAA-AAAA-AAAA", _get_dummy_verifier(), _settings)
+    normalized, candidates = find_login_candidates(conn, login_id)
+    candidate = check_login_candidates(normalized, candidates)
+    if candidate is None:
         return None
-    lookup_key = derive_lookup_key(normalized)
-    candidates = migrate.fetch_all(
-        conn,
-        """
-        SELECT lc.account_id, lc.verifier
-        FROM login_credentials lc
-        WHERE lc.lookup_key = %s AND lc.revoked_at IS NULL
-        """,
-        (lookup_key,),
-    )
-    if not candidates:
-        verify_login_id(normalized, _get_dummy_verifier(), _settings)
-        return None
-    for candidate in candidates:
-        if verify_login_id(normalized, candidate["verifier"], _settings):
-            return create_session(
-                conn, candidate["account_id"], ttl_seconds, ip_address, user_agent
-            )
-    return None
+    return open_login_session(conn, candidate, ttl_seconds, ip_address, user_agent)
 
 
 def get_account_by_session(conn, raw_token: str) -> dict | None:
