@@ -90,7 +90,7 @@ jobs:
             docker ps --quiet --filter "id=$container" | grep -q . || { echo 'Container exited'; docker logs "$container"; exit 1; }
             sleep 1
           done
-          [ "$(cat /tmp/health.json)" = '{"status":"ok"}' ] || { echo "Bad /health: $(cat /tmp/health.json)"; exit 1; }
+          python3 -c 'import json,sys; sys.exit(0 if json.load(open("/tmp/health.json")).get("status") == "ok" else 1)' || { echo "Bad /health: $(cat /tmp/health.json)"; exit 1; }
 
           expect() { # expect <path> <status>
             code=$(curl -s --path-as-is -o /dev/null -w '%{http_code}' "$base$1")
