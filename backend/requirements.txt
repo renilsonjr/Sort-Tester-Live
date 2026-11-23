@@ -42,10 +42,10 @@ protobuf==7.36.2
 psycopg==3.3.9
 psycopg-binary==3.3.9
 psycopg-pool==3.3.3
-pydantic==2.14.3
+pydantic==2.14.4
 pydantic-extra-types==2.11.1
 pydantic-settings==2.16.3
-pydantic_core==2.50.4
+pydantic_core==2.50.5
 Pygments==2.21.0
 python-dotenv==1.2.4
 python-multipart==0.0.34
