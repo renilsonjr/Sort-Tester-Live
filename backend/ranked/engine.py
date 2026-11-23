@@ -430,7 +430,9 @@ def submit_answer(conn, attempt_id, seq, choice, *, clock, bank) -> AnswerResult
     """Grade and lock one answer. Idempotent: a second submit changes nothing.
 
     The answer to the final question also completes the attempt, in the same
-    transaction: there is no Next after it.
+    transaction: there is no Next after it. So does the first miss of a
+    promotion (owner decision, #268): it needs all fifteen right, so nothing
+    is sent after a wrong or late answer.
     """
     now = clock.now()
     _sync_connection(conn, attempt_id, now, touch=True)
@@ -458,7 +460,10 @@ def submit_answer(conn, attempt_id, seq, choice, *, clock, bank) -> AnswerResult
     else:
         graded = "correct" if choice == question.correct_belt else "wrong"
     _record_answer(conn, attempt_id, seq, graded, now)
-    finished = seq == _settings(conn, attempt_id).question_count
+    finished = (
+        seq == _settings(conn, attempt_id).question_count
+        or _promotion_lost(conn, attempt_id, graded)
+    )
     if finished:
         _complete(conn, attempt_id, now)
     tiebreak = _is_tiebreak(conn, attempt_id)
@@ -499,6 +504,11 @@ def advance(conn, attempt_id, *, clock) -> AdvanceResult:
             conn.commit()
             raise NotAnsweredError(f"question {row['seq']} is not answered")
         _record_answer(conn, attempt_id, row["seq"], "timeout", now)
+        if _promotion_lost(conn, attempt_id, "timeout"):
+            # the timeout is the miss that ends a promotion: no next question
+            _complete(conn, attempt_id, now)
+            conn.commit()
+            raise AttemptEndedError("attempt ended: promotion lost on a timeout")
     next_seq = row["seq"] + 1
     _send_question(conn, attempt_id, next_seq, clock)
     conn.commit()
@@ -842,6 +852,22 @@ def _answer_result(seq, answer, question, *, finished=False) -> AnswerResult:
         explanation_en=question.text.en.explanation,
         explanation_es=question.text.es.explanation,
     )
+
+
+def _promotion_lost(conn, attempt_id, graded) -> bool:
+    """Whether this answer is the miss that ends a promotion attempt.
+
+    Owner decision 2026-11-22 (#268): a promotion stops at its first wrong or
+    late answer instead of playing out all fifteen. The outcome stays
+    ``completed``, so scoring is unchanged: that one miss deducts its ordinary
+    points and nothing else can, because nothing else is asked.
+    """
+    if graded == "correct":
+        return False
+    row = migrate.fetch_one(
+        conn, "SELECT mode FROM attempts WHERE id = %s", (attempt_id,)
+    )
+    return row is not None and row["mode"] == ranks.PROMOTION
 
 
 def _complete(conn, attempt_id, now) -> None:

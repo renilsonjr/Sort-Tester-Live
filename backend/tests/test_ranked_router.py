@@ -279,6 +279,36 @@ class RankedRouterTests(unittest.TestCase):
         self.assertEqual(promotion.json()["mode"], "promotion")
         self.assertIn("capability", promotion.json())
 
+    def test_a_promotion_ends_at_its_first_miss_and_reports_the_result(self):
+        # owner decision (#268): nothing is asked after the miss, and the
+        # answer that ended it carries the settled result
+        self._sign_in(self.client, "missing_player")
+        self._set_points("missing_player", 1000)
+        start = self.client.post("/api/ranked/attempts", json={"mode": "promotion"})
+        self.assertEqual(start.status_code, 201, start.text)
+        attempt_id = start.json()["attempt_id"]
+        self.client.headers[CAPABILITY_HEADER] = start.json()["capability"]
+        answer = self.client.post(
+            f"/api/ranked/attempts/{attempt_id}/answer",
+            json={"seq": 1, "choice": "NO-SUCH-BELT"},
+        )
+        self.assertEqual(answer.status_code, 200, answer.text)
+        body = answer.json()
+        self.assertEqual(body["outcome"], "wrong")
+        self.assertTrue(body["finished"])
+        self.assertEqual(body["result"]["points_before"], 1000)
+        self.assertEqual(body["result"]["adjustment"], body["worth"])
+        self.assertLess(body["result"]["points_after"], 1000)
+        for call in (
+            self.client.post(f"/api/ranked/attempts/{attempt_id}/advance"),
+            self.client.get(f"/api/ranked/attempts/{attempt_id}/current"),
+        ):
+            self.assertEqual(call.status_code, 410)
+        # below the cap again: promotion has to be earned back
+        self.assertEqual(self.client.get("/api/ranked/entry").json()["mode"], "normal")
+        again = self.client.post("/api/ranked/attempts", json={"mode": "promotion"})
+        self.assertEqual(again.status_code, 409)
+
     def test_unknown_mode_is_a_bad_request(self):
         self._sign_in(self.client, "odd_player")
         start = self.client.post("/api/ranked/attempts", json={"mode": "tiebreak"})

@@ -246,13 +246,16 @@ class SettleAttemptTests(SettlementTestCase):
         )
 
     def test_promotion_mistake_only_deducts(self):
+        # The right answers before it add nothing, and the miss ends the
+        # attempt (#268), so its own deduction is the whole adjustment.
         account_id = self._account(points=1000)
         attempt_id = self._start(account_id, mode="promotion")
-        self._play(attempt_id, [WRONG] + [CORRECT] * 14)
-        first_difficulty = self._stored_answers(attempt_id)[0][0]
+        self._play(attempt_id, [CORRECT] * 5 + [WRONG])
+        answers = self._stored_answers(attempt_id)
+        self.assertEqual(len(answers), 6)
         result = self._settle(attempt_id)
         self.assertEqual(
-            result.adjustment, scoring.answer_points(first_difficulty, "wrong")
+            result.adjustment, scoring.answer_points(answers[-1][0], "wrong")
         )
         self.assertEqual(self._points(account_id), 1000 + result.adjustment)
 
