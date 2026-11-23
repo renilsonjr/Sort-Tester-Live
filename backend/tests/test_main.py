@@ -13,7 +13,11 @@ class HealthEndpointTests(unittest.TestCase):
             response = client.get("/health")
 
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.json(), {"status": "ok"})
+        # the version joined this answer in #274; its own checks live in
+        # backend/tests/test_version.py
+        body = response.json()
+        self.assertEqual(body["status"], "ok")
+        self.assertIn("version", body)
 
     def test_unknown_route_returns_404(self) -> None:
         with TestClient(main.app) as client:
@@ -41,7 +45,9 @@ class DevelopmentCorsTests(unittest.TestCase):
     def test_exact_origin_is_authorized_with_credentials_for_auth(self) -> None:
         with self.client(self.origin) as client:
             response = client.get("/health", headers={"Origin": self.origin})
-        self.assertEqual(response.json(), {"status": "ok"})
+        # this test is about the CORS header, not the body; the version
+        # joined that body in #274
+        self.assertEqual(response.json()["status"], "ok")
         self.assertEqual(response.headers["access-control-allow-origin"], self.origin)
         # Auth endpoints require credentials in development; allowed origins are explicit.
         self.assertEqual(response.headers["access-control-allow-credentials"], "true")

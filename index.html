@@ -71,6 +71,9 @@
   .notice { margin: 0; color: var(--bad); font-size: 14px; font-weight: 600; }
   /* The same line after an action that worked: a result, not a warning. */
   .notice.done { color: var(--good); }
+  /* The running version, at the foot of Settings (#274). Quiet on purpose:
+     there when it is looked for, invisible when it is not. */
+  .profile-version { margin: 14px 0 0; text-align: center; color: var(--muted); font-size: 12px; font-weight: 700; }
   /* The fifteen profile icons (#272): a tappable grid, 48px targets. */
   .avatar-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin: 4px 0 10px; }
   .avatar-pick { min-height: 56px; font-size: 26px; line-height: 1; border: 1px solid var(--line); border-radius: 14px; background: var(--panel); cursor: pointer; }
@@ -442,29 +445,10 @@
   .belts .belt:disabled { opacity: .5; }
   .belts .belt.picked { opacity: 1; outline: 3px solid var(--ink); outline-offset: 2px; }
 
-  /* Interactive quiz feedback: correct green glow & incorrect red shake */
-  .belt.belt-correct {
-    opacity: 1 !important;
-    animation: correctGlow 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
-    z-index: 2;
-  }
-  .belt.belt-incorrect {
-    opacity: 1 !important;
-    animation: incorrectShake 0.5s ease-in-out forwards;
-    z-index: 2;
-  }
-
-  @keyframes correctGlow {
-    0% { box-shadow: 0 0 0 0 rgba(34, 100, 66, 0.9); transform: scale(1); }
-    40% { box-shadow: 0 0 0 6px rgba(34, 100, 66, 0.4), 0 0 26px 8px var(--good); transform: scale(1.04); filter: brightness(1.15); }
-    100% { box-shadow: 0 0 0 4px rgba(34, 100, 66, 0.7), 0 0 16px 3px var(--good); transform: scale(1.02); }
-  }
-
-  @keyframes incorrectShake {
-    0%, 100% { box-shadow: 0 0 0 0 rgba(161, 45, 45, 0.8); transform: translateX(0); }
-    20%, 60% { box-shadow: 0 0 0 5px rgba(161, 45, 45, 0.4), 0 0 20px 4px var(--bad); transform: translateX(-5px); filter: brightness(1.15); }
-    40%, 80% { box-shadow: 0 0 0 5px rgba(161, 45, 45, 0.4), 0 0 20px 4px var(--bad); transform: translateX(5px); filter: brightness(1.15); }
-  }
+  /* The quiz feedback rules and their keyframes used to be declared twice,
+     identically, here and ~400 lines further down. The second copy won, so
+     nothing ever looked wrong -- the risk was editing one and leaving the
+     other behind. Only the later copy survives (#350). */
   .lab-rules { margin: 4px 0 10px 0; padding-left: 20px; color: var(--ink); font-size: 14px; line-height: 1.5; display: flex; flex-direction: column; gap: 6px; }
 
   /* Ranked and promotion feedback/result (built to the screens approved
@@ -693,7 +677,11 @@
   .lab-nav button[aria-current="page"] { box-shadow: none; background: #f7eac7; color: var(--accent); }
   .lab-nav i { font-size: 20px; }
   .lab-service-tabs { display: flex; flex-wrap: wrap; gap: 7px; }
-  .lab-service-tabs button { min-height: 40px; border-radius: 999px; padding: 9px 13px; font-size: 12px; font-weight: 900; }
+  /* 44px, not 40: these are the chart's filters, tapped with a gloved thumb.
+     Only the height ever failed -- the labels make every chip at least 71px
+     wide -- so the padding is untouched and nothing re-wraps. The row grows
+     8px in all, on a screen whose list is over 8000px long. */
+  .lab-service-tabs button { min-height: 44px; border-radius: 999px; padding: 9px 13px; font-size: 12px; font-weight: 900; }
   .lab-service-tabs button[aria-pressed="true"] { border-color: var(--accent); background: var(--accent); }
   .lab-chart-search, .lab-main input { border-radius: 14px; background: var(--panel); }
   .lab-chart-heading { border-color: var(--accent); }
@@ -842,28 +830,41 @@
     box-shadow: var(--glass-shadow);
   }
 
-  /* Interactive quiz feedback: correct green glow & incorrect red shake */
+  /* Interactive quiz feedback: the belt settles onto a coloured ring.
+
+     Both of these fire on EVERY answer -- up to 30 times in one Hard quiz --
+     so they are deliberately quiet. What they used to do:
+
+     - correctGlow ran 0.6s on cubic-bezier(.175,.885,.32,1.275), a curve that
+       ends above 1, so it overshot and sprang back, and the keyframes pushed
+       the belt to scale(1.04) on the way. A bounce is a poor fit for anything
+       this frequent, and it should never be the thing a player waits out.
+     - incorrectShake slid the belt +/-5px sideways for half a second, during
+       a timed quiz, at the moment the player is already under pressure.
+
+     Neither animation was the only signal, and still is not: right and wrong
+     also carry the ring colour, the sound, and the feedback screen. The
+     movement was the part that added nothing. (#346, #347) */
   .belt.belt-correct {
     opacity: 1 !important;
-    animation: correctGlow 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+    animation: correctGlow 0.35s ease-out forwards;
     z-index: 2;
   }
   .belt.belt-incorrect {
     opacity: 1 !important;
-    animation: incorrectShake 0.5s ease-in-out forwards;
+    animation: incorrectSettle 0.2s ease-out forwards;
     z-index: 2;
   }
 
   @keyframes correctGlow {
-    0% { box-shadow: 0 0 0 0 rgba(34, 100, 66, 0.9); transform: scale(1); }
-    40% { box-shadow: 0 0 0 6px rgba(34, 100, 66, 0.4), 0 0 26px 8px var(--good); transform: scale(1.04); filter: brightness(1.15); }
-    100% { box-shadow: 0 0 0 4px rgba(34, 100, 66, 0.7), 0 0 16px 3px var(--good); transform: scale(1.02); }
+    from { box-shadow: 0 0 0 0 rgba(34, 100, 66, 0.9); }
+    to { box-shadow: 0 0 0 4px rgba(34, 100, 66, 0.7), 0 0 16px 3px var(--good); }
   }
 
-  @keyframes incorrectShake {
-    0%, 100% { box-shadow: 0 0 0 0 rgba(161, 45, 45, 0.8); transform: translateX(0); }
-    20%, 60% { box-shadow: 0 0 0 5px rgba(161, 45, 45, 0.4), 0 0 20px 4px var(--bad); transform: translateX(-5px); filter: brightness(1.15); }
-    40%, 80% { box-shadow: 0 0 0 5px rgba(161, 45, 45, 0.4), 0 0 20px 4px var(--bad); transform: translateX(5px); filter: brightness(1.15); }
+  /* Renamed from incorrectShake, which is what it used to do. */
+  @keyframes incorrectSettle {
+    from { box-shadow: 0 0 0 0 rgba(161, 45, 45, 0.8); }
+    to { box-shadow: 0 0 0 4px rgba(161, 45, 45, 0.7), 0 0 16px 3px var(--bad); }
   }
 
   /* ============================================================
@@ -890,7 +891,12 @@
   /* Gold eyebrows / section headings */
 
   /* Choice cards — gold-tinted icon and gold arrow (mock .choice) */
-  .lab-choice { border-radius: var(--r-sm); padding: 14px; gap: 12px; box-shadow: 0 10px 26px -12px rgba(0,0,0,0.6); }
+  /* 26px, not the --r-sm token: outer radius = inner radius + padding, and
+     the icon tile inside is 12px with 14px of padding around it. At 14px the
+     card's own corner was tighter than the tile it holds, which is what made
+     it look pinched. The token itself is untouched -- nine other rules use
+     it, and most of them hold nothing nested. */
+  .lab-choice { border-radius: 26px; padding: 14px; gap: 12px; box-shadow: 0 10px 26px -12px rgba(0,0,0,0.6); }
   .lab-choice-icon, .lab-choice-quiz .lab-choice-icon {
     background: rgba(244, 189, 56, 0.14); border: 1px solid rgba(244, 189, 56, 0.32);
     color: var(--gold); border-radius: 12px; width: 44px; height: 44px; font-size: 16px; font-weight: 800;
@@ -1072,7 +1078,36 @@
   #rq-question .lab-study-meta { margin: 0; text-align: center; letter-spacing: .14em; font-weight: 800; }
   .belts { gap: 10px; margin: 10px 0; }
   .belts .belt { min-height: clamp(66px, 10.5dvh, 100px); border-radius: 16px; letter-spacing: .06em; box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.22), 0 10px 20px -12px rgba(0, 0, 0, 0.6); }
-  .belts .belt:active { transform: scale(.97); }
+  /* 0.96 like every other control. It was the one thing in the app that gave
+     press feedback, and it used a value of its own. */
+  .belts .belt:active { transform: scale(.96); }
+
+  /* Press feedback (#345). Nothing but the belts responded to a finger:
+     Continue, Start Ranked quiz, Log in, the Practice cards and the dock all
+     stayed completely still. On a phone that small give is the only
+     confirmation a player gets before the screen changes.
+
+     0.96 exactly: below 0.95 the press reads as exaggerated. The transition
+     names its properties rather than `all`, so nothing else starts animating
+     by accident, and it is short enough not to lag behind the finger.
+
+     The reduced-motion block above already turns every transition off, so
+     this needs no guard of its own.
+
+     `.belt` is in the list on its own account. The Ranked quiz draws its
+     belts inside `.belts`, which already had both a transition and a press,
+     but the Practice quiz draws them inside `.options`, so that pair never
+     reached them -- the two quizzes felt different under the same finger.
+     `.belts .belt` is the more specific rule and keeps its own 0.15s
+     transform transition; this one only reaches the Practice belts. */
+  .primary, .ghost, .lab-choice, .home-short, .lab-nav button, .belt {
+    transition-property: transform, background-color, color, box-shadow;
+    transition-duration: .12s;
+    transition-timing-function: ease-out;
+  }
+  .primary:active, .ghost:active, .lab-choice:active,
+  .home-short:active, .lab-nav button:active, .belt:active { transform: scale(.96); }
+  .primary:disabled:active, .ghost:disabled:active { transform: none; }
 
   /* Ranked feedback: a verdict mark where the avatar used to be */
   .rq-mark { width: 56px; height: 56px; margin: 4px auto 0; border-radius: 50%; display: grid; place-items: center; font-size: 26px; font-weight: 900; line-height: 1; }
@@ -1128,6 +1163,43 @@
   .lab-language button { font-size: 10.5px; font-weight: 900; }
   .lab-main { padding-top: 14px; }
 
+  /* The header controls draw at 40x38 so the compact header stays compact,
+     but a finger needs 44x44. The drawn box keeps its size and the tappable
+     box is pushed out to 44x44 with a pseudo-element: 2px either side (40+4)
+     and 3px top and bottom (38+6).
+
+     Those numbers are not free choices. The buttons sit 6 to 7px apart, so
+     2px of horizontal growth each leaves 2 to 3px between neighbours and no
+     two hit areas ever overlap. Growing the buttons themselves to 44x44
+     instead would add 16px across a row that already ends 18px from the edge
+     of a 375px screen, and would squeeze the app name beside it.
+
+     The width below is 40px on purpose: the quiz header drew these at 38px,
+     which made the hit area 42px wide there and the one measurement that
+     matters inconsistent between screens. (`.card-header` carries the same
+     38px, but no screen renders that class any more, so it is left alone.) */
+  .quiz-topline .lab-language button { width: 40px; }
+  .lab-language button, .lab-theme-btn { position: relative; }
+  .lab-language button::after,
+  .lab-theme-btn::after {
+    content: "";
+    position: absolute;
+    /* Sized outright, not with a negative inset. An absolutely positioned
+       child resolves its offsets against the padding box, which has already
+       had the 1px border and the 2px padding taken off it, so `inset: -3px
+       -2px` measured 40x40 instead of the 44x44 it reads like. Centring a box
+       of a stated size does not care what the button's border or padding are.
+       Measured after this change: 44x44, and a point 1.5px outside the drawn
+       edge hit-tests to the button on all four sides. */
+    top: 50%;
+    left: 50%;
+    width: 44px;
+    height: 44px;
+    transform: translate(-50%, -50%);
+    /* Out of flow, so it is not a flex or grid item and changes no layout.
+       No background: this is a hit area, not something to look at. */
+  }
+
   /* Drawn icons (dock, Home shortcuts) */
   .lab-nav i svg, .home-short-ic svg, .lab-choice-icon svg { display: block; width: 19px; height: 19px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
   .lab-nav i { display: block; }
@@ -1136,7 +1208,10 @@
   .home-screen { gap: 16px; }
   .home-stripe { display: flex; flex-direction: column; gap: 8px; }
   .home-stripe[hidden] { display: none; }
-  .home-spot { position: relative; overflow: hidden; padding: 18px 18px 16px; border-radius: var(--r-md); border: 1px solid var(--soft-line); background: linear-gradient(135deg, var(--soft) 0%, var(--glass-surface-sub) 62%); box-shadow: var(--glass-shadow), 0 0 28px -6px rgba(244, 189, 56, 0.32); }
+  /* 32px: the Play Ranked button inside carries the 14px --r-sm radius, and
+     the card pads it by 18px. (The bottom padding is 16px, so the two lower
+     corners run 2px over-round -- not worth a second radius to chase.) */
+  .home-spot { position: relative; overflow: hidden; padding: 18px 18px 16px; border-radius: 32px; border: 1px solid var(--soft-line); background: linear-gradient(135deg, var(--soft) 0%, var(--glass-surface-sub) 62%); box-shadow: var(--glass-shadow), 0 0 28px -6px rgba(244, 189, 56, 0.32); }
   .home-spot::before { content: ""; position: absolute; top: 0; left: 28px; right: 28px; height: 1px; background: linear-gradient(90deg, transparent, var(--glass-highlight), transparent); }
   .home-pill { display: inline-block; margin-bottom: 10px; padding: 4px 10px; border-radius: 999px; background: var(--gold); color: #2a1c10; font-size: 10.5px; font-weight: 900; letter-spacing: .08em; text-transform: uppercase; }
   .home-spot-title { margin: 0 0 4px; font-size: 24px; font-weight: 900; letter-spacing: -.04em; line-height: 1.12; text-transform: none; color: var(--ink); }
@@ -1162,7 +1237,8 @@
   .home-climb-note { margin: 7px 0 0; color: var(--muted); font-size: 12px; font-weight: 700; }
 
   .home-shortcuts { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-  .home-short { display: flex; flex-direction: column; align-items: flex-start; gap: 3px; padding: 14px; text-align: left; color: var(--ink); border-radius: 18px; background: var(--glass-surface-sub); border: 1px solid var(--glass-border); box-shadow: var(--glass-shadow); }
+  /* 26px: the icon square below is 12px, with 14px of padding around it. */
+  .home-short { display: flex; flex-direction: column; align-items: flex-start; gap: 3px; padding: 14px; text-align: left; color: var(--ink); border-radius: 26px; background: var(--glass-surface-sub); border: 1px solid var(--glass-border); box-shadow: var(--glass-shadow); }
   .home-short-ic { width: 40px; height: 40px; margin-bottom: 7px; border-radius: 12px; display: grid; place-items: center; background: var(--soft); border: 1px solid var(--soft-line); color: var(--gold); }
   .home-short strong { font-size: 15px; font-weight: 900; letter-spacing: -.02em; }
   .home-short small { color: var(--muted); font-size: 11.5px; font-weight: 700; line-height: 1.35; }
@@ -1319,6 +1395,11 @@
      is a flex column with a 16px gap -- so the stripes they wrap would lose
      the space between them on a phone. The phone must not change (#273). */
   .home-split, .board-split { display: contents; }
+  /* Same reason, same trick: the chart's controls are grouped so the desktop
+     can put them in a column beside the list, and the group dissolves below
+     the breakpoint so the phone still sees them as plain children of
+     .lab-screen with its own 16px gap between them. */
+  .chart-aside { display: contents; }
 
   /* ---------------------------------------------------------------------
      Desktop (#273, mock approved 2026-11-23).
@@ -1333,7 +1414,11 @@
      route code and the answers at opposite ends of the eye's travel.
      --------------------------------------------------------------------- */
   @media (min-width: 900px) {
-    #app.lab-page { max-width: 1040px; border-radius: 22px; margin-block: 24px; min-height: calc(100dvh - 48px); }
+    /* The shell fills the window: the sidebar is chrome and belongs against
+       the edge, like every app with one. The reading width is held further
+       in, on the content itself (--desk-col below), so a wide monitor buys
+       room for columns and never a 1300px-long sentence. */
+    #app.lab-page { max-width: none; border-radius: 0; margin-block: 0; min-height: 100dvh; }
 
     /* The DOM order is header, main, nav. Grid areas place the nav first
        without moving it in the markup, so the tab order still reads
@@ -1342,11 +1427,24 @@
       display: grid;
       grid-template-columns: 232px minmax(0, 1fr);
       grid-template-areas: "nav top" "nav main";
-      align-content: start;
+      /* No align-content here. The default stretches the rows, which is what
+         carries the sidebar to the bottom of the window on a short screen
+         such as Practice. `start` packed the rows and left the sidebar
+         floating with the page background under it. */
+      min-height: 100dvh;
     }
     .lab-top { grid-area: top; }
     /* No dock at the bottom any more, so none of its clearance either. */
     .lab-main { grid-area: main; padding-top: 4px; padding-inline: 30px; padding-bottom: 34px; }
+
+    /* One reading column, shared by the header row and the screen below it so
+       the two line up. Wider than the old 808px card, because lists and the
+       leaderboard use the room; forms and the quiz keep their own narrower
+       caps further down and stay centred inside this one. */
+    .lab-shell { --desk-col: 1080px; }
+    /* width:100% matters: .lab-top-row is a flex item, and margin-inline:auto
+       alone cancels the stretch and shrinks it to its contents. */
+    .lab-top-row, .lab-main > .lab-screen { width: 100%; max-width: var(--desk-col); margin-inline: auto; }
     .lab-nav {
       grid-area: nav;
       position: static !important;
@@ -1362,7 +1460,11 @@
       border-right: 1px solid var(--glass-border) !important;
       border-radius: 0 !important;
       box-shadow: none !important;
-      background: rgba(28, 19, 13, 0.45) !important;
+      /* The token, not a literal. This is the same dock that sits at the
+         bottom on a phone, so it takes the dock's own colour, and that one
+         is redefined for the day theme. The literal it replaced was a dark
+         brown at 45%, which over the cream day background turned grey. */
+      background: var(--dock-bg) !important;
     }
     .lab-nav button {
       display: flex !important;
@@ -1401,6 +1503,80 @@
        three players or fewer everybody is on the podium, and half the width
        would sit empty beside it. */
     .board-split-two { display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr); gap: 20px; align-items: start; }
+
+    /* ---- Practice: the two shelves side by side -------------------------
+       The shelves hold one card each, so stacked they left a 1080px-wide
+       button around 310px of content. Side by side each card gets a column
+       of about 530px, which is close to the 560px the forms use. */
+    .screen-practice {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 16px 18px;
+      align-content: start;
+    }
+    .screen-practice > .lab-eyebrow,
+    .screen-practice > .lab-title,
+    .screen-practice > .lab-intro { grid-column: 1 / -1; }
+
+    /* ---- Know the chart: the controls beside the list -------------------
+       The list is 91 rows and over 8000px tall. Putting the service tabs and
+       the search in a sticky column means the reader keeps their filters
+       while scrolling it, which is the only reason this screen earns a
+       second column at all. */
+    .screen-chart {
+      display: grid;
+      grid-template-columns: minmax(0, 320px) minmax(0, 1fr);
+      gap: 14px 26px;
+      align-content: start;
+    }
+    .screen-chart > .lab-eyebrow,
+    .screen-chart > .lab-title,
+    .screen-chart > .lab-intro,
+    .screen-chart > .lab-disclaimer { grid-column: 1 / -1; }
+    .screen-chart > .chart-aside {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      position: sticky;
+      /* Clears the sticky header, whose bottom edge measures 61px here.
+         At 18px the service tabs slid underneath it while scrolling. */
+      top: 74px;
+      align-self: start;
+    }
+    .screen-chart > #chart-rows { grid-column: 2; }
+
+    /* ---- Profile: the numbers beside the climb --------------------------
+       Only the panel splits. The identity banner above it stays full width,
+       because it reads as a header for both columns. */
+    .screen-profile > #profile-panel {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 16px 18px;
+      align-items: start;
+    }
+    .screen-profile > #profile-panel > #pf-history { grid-column: 1 / -1; }
+
+    /* ---- Owner tools: the actions in two columns ------------------------ */
+    .screen-owner {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px 18px;
+      align-content: start;
+    }
+    .screen-owner > .lab-eyebrow,
+    .screen-owner > .lab-title,
+    .screen-owner > .lab-intro,
+    .screen-owner > .ghost,
+    .screen-owner > .lab-disclaimer { grid-column: 1 / -1; }
+
+    /* ---- Promotion: a decision, so it stays narrow ----------------------
+       Offer, result and celebration are all one choice or one verdict. They
+       follow the form rule, not the list rule.
+
+       The `.lab-main >` is load-bearing, not decoration: the --desk-col rule
+       above is `.lab-main > .lab-screen`, two classes, so a bare
+       `.screen-promo` loses to it and the screen stayed 1080px wide. */
+    .lab-main > .screen-promo { max-width: 560px; }
 
     /* Narrow on purpose. */
     #rq-play { max-width: 560px; margin-inline: auto; }

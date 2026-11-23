@@ -317,7 +317,7 @@ function showPractice() {
   stopTick();
   clock = null;
   const view = labPage(`
-    <section class="lab-screen">
+    <section class="lab-screen screen-practice">
       <p class="lab-eyebrow">${esc(t('Practice'))}</p>
       <h1 class="lab-title tab-title">${esc(t('Study and practice'))}</h1>
       <p class="lab-intro tab-intro">${esc(t('Practice never changes Ranked points.'))}</p>
@@ -536,7 +536,7 @@ function showProfile(tab = 'overview') {
   stopTick();
   clock = null;
   const view = labPage(`
-    <section class="lab-screen">
+    <section class="lab-screen screen-profile">
       <p class="lab-eyebrow">${esc(t('Profile'))}</p>
       <div class="pf-ident">
         <div class="home-obj pf-ident-obj" id="profile-badge"></div>
@@ -1013,6 +1013,7 @@ async function fillSettings(panel) {
       <span><strong>${esc(t('Delete account'))}</strong><small>${esc(t('Removes your profile, history and points.'))}</small></span>
       <span class="lab-arrow" aria-hidden="true">\u2192</span>
     </button>
+    <p class="profile-version" id="profile-version"></p>
   `;
   panel.querySelector('#profile-support').addEventListener('click', showSupport);
   panel.querySelector('#profile-logout').addEventListener('click', () => signOut());
@@ -1022,6 +1023,18 @@ async function fillSettings(panel) {
   // One account in the whole app is the owner's. For everybody else the
   // row stays absent rather than disabled: a locked door still says there
   // is a room. The server refuses the calls regardless of this.
+  // The version of the app actually serving this page (#274). Asked for
+  // rather than written in, so it cannot drift from what is running; the
+  // line stays empty if the server does not answer.
+  // Fetched directly: /health sits outside /api, which is the prefix api()
+  // adds, so api('/health') would ask for /api/health and get a 404.
+  fetch('/health', { credentials: 'same-origin' })
+    .then((answer) => (answer.ok ? answer.json() : null))
+    .then((health) => {
+      const line = panel.querySelector('#profile-version');
+      if (line && health?.version) line.textContent = `${t('Version')} ${health.version}`;
+    })
+    .catch(() => {});
   const owner = panel.querySelector('#profile-owner');
   owner.addEventListener('click', showOwnerTools);
   const me = await api('/auth/me');
@@ -1040,7 +1053,7 @@ function showOwnerTools() {
   stopTick();
   clock = null;
   const view = labPage(`
-    <section class="lab-screen">
+    <section class="lab-screen screen-owner">
       <p class="lab-eyebrow">${esc(t('Owner'))}</p>
       <h1 class="lab-title">${esc(t('Owner tools'))}</h1>
       <aside class="lab-disclaimer">${esc(t('These are the only administrator powers this app has. Approving does not change anybody’s points, badge or history, and gives you no access to a player’s record.'))}</aside>
@@ -2585,7 +2598,7 @@ function showPromotionResult(result, tally, { quit = false, attemptId = null } =
   }
   if (passed) {
     const view = labPage(`
-      <section class="lab-screen">
+      <section class="lab-screen screen-promo">
         <p class="lab-eyebrow">${esc(t('Promotion'))} · ${esc(t('passed'))}</p>
         <h1 class="lab-title">15 ${esc(t('of'))} 15. ${esc(t('You are'))} ${esc(result.badge_after)}.</h1>
         <div class="profile-balance">
@@ -2607,7 +2620,7 @@ function showPromotionResult(result, tally, { quit = false, attemptId = null } =
   // answers cost would hide where the points went
   const mistakes = result.adjustment + (quit ? QUIT_PENALTY : 0);
   const view = labPage(`
-    <section class="lab-screen">
+    <section class="lab-screen screen-promo">
       <p class="lab-eyebrow">${esc(t('Promotion'))} · ${esc(t(quit ? 'quit' : 'ended'))}</p>
       <h1 class="lab-title">${esc(tally.correctCount)} ${esc(t('of'))} 15 — ${esc(t('promotion needs all 15'))}</h1>
       <div class="sum">
@@ -2638,7 +2651,7 @@ function showPromotionOffer(entry) {
   clock = null;
   const next = nextBadgeName(entry.badge);
   const view = labPage(`
-    <section class="lab-screen">
+    <section class="lab-screen screen-promo">
       <p class="lab-eyebrow">${esc(t('Ranked'))}</p>
       <h1 class="lab-title">${esc(t('Promotion to'))} ${esc(next || entry.badge)}</h1>
       <div class="profile-balance">
@@ -3066,17 +3079,19 @@ function chartRow([state, code, belt, detail]) {
 
 function showStudy() {
   const view = labPage(`
-    <section class="lab-screen">
+    <section class="lab-screen screen-chart">
       <p class="lab-eyebrow">${esc(t('Twilight study guide'))}</p>
       <h1 class="lab-title">${esc(t('Know the chart.'))}</h1>
       <p class="lab-intro">${esc(t('Choose a service, then read its states, ZIP ranges, belts, and exceptions.'))}</p>
-      <div class="lab-service-tabs" role="group" aria-label="${esc(t('Choose service'))}">
-        ${Object.keys(CHART).map((service) => `<button type="button" data-service="${esc(service)}" aria-pressed="${service === studyService}">${esc(language.service(service))}</button>`).join('')}
+      <div class="chart-aside">
+        <div class="lab-service-tabs" role="group" aria-label="${esc(t('Choose service'))}">
+          ${Object.keys(CHART).map((service) => `<button type="button" data-service="${esc(service)}" aria-pressed="${service === studyService}">${esc(language.service(service))}</button>`).join('')}
+        </div>
+        <div class="lab-chart-heading"><strong id="service-title"></strong><span>${esc(t('Twilight chart'))}</span></div>
+        <p id="chart-count" class="lab-chart-count"></p>
+        <label class="lab-search-label" for="chart-search">${esc(t('Find a state or number'))}</label>
+        <input id="chart-search" class="lab-chart-search" type="search" placeholder="${esc(t('New Jersey, 079-9, California, 155'))}" value="${esc(studyQuery)}" autocomplete="off">
       </div>
-      <div class="lab-chart-heading"><strong id="service-title"></strong><span>${esc(t('Twilight chart'))}</span></div>
-      <p id="chart-count" class="lab-chart-count"></p>
-      <label class="lab-search-label" for="chart-search">${esc(t('Find a state or number'))}</label>
-      <input id="chart-search" class="lab-chart-search" type="search" placeholder="${esc(t('New Jersey, 079-9, California, 155'))}" value="${esc(studyQuery)}" autocomplete="off">
       <div id="chart-rows"></div>
       <aside class="lab-disclaimer"><strong>${esc(t('Made by RJ.'))}</strong> ${esc(t('This study guide does not replace your current worksite chart or UPS training.'))}</aside>
     </section>

@@ -278,6 +278,7 @@ const ES = {
   'No icon': 'Sin icono',
   'Icon saved.': 'Icono guardado.',
   'Icon removed.': 'Icono quitado.',
+  'Version': 'Versión',
   'Log out': 'Cerrar sesión',
   'Ends this session on this device. Your points and history stay.': 'Termina esta sesión en este dispositivo. Tus puntos y tu historial se conservan.',
   'Owner': 'Dueño',
