@@ -59,6 +59,30 @@
     color: var(--ink);
     font-family: "DM Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
     font-size: 16px; line-height: 1.45; -webkit-text-size-adjust: 100%;
+    /* DM Sans at 600-900 weight over a dark background renders heavier than
+       it should with subpixel antialiasing; this is the macOS/iOS pair that
+       drops to grayscale so the letterforms keep their drawn weight (#349).
+       It applies in both themes, and was checked on the cream day
+       background too, where the text is dark on light. */
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* Headings get `balance`, which evens the lines of a short block so a
+     two-word title does not leave one word alone on line two. Body copy gets
+     `pretty`, which only pulls back orphans and leaves the rest of the
+     ragged edge alone -- `balance` on a paragraph would reflow every line.
+     Checked in Spanish as well, where the same strings run longer (#348).
+
+     `.lab-section-heading` is deliberately NOT in this list. It is styled in
+     four places in this file but nothing ever renders it -- the eyebrow
+     labels are `.lab-eyebrow` -- so adding a declaration to it would be dead
+     CSS of exactly the kind #343 was about. */
+  h1, h2, .home-spot-title {
+    text-wrap: balance;
+  }
+  .home-spot-desc, .lab-disclaimer, .home-short small, .lab-choice small {
+    text-wrap: pretty;
   }
   #app { margin: 0 auto; background: var(--bg); box-shadow: 0 16px 70px #38261b1c; }
   #app.quiz-page { max-width: 520px; min-height: 100dvh; padding: 20px 16px 48px; }
@@ -814,7 +838,14 @@
     font-weight: 800 !important;
     background: transparent !important;
     border: 0 !important;
-    transition: all 0.2s ease !important;
+    /* `transition: all 0.2s ease !important` used to sit here, and it never
+       animated anything: the whole shell, dock included, is rebuilt on every
+       navigation, so the selected tab is a brand-new node that starts out
+       gold with nothing to transition from. What the declaration DID do was
+       win on !important over the shared press rule below, dragging the dock's
+       press onto `all` for 0.2s instead of the named properties at 0.12s the
+       other controls use. Removing it is what makes the dock feel like the
+       rest of the app under the finger (#343). */
   }
   .lab-nav button[aria-current="page"] {
     background: var(--gold) !important;

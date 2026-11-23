@@ -49,20 +49,43 @@ Newest first. `Version` is what `backend/version.py` held at that commit.
 
 | Date | Version | Commit | Image digest | Migration | Revision | What went in |
 |---|---|---|---|---|---|---|
-| 2026-11-23 | 0.1.0-dev | `8fcb263` | `032b58de…` | 0039 | `desk1` | Desktop layout: sidebar, wider column, Home and leaderboard in two columns, keyboard in the Ranked quiz (#273) |
+| 2026-11-23 | 0.1.0-dev | `fd017f3` | `9ddea543…` | 0039 | `polish1` | The five desktop screens that had none, the sidebar and shell fixes, the polish pass, and this version record (#273, #274, #341, #342, #344, #360) |
+| 2026-11-23 | — | `26e0611` | `c201053c…` | 0039 | `limits1` | Quiz Code check limits and dependency updates |
+| 2026-11-23 | — | `8fcb263` | `032b58de…` | 0039 | `desk1` | Desktop shell: sidebar, wider column, Home and leaderboard in two columns, keyboard in the Ranked quiz (#273) |
 | 2026-11-23 | — | `675d9c8` | `3e029ae1…` | 0039 | `icons2` | The chosen profile icon drawn large enough to see (#272) |
 | 2026-11-23 | — | `7f8b4f3` | `e975f5da…` | 0039 | `icons1` | Promotion ends at the first miss, the way back after leaving a match, sign out other devices, owner deletes an account, profile icons (#268–#272) |
-| 2026-11-21 | — | `1194383` | `d241bd9e…` | 0038 | `forgot1` | Forgot-my-login recovery messages (#251) |
-| — | — | — | `dd585b08…` | 0038 | `quiz1` | — |
+| 2026-11-23 | — | `6b4a966` | `dd585b08…` | 0038 | `quiz1` | — |
 
-Rows before `forgot1` were not recorded at the time; `quiz1`'s digest is kept
-because it was the rollback target on 2026-11-23.
+Rows before `quiz1` were not recorded at the time.
 
-**Everything from `icons1` down is on migration 0039**, so any of those three
-images can serve the database as it stands today. Going back to `forgot1` or
-`quiz1` would put code that predates the `accounts.avatar` column in front of
-a database that has it — which is harmless for a *dropped* column but not for
-one the newer code writes, so treat 0038 as out of reach without a restore.
+**Everything from `icons1` down is on migration 0039**, so any of those five
+images can serve the database as it stands today. `quiz1` is 0038: it predates
+the `accounts.avatar` column, so treat it as out of reach without a restore.
+
+## Why this table is the only way back
+
+**Azure keeps no old revisions.** Checked on 2026-11-23: the app is in
+`Single` revision mode with no retention set, and `az containerapp revision
+list` returned **one** row — the active one. Every earlier revision was
+removed. So "roll back to the previous revision" is not a thing that can be
+done here: the revision is gone, and only the **image in the registry**
+survives.
+
+That makes this table the rollback path, not a convenience. A row missing
+from it is a version you cannot return to without digging.
+
+### Recovering a digest that was never written down
+
+The publish workflow prints it, and GitHub keeps the log:
+
+```sh
+gh run list --workflow "App image publish" --limit 10 --json databaseId,headSha,createdAt,conclusion
+gh run view <id> --log | grep -oE "imageSha256=[0-9a-f]{64}"
+```
+
+That is how `limits1`'s digest was recovered on 2026-11-23, after it had
+already been deleted from Azure. The workflow log outlives the revision, so
+it — not a note taken at deploy time — is the record to trust.
 
 ## Cutting a release
 
