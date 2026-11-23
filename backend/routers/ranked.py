@@ -636,7 +636,7 @@ def _prize_state(conn, season_id):
 # valid and the owner is allowed, a precondition is simply missing, and the
 # page answers 428 by asking for the login ID instead of signing out.
 REAUTH_DETAIL = (
-    "Re-enter your login ID to continue. It stays confirmed on this device"
+    "Re-enter your Quiz Code to continue. It stays confirmed on this device"
     " for five minutes."
 )
 

@@ -135,7 +135,7 @@ def hand_over(conn, owner_account_id: UUID, request_id: UUID, *, clock) -> Hando
     if request["completed_at"] is not None:
         # One use. A second reading would be a second secret in the world.
         raise RecoveryError(
-            "That recovery is already done. Its login ID was shown once and"
+            "That recovery is already done. Its Quiz Code was shown once and"
             " cannot be shown again; open a new recovery if it was lost."
         )
     if request["deleted_at"] is not None:

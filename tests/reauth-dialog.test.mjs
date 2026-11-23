@@ -13,7 +13,7 @@ function fn(name) {
   return body.slice(0, body.indexOf('\n}\n'));
 }
 
-test('a 428 asks for the login ID and repeats the action exactly once', () => {
+test('a 428 asks for the Quiz Code and repeats the action exactly once', () => {
   const owner = fn('async function apiSendOwner');
   assert.match(owner, /first\.status !== 428/);
   assert.match(owner, /askForLoginId/);
@@ -31,14 +31,14 @@ test('the three guarded actions go through the prompt', () => {
   assert.match(app, /apiSendOwner\('POST', `\/ranked\/owner\/recoveries\/\$\{request\.id\}\/handover`\)/);
 });
 
-test('the login ID field cannot be read over the owner’s shoulder', () => {
+test('the Quiz Code field cannot be read over the owner’s shoulder', () => {
   const dialog = fn('function askForLoginId');
   assert.match(dialog, /type="password"/);
   // and a password manager can fill it, which is where the owner keeps it
   assert.match(dialog, /autocomplete="current-password"/);
 });
 
-test('the typed login ID is cleared as soon as it is sent', () => {
+test('the typed Quiz Code is cleared as soon as it is sent', () => {
   assert.match(fn('function askForLoginId'), /input\.value = ''/);
 });
 
@@ -46,7 +46,7 @@ test('the prompt says what confirming buys, and for how long', () => {
   assert.match(fn('function askForLoginId'), /five minutes/);
 });
 
-test('too many tries is told apart from a wrong login ID', () => {
+test('too many tries is told apart from a wrong Quiz Code', () => {
   assert.match(fn('function askForLoginId'), /result\.status === 429/);
 });
 

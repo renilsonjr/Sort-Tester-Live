@@ -33,7 +33,12 @@ the app template replaced it.
   `ranked-load-sim.py` plays Ranked quizzes as N logged-in players and
   checks leaks, deadline resets and double counting; it refuses a target
   that is not this machine unless told otherwise. Local result of
-  2026-11-21 (30 players, 15 minutes) is recorded on #13.
+  2026-11-21 (30 players, 15 minutes) is recorded on #13. It has four
+  steps (`create`, `run`, `reconcile`, `cleanup`): throwaway accounts
+  through the public sign-up, a run that stops by itself on a burst of
+  failures or a slow minute, each balance checked against its own
+  history, and deletion through the app's own route. It touches only
+  accounts whose username starts with `loadtest_`.
 - [[final-verification-2026-11-18]] — H-1/H-2, Ranked/owner/recovery,
   runtime-role and bounded mixed-traffic evidence; full app-template preview
   and its seven omissions. Final audit and pilot acceptance remain open.

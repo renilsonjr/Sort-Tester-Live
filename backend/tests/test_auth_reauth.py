@@ -82,7 +82,7 @@ class ReauthTests(unittest.TestCase):
     def test_an_owner_action_needs_a_fresh_login_id(self):
         refused = self._approve()
         self.assertEqual(refused.status_code, 428)
-        self.assertIn("Re-enter your login ID", refused.json()["detail"])
+        self.assertIn("Re-enter your Quiz Code", refused.json()["detail"])
         self.assertEqual(
             migrate.fetch_all(self.conn, "SELECT * FROM participant_links"), []
         )
