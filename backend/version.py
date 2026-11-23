@@ -29,4 +29,4 @@ What the numbers mean (owner's rule, #274):
 * **major** (0.x -> 1.0): reserved for when the app is past its pilot.
 """
 
-VERSION = "0.1.0"
+VERSION = "0.1.1-dev"
