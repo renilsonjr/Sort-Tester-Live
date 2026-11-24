@@ -3566,9 +3566,12 @@ function showResults() {
 function renderResults(summary, saved) {
   const elapsed = clockText(summary.totalMs);
 
-  const view = el(`
-    <section class="screen">
-      <div class="quiz-language">${languageButtons()}</div>
+  // #382: the practice results carry the app frame -- header and dock -- like
+  // every other untimed screen. Only the quiz itself drops it, on purpose: a
+  // dock during a timed run is a way to lose it. The EN/ES pair that used to
+  // float here loose comes from the header now, inside its bar.
+  const view = labPage(`
+    <section class="lab-screen screen-results">
       <div class="score-line">
         <div><div class="big">${summary.correct}/${summary.total}</div><div class="label">${esc(t('Score'))}</div></div>
         <div><div class="big">${elapsed}</div><div class="label">${esc(t('Time'))}</div></div>
@@ -3591,9 +3594,7 @@ function renderResults(summary, saved) {
       <button id="again" class="primary">${esc(t('Back to main page'))}</button>
       <button id="viewlog" class="ghost">${esc(t('Shift log'))}</button>
     </section>
-  `);
-  render(view);
-  wireLanguageButtons(view, () => renderResults(summary, saved));
+  `, 'practice', () => renderResults(summary, saved));
 
   view.querySelector('#again').addEventListener('click', () => showStart());
   view.querySelector('#viewlog')?.addEventListener('click', showLog);
@@ -3602,9 +3603,10 @@ function renderResults(summary, saved) {
 function showLog() {
   const entries = log.all();
 
-  const view = el(`
-    <section class="screen">
-      <div class="quiz-language">${languageButtons()}</div>
+  // #382: same as the results screen -- the Shift log is not timed and has
+  // nothing to protect, so it keeps the header and the dock.
+  const view = labPage(`
+    <section class="lab-screen screen-log">
       <h1>${esc(t('Shift log'))}</h1>
       ${entries.length === 0 ? `<p class="sub">${esc(t('Nothing recorded yet.'))}</p>` : `
         <ul class="logl">
@@ -3632,9 +3634,7 @@ function showLog() {
       <p id="exportnote" class="exportnote" hidden></p>
       ${entries.length ? `<button id="clear" class="ghost danger">${esc(t('Clear log'))}</button>` : ''}
     </section>
-  `);
-  render(view);
-  wireLanguageButtons(view, showLog);
+  `, 'practice', showLog);
 
   const exportButton = view.querySelector('#export');
   const exportNote = view.querySelector('#exportnote');
