@@ -3515,6 +3515,7 @@ function showFeedback(response) {
         <div class="answer-row"><span>${esc(t('Your choice'))}</span>${response.answered ? beltChip(response.answered, 'answer') : `<strong>${esc(t('No choice'))}</strong>`}</div>
         <div class="answer-row"><span>${esc(t('Correct belt'))}</span>${beltChip(response.correctBelt, 'answer')}</div>
       </div>
+      <p class="lab-eyebrow">${esc(t('Why'))}</p>
       <p class="why">${esc(language.explanation(response))}</p>
       ${right ? '' : `<button id="continue" class="primary" type="button">${esc(t('Continue'))}</button>`}
       ${stopPanelHtml()}
