@@ -106,9 +106,12 @@ test('#333 the confirmation is one tappable row with a real label', () => {
   assert.match(css, /\.check-row \{[^}]*min-height: 44px/);
   // The real input stays in the DOM for the keyboard and for screen readers;
   // only the drawn square follows it.
-  assert.match(css, /\.check-row input \{ position: absolute; opacity: 0;/);
+  // The selectors are shared with .delete-ack since #419, which gave the
+  // delete acknowledgement this same control instead of the browser's, so
+  // they are matched per selector rather than as one exact string.
+  assert.match(css, /\.check-row input[^{]*\{ position: absolute; opacity: 0;/);
   assert.match(css, /\.check-row input:checked \+ \.check-box/);
-  assert.match(css, /\.check-row input:focus-visible \+ \.check-box \{ outline: 3px solid var\(--focus\)/);
+  assert.match(css, /\.check-row input:focus-visible \+ \.check-box[^{]*\{ outline: 3px solid var\(--focus\)/);
 });
 
 test('#333 the code field still fits beside the Copy button', () => {
