@@ -17,9 +17,9 @@ Vault. `container-apps-app.md` is its runbook, and the section to read
 before deploying is §4: every parameter Azure already holds must be passed
 again, or the template's defaults quietly undo it.
 
-The two templates below it are **history, not deployables**: the spike was
-deleted after its test, and the API-only staging template was retired when
-the app template replaced it.
+The API-only staging template below it is **history, not a deployable**: it
+was retired when the app template replaced it. The spike before it was
+deleted after its test, and only its evidence record is kept.
 
 - `container-apps-app.bicep` (+ `.md`, `.dockerignore`) — the deployed app.
 - `app.Dockerfile` — its image: Alpine, non-root, runtime dependencies
@@ -62,15 +62,13 @@ the app template replaced it.
   made by hand and is not managed by it. Template only; **not deployed**.
 - `restore-runbook.md` — database restore with the mandatory "re-apply
   deletions" step; rehearsed on staging 2026-11-19/20.
-- `container-apps-spike.bicep` — disposable spike template (validated
-  2026-11-10; app and environment deleted after the test).
 - `container-apps-staging.bicep` — guarded API-only staging template, pinned to
   the scanned GHCR image digest.
 - `container-apps-staging.md` — staging runbook with verification and scan
   evidence.
 - `CONTAINER-APPS-SPIKE.md` — spike evidence record (digests, workflow runs,
-  cleanup).
-- `spike.Dockerfile` (+ `.dockerignore`) — Alpine-based, non-root image build.
+  cleanup). The spike's own template, Dockerfile and workflow were removed
+  from the repository on 2026-11-24; git history has them.
 
 ## Standing boundary
 

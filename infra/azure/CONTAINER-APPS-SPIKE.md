@@ -1,5 +1,11 @@
 # API-only Container Apps spike — prepared, not deployed
 
+> **Historical record.** The spike was deleted after its test. Its template
+> (`container-apps-spike.bicep`), image build (`spike.Dockerfile`) and
+> workflow (`container-apps-spike.yml`) were removed from the repository on
+> 2026-11-24; the steps below that name them describe what was done then and
+> can no longer be run from a current checkout. Git history has the files.
+
 This disposable test runs the existing `/health` FastAPI service in North Central
 US. It creates one workload-profile environment with only Consumption and one
 app: 0–1 replicas, 0.25 CPU, 0.5 GiB RAM, HTTPS ingress to port 8000. It creates
