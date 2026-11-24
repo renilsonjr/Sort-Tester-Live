@@ -169,8 +169,16 @@ The launch happens once and cannot be undone. It:
 - opens the official season, which ends on the date given, by default
   2026-12-31 at 11:59 p.m. Eastern.
 
-There is no launch button in the site. The launch is one request made by
-the owner's own signed-in browser.
+There is no launch button in the site, and the owner decided on
+2026-11-24 not to build one: the launch is used once, and a button that
+zeroes every balance would stay in the app for good. The launch is one
+request made by the owner's own signed-in browser, with the block below.
+
+**Decided (owner, 2026-11-24):** the official season starts at
+**12:00 a.m. Eastern on 2026-12-01** and ends at the default, 2026-12-31
+at 11:59 p.m. Eastern. Nothing happens by itself at that moment: the
+season starts when the owner runs the block. Running it later only makes
+the season shorter; the end does not move.
 
 ### Before
 
@@ -180,9 +188,16 @@ the owner's own signed-in browser.
 - [ ] Prize eligibility is up to date (Settings → Owner tools → Prize
       eligibility). Approvals carry over the launch. They can still be
       added while the official season is open, and never after it ends.
-- [ ] Note the time, as the restore point just before the launch
-      (`restore-runbook.md`). A restore to before the launch also undoes
-      the launch and everything after it.
+- [ ] Note the restore point: the UTC time just before the launch, written
+      down. A restore to before that moment undoes the launch **and
+      everything players did after it**, so it is the last resort, never a
+      way to "cancel" a launch. The restore itself is `restore-runbook.md`,
+      whose step 4 (re-applying deletions) needs this exact time.
+      One line is enough:
+
+      ```
+      Launch restore point: 2026-12-01T05:00:00Z (= 2026-12-01 00:00 Eastern)
+      ```
 - [ ] Nobody is expected to be mid-quiz: an unfinished attempt is ended
       with no score.
 
@@ -233,6 +248,22 @@ What the last line prints:
 
 ### After
 
+Three checks answer "did it work": the season, the balances and the
+history. The first two are visible in the app; the third is what proves
+nothing was lost.
+
+- [ ] **The season.** On the owner's own screen, Ranked shows the season
+      name and "Closes". For the exact answer, in the same console:
+      `await (await fetch('/api/ranked/season')).json()` — `phase` is
+      `official`, `label` is the name given, and `closes_at` is
+      `2027-01-01T04:59:00+00:00`, which is 2026-12-31 at 11:59 p.m.
+      Eastern.
+- [ ] **The balances are 0.** The owner's own Profile reads 0 points and
+      Iron. Every other balance was reset in the same transaction, so one
+      is enough to tell.
+- [ ] **The Pre-Season history is still there.** Profile → See history
+      still lists the Pre-Season attempts. An attempt that was open at the
+      launch appears with no points moved.
 - [ ] Home shows "The official season has started" with the start and end
       dates.
 - [ ] Ranked shows the season name and "Closes".
@@ -241,12 +272,29 @@ What the last line prints:
       Pre-Season attempts.
 
 Done on the live environment: never. Rehearsed on a local database on
-2026-11-21 and 2026-11-22 through the route. The console block itself was
-run in a browser against a local server on 2026-11-22, with the two boxes
-answered by script: every line of the table except the server error was
-seen, both balances went to 0 and the one unfinished attempt ended as
-`launch_reset`. A real browser console and real dialog boxes were not
-used.
+2026-11-21, 2026-11-22 and 2026-11-24 through the route.
+
+The 2026-11-24 rehearsal ran this exact block in a browser against a local
+server, with a Pre-Season holding two players (350 and 120 points) and one
+of them in the middle of a quiz:
+
+- the block printed `201` with `closes_at` `2027-01-01T04:59:00+00:00`;
+- both balances read 0 afterwards, and the owner's own entry read 0 points
+  and Iron;
+- the open attempt ended `launch_reset`, settled with an adjustment of 0;
+- the Pre-Season was frozen and kept; its history still read back through
+  `/api/ranked/history?phase=pre_season`, showing that attempt with the
+  balance unmoved;
+- the leaderboard answered `official` with no rows;
+- running the block a second time printed `409 Already launched`, and a
+  request without the typed word printed `422 Type LAUNCH to confirm`.
+
+`backend.tests.test_ranked_launch` and `test_ranked_season_close` pass (28
+tests).
+
+What the rehearsals have never used: a real browser console with real
+dialog boxes (the two boxes were answered by script), and real
+infrastructure — the hosted app, its database and its latency.
 
 ## 4. Season end and the three hats
 
