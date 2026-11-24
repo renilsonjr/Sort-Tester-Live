@@ -160,12 +160,38 @@ function el(html) {
 
 function render(node) {
   document.documentElement.lang = language.code;
-  app.className = node.classList.contains('lab-shell') ? 'lab-page' : 'quiz-page';
+  // #427: the dock goes while a scored attempt is live, the way it already
+  // does in Practice (#382) -- a dock under a timed run is a way to lose it,
+  // and the Ranked one is the run that costs points. The marker that keeps
+  // the heartbeat is the same marker that decides this: one fact about the
+  // screen, read once.
+  const attemptLive = Boolean(node.querySelector?.('[data-attempt-live]'));
+  app.className = (node.classList.contains('lab-shell') ? 'lab-page' : 'quiz-page')
+    + (attemptLive ? ' attempt-live' : '');
   app.replaceChildren(node);
   // Music belongs to the Ranked quiz screens only (#264). Deciding it here,
   // on every screen change, means no way out of a quiz can leave it playing.
   setMusicWanted(Boolean(node.querySelector?.('[data-ranked-music]')));
+  // #426: the heartbeat belongs to the attempt's own screens, and the same
+  // reasoning decides it here. A dock tab used to replace the quiz while the
+  // beat went on once a second, so the server never saw the attempt go quiet
+  // (it closes one 15s after its last beat) -- it never closed, every new
+  // attempt came back 409, and "Preparing your next match" promised "a few
+  // seconds" for as long as the page stayed open.
+  if (!attemptLive) endLiveAttempt();
   window.scrollTo(0, 0);
+}
+
+// The attempt whose heartbeat is running, if any. It is held here, not in
+// the screen that started it, because the screen that ENDS it may be any
+// other -- a dock tab, a deep link, a session that expires.
+let liveAttempt = null;
+function holdLiveAttempt(attempt) { liveAttempt = attempt; }
+function endLiveAttempt() {
+  if (!liveAttempt) return;
+  const going = liveAttempt;
+  liveAttempt = null;  // cleared first: stop() must not re-enter this
+  going.stop();
 }
 
 function languageButtons() {
@@ -287,6 +313,12 @@ function navTabs() {
 }
 
 function labPage(content, active = 'home', rerender = showStart) {
+  // #427: while a scored attempt is live the dock is not drawn at all. Not
+  // hidden: never built, so it is not in the tab order or the screen reader
+  // either, and no CSS has to beat `.lab-nav { display: grid !important }`.
+  // The marker is read from the content the screen asked for, so the fact
+  // lives in one place -- the screen's own markup.
+  const attemptLive = content.includes('data-attempt-live');
   const view = el(`
     <div class="lab-shell">
       <header class="lab-top">
@@ -301,10 +333,10 @@ function labPage(content, active = 'home', rerender = showStart) {
         </div>` : ''}
       </header>
       <main class="lab-main">${content}</main>
-      <nav class="lab-nav" style="grid-template-columns: repeat(${navTabs().length}, 1fr)" aria-label="${esc(t('Main navigation'))}">
+      ${attemptLive ? '' : `<nav class="lab-nav" style="grid-template-columns: repeat(${navTabs().length}, 1fr)" aria-label="${esc(t('Main navigation'))}">
         ${navTabs().map(([id, icon, label]) => `
         <button type="button" data-nav="${id}" ${active === id ? 'aria-current="page"' : ''}><i aria-hidden="true">${icon}</i>${esc(label)}</button>`).join('')}
-      </nav>
+      </nav>`}
     </div>
   `);
   render(view);
@@ -1501,8 +1533,9 @@ async function playTiebreak(round) {
     return;
   }
   attempt.startHeartbeat();
+  holdLiveAttempt(attempt);
   const view = labPage(`
-    <section class="lab-screen" id="tb-play">
+    <section class="lab-screen" id="tb-play" data-attempt-live>
       <div class="tb-top">
         <span class="lab-eyebrow" id="tb-count"></span>
         <span class="lab-eyebrow" id="tb-time"></span>
@@ -2350,6 +2383,7 @@ async function startRankedAttempt(mode) {
     return;
   }
   attempt.startHeartbeat();
+  holdLiveAttempt(attempt);
   playRankedAttempt(attempt, mode, { correctCount: 0 });
 }
 
@@ -2365,7 +2399,7 @@ async function playRankedAttempt(attempt, mode, tally) {
   }
   const q = current.data;
   const view = labPage(`
-    <section class="lab-screen" id="rq-play" data-ranked-music>
+    <section class="lab-screen" id="rq-play" data-ranked-music data-attempt-live>
       <div class="tb-top">
         <span class="lab-eyebrow" id="rq-count">${esc(t('Question'))} ${q.seq} ${esc(t('of'))} 15</span>
         <div class="rq-ring" id="rq-clock" role="timer" aria-label="${esc(t('seconds'))}"><span id="rq-ring-num"></span></div>
@@ -2433,29 +2467,54 @@ async function playRankedAttempt(attempt, mode, tally) {
       if (ring) { ring.style.setProperty('--pct', pct); ring.classList.toggle('low', left <= 3000); }
       const fill = view.querySelector('#rq-bar-fill');
       if (fill) fill.style.width = `${pct}%`;
-      if (left <= 0) stopTimer();
+      if (left <= 0) { stopTimer(); runOut(); }
     };
     paint();
     timer = setInterval(paint, 200);
   }
-  startCountdown(new Date(q.deadline_at).getTime(), 10000);
-  view.querySelectorAll('.belt').forEach((button) => button.addEventListener('click', async () => {
-    view.querySelectorAll('.belt').forEach((b) => { b.disabled = true; b.classList.toggle('picked', b === button); });
+
+  // #428: the clock reaching zero used to change nothing but the ring's
+  // colour. The four belts stayed enabled and the card sat there until the
+  // player pressed one, which is how they learned the question had already
+  // timed out and cost them its points. The press was never going anywhere:
+  // the server discards a choice sent past the deadline.
+  //
+  // So zero does what the press did, without the press. The belts go first,
+  // then the cue says what happened, then the same submit runs with no
+  // choice -- which is the truth, and which the server refuses outright if
+  // ITS clock says the question is still open (this page's may be fast),
+  // leaving the question on screen with its remaining seconds.
+  let over = false;
+  function runOut() {
+    if (over) return;
+    over = true;
+    view.querySelectorAll('.belt').forEach((b) => { b.disabled = true; });
+    const cue = view.querySelector('.rq-cue');
+    if (cue) { cue.textContent = t('Time ran out'); cue.classList.add('over'); }
+    submit(null, null);
+  }
+
+  async function submit(choice, button) {
     stopTimer();
-    const result = await attempt.answer(q.seq, button.dataset.belt);
+    const result = await attempt.answer(q.seq, choice);
     if (!result.ok) { playRankedAttempt(attempt, mode, tally); return; }
     const isRight = Boolean(result.data.correct);
-    if (isRight) {
-      button.classList.add('belt-correct');
-      playCorrectSfx();
-    } else {
-      button.classList.add('belt-incorrect');
-      playIncorrectSfx();
+    if (button) {
+      button.classList.add(isRight ? 'belt-correct' : 'belt-incorrect');
     }
+    if (isRight) playCorrectSfx(); else playIncorrectSfx();
     const nextTally = { correctCount: tally.correctCount + (isRight ? 1 : 0) };
     setTimeout(() => {
-      showRankedFeedback(attempt, mode, q, button.dataset.belt, result.data, nextTally);
+      showRankedFeedback(attempt, mode, q, choice, result.data, nextTally);
     }, 550);
+  }
+
+  startCountdown(new Date(q.deadline_at).getTime(), 10000);
+  view.querySelectorAll('.belt').forEach((button) => button.addEventListener('click', () => {
+    if (over) return;
+    over = true;
+    view.querySelectorAll('.belt').forEach((b) => { b.disabled = true; b.classList.toggle('picked', b === button); });
+    submit(button.dataset.belt, button);
   }));
   return view;
 }
@@ -2474,7 +2533,7 @@ function showRankedFeedback(attempt, mode, q, chosen, response, tally) {
     ? (mode === 'promotion' ? t('Correct · still perfect') : t('Correct'))
     : (response.outcome === 'timeout' ? t('Time ran out') : t('Review this route'));
   const view = labPage(`
-    <section class="lab-screen" data-ranked-music>
+    <section class="lab-screen" data-ranked-music data-attempt-live>
       <div class="rq-head">
       <div class="rq-mark ${right ? 'good' : 'bad'}" aria-hidden="true">${right ? '\u2713' : '\u2715'}</div>
       <div class="rq-head-text">
@@ -2547,7 +2606,9 @@ function rqChip(belt) {
 // this attempt is, since promotion's own penalty math already includes it.
 function showQuitConfirm(attempt, mode, seq, tally) {
   const view = labPage(`
-    <section class="lab-screen">
+    ${/* #426: the attempt is still running behind this question, and
+          "Continue quiz" goes back to it, so this screen keeps the beat. */ ''}
+    <section class="lab-screen" data-attempt-live>
       <h1 class="lab-title">${esc(t('Quit this ranked quiz?'))}</h1>
       <p class="lab-intro">${esc(t('Your current score will count, and 10 points are taken off it. You cannot resume this attempt.'))}</p>
       <button id="qc-stay" class="primary">${esc(t('Continue quiz'))}</button>

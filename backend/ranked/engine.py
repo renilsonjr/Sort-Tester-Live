@@ -457,6 +457,13 @@ def submit_answer(conn, attempt_id, seq, choice, *, clock, bank) -> AnswerResult
     if now > row["deadline_at"]:
         # too late: the question timed out and the submitted choice is discarded
         graded = "timeout"
+    elif choice is None:
+        # No choice means "the clock ran out" (#428), and this clock says it
+        # did not. Refusing keeps that the only thing it can mean: a page
+        # running fast cannot turn a question nobody answered into a wrong
+        # answer, and it still has its remaining seconds when it asks again.
+        conn.commit()  # keep the recorded activity, release the attempt lock
+        raise AnswerRejectedError(f"question {seq} is still open: a belt is required")
     else:
         graded = "correct" if choice == question.correct_belt else "wrong"
     _record_answer(conn, attempt_id, seq, graded, now)

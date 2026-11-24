@@ -153,6 +153,23 @@ class RankedEngineTests(unittest.TestCase):
         )
         self.assertEqual(result.outcome, "timeout")
 
+    def test_no_choice_is_a_timeout_only_once_the_deadline_has_passed(self):
+        # #428: the page sends no choice when its clock reaches zero, so that
+        # is the one thing "no choice" may mean. A page running fast must not
+        # be able to turn a question nobody answered into a wrong answer.
+        _, attempt_id = self._start()
+        with self.assertRaises(engine.AnswerRejectedError):
+            engine.submit_answer(
+                self.conn, attempt_id, 1, None, clock=self.clock, bank=self.bank
+            )
+        self.assertIsNone(self._answer_of(attempt_id, 1))  # nothing recorded
+        self.clock.advance(10.1)  # past the question's ten seconds
+        result = engine.submit_answer(
+            self.conn, attempt_id, 1, None, clock=self.clock, bank=self.bank
+        )
+        self.assertEqual(result.outcome, "timeout")
+        self.assertEqual(self._answer_of(attempt_id, 1), "timeout")
+
     def test_call_at_grace_deadline_ends_as_disconnect(self):
         _, attempt_id = self._start()
         self.clock.advance(18)  # exactly the grace deadline: finalization wins
