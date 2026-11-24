@@ -47,6 +47,13 @@ function getDownloads() {
   return downloadsHandle;
 }
 
+// How long a belt shows right or wrong before the feedback screen takes
+// over, in Ranked and in Practice alike. Owner decision, 2026-11-25: 250 ms.
+// It was 550 ms in Ranked and 450 ms in Practice, and in Ranked it comes on
+// top of the wait for the server, so it was most of what a player felt
+// between tapping a belt and seeing the result.
+const FEEDBACK_PAUSE_MS = 250;
+
 function canBuildWorkbook() {
   return typeof window !== 'undefined' && typeof window.XLSX !== 'undefined';
 }
@@ -2587,7 +2594,7 @@ async function playRankedAttempt(attempt, mode, tally) {
     const nextTally = { correctCount: tally.correctCount + (isRight ? 1 : 0) };
     setTimeout(() => {
       showRankedFeedback(attempt, mode, q, choice, result.data, nextTally);
-    }, 550);
+    }, FEEDBACK_PAUSE_MS);
   }
 
   startCountdown(new Date(q.deadline_at).getTime(), 10000);
@@ -3662,7 +3669,7 @@ function showCard() {
       }
       setTimeout(() => {
         showFeedback(clock.expired() ? timeoutCard(run) : answerCard(run, button.dataset.belt, clock.elapsed()));
-      }, 450);
+      }, FEEDBACK_PAUSE_MS);
     });
   });
 
