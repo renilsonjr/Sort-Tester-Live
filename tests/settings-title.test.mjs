@@ -36,8 +36,11 @@ test('the stylesheet has no unbalanced comment', () => {
 });
 
 test('#389 Settings has a title of its own', () => {
-  assert.match(profile, /\$\{tab === 'settings' \? `/);
-  assert.match(profile, /<h1 class="lab-title">\$\{esc\(t\('Settings'\)\)\}<\/h1>/);
+  // The branch widened in #414, which gave the history a title the same
+  // way, so it now reads "any tab but the overview" and picks the word.
+  // Same intent: Settings names itself and does not borrow the username.
+  assert.match(profile, /\$\{tab !== 'overview' \? `/);
+  assert.match(profile, /t\(tab === 'settings' \? 'Settings' : 'Ranked history'\)/);
 });
 
 test('#389 the eyebrow still names the section', () => {

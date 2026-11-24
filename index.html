@@ -411,6 +411,13 @@
     border-radius: 12px; padding: 12px 14px;
     display: grid; grid-template-columns: 1fr auto; gap: 2px 12px; align-items: baseline;
   }
+  /* #412: the name column is `1fr` in a grid, and a grid item will not go
+     below its own content, so one unbroken 40-character badge ID -- the
+     field that writes it has no maxlength -- pushed the page 240px sideways
+     at 375. `anywhere` lets the token break; `min-width: 0` lets the column
+     accept the smaller size. The same guard the results card got in #388,
+     in the shape this row needs. */
+  .logl .who { overflow-wrap: anywhere; min-width: 0; }
   .logl .sc { font-weight: 700; font-size: 18px; font-variant-numeric: tabular-nums; }
   .logl .when { grid-column: 1 / -1; font-size: 12px; color: var(--muted); }
   .logmiss { grid-column: 1 / -1; margin-top: 8px; gap: 7px; }
