@@ -23,6 +23,9 @@ const ES = {
   'Sort practice, one route at a time': 'Practica la clasificación, una ruta a la vez',
   'Practice': 'Practica',
   'Ranked': 'Clasificatorio',
+  // #414: the Ranked attempts the server settled, as against the Shift
+  // log, which is the practice list this phone keeps.
+  'Ranked history': 'Historial de Clasificatorio',
   'Pre-Season': 'Pretemporada',
   'The official season has started': 'La temporada oficial ha empezado',
   'These standings win no prize. Everyone goes back to 0 points and Iron when the official season starts.': 'Esta clasificación no da premio. Todos vuelven a 0 puntos e Iron cuando empiece la temporada oficial.',

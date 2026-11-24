@@ -32,7 +32,11 @@ jobs:
   backend-linux:
     name: Backend tests
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    # The suite grew into this wall: 1295 tests took 9m48s, 9m57s and then
+    # 10m03s on three runs of the same week, and the third was killed three
+    # seconds over -- with every test passing and /health answering 200.
+    # 20 leaves room to keep adding tests before this needs looking at again.
+    timeout-minutes: 20
     env:
       # A new loopback-only cluster belongs to this job, not Azure. Missing
       # configuration or skipped tests must fail backend.ci_tests.

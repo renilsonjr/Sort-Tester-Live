@@ -639,7 +639,7 @@ function showProfile(tab = 'overview') {
   const view = labPage(`
     <section class="lab-screen screen-profile">
       <p class="lab-eyebrow">${esc(t('Profile'))}</p>
-      ${tab === 'settings' ? `
+      ${tab !== 'overview' ? `
       <!-- #389: Settings names itself, like every other screen -- eyebrow
            for the section, title for the screen. It used to borrow the
            overview's header, so its h1 was the player's username and nothing
@@ -647,7 +647,12 @@ function showProfile(tab = 'overview') {
            devices, Delete account) already use "Settings" as their eyebrow,
            so this completes that ladder. The identity card belongs to the
            overview, which Back goes to. -->
-      <h1 class="lab-title">${esc(t('Settings'))}</h1>` : `
+      ${/* #414: history had the same gap Settings had -- it borrowed the
+            overview's header, so its h1 was the player's username and
+            nothing said which history it was. "Ranked history", not "Shift
+            history": the Shift log is the practice list kept on the phone,
+            and these are the Ranked attempts the server settled. */ ''}
+      <h1 class="lab-title">${esc(t(tab === 'settings' ? 'Settings' : 'Ranked history'))}</h1>` : `
       <div class="pf-ident">
         <div class="home-obj pf-ident-obj" id="profile-badge"></div>
         <div class="pf-ident-text">
@@ -1565,15 +1570,24 @@ async function playTiebreak(round) {
       `${t('Question')} ${q.seq} ${t('of')} 5 · ${t('round')} ${round.number}`;
     const where = destinationLine(q, t('Hard'));
     view.querySelector('#tb-question').innerHTML = `
-      <div class="rq-prompt">
+      ${/* #435: the same card the Ranked question has. These two prompts were
+            built from one shape and only the Ranked one kept the surface, so
+            the screen with five seconds a question, played once, with a hat
+            on it, was the one where the route had nothing to sit on. No
+            stake pill here: the Ranked card's pill says what the attempt is
+            worth, and this screen says that in its eyebrow instead. */ ''}
+      <div class="rq-prompt rq-route home-spot">
         <p class="rq-service">${esc(where.service)}</p>
         <p class="rq-code">${esc(where.code)}</p>
       </div>
-      <p class="lab-study-meta">${esc(t('Where does this go?'))}</p>
+      <p class="lab-eyebrow rq-cue">${esc(t('Where does this go?'))}</p>
       <div class="belts" role="group" aria-label="${esc(t('Choose a belt'))}">
         ${(q.options || []).map((belt) => beltButton(belt)).join('')}
       </div>
-      <p class="lab-study-meta">${esc(t('No feedback: whether you were right stays hidden until the round closes.'))}</p>
+      ${/* #437: a sentence, so the app's prose style rather than the label
+            style it wore -- 12 words in 11px uppercase, on a screen with
+            five seconds to read anything. */ ''}
+      <p class="lab-intro">${esc(t('No feedback: whether you were right stays hidden until the round closes.'))}</p>
     `;
     view.querySelectorAll('.belt').forEach((button) => button.addEventListener('click', async () => {
       view.querySelectorAll('.belt').forEach((b) => { b.disabled = true; });
@@ -1608,12 +1622,17 @@ function showTiebreakSubmitted(round) {
   stopTick();
   const view = labPage(`
     <section class="lab-screen">
+      ${/* #400: an informational terminus you are sent to, like the
+            leaderboard (#385) -- nothing on it is an action, so the way out
+            is the compact Back, not a full-width button. The five other
+            "Back to Ranked" buttons in the app are a different case: on a
+            result screen that button IS the way forward. */ ''}
+      ${backLink('tb-back')}
       <p class="lab-eyebrow">${esc(t('Prize tie-break'))} · ${esc(t('round'))} ${round.number}</p>
       <h1 class="lab-title">${esc(t('Attempt submitted'))}</h1>
       <p class="lab-intro">${esc(t('All five are in. Nothing else is needed from you.'))}</p>
       <div class="board-notice"><h2>${esc(t('Why you see nothing yet'))}</h2>
         <p>${esc(t('Everyone in this round answers the same five questions, at different times. Showing a score now would tell a later player what to expect. Scores stay hidden for everyone until the round closes.'))}</p></div>
-      <button id="tb-back" class="ghost">${esc(t('Back to Ranked'))}</button>
     </section>
   `, 'ranked', () => showTiebreakSubmitted(round));
   view.querySelector('#tb-back').addEventListener('click', showRanked);
@@ -2876,14 +2895,22 @@ async function fillTiebreakCallout(box, { onlyToPlay = false } = {}) {
   if (!tie) return;
   const round = tie.round;
   if (round && !round.played) {
+    // #436: the row used to sit loose between Standings and Season, the two
+    // blocks on that screen that CAN wait, both of them labelled. The one
+    // with a deadline was the only one with nothing naming it. Same stripe
+    // and eyebrow as its neighbours now. The other two states below are
+    // .board-notice cards, which carry their own heading already.
     box.innerHTML = `
-      <button id="tiebreak-go" class="lab-choice lab-choice-quiz" type="button">
-        <span class="lab-choice-icon">◇</span>
-        <span><strong>${esc(t('You are in a prize tie-break'))}</strong><small>${esc(t(round.restarted
-          ? 'The round was restarted after a server outage. Play it again before it closes.'
-          : 'A quiz decides the hat. Play once before the round closes.'))}</small></span>
-        <span class="lab-arrow" aria-hidden="true">→</span>
-      </button>`;
+      <section class="home-stripe">
+        <p class="lab-eyebrow">${esc(t('Prize tie-break'))}</p>
+        <button id="tiebreak-go" class="lab-choice lab-choice-quiz" type="button">
+          <span class="lab-choice-icon">◇</span>
+          <span><strong>${esc(t('You are in a prize tie-break'))}</strong><small>${esc(t(round.restarted
+            ? 'The round was restarted after a server outage. Play it again before it closes.'
+            : 'A quiz decides the hat. Play once before the round closes.'))}</small></span>
+          <span class="lab-arrow" aria-hidden="true">→</span>
+        </button>
+      </section>`;
     box.querySelector('#tiebreak-go').addEventListener('click', () => showTiebreakInvite(tie));
     box.hidden = false;
     return;
