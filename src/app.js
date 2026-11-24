@@ -945,6 +945,7 @@ function showSignOutOthers() {
       <h1 class="lab-title">${esc(t('Sign out my other devices'))}</h1>
       <p class="lab-intro">${esc(t('Ends every other phone or computer signed in to your account. This one stays.'))}</p>
       <p class="lab-intro">${esc(t('Your Quiz Code keeps working. Anyone using it elsewhere has to enter it again.'))}</p>
+      <p class="lab-intro">${esc(t('If someone else knows your Quiz Code, ask the owner in person for a new one.'))}</p>
       <p class="notice" id="signout-others-said" role="status" hidden></p>
       <button id="signout-others-go" class="primary" type="button">${esc(t('Sign out my other devices'))}</button>
       <button id="signout-others-cancel" class="ghost" type="button">${esc(t('Cancel'))}</button>
