@@ -792,14 +792,26 @@ function showSupport() {
 }
 
 async function fillSupport(panel) {
-  const result = await support.listTickets();
+  // #421: a ticket is about a Ranked attempt, so a player with none was sent
+  // to a screen that could only say so and offer Cancel. This screen did not
+  // know -- only showCreateTicket asked -- so it asks too, alongside the
+  // request it already makes, costing no extra wall time.
+  const [result, history] = await Promise.all([support.listTickets(), api('/ranked/history')]);
   if (!result || !result.ok) {
     panel.innerHTML = `<p class="notice">${esc(t('Could not load your tickets. Your tickets and your points are safe.'))}</p>`;
     return;
   }
   const tickets = result.data ?? [];
+  // Fail open: `api` answers null for a request that did not land, and a
+  // support screen must not lock its only action because a second request
+  // failed. Locked only when we know there is nothing to write a ticket
+  // about -- the same dashed, half-lit row the deck picker already uses.
+  const canCreate = history === null || history.length > 0;
+  // #420: the screen's job is "see your tickets, or open one", and the
+  // retention policy used to outrank both: three paragraphs, 88 words, 284px
+  // measured at 375x812 between the title and the only control. The list and
+  // the action come first now; the policy keeps every word, below them.
   panel.innerHTML = `
-    <p class="lab-intro">${esc(t('Only you can see your tickets. When a ticket is closed, its description and connection details are deleted 15 days later. Evidence shared with another case that is still open is kept until that case closes.'))}</p>
     ${tickets.length === 0 ? `
       <p class="lab-intro">${esc(t('You have no tickets. Support only opens one when you ask for it: nothing here is created automatically, and a connection problem does not open a ticket by itself.'))}</p>
     ` : `<ul class="support-list">
@@ -811,14 +823,20 @@ async function fillSupport(panel) {
         <span class="support-keep">${esc(support.retentionLine(ticket, (iso) => new Date(iso).toLocaleDateString()))}</span>
       </li>`).join('')}
     </ul>`}
-    <p class="lab-intro">${esc(t('Opening a ticket never changes your points or your access.'))}</p>
+    ${canCreate ? `
     <button id="support-create" class="lab-choice lab-choice-quiz" type="button">
       <span class="lab-choice-icon">+</span>
       <span><strong>${esc(t('Create ticket'))}</strong><small>${esc(t('About one of your own Ranked attempts.'))}</small></span>
       <span class="lab-arrow" aria-hidden="true">\u2192</span>
-    </button>
+    </button>` : `
+    <div class="lab-choice locked">
+      <span class="lab-choice-icon">+</span>
+      <span><strong>${esc(t('Create ticket'))}</strong><small>${esc(t('A ticket is about a Ranked attempt, and you have none yet.'))}</small></span>
+    </div>`}
+    <p class="lab-intro">${esc(t('Only you can see your tickets. When a ticket is closed, its description and connection details are deleted 15 days later. Evidence shared with another case that is still open is kept until that case closes.'))}</p>
+    <p class="lab-intro">${esc(t('Opening a ticket never changes your points or your access.'))}</p>
   `;
-  panel.querySelector('#support-create').addEventListener('click', showCreateTicket);
+  panel.querySelector('#support-create')?.addEventListener('click', showCreateTicket);
 }
 
 async function showCreateTicket() {
@@ -912,6 +930,11 @@ function showAvatarPicker(chosen = undefined, message = null) {
   clock = null;
   const view = labPage(`
     <section class="lab-screen">
+      ${/* #424: the way out was a full-width ghost, pixel-identical to the
+            "No icon" button stacked right under it -- one clears your icon,
+            the other leaves, and nothing said which. Same compact Back the
+            deck picker and the leaderboard use, in the same place: first. */ ''}
+      ${backLink('av-back')}
       <p class="lab-eyebrow">${esc(t('Profile'))}</p>
       <h1 class="lab-title">${esc(t('Choose a profile icon'))}</h1>
       <p class="lab-intro">${esc(t('Shown on your profile and the leaderboard.'))}</p>
@@ -921,7 +944,6 @@ function showAvatarPicker(chosen = undefined, message = null) {
       </div>
       <p class="notice" id="av-said" role="status" hidden></p>
       <button id="av-none" class="ghost" type="button">${esc(t('No icon'))}</button>
-      <button id="av-back" class="ghost" type="button">${esc(t('Back'))}</button>
     </section>
   `, 'profile', () => showAvatarPicker(chosen, message));
 
@@ -1004,8 +1026,9 @@ function showDeleteAccount() {
       <p class="lab-eyebrow">${esc(t('Settings'))}</p>
       <h1 class="lab-title">${esc(t(DELETE_QUESTION))}</h1>
       <p class="lab-intro">${esc(t(DELETE_CONSEQUENCE))}</p>
-      <label class="delete-ack">
+      <label class="delete-ack" for="delete-ack">
         <input type="checkbox" id="delete-ack">
+        <span class="check-box" aria-hidden="true"></span>
         <span>${esc(t(DELETE_ACK))}</span>
       </label>
       <p class="lab-intro" id="delete-hint">${esc(t('Tick the box above to continue.'))}</p>
