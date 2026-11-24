@@ -1,0 +1,116 @@
+# Handler — conveyor mini-game rules and delivery stages
+
+Player-facing name: **Handler**. Internal name and issue titles: conveyor.
+
+**Status:** Design approved by the owner on November 24, 2026. Nothing is implemented. No issue text has been edited and no issue has been created from this document yet.
+
+Parent tracker: issue #392. Sub-issues #393, #394, #395, #396, #397. This document supersedes the "choices still to make" list in #392 for the three areas the owner settled on November 24, 2026 (round end, difficulty modes, score persistence); every other caveat in #392 still stands.
+
+## What changed on November 24, 2026
+
+#392 captured the game concept but left the product rules open, and its sub-issues were written for a Practice-only feature that saved nothing and touched no backend. The owner settled the open rules and, in doing so, changed that boundary: the first release now saves a best score per mode, which is new stored data. A mini-game leaderboard is wanted but is deliberately deferred to a sixth stage so the game can reach a phone before the privacy decision about showing real employee names is made.
+
+## Game rules
+
+Rules 1–11 restate the concept agreed in #392. Rules 12–21 are the owner's November 24 decisions.
+
+**The belt**
+
+1. Packages enter at the top and travel down toward the player. Following packages stay visible in the queue behind the front one.
+2. Only the front package can be sorted.
+3. The label shows the routing code **and the service**, because routing depends on both. Never fabricate a five-digit ZIP from a prefix or preload code.
+
+**The choice**
+
+4. Each active package offers exactly two destinations: one correct belt and one wrong belt. Each shows the belt color and its written name.
+5. The correct destination comes from the route rules and is never randomized. Only the left/right position is randomized.
+6. The wrong destination is a valid belt, different from the correct one.
+7. Options stay fixed until the front package is resolved. A following package cannot change the active package's answer, and a late gesture for an already-resolved package is ignored.
+
+**The three outcomes**
+
+8. **Sort** — swiped to the correct belt.
+9. **Missort** — swiped to the wrong belt.
+10. **Drop** — the package passes the bottom edge without being sorted.
+11. The three outcomes are counted separately and each package resolves exactly once.
+
+**Round and scoring**
+
+12. A round lasts **two minutes**. It ends when the clock reaches zero, not when packages run out.
+13. A sort scores **1 point multiplied by the current combo multiplier**.
+14. A missort **subtracts 1 point** and resets the combo to zero.
+15. A drop **subtracts 1 point** and resets the combo to zero.
+16. The **combo** is the number of consecutive sorts. The multiplier is x1 at 0–4, x2 at 5–9, x3 at 10–14 and x4 at 15 or more. x4 is the ceiling.
+17. The score never falls below zero.
+18. The end-of-round summary shows points, sorts, missorts, drops, accuracy and the round's highest combo.
+19. The combo is shown two ways while playing, and both are owner-requested: a **ring of sparkles around the front package**, growing in number and brightness as the streak holds, and a **floating cartoon badge at the top right of the stage** carrying the multiplier, which is absent below x2, appears when the first tier is reached, brightens with each tier, and lifts away when the combo breaks. Breaking a combo scatters the sparkles rather than fading them. Nothing else on the screen reacts: the belt stays the belt. The owner rejected an earlier version where the package and the belt caught fire — the effect is a sparkle, not a flame.
+
+The badge is off to the right and never over the lane. The owner found a centred badge covering the code on the package coming down, and reading that code early is the whole skill the game trains. Nothing may be placed over the lane above the front package for the same reason.
+
+The sparkle is an icy cyan, chosen to sit far from the BLUE belt's navy so a glow around a package can never be mistaken for a routing color; belt names remain the only place a color means a destination. Motion is never the only channel: the tier is carried by the badge's color and by the written multiplier and streak count, so the information survives `prefers-reduced-motion`, which stills the twinkle and the lift.
+
+20. The outcome is said **on the package itself**: it washes green with a tick on a sort, red with a cross on a missort or a drop, holds for a beat where it was, then leaves the belt. The colour and the glyph always travel together, because red and green alone fail red-green colour blindness. There is **no running commentary under the belt**; the owner found that text pulled the eye off the lane, and the screen it used now belongs to the game. The outcome still goes to a visually hidden live region for screen readers.
+21. The game has **sound**: an arcade loop, the belt's own running noise whose pitch follows the live belt speed, and one cue each for a sort, a missort, a drop and **reaching a combo tier**. A drop sounds like a thud rather than like a wrong answer, because they are different mistakes. The tier cue is a rising arpeggio, longer and higher at each step, and it plays inside the badge's bump so the sound and the movement are one event. The belt's own noise stays quiet — it is the room, not an instrument, and the sort and missort cues have to cut through it. A **sound toggle** is always visible and its setting is remembered; audio starts only after the player starts a round, never on page load. The game must be fully playable with the sound off, which rule 20 guarantees.
+
+The owner's reason for rules 14 and 15: a missort has a real cost in the hub, because the package goes to the wrong place and comes back. The x4 ceiling in rule 16 is an assistant proposal chosen without measurement; it is expected to be tuned in stage 5 after the owner plays, so it must live in a single named constant.
+
+## Modes
+
+The player chooses a mode before the round starts. Easy, Medium and Hard reuse the existing `LEVEL_DECKS` in `src/levels.js` rather than classifying routing content again.
+
+| Mode | Speed | Routing content |
+|---|---|---|
+| Easy | slow | Basic deck |
+| Medium | normal | Medium deck |
+| Hard | fast | Hard deck |
+| Expert | starts fast and keeps accelerating | starts Medium, ends on Hard |
+
+Expert is not an easier ramp: it opens at Hard's pace and climbs from there, and its routing content hardens as it goes. Each mode keeps its **own best score**. Scores from different modes are never compared, merged or summed, because a two-minute timed round makes them incomparable. Expert needs two rules that no other mode needs: how the speed climbs, and when the deck changes. Both are decided in stage 1 and tested in stage 2. The prototype currently runs Expert from 84 to 132, with the deck changing a third of the way in; those are starting points for stage 5 to tune, not measured values.
+
+## Where it lives in the app
+
+Verified against `origin/main` at commit `178d940` on November 24, 2026.
+
+The mini-game gets **its own tab in the bottom dock and its own stripe on Home**, which is how Practice already works — a tab in `navTabs()` plus a shortcut on Home. It is not a sub-screen of Practice and not a mode inside the quiz.
+
+**Name.** The game is called **Handler**, after the job title. That is the name the player sees: the tab label, the Home stripe and the end-of-round screen. The internal name stays "conveyor" — the issue titles, the module folder `src/conveyor/` and this document — so the existing issues do not have to be renamed. Keep the two apart deliberately; do not rename one to match the other.
+
+**Bottom dock.** Add a fifth entry to `navTabs()` in `src/app.js`, labelled "Handler". The dock today holds Home and Practice for a guest, plus Ranked and Profile once signed in, and its columns are an even `repeat(n, 1fr)` split. A fifth tab leaves roughly 75px per tab on an iPhone. "Handler" is seven characters and is a job title, so it stays "Handler" in Spanish as well; it still needs an entry in `src/i18n.js`, because every displayed string goes through `t()`. Measure the dock at phone width before accepting the label; do not eyeball it.
+
+**Home.** A stripe of its own, placed after the Ranked hero stripe (the one titled "Play for the podium") and before the Practice stripe. The owner asked for it directly below the podium. It carries the game's name, one line saying what it is, and a button that starts mode selection. It does not go inside the Ranked stripe: the persistence boundary below keeps the mini-game out of Ranked, and sharing that stripe would say the opposite.
+
+**Guests.** A guest can play, the same way a guest can practise. The best score is saved only for a signed-in account, and the end-of-round screen says so instead of hiding the result. Nothing about the game is gated behind signing in.
+
+Both changes land in stage 3 for the screens and stage 4 for the navigation wiring.
+
+## Persistence boundary for the first release
+
+The first release stores exactly one thing: the best score for each of the four modes, per account. Nothing else. Mini-game results never reach Ranked points, prizes, badges, the leaderboard or the Shift log. A new table requires a GRANT to the app role before the image is swapped, or the app starts broken.
+
+## Delivery stages
+
+The dependency order from #392 is unchanged: data, then logic, then screen, then integration, then release. What changes is the content of four issues, plus one new stage.
+
+**Stage 1 — #393 · routing data and modes.** The issue currently asks the owner to confirm the surface; that is now answered, so it becomes work rather than a question. Wire the four modes to the existing level decks and build the adapter that selects a card and assembles the two-option pair. Decide the Escalation deck-change and acceleration rules here. **Issue text needs rewriting.**
+
+**Stage 2 — #394 · game engine.** Adds the two-minute clock, the combo and multiplier, the zero floor and the Expert acceleration curve to the existing acceptance list. All of it is browser-independent logic, testable with a fake clock and an injected random source. Rules 1–21 become tests here. **Issue text needs the new rules added.**
+
+**Stage 3 — #395 · screen and input.** Adds three screens the prototype does not have: mode selection, a visible countdown, and the end-of-round summary from rule 18. Build the rule 19 sparkle ring and cartoon combo badge, the rule 20 verdict on the package, and the rule 21 sound and its toggle here. Also build the Home stripe described above. **Issue text needs the new screens added.**
+
+**Stage 4 — #396 · integration into Practice.** Its current text forbids new stored data, which now conflicts with the approved best-score rule. Replace the prohibition with the persistence boundary above, including the table and its GRANT. This stage also adds the fifth tab to `navTabs()` and wires it, with the dock measured at phone width. Mounting and unmounting must clear the animation frame, the round clock and the pointer and keyboard listeners, so re-entering the tab cannot leave two belts or two clocks running. **Issue text needs rewriting.**
+
+**Stage 5 — #397 · iPhone validation and release.** Mostly unchanged. Add two checks: reconcile the clock, score, combo and the three counters against a controlled two-minute run, and confirm the Escalation curve stays playable on a phone. Tune the rule 16 ceiling here, after the owner plays.
+
+**Stage 6 — new · mini-game leaderboard.** Does not exist as an issue yet. A leaderboard of its own, separate from Ranked, split by mode. One owner decision comes before any code: **whether it shows the real employee name**, a chosen display name, or initials. Real accounts have been live at sortquiz.app since November 21, 2026, so this is a privacy decision and belongs in the issue text, not in the implementation.
+
+## Prototype status
+
+A playable prototype exists as a private artifact, updated November 24, 2026 to follow rules 12–21: the two-minute clock, mode selection for all four modes, the sparkle ring and the cartoon combo badge, the green and red verdict on the package, the synthesized arcade sound, the end-of-round summary, and a best score per mode kept in browser storage. Its scoring was checked against four sample sequences (twelve straight sorts scoring 1/1/1/1/1/2/2/2/2/2/3/3, a missort dropping the total by one and clearing the combo, the zero floor holding, and the multiplier stopping at x4). It was not measured on a phone; stage 5 does that.
+
+The prototype's routing content is generated from the app's own `LEVEL_DECKS` on `origin/main` at `178d940` — 26 Basic, 186 Medium and 280 Hard cards — using the real `BELT_STYLE` colors. The decks are read straight from the chart, so this is the app's current routing content, but the owner has not re-approved it for a game and the `CHECK` belt is excluded by the deck filter.
+
+**A finding for stage 1.** 367 of those 492 cards carry a *range* as their code, such as `010–024`, because that is the shape of a chart row. A package in the hub has one code, not a range, so a label reading `010–024` is a question about a chart row wearing a package's clothes. Rule 3 forbids inventing a five-digit ZIP from a range, so the prototype shows the range as-is. Stage 1 has to decide which it is: the label shows the range and the game stays a chart drill, or the adapter picks a concrete code inside the range from an owner-approved source. This is a content decision, not a rendering one.
+
+## Delivery boundaries
+
+Branch from `origin/main`. Keep conveyor logic in its own focused modules instead of duplicating or rewriting Ranked. No React migration is approved. No backend or schema change beyond the best-score table in stage 4, and no leaderboard data work before the stage 6 privacy decision. No live test accounts, data wipes or deployments as a side effect of merging. This document approves rules and sequence; it does not approve a release.
