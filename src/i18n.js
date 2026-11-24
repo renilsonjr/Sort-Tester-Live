@@ -162,6 +162,9 @@ const ES = {
   'Your numbers': 'Tus números',
   'counts for points': 'cuenta para los puntos',
   'Answer': 'Respuesta',
+  // The eyebrow over the explanation on the feedback screen (#384), beside
+  // the 'Answer' one over the comparison.
+  'Why': 'Por qué',
   'Your Ranked quizzes, one by one.': 'Tus pruebas del Clasificatorio, una por una.',
   'Play Ranked': 'Jugar Clasificatorio',
   'Switch between day and night': 'Cambiar entre día y noche',
