@@ -322,6 +322,19 @@ const ICONS = {
   // Sliders rather than a gear, because a gear at this size is a ring with
   // short rays -- which is the day-theme icon sitting two chips away.
   settings: '<svg viewBox="0 0 24 24"><path d="M4 7h16M4 17h16"/><circle cx="9" cy="7" r="2.4"/><circle cx="15" cy="17" r="2.4"/></svg>',
+  // #440: the two marks that are not tiles. These are badges, not list
+  // icons: each replaces a font-weight 900 glyph, so they carry a 2.4
+  // stroke where the tiles carry 2, and they size in `em` so the three
+  // contexts that already declare a font-size keep deciding how big the
+  // mark is.
+  verdictGood: '<svg viewBox="0 0 24 24"><path d="m5 12.6 4.9 4.9L19 7"/></svg>',
+  verdictBad: '<svg viewBox="0 0 24 24"><path d="M6.6 6.6 17.4 17.4M17.4 6.6 6.6 17.4"/></svg>',
+  // A crown, although the prize is a hat and the app says so everywhere.
+  // A cap was drawn seven ways across two rounds and tested at 26px and
+  // 32px against the real podium: a cap in outline is a dome with a brim,
+  // and at these sizes it reads as a bowl or a serving cloche every time.
+  // The crown reads instantly, and it is what the glyph already meant.
+  prizeHolder: '<svg viewBox="0 0 24 24"><path d="M3.5 18.5h17M4 8l4 3.5L12 5l4 6.5L20 8l-1.5 8h-13z"/></svg>',
 };
 
 function navTabs() {
@@ -2155,8 +2168,8 @@ async function fillLeaderboard(panel) {
   const top = ordered.slice(0, 3);
   const slot = (row, cls) => !row ? '' : `
     <div class="pslot ${cls}${row.you ? ' pslot-you' : ''}">
-      ${row.hat ? '<div class="pcrown" aria-hidden="true">♛</div>' : ''}
-      <div class="pdisc${!row.hat && avatarEmoji(row.avatar) ? ' has-avatar' : ''}">${row.hat ? '♛' : (avatarEmoji(row.avatar) || esc(row.username.slice(0, 1).toUpperCase()))}</div>
+      ${row.hat ? `<div class="pcrown" aria-hidden="true">${ICONS.prizeHolder}</div>` : ''}
+      <div class="pdisc${!row.hat && avatarEmoji(row.avatar) ? ' has-avatar' : ''}">${row.hat ? ICONS.prizeHolder : (avatarEmoji(row.avatar) || esc(row.username.slice(0, 1).toUpperCase()))}</div>
       <div class="pname">${esc(row.username)}</div>
       <div class="ppts">◆ ${row.points.toLocaleString()}</div>
       <div class="ppillar">${row.place}</div>
@@ -2167,7 +2180,7 @@ async function fillLeaderboard(panel) {
   const listRows = hasPodium ? ordered.slice(3) : ordered;
   const rows = listRows.map((row) => `
     <li class="${row.you ? 'board-you' : ''}${row.hat ? ' board-hat' : (row.tied ? ' board-tied' : '')}">
-      <span class="board-place">${row.hat ? '♛' : row.place}</span>
+      <span class="board-place">${row.hat ? ICONS.prizeHolder : row.place}</span>
       <span class="board-who">
         <b>${avatarEmoji(row.avatar) ? `<span class="board-avatar" aria-hidden="true">${avatarEmoji(row.avatar)}</span>` : ''}${esc(row.username)}</b>
         <small>#${esc(row.tag)} · ${esc(row.badge)}${row.you ? ` · ${esc(t('your place'))}` : ''}</small>
@@ -2578,7 +2591,7 @@ function showRankedFeedback(attempt, mode, q, chosen, response, tally) {
   const view = labPage(`
     <section class="lab-screen" data-ranked-music data-attempt-live>
       <div class="rq-head">
-      <div class="rq-mark ${right ? 'good' : 'bad'}" aria-hidden="true">${right ? '\u2713' : '\u2715'}</div>
+      <div class="rq-mark ${right ? 'good' : 'bad'}" aria-hidden="true">${right ? ICONS.verdictGood : ICONS.verdictBad}</div>
       <div class="rq-head-text">
       <h1 class="lab-title rq-verdict ${right ? 'good' : 'bad'}">${esc(verdict)}</h1>
       ${mode === 'promotion'
@@ -3669,7 +3682,7 @@ function showFeedback(response) {
     <section class="screen quiz-feedback ${right ? 'good' : 'bad'}">
       ${quizHeader(run.index, run.cards.length)}
       <div class="quiz-verdict">
-        <span class="rq-mark ${right ? 'good' : 'bad'}" aria-hidden="true">${right ? '\u2713' : '\u2715'}</span>
+        <span class="rq-mark ${right ? 'good' : 'bad'}" aria-hidden="true">${right ? ICONS.verdictGood : ICONS.verdictBad}</span>
         <div>
           <h1 class="verdict" id="verdict" tabindex="-1">${esc(t(verdict))}</h1>
           ${right ? `<p class="quiz-auto">${esc(t('Next question starts automatically'))}…</p>` : ''}

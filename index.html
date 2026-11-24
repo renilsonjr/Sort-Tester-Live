@@ -1435,6 +1435,19 @@
   .lab-settings-btn .lab-btn-ic svg { width: 15px; height: 15px; }
   .lab-nav i { display: block; }
 
+  /* #440: the two badge marks. They size in `em`, so the font-size each
+     context already declares goes on deciding how big the mark is -- 22px
+     on both feedback screens, 16px on the podium's own crown -- and a 2.4
+     stroke, because each replaces a font-weight 900 glyph. */
+  .rq-mark svg, .pcrown svg, .pdisc svg, .board-place svg { display: block; width: 1em; height: 1em;
+    fill: none; stroke: currentColor; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
+  /* The winner's disc is the exception: at 1em it would be an 18px mark in a
+     46px circle, which is how the crown got there -- 10.8px of ink where the
+     two players who did NOT win show a 20.3px initial and a 36px avatar. The
+     disc sizes its mark to itself instead. */
+  .pdisc svg { width: 28px; height: 28px; }
+  .pslot.p1 .pdisc svg { width: 36px; height: 36px; }
+
   /* Home stripes */
   .home-screen { gap: 16px; }
   .home-stripe { display: flex; flex-direction: column; gap: 8px; }
