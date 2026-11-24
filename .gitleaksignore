@@ -1,0 +1,3 @@
+# #452: false positive. 'sortTest.seasonBubble.v1' is the localStorage name that
+# remembers a closed season bubble, not a secret; the variable was renamed after.
+670ac77aa6c5f92f278cd233cd979e936a7c2b38:src/seasonNotice.js:generic-api-key:13

@@ -10,7 +10,7 @@
 // An X closes it. Closing remembers the state and its date on this device,
 // so a closed "starts on" bubble comes back once the season is live.
 
-const DISMISS_KEY = 'sortTest.seasonBubble.v1';
+const DISMISSED_BUBBLE_STORE = 'sortTest.seasonBubble.v1';
 const ZONE = 'America/New_York';
 
 export async function readSeasonNotice(fetchFn = fetch) {
@@ -71,7 +71,7 @@ export function seasonBubbleCopy(notice, { t, locale, signedIn, now = Date.now()
 }
 
 function dismissed(storage) {
-  try { return storage?.getItem(DISMISS_KEY) ?? ''; } catch { return ''; }
+  try { return storage?.getItem(DISMISSED_BUBBLE_STORE) ?? ''; } catch { return ''; }
 }
 
 // Fill a bubble host: an element with [data-bubble-title], [data-bubble-text]
@@ -88,7 +88,7 @@ export function showSeasonBubble(box, copy, { storage, closeLabel } = {}) {
   const close = box.querySelector('[data-bubble-close]');
   if (closeLabel) close.setAttribute('aria-label', closeLabel);
   close.onclick = () => {
-    try { storage?.setItem(DISMISS_KEY, copy.state); } catch { /* closes for this visit only */ }
+    try { storage?.setItem(DISMISSED_BUBBLE_STORE, copy.state); } catch { /* closes for this visit only */ }
     box.hidden = true;
   };
   box.hidden = false;
