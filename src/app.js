@@ -165,7 +165,26 @@ function render(node) {
   // Music belongs to the Ranked quiz screens only (#264). Deciding it here,
   // on every screen change, means no way out of a quiz can leave it playing.
   setMusicWanted(Boolean(node.querySelector?.('[data-ranked-music]')));
+  // #426: the heartbeat belongs to the attempt's own screens, and the same
+  // reasoning decides it here. A dock tab used to replace the quiz while the
+  // beat went on once a second, so the server never saw the attempt go quiet
+  // (it closes one 15s after its last beat) -- it never closed, every new
+  // attempt came back 409, and "Preparing your next match" promised "a few
+  // seconds" for as long as the page stayed open.
+  if (!node.querySelector?.('[data-attempt-live]')) endLiveAttempt();
   window.scrollTo(0, 0);
+}
+
+// The attempt whose heartbeat is running, if any. It is held here, not in
+// the screen that started it, because the screen that ENDS it may be any
+// other -- a dock tab, a deep link, a session that expires.
+let liveAttempt = null;
+function holdLiveAttempt(attempt) { liveAttempt = attempt; }
+function endLiveAttempt() {
+  if (!liveAttempt) return;
+  const going = liveAttempt;
+  liveAttempt = null;  // cleared first: stop() must not re-enter this
+  going.stop();
 }
 
 function languageButtons() {
@@ -1501,8 +1520,9 @@ async function playTiebreak(round) {
     return;
   }
   attempt.startHeartbeat();
+  holdLiveAttempt(attempt);
   const view = labPage(`
-    <section class="lab-screen" id="tb-play">
+    <section class="lab-screen" id="tb-play" data-attempt-live>
       <div class="tb-top">
         <span class="lab-eyebrow" id="tb-count"></span>
         <span class="lab-eyebrow" id="tb-time"></span>
@@ -2350,6 +2370,7 @@ async function startRankedAttempt(mode) {
     return;
   }
   attempt.startHeartbeat();
+  holdLiveAttempt(attempt);
   playRankedAttempt(attempt, mode, { correctCount: 0 });
 }
 
@@ -2365,7 +2386,7 @@ async function playRankedAttempt(attempt, mode, tally) {
   }
   const q = current.data;
   const view = labPage(`
-    <section class="lab-screen" id="rq-play" data-ranked-music>
+    <section class="lab-screen" id="rq-play" data-ranked-music data-attempt-live>
       <div class="tb-top">
         <span class="lab-eyebrow" id="rq-count">${esc(t('Question'))} ${q.seq} ${esc(t('of'))} 15</span>
         <div class="rq-ring" id="rq-clock" role="timer" aria-label="${esc(t('seconds'))}"><span id="rq-ring-num"></span></div>
@@ -2474,7 +2495,7 @@ function showRankedFeedback(attempt, mode, q, chosen, response, tally) {
     ? (mode === 'promotion' ? t('Correct · still perfect') : t('Correct'))
     : (response.outcome === 'timeout' ? t('Time ran out') : t('Review this route'));
   const view = labPage(`
-    <section class="lab-screen" data-ranked-music>
+    <section class="lab-screen" data-ranked-music data-attempt-live>
       <div class="rq-head">
       <div class="rq-mark ${right ? 'good' : 'bad'}" aria-hidden="true">${right ? '\u2713' : '\u2715'}</div>
       <div class="rq-head-text">
@@ -2547,7 +2568,9 @@ function rqChip(belt) {
 // this attempt is, since promotion's own penalty math already includes it.
 function showQuitConfirm(attempt, mode, seq, tally) {
   const view = labPage(`
-    <section class="lab-screen">
+    ${/* #426: the attempt is still running behind this question, and
+          "Continue quiz" goes back to it, so this screen keeps the beat. */ ''}
+    <section class="lab-screen" data-attempt-live>
       <h1 class="lab-title">${esc(t('Quit this ranked quiz?'))}</h1>
       <p class="lab-intro">${esc(t('Your current score will count, and 10 points are taken off it. You cannot resume this attempt.'))}</p>
       <button id="qc-stay" class="primary">${esc(t('Continue quiz'))}</button>
