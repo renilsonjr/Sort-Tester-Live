@@ -3243,8 +3243,10 @@ function showStudy() {
     view.querySelector('#service-title').textContent = language.service(studyService);
     view.querySelector('#chart-count').textContent = t('{shown} of {total} routes shown', { shown: section.main.length + section.exceptions.length, total: section.total });
     view.querySelector('#chart-rows').innerHTML =
-      (section.main.length ? `<h2 class="lab-chart-block">${esc(t('Main chart'))}</h2>${section.main.map(chartRow).join('')}` : '') +
-      (section.exceptions.length ? `<h2 class="lab-chart-block">${esc(t('Exceptions and special rules'))}</h2>${section.exceptions.map(chartRow).join('')}` : '') ||
+      // #390: the app's own section label, gold in both themes. Still an h2:
+      // these are real headings, and the eyebrow is only how they look.
+      (section.main.length ? `<h2 class="lab-eyebrow lab-chart-block">${esc(t('Main chart'))}</h2>${section.main.map(chartRow).join('')}` : '') +
+      (section.exceptions.length ? `<h2 class="lab-eyebrow lab-chart-block">${esc(t('Exceptions and special rules'))}</h2>${section.exceptions.map(chartRow).join('')}` : '') ||
       `<p class="lab-intro">${esc(t('No matching routes in this service.'))}</p>`;
   };
   view.querySelectorAll('[data-service]').forEach((button) => button.addEventListener('click', () => {
