@@ -105,6 +105,8 @@ const FORGOT_ES = {
     'Copiado',
   'Could not copy. Select the code and copy it by hand.':
     'No se pudo copiar. Selecciona el código y cópialo a mano.',
+  'Your account was created. Sign in with the Quiz Code above.':
+    'Tu cuenta se creó. Inicia sesión con el Quiz Code de arriba.',
 };
 
 function forgotText(source) {
@@ -223,7 +225,30 @@ export function createAuthPanel(container, onContinueAsGuest, onLoggedIn) {
         const check = form.querySelector('#saved-check');
         const done = form.querySelector('#register-done');
         check.addEventListener('change', () => { done.disabled = !check.checked; });
-        done.addEventListener('click', () => closeForm('#auth-register-btn'));
+
+        // Continue used to call closeForm() and nothing else, which put the
+        // new player back on the sign-in screen with the code they had just
+        // been given to type in by hand (#334). Confirmed twice against the
+        // local database, and in the code: closeForm only hides the form.
+        //
+        // It signs them in instead, with the code the server just issued.
+        // If that fails for any reason the old behaviour is what is left --
+        // the sign-in screen, with the account created and the code still
+        // valid -- and the reason is shown rather than swallowed, because
+        // the code is about to disappear from this screen for ever.
+        const newLoginId = result.data.login_id;
+        done.addEventListener('click', async () => {
+          done.disabled = true;
+          const signedIn = await loginWithId(newLoginId);
+          if (signedIn.ok) {
+            closeForm('#auth-register-btn');
+            showMessage(`Welcome, ${signedIn.data.username}#${signedIn.data.tag}`);
+            if (onLoggedIn) onLoggedIn(signedIn.data);
+            return;
+          }
+          done.disabled = false;
+          showMessage(forgotText('Your account was created. Sign in with the Quiz Code above.'), true);
+        });
 
         // One tap instead of 19 characters. The clipboard API needs a
         // secure context, which the app always has (https, or localhost in
