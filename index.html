@@ -510,10 +510,23 @@
   .approved-who { min-width: 0; flex: 1; }
   .approved-who b { display: block; font-weight: 900; overflow-wrap: anywhere; }
   .approved-who small { display: block; color: var(--muted); font-size: 12px; overflow-wrap: anywhere; }
-  .approved .ghost { flex: none; width: auto; min-height: 0; padding: 9px 13px; font-size: 13px; }
+  /* #430: this used to carry `min-height: 0`, which cancelled the 44px that
+     .ghost gives every other button in the app -- on Delete and Withdraw,
+     the two most consequential actions there are. Measured at 375x812:
+     70x39 and 93x39, with 36px between one Delete and the next in a list of
+     37 accounts. The neighbouring `.case-actions .ghost` already keeps its
+     44. The padding stays small so a long list is still scannable; the
+     minimum does the rest. */
+  .approved .ghost { flex: none; width: auto; min-height: 44px; padding: 9px 13px; font-size: 13px; }
   .owner-form { border: 1px solid var(--line); border-radius: 17px; background: var(--panel); padding: 14px; display: flex; flex-direction: column; gap: 10px; }
-  .owner-form h2 { font-size: 16px; }
-  .owner-count { font-size: 16px; margin-top: 4px; }
+  /* #432: these were 16px/900 grey -- bigger and heavier than the eyebrow
+     naming the screen above them, and a different colour from every other
+     section label in the app. They are .lab-eyebrow now, and what is left
+     here is only the space each one needs. Leaving the old size would have
+     been dead weight for .owner-count (the eyebrow rule wins later in the
+     sheet) and would have BEATEN it for `.owner-form h2`, which is one
+     class plus an element. */
+  .owner-count { margin-top: 4px; }
   /* Withdrawing is the one destructive thing on that screen, so it is the
      quieter button and keeping the approval is the easy one. */
   .owner-danger { color: var(--bad); border-color: #d8b6b6; }
