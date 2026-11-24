@@ -45,7 +45,9 @@ function renderSavedLog(overrides = {}) {
   runInNewContext(`${source}\nshowLog();`, {
     document, window: { scrollTo() {} }, localStorage: storage,
     createShiftLog, createLanguage, SERVICE_LABEL, ...destination,
-    setMusicWanted() {},
+    // #382 put the log inside the app shell, so the header's sound button is
+    // drawn on this screen now and its module needs a stub like the music.
+    setMusicWanted() {}, isSoundEnabled: () => false, toggleSound: () => false,
   });
   return markup;
 }

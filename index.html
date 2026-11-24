@@ -429,7 +429,6 @@
   /* This was a second blue, hardcoded -- #175e94 -- so the token change alone
      would have left the language buttons ringed in blue (#327). */
   .lab-language button:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
-  .quiz-language { display: flex; justify-content: flex-end; margin-bottom: 6px; }
   .lab-site { color: var(--muted); font-size: 11px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; }
   .lab-brand { display: flex; align-items: center; gap: 10px; font: 700 20px "Space Grotesk", sans-serif; letter-spacing: -.05em; white-space: nowrap; }
   .lab-mark { display: grid; place-items: center; width: 34px; height: 34px; flex: none; background: var(--ink); color: var(--accent-ink); border-radius: 11px; font-size: 13px; transform: rotate(-5deg); }
@@ -1631,7 +1630,6 @@
   .quiz-card .primary, .quiz-feedback .primary, .bail .primary { background: linear-gradient(135deg, var(--gold) 0%, #d89115 100%); color: #2a1c10; border: 1px solid rgba(255, 255, 255, 0.45); }
 
   /* Practice results */
-  .quiz-language { order: -2; }
   .score-line { display: grid; grid-template-columns: 1fr 1fr; gap: 0; padding: 16px 10px; text-align: center; border-radius: var(--r-md); border: 1px solid var(--soft-line); background: linear-gradient(135deg, var(--soft) 0%, var(--glass-surface-sub) 62%); box-shadow: var(--glass-shadow), 0 0 28px -6px rgba(244, 189, 56, 0.32); }
   .score-line > div + div { border-left: 1px solid var(--glass-border); }
   .score-line .big { font-size: 40px; font-weight: 900; letter-spacing: -.04em; }
@@ -1834,6 +1832,14 @@
        above is `.lab-main > .lab-screen`, two classes, so a bare
        `.screen-promo` loses to it and the screen stayed 1080px wide. */
     .lab-main > .screen-promo { max-width: 560px; }
+
+    /* ---- Results and Shift log: reading, so they keep a measure ----------
+       #382 moved both inside the shell, which made them full-column (1080px
+       measured at 1440). The explanation under a missort is prose and the log
+       rows are one line each, so they follow the form rule like the promo
+       above -- and for the same reason that needs `.lab-main >`: the
+       --desk-col rule is two classes and a bare class would lose to it. */
+    .lab-main > .screen-results, .lab-main > .screen-log { max-width: 560px; }
 
     /* Narrow on purpose. */
     #rq-play { max-width: 560px; margin-inline: auto; }
