@@ -174,6 +174,14 @@ and recovery; this one covers the whole app.
   rechecks. None of it applies.
 - The official season start is announced in the app only. Players learn
   about the launch by opening Sort Lab.
+- **Update (2026-11-24, owner decision, #452):** the start is announced: the
+  official season starts **December 1, 2026 at 12:00 a.m. Eastern** and ends
+  December 31, 2026 at 11:59 p.m. Eastern. The notice becomes a small bubble
+  at the top of Home, the login screen and the profile, shown before the
+  launch with the announced date and the Pre-Season reset, and as "the
+  official season is live" afterwards. A player may close it with an X; it
+  stays closed on that device until its state changes. The season still
+  opens only when the owner runs the launch.
 - **Launch notice placement (settled 2026-11-14):** the main home page shows
   a small callout announcing the start and carrying the start date, beside
   the existing sort-change announcements. It appears only once a start is

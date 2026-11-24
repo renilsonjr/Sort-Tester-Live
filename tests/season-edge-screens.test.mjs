@@ -76,12 +76,12 @@ test('on the final board a tied player without a hat is told so', () => {
 });
 
 test('Home stops announcing a season start once that season has ended', () => {
-  const callout = fn('async function fillLaunchCallout');
-  assert.match(callout, /new Date\(notice\.closes_at\)\.getTime\(\) <= Date\.now\(\)/);
-  assert.match(callout, /The official season has ended/);
+  const notice = readFileSync(new URL('../src/seasonNotice.js', import.meta.url), 'utf8');
+  assert.match(notice, /new Date\(notice\.closes_at\)\.getTime\(\) <= now/);
+  assert.match(notice, /The official season has ended/);
   // the helper fills the dates; replacing them by hand left them blank
-  assert.match(callout, /t\('It ran from \{start\} to \{end\}\.', \{ start: started, end: closes \}\)/);
-  assert.match(app, /<h2 id="launch-title">/);
+  assert.match(notice, /t\('It ran from \{start\} to \{end\}\.', \{ start: started, end: closes \}\)/);
+  assert.match(app, /seasonBubbleMarkup\('launch-callout'\)/);
 });
 
 test('the selection button stops asking once the right number is chosen', () => {

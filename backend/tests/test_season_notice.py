@@ -65,10 +65,11 @@ class SeasonNoticeTests(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(
             set(response.json()),
-            {"started", "label", "started_at", "closes_at"},
+            {"started", "label", "started_at", "closes_at",
+             "announced_start", "announced_end"},
         )
 
-    def test_before_a_launch_it_says_so_and_invents_no_dates(self):
+    def test_before_a_launch_it_says_so_with_only_the_announced_dates(self):
         self._refuse_every_sweep()
 
         body = self.client.get("/api/ranked/season/notice").json()
@@ -77,6 +78,9 @@ class SeasonNoticeTests(unittest.TestCase):
         self.assertIsNone(body["label"])
         self.assertIsNone(body["started_at"])
         self.assertIsNone(body["closes_at"])
+        # the owner's announcement (#452): Dec 1, 2026 00:00 Eastern = 05:00 UTC
+        self.assertEqual(body["announced_start"], "2026-12-01T05:00:00+00:00")
+        self.assertEqual(body["announced_end"], "2027-01-01T04:59:00+00:00")
 
     def test_it_still_needs_no_account(self):
         self._refuse_every_sweep()

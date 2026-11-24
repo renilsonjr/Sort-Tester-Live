@@ -12,6 +12,7 @@ import { selectLevelCards } from './levels.js?v=chart-destination-20261108-r2';
 import { createLanguage } from './i18n.js?v=chart-destination-20261108-r2';
 import * as support from './support.js';
 import { logout } from './auth.js';
+import { longDate, readSeasonNotice, seasonBubbleCopy, seasonBubbleMarkup, showSeasonBubble } from './seasonNotice.js';
 import { idleVerdict } from './idle.js';
 import { createAttemptClient } from './attemptClient.js';
 import { playCorrectSfx, playIncorrectSfx, isSoundEnabled, toggleSound, setMusicWanted } from './sound.js';
@@ -697,6 +698,7 @@ function showProfile(tab = 'overview') {
             history": the Shift log is the practice list kept on the phone,
             and these are the Ranked attempts the server settled. */ ''}
       <h1 class="lab-title">${esc(t(tab === 'settings' ? 'Settings' : 'Ranked history'))}</h1>` : `
+      ${seasonBubbleMarkup('launch-callout')}
       <div class="pf-ident">
         <div class="home-obj pf-ident-obj" id="profile-badge"></div>
         <div class="pf-ident-text">
@@ -718,6 +720,7 @@ function showProfile(tab = 'overview') {
 
   const panel = view.querySelector('#profile-panel');
   fillProfile(view, panel, tab);
+  fillLaunchCallout(view);  // #452: only the overview has the bubble
   return view;
 }
 
@@ -2289,7 +2292,7 @@ function showRankedPlaceholder() {
 // Opening this screen starts no attempt and no timer.
 const SEASON_LINE = {
   pre_season: {
-    open: 'Pre-Season. No start date has been announced for the official season.',
+    open: 'Pre-Season. The official season starts {date}.',
     finishing: 'Pre-Season is finishing.',
     closed: 'Pre-Season is closed.',
     frozen: 'Pre-Season is over.',
@@ -2303,7 +2306,14 @@ const SEASON_LINE = {
 };
 
 function seasonLine(season) {
-  return (SEASON_LINE[season.phase] ?? {})[season.status] ?? '';
+  const line = (SEASON_LINE[season.phase] ?? {})[season.status] ?? '';
+  // #452: the owner announced the start; without it, say nothing invented
+  if (line.includes('{date}')) {
+    return season.announced_start
+      ? t(line, { date: longDate(season.announced_start, language.locale) })
+      : t('Pre-Season.');
+  }
+  return t(line);
 }
 
 function showRanked() {
@@ -2382,7 +2392,7 @@ async function fillRanked(panel, title) {
     </section>
     <section class="home-stripe">
       <p class="lab-eyebrow">${esc(t('Season'))}</p>
-      <p class="rk-note">${esc(t(seasonLine(season)))}</p>
+      <p class="rk-note">${esc(seasonLine(season))}</p>
     </section>
   `;
   fillTiebreakCallout(panel.querySelector('#tiebreak-callout'));
@@ -3053,13 +3063,7 @@ function showStart() {
   const view = labPage(`
     <section class="lab-screen home-screen">
       <h1 class="sr-only">${esc(t('Home'))}</h1>
-      <section class="lab-launch" id="launch-callout" hidden aria-live="polite">
-        <i aria-hidden="true">!</i>
-        <div>
-          <h2 id="launch-title">${esc(t('The official season has started'))}</h2>
-          <p id="launch-text"></p>
-        </div>
-      </section>
+      ${seasonBubbleMarkup('launch-callout')}
       <div id="home-tiebreak" hidden></div>
       <div class="home-split">
       <section class="home-stripe home-split-hero">
@@ -3176,43 +3180,31 @@ async function fillHomeIdentity(view) {
   climb.hidden = false;
 }
 
-// The season-start notice (Decision 15, placement settled 2026-11-15). It
-// appears only once a start is confirmed: during Pre-Season there is no
-// callout and no invented date. Guests see it too, which is why it reads a
-// public endpoint rather than the authenticated one.
+// The season bubble (#452; Decision 15 placement widened 2026-11-24 to Home,
+// login and profile). It reads the public notice, so guests see it too. The
+// wording for every state lives in seasonNotice.js, shared with the login
+// screen.
+// The login screen's bubble (#452). auth.js imports nothing, so it draws an
+// empty #auth-season and announces itself; this fills it.
+function fillAuthSeasonBubble() {
+  const box = document.getElementById('auth-season');
+  if (!box) return;
+  readSeasonNotice().then((notice) => {
+    const copy = seasonBubbleCopy(notice, { t, locale: language.locale, signedIn: false });
+    showSeasonBubble(box, copy, { storage: globalThis.localStorage, closeLabel: t('Close') });
+  });
+}
+if (typeof document !== 'undefined') {
+  document.addEventListener('sortquiz:auth-shown', fillAuthSeasonBubble);
+  fillAuthSeasonBubble();
+}
+
 async function fillLaunchCallout(view) {
   const box = view.querySelector('#launch-callout');
   if (!box) return;
-  let notice;
-  try {
-    const response = await fetch('/api/ranked/season/notice', { credentials: 'same-origin' });
-    if (!response.ok) return;
-    notice = await response.json();
-  } catch {
-    return;  // no backend, as on the static page: show nothing at all
-  }
-  if (!notice?.started || !notice.started_at) return;
-  const started = language.date(notice.started_at);
-  const closes = notice.closes_at ? language.date(notice.closes_at) : null;
-  // Once the season's end has passed, "has started ... ends on" is stale:
-  // nobody can start a quiz for points any more. It does not say points
-  // are final: attempts already started have five more minutes.
-  if (notice.closes_at && new Date(notice.closes_at).getTime() <= Date.now()) {
-    const ran = t('It ran from {start} to {end}.', { start: started, end: closes });
-    view.querySelector('#launch-title').textContent = t('The official season has ended');
-    view.querySelector('#launch-text').textContent = signedIn()
-      ? `${ran} ${t('The leaderboard has the results.')}`
-      : ran;
-    box.hidden = false;
-    return;
-  }
-  const when = closes
-    ? `${t('It started on')} ${started} ${t('and ends on')} ${closes}.`
-    : `${t('It started on')} ${started}.`;
-  view.querySelector('#launch-text').textContent = signedIn()
-    ? `${when} ${t('Everyone began again at 0 points and Iron.')}`
-    : `${when} ${t('Log in to play for points this season.')}`;
-  box.hidden = false;
+  const notice = await readSeasonNotice();
+  const copy = seasonBubbleCopy(notice, { t, locale: language.locale, signedIn: signedIn() });
+  showSeasonBubble(box, copy, { storage: globalThis.localStorage, closeLabel: t('Close') });
 }
 
 // The auth panel calls this when the visitor enters the app, with the

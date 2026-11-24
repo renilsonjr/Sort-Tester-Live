@@ -563,6 +563,8 @@ def season(account: dict = Depends(_current_account), conn=Depends(get_db)):
         else closes_at.astimezone(timezone.utc).isoformat(),
         "points_final": current.status == "frozen",
         "approvals_open": current.approvals_open,
+        # the owner's announced start (#452), for the Pre-Season line
+        "announced_start": _utc(launch.ANNOUNCED_OFFICIAL_START),
     }
 
 
@@ -1067,11 +1069,23 @@ def season_notice(conn=Depends(get_readonly_db)):
     It carries nothing about any player and nothing that is not already
     public once the season opens: whether it has started, its label, and
     when it started and ends. Before the official launch it answers
-    ``started: false`` and no dates, because inventing one is forbidden.
+    ``started: false`` and no launch dates.
+
+    ``announced_start`` and ``announced_end`` are the dates the owner
+    announced on 2026-11-24 (#452): the season is scheduled to start
+    December 1, 2026 at midnight Eastern. They are an announcement, not a
+    launch: ``started`` stays false until the owner actually launches.
     """
+    announced = {
+        "announced_start": _utc(launch.ANNOUNCED_OFFICIAL_START),
+        "announced_end": _utc(launch.DEFAULT_OFFICIAL_END),
+    }
     fact = seasons.official_launch(conn)
     if fact is None:
-        return {"started": False, "label": None, "started_at": None, "closes_at": None}
+        return {
+            "started": False, "label": None, "started_at": None, "closes_at": None,
+            **announced,
+        }
     current = seasons.current_season_status(conn, _CLOCK.now())
     closes_at = current.closes_at if current else None
     return {
@@ -1079,6 +1093,7 @@ def season_notice(conn=Depends(get_readonly_db)):
         "label": fact.label,
         "started_at": _utc(fact.launched_at),
         "closes_at": None if closes_at is None else _utc(closes_at),
+        **announced,
     }
 
 

@@ -15,6 +15,13 @@ from zoneinfo import ZoneInfo
 from backend.db import migrate
 from backend.ranked import engine, settlement
 
+# Owner decision 2026-11-24 (#452, #258): the first official season starts
+# December 1, 2026 at 12:00 a.m. Eastern. This is the announced date the app
+# shows players; the season still opens only when the owner runs the launch.
+ANNOUNCED_OFFICIAL_START = datetime(
+    2026, 12, 1, 0, 0, 0, tzinfo=ZoneInfo("America/New_York")
+)
+
 # Owner decision: the first official season ends December 31, 2026 at
 # 11:59 p.m. Eastern, stored as 23:59:00.
 DEFAULT_OFFICIAL_END = datetime(

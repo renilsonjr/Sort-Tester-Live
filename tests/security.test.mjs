@@ -5,8 +5,8 @@ import { runInNewContext } from 'node:vm';
 const shiftLogSource = readFileSync(new URL('../src/shiftLog.js', import.meta.url));
 const { createShiftLog } = await import(`data:text/javascript;base64,${shiftLogSource.toString('base64')}`);
 import { loadAppModules } from './helpers/load-app-modules.mjs';
-const { modules: [{ createLanguage }, { SERVICE_LABEL }, destination], cleanup } = await loadAppModules([
-  'src/i18n.js', 'src/questions.js', 'src/destination.js',
+const { modules: [{ createLanguage }, { SERVICE_LABEL }, destination, seasonNotice], cleanup } = await loadAppModules([
+  'src/i18n.js', 'src/questions.js', 'src/destination.js', 'src/seasonNotice.js',
 ]);
 after(cleanup);
 
@@ -44,7 +44,7 @@ function renderSavedLog(overrides = {}) {
   };
   runInNewContext(`${source}\nshowLog();`, {
     document, window: { scrollTo() {} }, localStorage: storage,
-    createShiftLog, createLanguage, SERVICE_LABEL, ...destination,
+    createShiftLog, createLanguage, SERVICE_LABEL, ...destination, ...seasonNotice,
     // #382 put the log inside the app shell, so the header's sound button is
     // drawn on this screen now and its module needs a stub like the music.
     setMusicWanted() {}, isSoundEnabled: () => false, toggleSound: () => false,

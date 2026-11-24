@@ -128,6 +128,13 @@ export function createAuthPanel(container, onContinueAsGuest, onLoggedIn) {
   // Keep entry choices compact; a form replaces them while it is open.
   container.innerHTML = `
     <div class="auth-screen">
+      ${/* #452: the season bubble. This panel imports nothing, so it only
+            draws the empty bubble; app.js fills it (seasonNotice.js). */ ''}
+      <section class="season-bubble" id="auth-season" hidden aria-live="polite">
+        <i aria-hidden="true">!</i>
+        <div class="season-bubble-body"><h2 data-bubble-title></h2><p data-bubble-text></p></div>
+        <button type="button" class="season-bubble-close" data-bubble-close aria-label="Close">×</button>
+      </section>
       <div class="brandmark" aria-hidden="true">RJ</div>
       <div class="auth-head">
         <h1 class="auth-title">Sort Quiz</h1>
@@ -148,6 +155,10 @@ export function createAuthPanel(container, onContinueAsGuest, onLoggedIn) {
       <p class="auth-footer"><a class="auth-footer-link" href="https://renilsonjr.pages.dev" target="_blank" rel="noopener noreferrer">${forgotText('Made by RJ. Meet the person behind the app')}</a></p>
     </div>
   `;
+
+  try {
+    container.ownerDocument?.dispatchEvent(new Event('sortquiz:auth-shown'));
+  } catch { /* no DOM events here: the bubble just stays hidden */ }
 
   const form = container.querySelector('#auth-form');
   const message = container.querySelector('#auth-message');
