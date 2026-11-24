@@ -2173,21 +2173,46 @@ async function fillLeaderboard(panel) {
     : board.rows;
   const hasPodium = ordered.length >= 3;
   const top = ordered.slice(0, 3);
+  // #443: the hat winner used to be marked three times at once -- a crown
+  // above the disc, the SAME crown inside it, and the gold ring the leader
+  // already has. The two crowns sat 20px apart, identical, and read as a
+  // fault rather than as emphasis.
+  //
+  // The one that cost something was the disc. It is the identity element:
+  // everyone else shows their avatar at 36px or their initial at 20px, and
+  // the winner -- the one person you look for -- showed a 10.8px crown
+  // instead of a face. The crown now sits above the disc and nowhere else,
+  // and the disc does its job for every player alike.
   const slot = (row, cls) => !row ? '' : `
     <div class="pslot ${cls}${row.you ? ' pslot-you' : ''}">
       ${row.hat ? `<div class="pcrown" aria-hidden="true">${ICONS.prizeHolder}</div>` : ''}
-      <div class="pdisc${!row.hat && avatarEmoji(row.avatar) ? ' has-avatar' : ''}">${row.hat ? ICONS.prizeHolder : (avatarEmoji(row.avatar) || esc(row.username.slice(0, 1).toUpperCase()))}</div>
+      <div class="pdisc${avatarEmoji(row.avatar) ? ' has-avatar' : ''}">${avatarEmoji(row.avatar) || esc(row.username.slice(0, 1).toUpperCase())}</div>
       <div class="pname">${esc(row.username)}</div>
-      <div class="ppts">◆ ${language.number(row.points)}</div>
+      <div class="ppts">${language.number(row.points)}</div>
       <div class="ppillar">${row.place}</div>
     </div>`;
   const podium = hasPodium ? `<div class="podium">
     ${slot(top[1], 'p2')}${slot(top[0], 'p1')}${slot(top[2], 'p3')}
   </div>` : '';
   const listRows = hasPodium ? ordered.slice(3) : ordered;
+  // #444: the podium's points used to carry a U+25C6 that Nunito does not
+  // have -- 7.6px of ink from whatever font the device fell back to, beside
+  // a digit of 6.3px from the real one. It was the last text glyph doing an
+  // icon's job, after #404 and #440.
+  //
+  // Dropped rather than drawn, because the list two rows below already
+  // shows the same quantity with no mark at all: one screen was showing
+  // points two ways. Removing it settles that AND the glyph, where drawing
+  // it would have settled the glyph and added a filled icon -- the only one
+  // in a set that is otherwise all strokes -- to keep the inconsistency.
+  //
+  // The same swap happened below the podium, where the crown replaced the
+  // player's PLACE -- the one number the column exists for -- on a row that
+  // already says "Hat winner" in words and is drawn in gold. The words and
+  // the gold stay; the place comes back.
   const rows = listRows.map((row) => `
     <li class="${row.you ? 'board-you' : ''}${row.hat ? ' board-hat' : (row.tied ? ' board-tied' : '')}">
-      <span class="board-place">${row.hat ? ICONS.prizeHolder : row.place}</span>
+      <span class="board-place">${row.place}</span>
       <span class="board-who">
         <b>${avatarEmoji(row.avatar) ? `<span class="board-avatar" aria-hidden="true">${avatarEmoji(row.avatar)}</span>` : ''}${esc(row.username)}</b>
         <small>#${esc(row.tag)} · ${esc(row.badge)}${row.you ? ` · ${esc(t('your place'))}` : ''}</small>

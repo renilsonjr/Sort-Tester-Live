@@ -118,3 +118,36 @@ test('#404 no retired glyph came back to an icon tile', () => {
     assert.ok(!tiles.includes(glyph), `${glyph} is back in an icon tile`);
   }
 });
+
+// #444 closed this family. The glyphs #404 listed went in #404, the two
+// badge marks went in #440, and the points diamond -- the last one, and
+// the only one that was inline with text rather than in a tile or a badge
+// -- goes here.
+
+test('#444 no text glyph is left doing an icon\'s job', () => {
+  // Measured in place before removing it: U+25C6 drew 7.6px of ink at
+  // 10.5px, in Nunito, which does not have it, beside a digit of 6.3px
+  // from the real font.
+  assert.doesNotMatch(app, /◆/, 'the points diamond is back');
+  // The whole family, in one sweep, so a new screen cannot quietly add one.
+  for (const glyph of ['✓', '✕', '♛', '↺', '✉', '◇', '⚙', '◆']) {
+    assert.doesNotMatch(app, new RegExp(glyph), `${glyph} is back in app.js`);
+  }
+});
+
+test('#444 the arrows stay, for the reason they stayed in #404', () => {
+  // They are fallback glyphs too, but they are the same mark on every row,
+  // so a device drawing them its own way draws them consistently -- there
+  // is no mixed-weight column the way the owner menu had. Pinned so that
+  // "no glyphs" above is read as the deliberate line it is, not as an
+  // oversight waiting to be tidied.
+  assert.match(app, /<span class="lab-arrow" aria-hidden="true">→<\/span>/);
+});
+
+test('#444 the podium shows points the way the list does', () => {
+  // The reason it was dropped rather than drawn: two rows below, the same
+  // quantity was already shown with no mark, so one screen was showing
+  // points two ways.
+  assert.match(app, /<div class="ppts">\$\{language\.number\(row\.points\)\}<\/div>/);
+  assert.match(app, /<b class="board-points">\$\{language\.number\(row\.points\)\}<\/b>/);
+});
