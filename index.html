@@ -348,7 +348,11 @@
   .quiz-top { display: flex; flex-direction: column; gap: 7px; }
   .quiz-topline, .quiz-actions { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
   .quiz-topline { min-height: 44px; }
-  .quiz-topline .lab-language button { width: 38px; }
+  /* 44 here too. This rule is overridden by the compact-header layer below,
+     so it changes nothing today -- but leaving a 38px behind is exactly the
+     trap #341 fell into, where three places said 44 and the one that won
+     said 38. */
+  .quiz-topline .lab-language button { width: 44px; }
   .quiz-actions { display: grid; grid-template-columns: minmax(0,1fr) auto minmax(0,1fr); }
   .quiz-actions .stopbtn { justify-self: end; min-height: 44px; border-radius: 22px; }
   .quiz-step { color: var(--muted); font-size: 12px; font-weight: 800; letter-spacing: .07em; text-transform: uppercase; }
@@ -764,7 +768,23 @@
      wide -- so the padding is untouched and nothing re-wraps. The row grows
      8px in all, on a screen whose list is over 8000px long. */
   .lab-service-tabs button { min-height: 44px; border-radius: 999px; padding: 9px 13px; font-size: 12px; font-weight: 900; }
-  .lab-service-tabs button[aria-pressed="true"] { border-color: var(--accent); background: var(--accent); }
+  /* The selected service, marked the way the app marks "this one" (#380).
+     It used to be var(--accent), which measured 1.20:1 against an
+     unselected chip at night and 1.18:1 in day -- and the selected chip
+     also had its border set to its own fill, so selecting a service took
+     its outline AWAY. Marking by subtraction again, as in #337.
+     This is the dock's own selected treatment, gold on #38261b, so the app
+     says "this one" the same way in both places. The chip tells you which
+     of the four tables you are reading, and reading the wrong table is the
+     mistake this app exists to prevent.
+     The border is --gold-line, not the fill again. Measured: the gold fill
+     alone separates the selected chip from an unselected one by 10.04:1 at
+     night but only 2.84:1 in day, just under the 3:1 a state difference
+     needs. The darker gold edge carries that gap in day without darkening
+     the fill, which would have pushed the label below its own 4.5:1. */
+  .lab-service-tabs button[aria-pressed="true"] {
+    background: var(--gold); border-color: var(--gold-line); color: #38261b;
+  }
   .lab-chart-search, .lab-main input { border-radius: 14px; background: var(--panel); }
   .lab-chart-heading { border-color: var(--accent); }
   .lab-chart-row { margin: 0 0 8px; padding: 13px 14px; border: 1px solid var(--line); border-radius: 17px; background: var(--panel); }
@@ -1320,7 +1340,11 @@
      which made the hit area 42px wide there and the one measurement that
      matters inconsistent between screens. (`.card-header` carries the same
      38px, but no screen renders that class any more, so it is left alone.) */
-  .quiz-topline .lab-language button { width: 40px; }
+  /* 44, not 40 (#379). The main header's four were raised in #341; the quiz
+     has a header of its own, and this rule kept its two at 40 wide -- on the
+     screen a player spends the most time on. Cancel on the same bar is
+     already 80x44, so the row had the room. */
+  .quiz-topline .lab-language button { width: 44px; }
   .lab-language button, .lab-theme-btn { position: relative; }
   .lab-language button::after,
   .lab-theme-btn::after {
