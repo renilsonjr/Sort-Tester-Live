@@ -658,7 +658,13 @@
   .lab-chart-count { margin: 7px 0 12px; }
   .lab-search-label { display: block; margin-bottom: 6px; font-size: 11px; font-weight: 800; letter-spacing: .13em; text-transform: uppercase; }
   .lab-chart-search { width: 100%; padding: 12px; margin: 0 0 12px; border: 1px solid var(--line); font-size: 15px; }
-  .lab-chart-block { margin: 22px 0 3px; font-size: 13px; font-weight: 800; letter-spacing: .07em; text-transform: uppercase; color: var(--ink); }
+  /* #390: this used to carry its own type -- white, 13px, .07em -- so the
+     one screen with the most sections was the one where sections did not
+     look like sections. The headings are .lab-eyebrow now and this class is
+     only the space that separates a block from the rows above it. Leaving
+     the old colour and size here would have been dead weight: the eyebrow
+     rule further down the sheet wins on both. */
+  .lab-chart-block { margin: 22px 0 3px; }
   .lab-chart-row { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 8px; padding: 12px 0; border-bottom: 1px solid var(--line); }
   .lab-chart-state, .lab-chart-row small { display: block; color: var(--muted); font-size: 12px; }
   .lab-chart-row strong { display: block; margin-top: 2px; font-size: 17px; }
