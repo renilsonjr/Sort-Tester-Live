@@ -71,10 +71,12 @@ test('tied players are named as tied, never ordered', () => {
 test('no timestamp reaches the board', () => {
   // The first-reached-score rule was superseded by tie-break quizzes;
   // printing a time here would revive it.
-  // `points.toLocaleString()` groups the thousands and is not a time, so
-  // the pattern names times rather than every formatter.
+  // The pattern names the date formatters rather than every formatter,
+  // because grouping a score is not printing a time. #442 added two more
+  // ways to print one -- language.date and language.dateTime -- so the
+  // guard names those too; language.number stays allowed.
   const body = screen();
-  assert.doesNotMatch(body, /toLocaleTimeString|toLocaleDateString|new Date|settled_at|reached_at|_at\b/);
+  assert.doesNotMatch(body, /toLocaleTimeString|toLocaleDateString|language\.date|language\.dateTime|new Date|settled_at|reached_at|_at\b/);
 });
 
 test('a frozen season says points are final but places are not', () => {
