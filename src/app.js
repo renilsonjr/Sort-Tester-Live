@@ -99,7 +99,7 @@ function buildWorkbook(entries) {
     Missed: s.total - s.correct,
     Total: s.total,
     Time: clockText(s.totalMs),
-    Taken: new Date(s.takenAt).toLocaleString(),
+    Taken: language.dateTime(s.takenAt),
   }));
 
   const missorts = [];
@@ -108,7 +108,7 @@ function buildWorkbook(entries) {
       missorts.push({
         Name: s.name || 'Guest',
         Test: s.deck || '',
-        Taken: new Date(s.takenAt).toLocaleString(),
+        Taken: language.dateTime(s.takenAt),
         Service: serviceName(r.svc, r.destinationModifier),
         State: r.state,
         'Routing code': r.code,
@@ -657,7 +657,7 @@ function badgeTrail(current) {
 function balanceLine(entry) {
   const cap = BADGE_CAP[entry.badge];
   if (cap === undefined) return `${entry.badge} \u00b7 ${t('no cap')}`;
-  if (entry.points >= cap) return `${entry.badge} \u00b7 ${t('at the cap')} (${cap.toLocaleString()})`;
+  if (entry.points >= cap) return `${entry.badge} \u00b7 ${t('at the cap')} (${language.number(cap)})`;
   if (entry.points < 0) return `${entry.badge} \u00b7 ${t('a negative total stays in Iron')}`;
   // It used to read "Iron - 1,000 points to the cap (1,000)": the number said
   // twice, and nothing about where the climb goes. A player at zero could not
@@ -665,7 +665,7 @@ function balanceLine(entry) {
   // at a glance, and the badge above is the thing the points are actually
   // for, so it is named: "Iron - 0 / 1,000 to Bronze".
   const next = nextBadgeName(entry.badge);
-  const progress = `${entry.points.toLocaleString()} / ${cap.toLocaleString()}`;
+  const progress = `${language.number(entry.points)} / ${language.number(cap)}`;
   if (next === null) return `${entry.badge} \u00b7 ${progress}`;
   return `${entry.badge} \u00b7 ${progress} ${t('to')} ${next}`;
 }
@@ -792,7 +792,7 @@ async function fillOverview(panel) {
     <section class="home-stripe">
     <p class="lab-eyebrow">${esc(t('Your numbers'))}</p>
     <div class="pf-stats">
-      ${statCell(entry.points.toLocaleString(), t('Points'))}
+      ${statCell(language.number(entry.points), t('Points'))}
       ${statCell(bestRanked, t('Best Ranked'))}
       ${statCell(log.available ? practiceCountLabel(log.all()) : DASH, t('Practices'))}
       ${statCell(place, t('Place'))}
@@ -842,7 +842,7 @@ async function fillHistory(panel) {
         return `<li class="${ended ? 'ended' : ''}">
           <b>${esc(t('Ranked quiz'))}</b>
           <span class="score">${ended ? '\u2014' : (row.adjustment > 0 ? '+' : '') + row.adjustment}</span>
-          <small>${esc(new Date(row.settled_at).toLocaleDateString())}</small>
+          <small>${esc(language.date(row.settled_at))}</small>
           <span class="status ${ended ? 'ended' : ''}">${esc(ended ? t('Ended at launch \u00b7 no score applied') : t('Completed'))}</span>
         </li>`;
       }).join('')}
@@ -893,8 +893,8 @@ async function fillSupport(panel) {
       <li>
         <span class="support-pill ${ticket.closed_at ? 'closed' : 'open'}">${esc(support.outcomeLabel(ticket))}</span>
         <b>${esc(t('Ranked quiz'))}</b>
-        <small>${esc(new Date(ticket.opened_at).toLocaleDateString())}</small>
-        <span class="support-keep">${esc(support.retentionLine(ticket, (iso) => new Date(iso).toLocaleDateString()))}</span>
+        <small>${esc(language.date(ticket.opened_at))}</small>
+        <span class="support-keep">${esc(support.retentionLine(ticket, (iso) => language.date(iso)))}</span>
       </li>`).join('')}
     </ul>`}
     ${canCreate ? `
@@ -926,7 +926,7 @@ async function showCreateTicket() {
       <label class="field">
         <span>${esc(t('Which attempt'))}</span>
         <select id="ticket-attempt">
-          ${attempts.map((a) => `<option value="${a.attempt_id}">${esc(t('Ranked quiz'))} \u00b7 ${esc(new Date(a.settled_at).toLocaleDateString())} \u00b7 ${esc(a.final_outcome)}</option>`).join('')}
+          ${attempts.map((a) => `<option value="${a.attempt_id}">${esc(t('Ranked quiz'))} \u00b7 ${esc(language.date(a.settled_at))} \u00b7 ${esc(a.final_outcome)}</option>`).join('')}
         </select>
       </label>
       <label class="field">
@@ -1440,7 +1440,7 @@ function showOwnerAccounts(message = null, bad = false) {
 }
 
 function accountRowLine(row) {
-  const parts = [`#${row.tag}`, `${t('created')} ${new Date(row.created_at).toLocaleDateString()}`];
+  const parts = [`#${row.tag}`, `${t('created')} ${language.date(row.created_at)}`];
   if (row.approved) parts.push(t('Approved for prizes'));
   if (row.has_played) parts.push(t('Has played'));
   return parts.join(' \u00b7 ');
@@ -1536,7 +1536,7 @@ function showTiebreakInvite(tie) {
   stopTick();
   clock = null;
   const round = tie.round;
-  const closes = new Date(round.deadline_at).toLocaleString();
+  const closes = language.dateTime(round.deadline_at);
   const view = labPage(`
     <section class="lab-screen">
       <p class="lab-eyebrow">${esc(t('Prize tie-break'))} · ${esc(t('round'))} ${round.number}</p>
@@ -1738,7 +1738,7 @@ async function fillSelection(panel) {
     <aside class="lab-disclaimer">${esc(t('These ties could not be settled by a quiz, so the rules send them to you. Choose who takes the hats. Your choice is final, and it changes nobody\u2019s points, badge or tie-break results.'))}</aside>
     ${body.cases.map((c) => `
       <div class="owner-form sel-case" data-group="${esc(c.group_id)}" data-hats="${c.hats}">
-        <p class="lab-eyebrow">${c.hats} ${esc(c.hats === 1 ? t('hat') : t('hats'))} \u00b7 ${c.tied_points.toLocaleString()} ${esc(t('points each'))}</p>
+        <p class="lab-eyebrow">${c.hats} ${esc(c.hats === 1 ? t('hat') : t('hats'))} \u00b7 ${language.number(c.tied_points)} ${esc(t('points each'))}</p>
         <ul class="sel-list">${c.players.map((p) => `
           <li><label><input type="checkbox" value="${esc(p.account_id)}" data-name="${esc(p.username)}">
             <b>${esc(p.username)}</b> <small>#${esc(p.tag)}</small></label>
@@ -1836,7 +1836,7 @@ function caseEvents(events) {
     <details class="lab-fold">
       <summary>${esc(t('Connection events'))} (${events.length})</summary>
       <ul class="case-events">${events.map((event) => `
-        <li>${esc(event.kind.replace(/_/g, ' '))} · ${esc(new Date(event.occurred_at).toLocaleString())}</li>
+        <li>${esc(event.kind.replace(/_/g, ' '))} · ${esc(language.dateTime(event.occurred_at))}</li>
       `).join('')}</ul>
     </details>`;
 }
@@ -1866,16 +1866,16 @@ async function fillCases(panel, kind) {
   }
   panel.innerHTML = `<ul class="cases">${body.map((row) => (kind === 'flags' ? `
     <li>
-      <p class="lab-eyebrow">${esc(t('Flag'))} · ${esc(t('noticed'))} ${esc(new Date(row.flagged_at).toLocaleDateString())}</p>
+      <p class="lab-eyebrow">${esc(t('Flag'))} · ${esc(t('noticed'))} ${esc(language.date(row.flagged_at))}</p>
       <h2>${esc(row.username)} · #${esc(row.tag)}</h2>
-      <p class="lab-study-meta">${esc(t('Losses between'))} ${esc(new Date(row.first_loss_at).toLocaleString())} ${esc(t('and'))} ${esc(new Date(row.last_loss_at).toLocaleString())}</p>
+      <p class="lab-study-meta">${esc(t('Losses between'))} ${esc(language.dateTime(row.first_loss_at))} ${esc(t('and'))} ${esc(language.dateTime(row.last_loss_at))}</p>
       <div class="board-notice"><p>${esc(t('This is a pattern the server noticed. It is not proof that anybody cheated, and closing it changes no points and no access.'))}</p></div>
       ${caseEvents(row.events)}
       <p class="case-keep">${esc(t('Kept while this review is open. Fifteen days after it closes, these connection details are deleted, unless a case still open shares the same log.'))}</p>
       ${outcomeButtons(row.attempt_id)}
     </li>` : `
     <li>
-      <p class="lab-eyebrow">${esc(t('Ticket'))} · ${esc(t('opened'))} ${esc(new Date(row.opened_at).toLocaleDateString())}</p>
+      <p class="lab-eyebrow">${esc(t('Ticket'))} · ${esc(t('opened'))} ${esc(language.date(row.opened_at))}</p>
       <h2>${esc(row.username)} · #${esc(row.tag)}</h2>
       ${row.description ? `<blockquote class="case-said">${esc(row.description)}</blockquote>`
         : `<p class="lab-study-meta">${esc(t('They wrote no description.'))}</p>`}
@@ -1969,8 +1969,8 @@ async function fillRecoveries(panel) {
       <span class="approved-who">
         <b>${esc(row.username)}</b>
         <small>#${esc(row.tag)} · ${esc(row.completed_at
-          ? `${t('handed over')} ${new Date(row.completed_at).toLocaleDateString()}`
-          : `${t('opened')} ${new Date(row.opened_at).toLocaleDateString()}, ${t('not completed')}`)}</small>
+          ? `${t('handed over')} ${language.date(row.completed_at)}`
+          : `${t('opened')} ${language.date(row.opened_at)}, ${t('not completed')}`)}</small>
       </span>
     </li>`).join('')}</ul>`;
 }
@@ -2015,8 +2015,8 @@ async function fillRecoveryMessages(panel) {
       <span class="approved-who">
         <b style="white-space:pre-wrap">${esc(row.body)}</b>
         <small>${esc(row.resolved_at
-          ? `${t('received')} ${new Date(row.created_at).toLocaleString()} · ${t('resolved')} ${new Date(row.resolved_at).toLocaleDateString()}`
-          : `${t('received')} ${new Date(row.created_at).toLocaleString()}`)}</small>
+          ? `${t('received')} ${language.dateTime(row.created_at)} · ${t('resolved')} ${language.date(row.resolved_at)}`
+          : `${t('received')} ${language.dateTime(row.created_at)}`)}</small>
       </span>
       ${row.resolved_at ? '' : `<button class="ghost" data-resolve="${esc(row.id)}">${esc(t('Mark as resolved'))}</button>`}
     </li>`).join('')}</ul>`;
@@ -2171,7 +2171,7 @@ async function fillLeaderboard(panel) {
       ${row.hat ? `<div class="pcrown" aria-hidden="true">${ICONS.prizeHolder}</div>` : ''}
       <div class="pdisc${!row.hat && avatarEmoji(row.avatar) ? ' has-avatar' : ''}">${row.hat ? ICONS.prizeHolder : (avatarEmoji(row.avatar) || esc(row.username.slice(0, 1).toUpperCase()))}</div>
       <div class="pname">${esc(row.username)}</div>
-      <div class="ppts">◆ ${row.points.toLocaleString()}</div>
+      <div class="ppts">◆ ${language.number(row.points)}</div>
       <div class="ppillar">${row.place}</div>
     </div>`;
   const podium = hasPodium ? `<div class="podium">
@@ -2185,7 +2185,7 @@ async function fillLeaderboard(panel) {
         <b>${avatarEmoji(row.avatar) ? `<span class="board-avatar" aria-hidden="true">${avatarEmoji(row.avatar)}</span>` : ''}${esc(row.username)}</b>
         <small>#${esc(row.tag)} · ${esc(row.badge)}${row.you ? ` · ${esc(t('your place'))}` : ''}</small>
       </span>
-      <b class="board-points">${row.points.toLocaleString()}</b>
+      <b class="board-points">${language.number(row.points)}</b>
       ${row.hat ? `<span class="board-marker board-marker-hat">${esc(t('Hat winner'))}</span>`
         : (row.tied ? `<span class="board-marker">${esc(t(board.prizes_final ? 'Tied on points, no hat' : 'Tied on points'))}</span>` : '')}
     </li>
@@ -2309,7 +2309,7 @@ async function fillRanked(panel, title) {
   }
   const seasonName = season.phase === 'pre_season' ? t('Pre-Season') : season.label;
   title.textContent = seasonName;
-  const closes = season.closes_at ? new Date(season.closes_at).toLocaleString() : null;
+  const closes = season.closes_at ? language.dateTime(season.closes_at) : null;
   // A new quiz is offered only while the season admits one. Closing and
   // frozen seasons keep the balance and the leaderboard on the screen.
   const open = season.status === 'open';
@@ -2323,7 +2323,7 @@ async function fillRanked(panel, title) {
       <div class="rk-bal">
         <div>
           <p class="lab-study-meta">${esc(t('Your balance'))}</p>
-          <p class="profile-points">${entry.points.toLocaleString()} <i>${esc(t('points'))}</i></p>
+          <p class="profile-points">${language.number(entry.points)} <i>${esc(t('points'))}</i></p>
         </div>
         <div class="home-obj rk-obj"><span class="home-shine" aria-hidden="true"></span><img class="home-obj-badge" src="${badgeArt(entry.badge)}" alt=""></div>
       </div>
@@ -2644,11 +2644,11 @@ function rankedSum(result, quit) {
   const overflow = result.points_after - expected;
   return `
     <div class="sum">
-      <div><span>${esc(t('Before this attempt'))}</span><b>${result.points_before.toLocaleString()}</b></div>
-      <div class="${result.raw_score < 0 ? 'lost' : ''}"><span>${esc(t(quit ? 'Right before you quit' : 'This attempt'))}</span><b>${result.raw_score >= 0 ? '+' : ''}${result.raw_score.toLocaleString()}</b></div>
+      <div><span>${esc(t('Before this attempt'))}</span><b>${language.number(result.points_before)}</b></div>
+      <div class="${result.raw_score < 0 ? 'lost' : ''}"><span>${esc(t(quit ? 'Right before you quit' : 'This attempt'))}</span><b>${result.raw_score >= 0 ? '+' : ''}${language.number(result.raw_score)}</b></div>
       ${quit ? `<div class="lost"><span>${esc(t('Quitting costs'))}</span><b>−${QUIT_PENALTY}</b></div>` : ''}
-      ${overflow < 0 ? `<div class="lost"><span>${esc(t('Did not fit in'))} ${esc(result.badge_before)}</span><b>${overflow.toLocaleString()}</b></div>` : ''}
-      <div class="total"><span>${esc(t('Your balance now'))}</span><b>${result.points_after.toLocaleString()}</b></div>
+      ${overflow < 0 ? `<div class="lost"><span>${esc(t('Did not fit in'))} ${esc(result.badge_before)}</span><b>${language.number(overflow)}</b></div>` : ''}
+      <div class="total"><span>${esc(t('Your balance now'))}</span><b>${language.number(result.points_after)}</b></div>
     </div>`;
 }
 
@@ -2847,7 +2847,7 @@ function showPromotionResult(result, tally, { quit = false, attemptId = null } =
           <img class="profile-badge" src="${badgeArt(result.badge_after)}" alt="">
           <div>
             <p class="lab-study-meta">${esc(t('Your balance'))}</p>
-            <p class="profile-points">${result.points_after.toLocaleString()} ${esc(t('points'))}</p>
+            <p class="profile-points">${language.number(result.points_after)} ${esc(t('points'))}</p>
             <p class="lab-study-meta">${esc(balanceLine({ badge: result.badge_after, points: result.points_after }))}</p>
           </div>
         </div>
@@ -2866,12 +2866,12 @@ function showPromotionResult(result, tally, { quit = false, attemptId = null } =
       <p class="lab-eyebrow">${esc(t('Promotion'))} · ${esc(t(quit ? 'quit' : 'ended'))}</p>
       <h1 class="lab-title">${esc(tally.correctCount)} ${esc(t('of'))} 15 — ${esc(t('promotion needs all 15'))}</h1>
       <div class="sum">
-        <div><span>${esc(t('Before this attempt'))}</span><b>${result.points_before.toLocaleString()}</b></div>
+        <div><span>${esc(t('Before this attempt'))}</span><b>${language.number(result.points_before)}</b></div>
         ${mistakes < 0
-          ? `<div class="lost"><span>${esc(t('Wrong answers and timeouts'))}</span><b>${mistakes.toLocaleString()}</b></div>`
+          ? `<div class="lost"><span>${esc(t('Wrong answers and timeouts'))}</span><b>${language.number(mistakes)}</b></div>`
           : ''}
         ${quit ? `<div class="lost"><span>${esc(t('Quitting costs'))}</span><b>−${QUIT_PENALTY}</b></div>` : ''}
-        <div class="total"><span>${esc(t('Your balance now'))}</span><b>${result.points_after.toLocaleString()}</b></div>
+        <div class="total"><span>${esc(t('Your balance now'))}</span><b>${language.number(result.points_after)}</b></div>
       </div>
       ${boardNotice(
           `${(BADGE_CAP[result.badge_before] ?? 0) - result.points_after} ${t('points to the cap again')}`,
@@ -2900,7 +2900,7 @@ function showPromotionOffer(entry) {
         <img class="profile-badge" src="${badgeArt(entry.badge)}" alt="">
         <div>
           <p class="lab-study-meta">${esc(t('Your balance'))}</p>
-          <p class="profile-points">${entry.points.toLocaleString()} ${esc(t('points'))}</p>
+          <p class="profile-points">${language.number(entry.points)} ${esc(t('points'))}</p>
           <p class="lab-study-meta">${esc(balanceLine(entry))}</p>
         </div>
       </div>
@@ -2908,7 +2908,7 @@ function showPromotionOffer(entry) {
         <li>${esc(t('15 questions. You need every one of them right.'))}</li>
         <li>${esc(t('One wrong answer or timeout ends the promotion right there, and that mistake deducts its points.'))}</li>
         <li>${esc(t('Losing points drops you below the cap, so promotion is not available again until you earn them back.'))}</li>
-        <li>${esc(t('Passing sets you to'))} ${((BADGE_CAP[entry.badge] ?? entry.points) + 1).toLocaleString()} ${esc(t('points and'))} ${esc(next || entry.badge)}.</li>
+        <li>${esc(t('Passing sets you to'))} ${language.number((BADGE_CAP[entry.badge] ?? entry.points) + 1)} ${esc(t('points and'))} ${esc(next || entry.badge)}.</li>
       </ol>
       <p class="lab-intro">${esc(t('Opening this screen has not started anything. No question has been sent and no clock is running.'))}</p>
       <button id="pr-start" class="primary">${esc(t('Start promotion'))}</button>
@@ -3118,7 +3118,7 @@ async function fillHomeIdentity(view) {
   }
   const box = view.querySelector('#home-ident');
   if (!box || !entry) return;
-  const points = `${entry.points.toLocaleString()} ${t('points')}`;
+  const points = `${language.number(entry.points)} ${t('points')}`;
   const placed = stats && stats.place != null;
   box.innerHTML = `<small>${esc(t(placed ? 'Your standing' : 'Your balance'))}</small><b>${placed ? `#${esc(stats.place)} · ` : ''}${esc(points)}</b>`;
 
@@ -3160,8 +3160,8 @@ async function fillLaunchCallout(view) {
     return;  // no backend, as on the static page: show nothing at all
   }
   if (!notice?.started || !notice.started_at) return;
-  const started = new Date(notice.started_at).toLocaleDateString();
-  const closes = notice.closes_at ? new Date(notice.closes_at).toLocaleDateString() : null;
+  const started = language.date(notice.started_at);
+  const closes = notice.closes_at ? language.date(notice.closes_at) : null;
   // Once the season's end has passed, "has started ... ends on" is stale:
   // nobody can start a quiz for points any more. It does not say points
   // are final: attempts already started have five more minutes.
@@ -3785,7 +3785,7 @@ function showLog() {
             <li>
               <span class="who">${esc(displayName(s.name))}</span>
               <span class="sc">${esc(s.correct)}/${esc(s.total)}</span>
-              <span class="when">${s.deck ? esc(language.deckLabel(s.deck)) + ' &middot; ' : ''}${esc(new Date(s.takenAt).toLocaleString(language.code === 'es' ? 'es-US' : 'en-US'))}</span>
+              <span class="when">${s.deck ? esc(language.deckLabel(s.deck)) + ' &middot; ' : ''}${esc(language.dateTime(s.takenAt))}</span>
               ${s.missed.length ? `
                 <ul class="logmiss">
                   ${s.missed.map((r) => `

@@ -69,7 +69,9 @@ test('Continue goes to the result screen #17 settled, with its numbers', () => {
   assert.match(cheer, /showPromotionResult\(result, tally, \{ attemptId \}\)/);
   // and that screen still carries the balance and the cap line
   const result = fn('function showPromotionResult');
-  assert.match(result, /result\.points_after\.toLocaleString\(\)/);
+  // Grouped through language.number since #442, so the separator follows
+  // the app's language rather than the phone's. Same number, same place.
+  assert.match(result, /language\.number\(result\.points_after\)/);
   assert.match(result, /balanceLine\(\{ badge: result\.badge_after/);
 });
 

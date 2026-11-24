@@ -583,6 +583,33 @@ const DETAIL_ES = {
   'Termination overrides ZIP range': 'La terminación prevalece sobre el rango ZIP',
 };
 
+// #442: every date, time and grouped number in the app used to be formatted
+// with no locale, so they followed the LANGUAGE OF THE PHONE rather than the
+// EN/ES switch. On a US phone set to English, the Spanish side read
+// "Empezó el 11/13/2026" -- day 11 of month 13, which does not exist.
+//
+// The Spanish choice is `es-US`, with `es-419` and `es` behind it for an
+// engine that does not know it. That is deliberate, and measured: every
+// Spanish variant puts the day first, but they disagree about everything
+// else. European `es-ES` groups thousands with a full stop (1.234.567) and
+// uses a 24-hour clock; the American ones keep the comma (1,234,567) and
+// a 12-hour clock with a.m./p.m. These sorters work in New Jersey, read US
+// paperwork and stand beside colleagues reading the English screens, so
+// the American conventions are the ones that match the floor. Only the day
+// and month order was ever wrong.
+const LOCALES = { en: ['en-US'], es: ['es-US', 'es-419', 'es'] };
+
+// `null` is the trap here, not a malformed string: `new Date(null)` is the
+// epoch, a perfectly valid date, so a missing timestamp renders as
+// "31/12/1969" in the middle of a sentence rather than as nothing. These
+// values come straight from the API, where an absent date is null -- a
+// ticket with no resolved_at, a season with no closes_at.
+function _when(value) {
+  if (value === null || value === undefined || value === '') return null;
+  const when = value instanceof Date ? value : new Date(value);
+  return Number.isNaN(when.getTime()) ? null : when;
+}
+
 export function createLanguage(storage) {
   let code = 'en';
   try {
@@ -599,6 +626,23 @@ export function createLanguage(storage) {
     text(source, values = {}) {
       const template = code === 'es' ? ES[source] ?? source : source;
       return template.replace(/\{(\w+)\}/g, (_, key) => String(values[key] ?? ''));
+    },
+    // The three formatters, beside text() because they answer the same
+    // question: what does this say in the language the player chose?
+    // Each takes what the API sends -- an ISO string -- or a Date.
+    // An unparseable value returns '' rather than "Invalid Date" on screen.
+    get locale() { return LOCALES[code]; },
+    date(value) {
+      const when = _when(value);
+      return when === null ? '' : when.toLocaleDateString(LOCALES[code]);
+    },
+    dateTime(value) {
+      const when = _when(value);
+      return when === null ? '' : when.toLocaleString(LOCALES[code]);
+    },
+    number(value) {
+      const n = typeof value === 'number' ? value : Number(value);
+      return Number.isFinite(n) ? n.toLocaleString(LOCALES[code]) : '';
     },
     service(source) { return code === 'es' ? SERVICE_ES[source] ?? source : source; },
     deckName(deck) { return code === 'es' ? DECK_ES[deck.id]?.[0] ?? deck.name : deck.name; },

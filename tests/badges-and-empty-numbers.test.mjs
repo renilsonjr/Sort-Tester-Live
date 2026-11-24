@@ -27,8 +27,10 @@ test('#329 the balance line no longer says the number twice', () => {
   // the cap, which the sentence had already given.
   assert.doesNotMatch(js, /points to the cap'\)/, "the old 'points to the cap' line is back");
   assert.doesNotMatch(i18n, /^\s*'points to the cap':/m, 'the dead Spanish entry is back');
-  // "Iron - 0 / 1,000 to Bronze"
-  assert.match(js, /const progress = `\$\{entry\.points\.toLocaleString\(\)\} \/ \$\{cap\.toLocaleString\(\)\}`/);
+  // "Iron - 0 / 1,000 to Bronze". The grouping moved to language.number in
+  // #442, so that the thousands separator follows the EN/ES switch rather
+  // than the phone's own language; the line itself is unchanged.
+  assert.match(js, /const progress = `\$\{language\.number\(entry\.points\)\} \/ \$\{language\.number\(cap\)\}`/);
   assert.match(js, /return `\$\{entry\.badge\} \\u00b7 \$\{progress\} \$\{t\('to'\)\} \$\{next\}`/);
   assert.match(i18n, /'to': 'para'/);
 });
