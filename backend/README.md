@@ -117,10 +117,10 @@ origins. CORS lets the browser read a cross-origin response; it is not a login,
 firewall, or general access-control mechanism. No credentials are sent.
 
 Only clicking the button starts the config/API check. The page refuses to run
-outside `http://127.0.0.1:8000`. Because GitHub Pages publishes the repository
-root with `.nojekyll`, committed development files are publicly retrievable
-after merging, but this check is disabled there. There is no link to it from
-the employee interface. No public backend is configured.
+outside `http://127.0.0.1:8000`. GitHub Pages no longer publishes this
+repository, and the hosted app serves only the home page, `src/` and
+`assets/`, so the page is not reachable there. There is no link to it from
+the employee interface.
 
 ### Verify failure and independent Practice
 
