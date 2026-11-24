@@ -1430,6 +1430,9 @@
      system emoji (#326). `currentColor` is what makes one drawing serve every
      state: the button already sets the gold, and the day theme redefines it. */
   .lab-btn-ic { display: grid; place-items: center; }
+  /* The Settings chip is 12px text, so its mark is 15px rather than the 19px
+     the tiles and the dock use -- the glyph it replaces drew at 14px (#404). */
+  .lab-settings-btn .lab-btn-ic svg { width: 15px; height: 15px; }
   .lab-nav i { display: block; }
 
   /* Home stripes */

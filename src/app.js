@@ -298,6 +298,30 @@ const ICONS = {
   avatar: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M8.5 14.2a4.5 4.5 0 0 0 7 0"/><path d="M9 9.5h.01M15 9.5h.01"/></svg>',
   devices: '<svg viewBox="0 0 24 24"><rect x="2.5" y="4.5" width="13" height="10" rx="2"/><path d="M6 18.5h6"/><rect x="16.5" y="9.5" width="5" height="10" rx="1.6"/></svg>',
   deleteAccount: '<svg viewBox="0 0 24 24"><path d="M4.5 6.5h15M9.5 6.5V4.8a1.3 1.3 0 0 1 1.3-1.3h2.4a1.3 1.3 0 0 1 1.3 1.3v1.7"/><path d="M6.5 6.5 7.6 20a1.5 1.5 0 0 0 1.5 1.4h5.8a1.5 1.5 0 0 0 1.5-1.4l1.1-13.5"/><path d="M10.5 10.5v7M13.5 10.5v7"/></svg>',
+  // The last eight tiles still drawn from a text character (#404): six on
+  // the owner menu, one on Support and one on the prize tie-break. Measured
+  // on the owner menu at 375x812, the six glyphs were 7.5px, 9.6px, 9.6px,
+  // 9.6px, 12.2px and 12.2px of ink inside identical 44px tiles -- a 63%
+  // spread in one column, because Nunito has none of them and each device
+  // falls back to a different font. Every drawn icon here is 19x19.
+  prizeEligibility: '<svg viewBox="0 0 24 24"><rect x="4.5" y="4.5" width="15" height="16" rx="2"/><rect x="9" y="2.5" width="6" height="3.5" rx="1"/><path d="m8.6 13.4 2.4 2.4 4.6-5"/></svg>',
+  accessRecovery: '<svg viewBox="0 0 24 24"><circle cx="8" cy="16" r="4.2"/><path d="m11 13 9-9M17.4 6.6 20 9.2M14.8 9.2l2.6 2.6"/></svg>',
+  recoveryMessages: '<svg viewBox="0 0 24 24"><rect x="2.5" y="5" width="19" height="14" rx="2"/><path d="m3.2 6.8 8.8 6.4 8.8-6.4"/></svg>',
+  caseReview: '<svg viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m15.3 15.3 5.2 5.2"/></svg>',
+  accounts: '<svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="4.2"/><path d="M2.5 20.5a6.5 6.5 0 0 1 13 0"/><path d="M16.5 13.5h5"/></svg>',
+  createTicket: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 8v8M8 12h8"/></svg>',
+  // One icon for both sides of the same thing. "Prize selection -- ties the
+  // rules send to you" is the owner's end of the tie-break the player sees
+  // on Ranked, so they share a mark rather than each getting one. A cap was
+  // drawn for the owner row first and read as a blob at 19px, which is what
+  // sent me back to asking what the row actually does.
+  tiebreak: '<svg viewBox="0 0 24 24"><path d="M6 21.5V3"/><path d="M6 4.5h10.8l-2.1 3.6 2.1 3.6H6"/></svg>',
+  // Not a tile, so outside the letter of #404, but the same defect and the
+  // one the player sees most: the Settings chip's gear is a U+2699 that
+  // Nunito does not have, 8.4px of ink in the sub-header of every screen.
+  // Sliders rather than a gear, because a gear at this size is a ring with
+  // short rays -- which is the day-theme icon sitting two chips away.
+  settings: '<svg viewBox="0 0 24 24"><path d="M4 7h16M4 17h16"/><circle cx="9" cy="7" r="2.4"/><circle cx="15" cy="17" r="2.4"/></svg>',
 };
 
 function navTabs() {
@@ -329,7 +353,7 @@ function labPage(content, active = 'home', rerender = showStart) {
         ${active === 'profile' ? `
         <div class="lab-site-row">
           <div class="lab-site">UPS Saddle Brook <span aria-hidden="true">·</span> Twilight</div>
-          <button type="button" class="lab-settings-btn" id="top-settings"><span aria-hidden="true">\u2699</span> ${esc(t('Settings'))}</button>
+          <button type="button" class="lab-settings-btn" id="top-settings"><span class="lab-btn-ic" aria-hidden="true">${ICONS.settings}</span> ${esc(t('Settings'))}</button>
         </div>` : ''}
       </header>
       <main class="lab-main">${content}</main>
@@ -862,12 +886,12 @@ async function fillSupport(panel) {
     </ul>`}
     ${canCreate ? `
     <button id="support-create" class="lab-choice lab-choice-quiz" type="button">
-      <span class="lab-choice-icon">+</span>
+      <span class="lab-choice-icon" aria-hidden="true">${ICONS.createTicket}</span>
       <span><strong>${esc(t('Create ticket'))}</strong><small>${esc(t('About one of your own Ranked attempts.'))}</small></span>
       <span class="lab-arrow" aria-hidden="true">\u2192</span>
     </button>` : `
     <div class="lab-choice locked">
-      <span class="lab-choice-icon">+</span>
+      <span class="lab-choice-icon" aria-hidden="true">${ICONS.createTicket}</span>
       <span><strong>${esc(t('Create ticket'))}</strong><small>${esc(t('A ticket is about a Ranked attempt, and you have none yet.'))}</small></span>
     </div>`}
     <p class="lab-intro">${esc(t('Only you can see your tickets. When a ticket is closed, its description and connection details are deleted 15 days later. Evidence shared with another case that is still open is kept until that case closes.'))}</p>
@@ -1220,32 +1244,32 @@ function showOwnerTools() {
       <h1 class="lab-title">${esc(t('Owner tools'))}</h1>
       <aside class="lab-disclaimer">${esc(t('These are the only administrator powers this app has. Approving does not change anybody’s points, badge or history, and gives you no access to a player’s record.'))}</aside>
       <button id="owner-eligibility" class="lab-choice" type="button">
-        <span class="lab-choice-icon">✓</span>
+        <span class="lab-choice-icon" aria-hidden="true">${ICONS.prizeEligibility}</span>
         <span><strong>${esc(t('Prize eligibility'))}</strong><small>${esc(t('Who may win a hat this season.'))}</small></span>
         <span class="lab-arrow" aria-hidden="true">→</span>
       </button>
       <button id="owner-recovery" class="lab-choice" type="button">
-        <span class="lab-choice-icon">↺</span>
+        <span class="lab-choice-icon" aria-hidden="true">${ICONS.accessRecovery}</span>
         <span><strong>${esc(t('Access recovery'))}</strong><small>${esc(t('In person, for a sorter who lost their Quiz Code.'))}</small></span>
         <span class="lab-arrow" aria-hidden="true">→</span>
       </button>
       <button id="owner-messages" class="lab-choice" type="button">
-        <span class="lab-choice-icon">✉</span>
+        <span class="lab-choice-icon" aria-hidden="true">${ICONS.recoveryMessages}</span>
         <span><strong>${esc(t('Recovery messages'))}</strong><small id="owner-messages-count">${esc(t('Left on the sign-in screen by people who are locked out.'))}</small></span>
         <span class="lab-arrow" aria-hidden="true">→</span>
       </button>
       <button id="owner-select" class="lab-choice" type="button">
-        <span class="lab-choice-icon">\u265b</span>
+        <span class="lab-choice-icon" aria-hidden="true">${ICONS.tiebreak}</span>
         <span><strong>${esc(t('Prize selection'))}</strong><small id="owner-select-count">${esc(t('Ties the rules send to you.'))}</small></span>
         <span class="lab-arrow" aria-hidden="true">\u2192</span>
       </button>
       <button id="owner-cases" class="lab-choice" type="button">
-        <span class="lab-choice-icon">?</span>
+        <span class="lab-choice-icon" aria-hidden="true">${ICONS.caseReview}</span>
         <span><strong>${esc(t('Case review'))}</strong><small>${esc(t('Tickets players opened, and connection flags.'))}</small></span>
         <span class="lab-arrow" aria-hidden="true">→</span>
       </button>
       <button id="owner-accounts" class="lab-choice" type="button">
-        <span class="lab-choice-icon">\u2715</span>
+        <span class="lab-choice-icon" aria-hidden="true">${ICONS.accounts}</span>
         <span><strong>${esc(t('Accounts'))}</strong><small>${esc(t('Remove an account that should not exist.'))}</small></span>
         <span class="lab-arrow" aria-hidden="true">\u2192</span>
       </button>
@@ -2904,7 +2928,7 @@ async function fillTiebreakCallout(box, { onlyToPlay = false } = {}) {
       <section class="home-stripe">
         <p class="lab-eyebrow">${esc(t('Prize tie-break'))}</p>
         <button id="tiebreak-go" class="lab-choice lab-choice-quiz" type="button">
-          <span class="lab-choice-icon">◇</span>
+          <span class="lab-choice-icon" aria-hidden="true">${ICONS.tiebreak}</span>
           <span><strong>${esc(t('You are in a prize tie-break'))}</strong><small>${esc(t(round.restarted
             ? 'The round was restarted after a server outage. Play it again before it closes.'
             : 'A quiz decides the hat. Play once before the round closes.'))}</small></span>
