@@ -29,8 +29,8 @@
   .diagram { background:rgba(255,255,255,.04); border-radius:14px; padding:16px; margin-top:12px;
              font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size:13px; color:#cbb9a4; line-height:1.8; }
 </style></head><body><div class="wrap">
-<h1>Rodada 4 — as telas que as três primeiras nunca abriram</h1>
-<p class="lead">Seis achados, cinco corrigidos, um fechado porque eu tinha medido errado. Tudo numa PR só, com um commit por issue.</p>
+<h1>Rodadas 4 e 5 — as telas que as três primeiras nunca abriram</h1>
+<p class="lead">Seis achados da rodada 4 — cinco corrigidos, um fechado porque eu tinha medido errado — e o primeiro da rodada 5, que é um defeito de verdade. Tudo numa PR só, com um commit por issue.</p>
 <p>Medido no app rodando, iPhone 375&times;812, tema noite, mesma conta nos dois lados. Antes = <code>main</code>. Depois = <code>fix/round-4</code>.</p>
 <h2><span class="n">#420 · #421</span>Chamados: a ação primeiro, e nada de beco sem saída</h2>
 <p>Antes, três parágrafos de política — 88 palavras, <b>284px</b> — ficavam entre o título e a única coisa que dava pra fazer. E a linha tinha seta, como se levasse a algum lugar: para quem nunca jogou Ranked, levava a uma tela que só sabia dizer isso e oferecer Cancelar.</p>
@@ -77,7 +77,26 @@
 <p>Crescer o chip empurraria o sub-cabeçalho para baixo em toda tela de perfil. Então estendi a área de toque com um pseudo-elemento: medi <b>8px livres acima</b> (os botões terminam em y=55, o chip começa em 63) e <b>12px abaixo</b>, e -6px em cima e embaixo dá 45px sem encostar em nada. O cabeçalho continua com 108px.</p>
 
 <hr>
+<h2><span class="n">#426</span>Sair de uma partida Ranked agora encerra o batimento</h2>
+<p class="lead">Este veio da rodada 5 e <b>não é acabamento: é um defeito.</b></p>
+<p>Um toque na doca no meio de uma partida trocava a tela, mas <b>deixava o batimento batendo</b> — uma vez por segundo, enquanto a página ficasse aberta. O servidor só fecha uma partida 15 segundos depois do último batimento. Como ele nunca parava, a partida nunca ficava quieta, nunca fechava, e toda partida nova voltava <b>409</b> enquanto a tela prometia <q>alguns segundos</q>.</p>
+<table>
+  <tr><th>Medido no app</th><th>Antes</th><th>Depois</th></tr>
+  <tr><td>batimentos depois de sair pela doca</td><td><b>13 em 12s</b>, minutos depois</td><td><b>0 em 6s</b></td></tr>
+  <tr><td><code>POST /ranked/attempts</code></td><td><b>409</b> a cada tentativa</td><td>parte normalmente</td></tr>
+  <tr><td><q>Preparando sua próxima partida</q></td><td><b>nunca saía</b></td><td><b>9s</b>, sozinha</td></tr>
+  <tr><td>saída do jogador</td><td>recarregar a página (o app não diz isso)</td><td>nenhuma, se resolve</td></tr>
+</table>
+<p>O batimento passa a ser decidido <b>onde a música já era</b>: na troca de tela. Uma tela sem a marca encerra a partida.</p>
+<div class="diagram">Telas que <b>mantêm</b> o batimento (4 batidas em 4s, medidas):<br>
+&nbsp;&nbsp;· a pergunta<br>
+&nbsp;&nbsp;· a correção entre perguntas<br>
+&nbsp;&nbsp;· <b>a confirmação de desistir</b><br>
+&nbsp;&nbsp;· a rodada de desempate<br><br>
+Telas que <b>encerram</b>: todas as outras.</div>
+<p class="note">A confirmação de desistir é a que merece ser dita em voz alta: o botão <q>Continue quiz</q> volta para a pergunta. Parar o batimento ali teria deixado o servidor fechar uma partida que o jogador ainda está jogando. A contagem de quatro telas está fixada num teste, para que ninguém acrescente uma quinta sem decidir sobre o batimento.</p>
+
 <h2>Verificado</h2>
-<p>843 de 845 testes (só o par que sempre falha neste Mac), 8/8 no sandbox com a cobertura de espanhol, 11/11 no backend. Sem estouro horizontal em 320, 375, 820 e 1440, nos dois temas e nas duas línguas.</p>
+<p>854 de 856 testes (só o par que sempre falha neste Mac), 8/8 no sandbox com a cobertura de espanhol, 11/11 no backend. Sem estouro horizontal em 320, 375, 820 e 1440, nos dois temas e nas duas línguas.</p>
 <p class="note">Um teste antigo precisou de ajuste: a <b>#333</b> fixava a regra da caixinha como um texto exato, e agora ela é compartilhada com a tela de apagar conta. Mantive a intenção — o input de verdade fica escondido e o quadrado desenhado o segue — conferindo seletor por seletor em vez de a linha inteira.</p>
 </div></body></html>
