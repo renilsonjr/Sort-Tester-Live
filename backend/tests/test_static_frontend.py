@@ -37,7 +37,7 @@ class StaticFrontendTests(unittest.TestCase):
             "/dev/index.html",
             "/tests/security.test.mjs",
             "/docs/security/2026-11-06-static-review.md",
-            "/infra/azure/spike.Dockerfile",
+            "/infra/azure/app.Dockerfile",
             "/mockups/friendly-study.html",
             "/tools/export_ranked_v1.py",
             "/src/../backend/main.py",
