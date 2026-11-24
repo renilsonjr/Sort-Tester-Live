@@ -1636,11 +1636,27 @@
   .quiz-card .primary, .quiz-feedback .primary, .bail .primary { background: linear-gradient(135deg, var(--gold) 0%, #d89115 100%); color: #2a1c10; border: 1px solid rgba(255, 255, 255, 0.45); }
 
   /* Practice results */
+  /* #387: the one line of advice over the missed list. .lab-intro carries an
+     8px bottom margin for stacked shell screens, which here lands on top of
+     the column's own 12px gap -- measured 12px above the line and 20px below.
+     The screen's gap is the only spacing. */
+  .screen-results > .lab-intro { margin-bottom: 0; }
   .score-line { display: grid; grid-template-columns: 1fr 1fr; gap: 0; padding: 16px 10px; text-align: center; border-radius: var(--r-md); border: 1px solid var(--soft-line); background: linear-gradient(135deg, var(--soft) 0%, var(--glass-surface-sub) 62%); box-shadow: var(--glass-shadow), 0 0 28px -6px rgba(244, 189, 56, 0.32); }
-  .score-line > div + div { border-left: 1px solid var(--glass-border); }
+  /* #388: the name used to float between the card and the MISSED list with
+     no label and no surface. It is who this result belongs to, so it is the
+     card's first line, across both columns, with the hairline under it --
+     the same shape a Shift log row already uses: name, then the score.
+     The divider is now between the two stat cells only; `div + div` would
+     have put a left border on the first stat, which now follows the name.
+
+     The field it comes from has no maxlength and takes an ID as readily as
+     a name, so one unbroken 40-character token used to push the page 133px
+     wide at 320. Loose on the page that was ugly; inside a bordered card it
+     would break the border, so the name wraps anywhere it must. */
+  .score-line > .who { grid-column: 1 / -1; padding-bottom: 10px; margin-bottom: 12px; border-bottom: 1px solid var(--glass-border); font-size: 14px; font-weight: 900; overflow-wrap: anywhere; }
+  .score-line > .stat + .stat { border-left: 1px solid var(--glass-border); }
   .score-line .big { font-size: 40px; font-weight: 900; letter-spacing: -.04em; }
   .score-line .label { font-size: 10px; font-weight: 900; letter-spacing: .1em; }
-  .score-line ~ .who { text-align: center; font-size: 14px; font-weight: 900; }
   .score-line ~ .deckname { order: -1; margin: 0; color: var(--gold); font-size: 11px; font-weight: 900; letter-spacing: .16em; }
   .score-line ~ h2 { margin: 0; color: var(--gold); font-size: 11px; font-weight: 900; letter-spacing: .16em; }
   .missed { display: flex; flex-direction: column; gap: 8px; }
