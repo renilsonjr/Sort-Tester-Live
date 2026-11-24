@@ -269,7 +269,7 @@ def set_avatar(
 
     if payload.avatar is not None and not avatars.is_allowed(payload.avatar):
         raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
             detail="That is not one of the icons.",
         )
     with _db_connection() as conn:
@@ -405,7 +405,7 @@ def delete_account(
     is the reauthentication; a wrong one counts as a failed login."""
     if payload.acknowledge is not True:
         raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
             detail="Acknowledge that deletion cannot be undone",
         )
     limiter = get_login_rate_limiter()

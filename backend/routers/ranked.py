@@ -448,7 +448,7 @@ class LaunchRequest(BaseModel):
 
 
 def _unprocessable(detail: str) -> HTTPException:
-    return HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=detail)
+    return HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_CONTENT, detail=detail)
 
 
 @router.post("/season/launch", status_code=status.HTTP_201_CREATED)
@@ -714,7 +714,7 @@ def approve_sorter(
         code = (
             status.HTTP_403_FORBIDDEN
             if error.reason.startswith("Only the owner")
-            else status.HTTP_422_UNPROCESSABLE_ENTITY
+            else status.HTTP_422_UNPROCESSABLE_CONTENT
         )
         raise HTTPException(status_code=code, detail=error.reason) from None
     conn.commit()
@@ -859,7 +859,7 @@ def open_recovery(
         code = (
             status.HTTP_403_FORBIDDEN
             if error.reason.startswith("Only the owner")
-            else status.HTTP_422_UNPROCESSABLE_ENTITY
+            else status.HTTP_422_UNPROCESSABLE_CONTENT
         )
         raise HTTPException(status_code=code, detail=error.reason) from None
     conn.commit()
@@ -894,7 +894,7 @@ def hand_over_recovery(
         code = (
             status.HTTP_403_FORBIDDEN
             if error.reason.startswith("Only the owner")
-            else status.HTTP_422_UNPROCESSABLE_ENTITY
+            else status.HTTP_422_UNPROCESSABLE_CONTENT
         )
         raise HTTPException(status_code=code, detail=error.reason) from None
     conn.commit()
@@ -1021,7 +1021,7 @@ def record_selection(
         ranked_tiebreaks.record_selection(conn, account["id"], group_id, chosen, clock=_CLOCK)
     except ranked_tiebreaks.SelectionError as error:
         raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=error.reason
+            status_code=status.HTTP_422_UNPROCESSABLE_CONTENT, detail=error.reason
         ) from None
     return {"group_id": group_id, "recorded": True}
 

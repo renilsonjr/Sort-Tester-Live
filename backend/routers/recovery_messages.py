@@ -37,7 +37,7 @@ def leave_recovery_message(request: Request, payload: RecoveryMessageRequest):
             recovery_messages.leave_message(conn, payload.message, clock=_CLOCK)
         except recovery_messages.MessageRefused as error:
             raise HTTPException(
-                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=error.reason
+                status_code=status.HTTP_422_UNPROCESSABLE_CONTENT, detail=error.reason
             ) from None
         except recovery_messages.InboxFull:
             raise HTTPException(
