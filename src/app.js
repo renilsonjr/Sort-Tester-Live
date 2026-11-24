@@ -3573,10 +3573,10 @@ function renderResults(summary, saved) {
   const view = labPage(`
     <section class="lab-screen screen-results">
       <div class="score-line">
-        <div><div class="big">${summary.correct}/${summary.total}</div><div class="label">${esc(t('Score'))}</div></div>
-        <div><div class="big">${elapsed}</div><div class="label">${esc(t('Time'))}</div></div>
+        <div class="who">${esc(displayName(summary.name))}</div>
+        <div class="stat"><div class="big">${summary.correct}/${summary.total}</div><div class="label">${esc(t('Score'))}</div></div>
+        <div class="stat"><div class="big">${elapsed}</div><div class="label">${esc(t('Time'))}</div></div>
       </div>
-      <div class="who">${esc(displayName(summary.name))}</div>
       ${summary.deck ? `<div class="deckname">${esc(language.deckLabel(summary.deck))}</div>` : ''}
       ${saved ? '' : `<p class="warn">${esc(t('This result was not saved. This phone is not saving results.'))}</p>`}
       ${summary.missed.length === 0 ? `<p class="clean">${esc(t('No missorts.'))}</p>` : `
