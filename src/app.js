@@ -607,6 +607,15 @@ function showProfile(tab = 'overview') {
   const view = labPage(`
     <section class="lab-screen screen-profile">
       <p class="lab-eyebrow">${esc(t('Profile'))}</p>
+      ${tab === 'settings' ? `
+      <!-- #389: Settings names itself, like every other screen -- eyebrow
+           for the section, title for the screen. It used to borrow the
+           overview's header, so its h1 was the player's username and nothing
+           on it said "Settings"; its own sub-screens (Sign out my other
+           devices, Delete account) already use "Settings" as their eyebrow,
+           so this completes that ladder. The identity card belongs to the
+           overview, which Back goes to. -->
+      <h1 class="lab-title">${esc(t('Settings'))}</h1>` : `
       <div class="pf-ident">
         <div class="home-obj pf-ident-obj" id="profile-badge"></div>
         <div class="pf-ident-text">
@@ -614,10 +623,17 @@ function showProfile(tab = 'overview') {
           <h1 class="lab-title" id="profile-name">${esc(session?.username ?? '\u2026')}</h1>
           <p class="lab-intro" id="profile-tag">${session?.tag ? esc(`${t('Tag')} #${session.tag}`) : ''}</p>
         </div>
-      </div>
+      </div>`}
       <div id="profile-panel"><p class="lab-intro">${esc(t('Loading\u2026'))}</p></div>
     </section>
   `, 'profile', () => showProfile(tab));
+
+  // #389: the gear chip in the sub-header is the control that OPENS Settings.
+  // On Settings itself it re-renders the screen you are already on, and now
+  // that the screen says its own name, the word "Settings" appeared twice
+  // 150px apart. The chip stays on the tabs it can still take you somewhere
+  // from, and Back returns to the overview, where it is.
+  if (tab === 'settings') view.querySelector('#top-settings')?.remove();
 
   const panel = view.querySelector('#profile-panel');
   fillProfile(view, panel, tab);
@@ -635,8 +651,12 @@ async function fillProfile(view, panel, tab) {
   if (!session?.username || !session?.tag) {
     api('/auth/me').then((me) => {
       if (!me) return;
-      view.querySelector('#profile-name').textContent = me.username;
-      view.querySelector('#profile-tag').textContent = `${t('Tag')} #${me.tag}`;
+      // Optional since #389: the Settings tab has a title of its own and no
+      // identity card, so neither node is on the page there.
+      const nameEl = view.querySelector('#profile-name');
+      if (nameEl) nameEl.textContent = me.username;
+      const tagEl2 = view.querySelector('#profile-tag');
+      if (tagEl2) tagEl2.textContent = `${t('Tag')} #${me.tag}`;
       // the icon rides on the session like the name does, so this only
       // runs on the path that was already asking the server anyway (#272)
       if (session) session.avatar = me.avatar;
