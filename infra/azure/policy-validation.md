@@ -74,7 +74,7 @@ arrived: a Modify that flips a flag, a Delete-and-recreate, or a new resource.
 
 The checks are chosen against the *real* templates: HTTPS-only and
 digest-pinned images are the app's posture (`container-apps-app.bicep`,
-`container-apps-staging.bicep`, `container-apps-spike.bicep`); admin/anonymous
+`container-apps-staging.bicep`); admin/anonymous
 off is the registry's (`security-foundation.bicep`); RBAC + soft delete is the
 vault's; the narrow-role rule encodes H-5's "AcrPull / AcrPush / Key Vault
 Secrets User and nothing wider" by rejecting the broad roles by their published
