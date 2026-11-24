@@ -129,7 +129,7 @@ class AnswerRequestCostTests(unittest.TestCase):
     """One Ranked answer is the request a player waits on. Every statement
     is a round trip, so the count is held to a ceiling here."""
 
-    CEILING = 50
+    CEILING = 35
 
     @classmethod
     def setUpClass(cls):
