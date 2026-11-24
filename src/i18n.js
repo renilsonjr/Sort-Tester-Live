@@ -75,7 +75,9 @@ const ES = {
   'Tag': 'Etiqueta',
   'Your balance': 'Tu saldo',
   'points': 'puntos',
-  'points to the cap': 'puntos para el tope',
+  // Only the balance line uses this: "0 / 1,000 to Bronze". It replaced
+  // 'points to the cap', which nothing shows any more.
+  'to': 'para',
   'at the cap': 'en el tope',
   'no cap': 'sin tope',
   'a negative total stays in Iron': 'un total negativo se queda en Iron',

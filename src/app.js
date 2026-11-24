@@ -381,6 +381,21 @@ const BADGES = [
 ];
 const BADGE_CAP = { Iron: 1000, Bronze: 2000, Silver: 3000, Gold: 4000 };
 
+// Lowest first, which is the order the climb row is drawn in and the order
+// "earned / current / still ahead" is decided by. BADGES itself is highest
+// first because it is printed as a table.
+//
+// Derived from BADGES rather than written out again: this list and the
+// quiz screen's used to be two separate hand-written copies of the same
+// five names, 1,600 lines apart, and only one of them could be kept right.
+const BADGE_ORDER = [...BADGES].map(([name]) => name).reverse();
+
+// The badge above this one, or null at the top.
+function nextBadgeName(badge) {
+  const at = BADGE_ORDER.indexOf(badge);
+  return at === -1 ? null : (BADGE_ORDER[at + 1] ?? null);
+}
+
 // A screen that calls this shows its own "could not load" notice when the
 // answer is null. An unreachable server (stopped, no network, a phone that
 // lost signal mid-sort) throws instead of answering, so without this catch
@@ -535,13 +550,44 @@ function badgeArt(badge) {
   return `assets/badge-${badge.toLowerCase()}.png`;
 }
 
+// The five badges under "Your climb".
+//
+// The row used to mark the current badge by dimming the other four, and
+// nothing else. That is a subtractive mark, and it fails exactly where it is
+// needed: the Iron and Silver artwork is grey metal to begin with, so a
+// full-colour Iron beside four greyed badges looks like five greyed badges.
+// Measured on a new account: the current badge really was at opacity 1 with
+// no filter -- the markup was right, it just could not be seen.
+//
+// So the current badge now carries a positive mark of its own, a gold ring,
+// and the three states are told apart properly: badges already passed keep
+// their colour (they were earned), the current one is ringed, and only the
+// ones still ahead are dimmed.
+function badgeTrail(current) {
+  const at = BADGE_ORDER.indexOf(current);
+  return BADGE_ORDER.map((name, i) => {
+    const state = i === at ? 'now' : i < at ? 'done' : 'off';
+    // The ring is the sighted mark; a screen reader gets the same fact in
+    // the alt text, since an outline is not announced.
+    const mark = i === at ? ` (${t('Your badge')})` : '';
+    return `<img class="${state}" src="${badgeArt(name)}" alt="${esc(name + mark)}">`;
+  }).join('');
+}
+
 function balanceLine(entry) {
   const cap = BADGE_CAP[entry.badge];
   if (cap === undefined) return `${entry.badge} \u00b7 ${t('no cap')}`;
   if (entry.points >= cap) return `${entry.badge} \u00b7 ${t('at the cap')} (${cap.toLocaleString()})`;
   if (entry.points < 0) return `${entry.badge} \u00b7 ${t('a negative total stays in Iron')}`;
-  const left = (cap - entry.points).toLocaleString();
-  return `${entry.badge} \u00b7 ${left} ${t('points to the cap')} (${cap.toLocaleString()})`;
+  // It used to read "Iron - 1,000 points to the cap (1,000)": the number said
+  // twice, and nothing about where the climb goes. A player at zero could not
+  // tell that from a player one point short. Progress over the target reads
+  // at a glance, and the badge above is the thing the points are actually
+  // for, so it is named: "Iron - 0 / 1,000 to Bronze".
+  const next = nextBadgeName(entry.badge);
+  const progress = `${entry.points.toLocaleString()} / ${cap.toLocaleString()}`;
+  if (next === null) return `${entry.badge} \u00b7 ${progress}`;
+  return `${entry.badge} \u00b7 ${progress} ${t('to')} ${next}`;
 }
 
 function showProfile(tab = 'overview') {
@@ -615,11 +661,20 @@ async function fillOverview(panel) {
   // 2026-11-22). A failed stats read leaves the two it feeds as a dash rather
   // than failing the whole screen.
   const DASH = '\u2014';
+  // A player who has never played Ranked saw a dash under Best Ranked and
+  // Place, which reads as something broken rather than "not yet". The two
+  // cases are different and now look different: a read that FAILED still
+  // shows the dash (the number exists, we could not fetch it), while a read
+  // that succeeded and has nothing to show says so in words.
   const stats = await api('/ranked/profile/stats');
-  const bestRanked = stats && stats.best_ranked
-    ? `${stats.best_ranked.correct}/${stats.best_ranked.total}`
-    : DASH;
-  const place = stats && stats.place != null ? `#${stats.place}` : DASH;
+  const bestRanked = !stats ? DASH
+    : stats.best_ranked ? `${stats.best_ranked.correct}/${stats.best_ranked.total}`
+      : t('Not yet');
+  const place = !stats ? DASH : stats.place != null ? `#${stats.place}` : t('Not yet');
+  // "Not yet" / "Todavia no" at the 26px, weight-900 size the numbers use
+  // overflows a quarter-width tile, so a worded value gets its own size.
+  // The dash is not a word: it keeps the number size, as a placeholder.
+  const statCell = (value, label) => `<div class="pf-stat"><b${value === t('Not yet') ? ' class="words"' : ''}>${esc(value)}</b><small>${esc(label)}</small></div>`;
   const tagEl = panel.closest('.lab-screen')?.querySelector('#profile-tag');
   if (tagEl) tagEl.textContent = `${tagEl.textContent} \u00b7 ${entry.badge}`;
     // The badge sits beside the name in the identity card above the panel.
@@ -632,10 +687,10 @@ async function fillOverview(panel) {
     <section class="home-stripe">
     <p class="lab-eyebrow">${esc(t('Your numbers'))}</p>
     <div class="pf-stats">
-      <div class="pf-stat"><b>${entry.points.toLocaleString()}</b><small>${esc(t('Points'))}</small></div>
-      <div class="pf-stat"><b>${esc(bestRanked)}</b><small>${esc(t('Best Ranked'))}</small></div>
-      <div class="pf-stat"><b>${esc(log.available ? practiceCountLabel(log.all()) : DASH)}</b><small>${esc(t('Practices'))}</small></div>
-      <div class="pf-stat"><b>${esc(place)}</b><small>${esc(t('Place'))}</small></div>
+      ${statCell(entry.points.toLocaleString(), t('Points'))}
+      ${statCell(bestRanked, t('Best Ranked'))}
+      ${statCell(log.available ? practiceCountLabel(log.all()) : DASH, t('Practices'))}
+      ${statCell(place, t('Place'))}
     </div>
     <p class="pf-stats-note">${esc(t('Practices counts the sessions in the Shift log on this device.'))}</p>
     </section>
@@ -648,7 +703,7 @@ async function fillOverview(panel) {
     <p class="lab-eyebrow">${esc(t('Your climb'))}</p>
     <div class="pf-climb">
       <div class="pf-badges">
-        ${[...BADGES].reverse().map(([name]) => `<img class="${name === entry.badge ? '' : 'off'}" src="${badgeArt(name)}" alt="${esc(name)}">`).join('')}
+        ${badgeTrail(entry.badge)}
       </div>
       ${progress === null ? '' : `<div class="profile-bar home-meter"><i style="width:${progress}%"></i></div>`}
       <p class="home-climb-note">${esc(balanceLine(entry))}</p>
@@ -2170,11 +2225,9 @@ async function fillRanked(panel, title) {
 // Ordinary Ranked and promotion share almost everything here -- the
 // question, the belts, feedback held until Next, Cancel/Quit -- so one
 // state machine drives both, parameterized by `mode`.
-const BADGE_ORDER = ['Iron', 'Bronze', 'Silver', 'Gold', 'Challenger'];
-function nextBadgeName(badge) {
-  const i = BADGE_ORDER.indexOf(badge);
-  return i >= 0 && i < BADGE_ORDER.length - 1 ? BADGE_ORDER[i + 1] : null;
-}
+// BADGE_ORDER and nextBadgeName used to be declared here as a second,
+// hand-written copy. They now live once, beside the BADGES table they are
+// derived from.
 
 // Every request an attempt makes may settle points, so each one empties the
 // kept balance; the screen after the quiz then reads it fresh.

@@ -59,16 +59,24 @@ test('#327 no blue is left in a focus ring', () => {
   assert.ok(focusRules.length, 'the focus rules are gone');
   assert.doesNotMatch(focusRules, /#175e94/);
   assert.doesNotMatch(focusRules, /#6db6ff/);
-  assert.match(css, /--focus: var\(--gold\)/);
+  // At root the focus ring is the plain gold, now reached through the
+  // --gold-ring token it shares with the current-badge ring (#337).
+  assert.match(css, /--gold-ring: var\(--gold\);/);
+  assert.match(css, /--focus: var\(--gold-ring\);/);
 });
 
 test('#327 the day ring is darker than the day gold, and that is deliberate', () => {
   // Measured against the cream page: the day gold is 2.52:1, under the 3:1 a
   // focus ring needs. This deeper brown-gold is 5.05:1. Night uses the plain
   // gold at 10.04:1.
+  // #337 gave the current-badge ring the same problem and the same answer,
+  // so the value moved behind --gold-ring and --focus points at it. What is
+  // checked is unchanged: the day ring resolves to the deeper gold, not to
+  // the day --gold.
   const day = css.match(/html\[data-theme="day"\] \{([^}]*)\}/)[1];
-  assert.match(day, /--focus: #8a5a12/);
-  assert.doesNotMatch(day, /--focus: var\(--gold\)/,
+  assert.match(day, /--gold-ring: #8a5a12/);
+  assert.match(day, /--focus: var\(--gold-ring\)/);
+  assert.doesNotMatch(day, /--(?:focus|gold-ring): var\(--gold\)/,
     'the day theme is back on the gold that measured 2.52:1');
 });
 

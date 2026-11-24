@@ -47,7 +47,14 @@
        the new-account username, the quiz name field and the chart search
        (#327). The ring sits 4px outside the control, so it lands on the page
        background, not on a gold button, in both themes. */
-    --focus: var(--gold); --good: #6cd39a; --bad: #f08a8a;
+    /* Any thin gold line drawn ON the page background rather than on a card:
+       the focus ring, and the ring marking the current badge (#337). Both
+       need the same thing -- a gold that survives on this theme's page -- and
+       the day theme's plain gold does not, so they share one value here and
+       stay separate tokens, in case the focus ring ever has to change on its
+       own for an accessibility preference. */
+    --gold-ring: var(--gold);
+    --focus: var(--gold-ring); --good: #6cd39a; --bad: #f08a8a;
   }
   * { box-sizing: border-box; }
 
@@ -1025,6 +1032,10 @@
   .pf-stat { padding: 14px; border-radius: var(--r-sm); text-align: center; background: var(--glass-surface-sub); border: 1px solid var(--glass-border); }
   .pf-stat b { display: block; font-size: 24px; font-weight: 900; }
   .pf-stat small { font-size: 11px; color: var(--muted); }
+  /* An empty tile says "Not yet" instead of a dash. Words do not fit the
+     size the numbers use, so they drop to a readable one and stay on the
+     tile's own line height, which keeps the four tiles the same height. */
+  .pf-stat b.words { font-size: 15px; font-weight: 800; letter-spacing: 0; }
   /* #328 listed this as a fourth block floating with no card. It is not a
      block: it is the caption for the four tiles directly above it, and a card
      with a gold eyebrow of its own would make a footnote look like a section.
@@ -1035,6 +1046,13 @@
   .pf-climb { padding: 14px; border-radius: var(--r-md); background: var(--glass-surface-sub); border: 1px solid var(--glass-border); }
   .pf-badges { display: flex; justify-content: space-between; gap: 8px; margin-top: 9px; }
   .pf-badges img { width: 46px; height: 46px; object-fit: contain; filter: drop-shadow(0 3px 7px rgba(0, 0, 0, 0.4)); }
+  /* Three states, not two. "done" is a badge already earned, so it keeps its
+     colour and needs no rule of its own. "now" is the current badge: dimming
+     the others was the only mark it had, and that mark is invisible when the
+     current artwork is grey metal (Iron, Silver), so it gets a gold ring.
+     An outline is used rather than a border because it takes no space, and
+     at 2px wide with a 2px offset it still clears the 8px gap. */
+  .pf-badges img.now { outline: 2px solid var(--gold-ring); outline-offset: 2px; border-radius: 10px; }
   .pf-badges img.off { opacity: 0.32; filter: grayscale(1); }
   .belts .belt { border: 1px solid rgba(255, 255, 255, 0.18); box-shadow: inset 0 0 0 100px rgba(255, 255, 255, 0.04); }
 
@@ -1104,10 +1122,12 @@
     --accent: #f3e7d3; --accent-ink: #2b1c10;
     --gold: #c98a10; --gold-line: #a9740d;
     /* NOT var(--gold) here. Measured against the cream page the day gold is
-       2.52:1, under the 3:1 a focus ring needs; this deeper brown-gold -- the
-       eyebrow colour -- measures 5.05:1 and still reads as the same family.
-       At night the ring is the plain gold at 10.04:1 (#327). */
-    --focus: #8a5a12;
+       2.52:1, under the 3:1 a ring that carries meaning needs; this deeper
+       brown-gold -- the eyebrow colour -- measures 5.05:1 and still reads as
+       the same family. At night it is the plain gold at 10.04:1 (#327, and
+       the current-badge ring in #337). */
+    --gold-ring: #8a5a12;
+    --focus: var(--gold-ring);
     --soft: rgba(201, 138, 16, 0.14); --soft-line: rgba(201, 138, 16, 0.32);
     --good: #2f9e6b; --bad: #c9524a;
     --glass-surface: rgba(255, 255, 255, 0.74); --glass-surface-sub: rgba(255, 252, 246, 0.92);
