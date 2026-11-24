@@ -1476,11 +1476,60 @@
      so it needs neither the full-height stretch nor the dock's bottom gap. */
   .quiz-card { justify-content: flex-start; }
   .quiz-card, .quiz-feedback { min-height: 0; }
+
+  /* ...but dropping the stretch left 247px of dead background under the
+     answer buttons at 375x812 (#330), and this app is used in a warehouse,
+     with gloves: that is space a target should be using.
+     `space-between` is NOT the way back -- it would scatter the column, which
+     is what the rule above was written to stop. Instead the page is the flex
+     column, the card fills it, and only the grid of answers absorbs the
+     slack, so everything above it stays packed exactly where it was.
+     Measured at 375x812: buttons 122px -> 231px, empty band 247px -> 28px
+     (the page's own bottom padding), and nothing scrolls. */
+  #app.quiz-page { display: flex; flex-direction: column; }
+  .quiz-card { flex: 1; }
+  .quiz-card .options { flex: 1; grid-auto-rows: 1fr; }
+  .quiz-card .belt { height: 100%; }
   #app.quiz-page { padding-bottom: calc(28px + env(safe-area-inset-bottom)); }
   .quiz-route { margin: 0; padding: 14px 16px 16px; border-radius: var(--r-md); }
   .quiz-route .p-line { color: var(--muted); font-size: 14px; font-weight: 800; letter-spacing: .14em; }
   .quiz-cue { text-align: left; color: var(--gold); font-weight: 900; letter-spacing: .16em; }
   .quiz-card .belt { min-height: clamp(84px, 15dvh, 124px); }
+
+  /* BLACK, as an answer button, in the night theme (#335).
+     The belt colours are routing information and are not restyled: the fill
+     stays the inline #000 that BELT_STYLE gives it, and the chart chips and
+     the feedback rows are untouched. What changes is only how the button is
+     drawn. Pure #000 on a near-black page read as a hole rather than a
+     button -- the Practice quiz's `.belt` has no border at all, so there was
+     nothing but the gap between cells to tell them apart, and on a dirty
+     screen or in sunlight that is nothing.
+     Measured, and worth correcting the issue on: the fill CANNOT do this
+     job. #000 against the page is 1.09:1 and the lifted #1f1f1f is 1.17:1 --
+     both are nothing, because the page is near-black too. It is the BORDER
+     that makes the button a button: 4.67:1 against the page and 4.00:1
+     against its own fill. The lift is kept because it gives the body the
+     look of a surface rather than a void, not because it separates anything.
+     The 100px fill is listed LAST so the layers above it still paint on
+     top.
+     The leading `html` is load-bearing, not decoration. An unscoped
+     `[data-belt="BLACK"]` rule already existed for the chart chips and the
+     feedback rows -- a 1px ring, which is the "thin border" the issue
+     describes -- and its day-theme twin is `html[data-theme="day"]
+     [data-belt="BLACK"]`. Without the `html` here, that twin would outweigh
+     these rules and the day theme would silently get a different button
+     from the night one. With it, both themes are drawn the same way on
+     purpose, and the chips and feedback rows keep their own 1px ring,
+     untouched. */
+  html .belt[data-belt="BLACK"] {
+    border: 2px solid rgba(255, 255, 255, 0.42);
+    box-shadow: inset 0 0 0 100px rgba(255, 255, 255, 0.12);
+  }
+  html .belts .belt[data-belt="BLACK"] {
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.22),
+                0 10px 20px -12px rgba(0, 0, 0, 0.6),
+                inset 0 0 0 100px rgba(255, 255, 255, 0.12);
+  }
 
   /* Practice feedback */
   .quiz-verdict { display: flex; align-items: center; gap: 12px; }
