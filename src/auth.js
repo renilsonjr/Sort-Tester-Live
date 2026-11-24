@@ -59,6 +59,13 @@ export async function leaveRecoveryMessage(message) {
 const FORGOT_ES = {
   'Forgot my Quiz Code?':
     '¿Olvidaste tu Quiz Code?',
+  // #422: the two cards behind the login card never named themselves. Their
+  // first words were a field label -- "Choose a username", "Message for the
+  // owner" -- while the login card has carried "Log in" all along.
+  'New account':
+    'Cuenta nueva',
+  'Recover your access':
+    'Recupera tu acceso',
   'Message for the owner':
     'Mensaje para el responsable',
   'Say who you are and what happened. The owner reads this and recovers your access in person. Nothing is recovered from this screen.':
@@ -188,6 +195,7 @@ export function createAuthPanel(container, onContinueAsGuest, onLoggedIn) {
     showMessage('');
     form.hidden = false;
     form.innerHTML = `
+      <p class="auth-eyebrow">${forgotText('New account')}</p>
       <label class="field">
         <span>${forgotText('Choose a username')}</span>
         <input id="register-username-input" type="text" autocomplete="off" placeholder="alice_1">
@@ -286,6 +294,7 @@ export function createAuthPanel(container, onContinueAsGuest, onLoggedIn) {
     showMessage('');
     form.hidden = false;
     form.innerHTML = `
+      <p class="auth-eyebrow">${forgotText('Recover your access')}</p>
       <label class="field">
         <span>${forgotText('Message for the owner')}</span>
         <textarea id="forgot-message" class="glass-input" rows="4" maxlength="500"></textarea>
