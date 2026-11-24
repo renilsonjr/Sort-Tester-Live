@@ -1969,10 +1969,10 @@ function showLeaderboard() {
   clock = null;
   const view = labPage(`
     <section class="lab-screen">
+      ${backLink('board-back')}
       <p class="lab-eyebrow">${esc(t('Ranked'))}</p>
       <h1 class="lab-title tab-title">${esc(t('Leaderboard'))}</h1>
       <div id="board-panel"><p class="lab-intro" role="status">${esc(t('Loading the standings…'))}</p></div>
-      <button id="board-back" class="ghost">${esc(t('Back to Ranked'))}</button>
     </section>
   `, 'ranked', showLeaderboard);
   view.querySelector('#board-back').addEventListener('click', showRanked);

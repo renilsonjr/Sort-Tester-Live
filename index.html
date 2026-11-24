@@ -1456,7 +1456,21 @@
   /* Notices (not in the standings, could not load, tie-break restarted…) were
      a cream card with a faint title at night; they follow the theme now. */
   .board-notice { border: 1px solid var(--soft-line); border-radius: var(--r-sm); background: var(--soft); }
-  .board-notice h2 { color: var(--ink); }
+  /* A notice heading is a title, not an enlarged eyebrow (#386).
+     The app's base `h2` is eyebrow styling -- uppercase, 0.12em tracking,
+     12px -- which reads as a label at that size. This rule blew it up to
+     16px and weight 900 while keeping the caps and the tracking, so a
+     routine message ("You are not in the standings", whose own body text
+     then says your points and badge count as usual) shouted over two lines
+     and competed with the 24px page title beside it.
+     Sentence case, no tracking, and a weight under the page title's. The
+     notices that really are bad news keep their own red-tinted surface --
+     .board-notice-bad -- which is the channel that should carry that, not
+     capital letters on every notice in the app. */
+  .board-notice h2 {
+    color: var(--ink); font-size: 15px; font-weight: 800;
+    text-transform: none; letter-spacing: -.01em;
+  }
   .board-notice p { color: var(--muted); }
   .board-notice-bad { border-color: rgba(240, 138, 138, 0.45); background: rgba(240, 138, 138, 0.12); }
   #board-panel > .board-notice { margin-top: 0; }
