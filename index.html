@@ -213,18 +213,29 @@
     display: flex; align-items: center; gap: 11px;
     min-height: 44px; padding: 4px 2px; cursor: pointer; text-align: left;
   }
-  .check-row input { position: absolute; opacity: 0; width: 0; height: 0; }
+  /* #419: the delete-account acknowledgement shares this control instead of
+     keeping the browser's own checkbox. One set of selectors, so the two
+     boxes cannot drift apart again. */
+  .check-row input, .delete-ack input { position: absolute; opacity: 0; width: 0; height: 0; }
   .check-box {
     flex: none; width: 22px; height: 22px; border-radius: 7px;
     border: 2px solid var(--gold); display: grid; place-items: center;
   }
   .check-box::after {
     content: "✓"; font-size: 15px; font-weight: 900; line-height: 1;
-    color: var(--accent-ink); opacity: 0;
+    /* #419: --accent-ink is #fffdf8 at night, and the box it sits in is
+       gold in BOTH themes -- so at night the tick was white on gold,
+       measured 1.70:1. The fill never changes with the theme, so neither
+       should the tick: #38261b is the ink the app already puts on gold
+       (the chosen service chip), 8.37:1 at night and 4.88:1 by day.
+       This was already true on the account-creation screen; adopting the
+       control for the delete acknowledgement is what made it worth
+       fixing rather than copying. */
+    color: #38261b; opacity: 0;
   }
-  .check-row input:checked + .check-box { background: var(--gold); }
-  .check-row input:checked + .check-box::after { opacity: 1; }
-  .check-row input:focus-visible + .check-box { outline: 3px solid var(--focus); outline-offset: 3px; }
+  .check-row input:checked + .check-box, .delete-ack input:checked + .check-box { background: var(--gold); }
+  .check-row input:checked + .check-box::after, .delete-ack input:checked + .check-box::after { opacity: 1; }
+  .check-row input:focus-visible + .check-box, .delete-ack input:focus-visible + .check-box { outline: 3px solid var(--focus); outline-offset: 3px; }
   .check-label { font-size: 14px; font-weight: 700; color: var(--ink); }
 
   /* The picker's rows are .lab-choice now, the same row the Practice tab
@@ -685,7 +696,11 @@
 
   /* Account deletion (issue #10, slice 4) */
   .delete-ack { display: flex; align-items: flex-start; gap: 11px; border: 1px solid var(--line); border-radius: 17px; background: var(--panel); padding: 14px; font-size: 14px; line-height: 1.45; cursor: pointer; }
-  .delete-ack input { width: 22px; height: 22px; flex: none; margin: 0; accent-color: var(--accent); }
+  /* #419: the box itself is .check-box now, drawn by the app. The native
+     input this rule used to size was `appearance: auto` -- the OS checkbox,
+     merely tinted -- on the app's one irreversible action, while the
+     account-creation screen drew its own. */
+  .delete-ack .check-box { margin-top: 1px; }
   .delete-warn { border: 1px solid #e8c5bf; border-radius: 17px; background: #fbefed; padding: 13px 15px; color: #7a2622; margin: 10px 0; }
   .delete-warn h2 { margin: 0; font-size: 16px; font-weight: 900; letter-spacing: -.03em; text-transform: none; color: #7a2622; }
   .delete-warn p { margin: 4px 0 0; font-size: 13px; line-height: 1.5; }

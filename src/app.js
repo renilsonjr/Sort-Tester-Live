@@ -1008,8 +1008,9 @@ function showDeleteAccount() {
       <p class="lab-eyebrow">${esc(t('Settings'))}</p>
       <h1 class="lab-title">${esc(t(DELETE_QUESTION))}</h1>
       <p class="lab-intro">${esc(t(DELETE_CONSEQUENCE))}</p>
-      <label class="delete-ack">
+      <label class="delete-ack" for="delete-ack">
         <input type="checkbox" id="delete-ack">
+        <span class="check-box" aria-hidden="true"></span>
         <span>${esc(t(DELETE_ACK))}</span>
       </label>
       <p class="lab-intro" id="delete-hint">${esc(t('Tick the box above to continue.'))}</p>
