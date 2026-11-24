@@ -34,8 +34,11 @@ function body(name) {
 }
 
 test('#426 a screen without the marker ends the attempt', () => {
+  // The marker is read once per render and drives both this and the dock
+  // (#427), so the condition is the shared `attemptLive`.
   const render = body('render');
-  assert.match(render, /if \(!node\.querySelector\?\.\('\[data-attempt-live\]'\)\) endLiveAttempt\(\);/);
+  assert.match(render, /const attemptLive = Boolean\(node\.querySelector\?\.\('\[data-attempt-live\]'\)\);/);
+  assert.match(render, /if \(!attemptLive\) endLiveAttempt\(\);/);
 });
 
 test('#426 the attempt is held where any screen can end it', () => {

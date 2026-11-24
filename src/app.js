@@ -160,7 +160,14 @@ function el(html) {
 
 function render(node) {
   document.documentElement.lang = language.code;
-  app.className = node.classList.contains('lab-shell') ? 'lab-page' : 'quiz-page';
+  // #427: the dock goes while a scored attempt is live, the way it already
+  // does in Practice (#382) -- a dock under a timed run is a way to lose it,
+  // and the Ranked one is the run that costs points. The marker that keeps
+  // the heartbeat is the same marker that decides this: one fact about the
+  // screen, read once.
+  const attemptLive = Boolean(node.querySelector?.('[data-attempt-live]'));
+  app.className = (node.classList.contains('lab-shell') ? 'lab-page' : 'quiz-page')
+    + (attemptLive ? ' attempt-live' : '');
   app.replaceChildren(node);
   // Music belongs to the Ranked quiz screens only (#264). Deciding it here,
   // on every screen change, means no way out of a quiz can leave it playing.
@@ -171,7 +178,7 @@ function render(node) {
   // (it closes one 15s after its last beat) -- it never closed, every new
   // attempt came back 409, and "Preparing your next match" promised "a few
   // seconds" for as long as the page stayed open.
-  if (!node.querySelector?.('[data-attempt-live]')) endLiveAttempt();
+  if (!attemptLive) endLiveAttempt();
   window.scrollTo(0, 0);
 }
 
@@ -306,6 +313,12 @@ function navTabs() {
 }
 
 function labPage(content, active = 'home', rerender = showStart) {
+  // #427: while a scored attempt is live the dock is not drawn at all. Not
+  // hidden: never built, so it is not in the tab order or the screen reader
+  // either, and no CSS has to beat `.lab-nav { display: grid !important }`.
+  // The marker is read from the content the screen asked for, so the fact
+  // lives in one place -- the screen's own markup.
+  const attemptLive = content.includes('data-attempt-live');
   const view = el(`
     <div class="lab-shell">
       <header class="lab-top">
@@ -320,10 +333,10 @@ function labPage(content, active = 'home', rerender = showStart) {
         </div>` : ''}
       </header>
       <main class="lab-main">${content}</main>
-      <nav class="lab-nav" style="grid-template-columns: repeat(${navTabs().length}, 1fr)" aria-label="${esc(t('Main navigation'))}">
+      ${attemptLive ? '' : `<nav class="lab-nav" style="grid-template-columns: repeat(${navTabs().length}, 1fr)" aria-label="${esc(t('Main navigation'))}">
         ${navTabs().map(([id, icon, label]) => `
         <button type="button" data-nav="${id}" ${active === id ? 'aria-current="page"' : ''}><i aria-hidden="true">${icon}</i>${esc(label)}</button>`).join('')}
-      </nav>
+      </nav>`}
     </div>
   `);
   render(view);
