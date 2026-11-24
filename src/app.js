@@ -261,6 +261,17 @@ const ICONS = {
   soundOff: '<svg viewBox="0 0 24 24"><path d="M4 9.5h3.5L12 5.5v13L7.5 14.5H4z"/><path d="m16.5 10 5 4M21.5 10l-5 4"/></svg>',
   night: '<svg viewBox="0 0 24 24"><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4 8.5 8.5 0 1 0 20 14.5z"/></svg>',
   day: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4.2"/><path d="M12 3v2.2M12 18.8V21M3 12h2.2M18.8 12H21M5.6 5.6l1.6 1.6M16.8 16.8l1.6 1.6M18.4 5.6l-1.6 1.6M7.2 16.8l-1.6 1.6"/></svg>',
+  // The Settings rows used plain text characters -- a star, a question mark,
+  // an arrow, a circle, two squares and an exclamation mark (#381). Every
+  // phone draws those with whatever font it falls back to, so that list
+  // looked different on every device while sitting beside these. Same grid,
+  // same stroke, so Settings reads as part of the app.
+  owner: '<svg viewBox="0 0 24 24"><path d="M12 3 4.5 6.2v5.4c0 4.3 3 8.3 7.5 9.4 4.5-1.1 7.5-5.1 7.5-9.4V6.2z"/><path d="m9 12 2.2 2.2L15.5 10"/></svg>',
+  support: '<svg viewBox="0 0 24 24"><path d="M20.5 15.5a2 2 0 0 1-2 2H9l-4.5 3.5v-3.5a2 2 0 0 1-2-2v-9a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/><path d="M9.6 8.6a2.6 2.6 0 1 1 3.3 3.1c-.6.2-1 .8-1 1.5"/><path d="M11.9 16.1h.01"/></svg>',
+  logOut: '<svg viewBox="0 0 24 24"><path d="M14.5 3.5H18A2.5 2.5 0 0 1 20.5 6v12a2.5 2.5 0 0 1-2.5 2.5h-3.5"/><path d="M9 16.5 3.5 12 9 7.5M3.5 12H15"/></svg>',
+  avatar: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M8.5 14.2a4.5 4.5 0 0 0 7 0"/><path d="M9 9.5h.01M15 9.5h.01"/></svg>',
+  devices: '<svg viewBox="0 0 24 24"><rect x="2.5" y="4.5" width="13" height="10" rx="2"/><path d="M6 18.5h6"/><rect x="16.5" y="9.5" width="5" height="10" rx="1.6"/></svg>',
+  deleteAccount: '<svg viewBox="0 0 24 24"><path d="M4.5 6.5h15M9.5 6.5V4.8a1.3 1.3 0 0 1 1.3-1.3h2.4a1.3 1.3 0 0 1 1.3 1.3v1.7"/><path d="M6.5 6.5 7.6 20a1.5 1.5 0 0 0 1.5 1.4h5.8a1.5 1.5 0 0 0 1.5-1.4l1.1-13.5"/><path d="M10.5 10.5v7M13.5 10.5v7"/></svg>',
 };
 
 function navTabs() {
@@ -1053,32 +1064,32 @@ function showDeletionAccepted() {
 async function fillSettings(panel) {
   panel.innerHTML = `
     <button id="profile-owner" class="lab-choice" type="button" hidden>
-      <span class="lab-choice-icon">★</span>
+      <span class="lab-choice-icon" aria-hidden="true">${ICONS.owner}</span>
       <span><strong>${esc(t('Owner tools'))}</strong><small>${esc(t('Prize eligibility, access recovery, case review.'))}</small></span>
       <span class="lab-arrow" aria-hidden="true">→</span>
     </button>` + `
     <button id="profile-support" class="lab-choice" type="button">
-      <span class="lab-choice-icon">?</span>
+      <span class="lab-choice-icon" aria-hidden="true">${ICONS.support}</span>
       <span><strong>${esc(t('Support'))}</strong><small>${esc(t('Your tickets.'))}</small></span>
       <span class="lab-arrow" aria-hidden="true">\u2192</span>
     </button>
     <button id="profile-logout" class="lab-choice" type="button">
-      <span class="lab-choice-icon">\u21aa</span>
+      <span class="lab-choice-icon" aria-hidden="true">${ICONS.logOut}</span>
       <span><strong>${esc(t('Log out'))}</strong><small>${esc(t('Ends this session on this device. Your points and history stay.'))}</small></span>
       <span class="lab-arrow" aria-hidden="true">\u2192</span>
     </button>
     <button id="profile-avatar" class="lab-choice" type="button">
-      <span class="lab-choice-icon" id="profile-avatar-now">\u25cb</span>
+      <span class="lab-choice-icon" aria-hidden="true">${ICONS.avatar}</span>
       <span><strong>${esc(t('Profile icon'))}</strong><small>${esc(t('Shown on your profile and the leaderboard.'))}</small></span>
       <span class="lab-arrow" aria-hidden="true">\u2192</span>
     </button>
     <button id="profile-signout-others" class="lab-choice" type="button">
-      <span class="lab-choice-icon">\u29c9</span>
+      <span class="lab-choice-icon" aria-hidden="true">${ICONS.devices}</span>
       <span><strong>${esc(t('Sign out my other devices'))}</strong><small>${esc(t('Ends every other phone or computer signed in to your account. This one stays.'))}</small></span>
       <span class="lab-arrow" aria-hidden="true">\u2192</span>
     </button>
     <button id="profile-delete" class="lab-choice lab-choice-quiz" type="button">
-      <span class="lab-choice-icon">!</span>
+      <span class="lab-choice-icon" aria-hidden="true">${ICONS.deleteAccount}</span>
       <span><strong>${esc(t('Delete account'))}</strong><small>${esc(t('Removes your profile, history and points.'))}</small></span>
       <span class="lab-arrow" aria-hidden="true">\u2192</span>
     </button>
