@@ -113,8 +113,18 @@ Telas que <b>encerram</b>: todas as outras.</div>
 </table>
 <p class="note">A doca <b>não é escondida, é não construída</b>. Esconder significaria vencer um <code>display: grid !important</code> que já existe — e uma guerra de <code>!important</code> é um jeito pior de dizer "este controle não existe agora". Não construída, ela sai também da ordem de tabulação e do leitor de tela.</p>
 
+<h2><span class="n">#428</span>No zero, a pergunta se encerra sozinha</h2>
+<p>O cronômetro chegando a zero não mudava nada além da cor do anel. Os quatro botões continuavam habilitados e a carta ficava ali — amostrei de segundo em segundo e aos <b>12s</b> ainda estava assim, com quatro botões vivos — até o jogador apertar um. <b>Esse aperto era como ele descobria</b> que a pergunta já tinha vencido e levado os pontos: <q>Tempo esgotado · nada enviado a tempo · −15</q>.</p>
+<p>O aperto nunca ia a lugar nenhum: o servidor descarta uma escolha enviada depois do prazo. A única coisa que ele fazia era obrigar o app a perguntar o que ele mesmo podia perguntar.</p>
+<div class="diagram">Amostrado a cada 150ms, depois da mudança:<br><br>
+anel=1 &nbsp;botões=4 &nbsp;<q>Where does this go?</q><br>
+anel=0 &nbsp;botões=<b>0</b> &nbsp;<b>"Time ran out"</b><br>
+&nbsp;&nbsp;&rarr; a tela de correção, sozinha</div>
+<p>Nessa ordem de propósito: <b>os botões param antes das palavras mudarem</b>, para que nada fique apertável enquanto a tela ainda pergunta. Uma resposta normal não mudou — um aperto com o anel em 8 ainda dá <q>Correct +20 points</q> — porque os dois caminhos passam pelo <b>mesmo envio</b>, então a correção, o som e a contagem não podem divergir.</p>
+<p class="note"><b>Isto precisou de uma mudança no servidor, e eu quero que você saiba.</b> A API não tinha como dizer <q>nada foi enviado</q>: o campo da escolha era texto obrigatório, então a página precisava <b>inventar um botão</b> para relatar uma não-escolha. Agora é opcional — e o servidor <b>recusa</b> uma não-escolha enquanto o prazo ainda vale. Isso mantém <q>sem escolha</q> significando só <q>o tempo acabou</q>: uma página com o relógio adiantado leva uma recusa e continua com os segundos que lhe restam, em vez de registrar uma resposta errada contra quem nunca escolheu.</p>
+
 <h2>Verificado</h2>
-<p>860 de 862 testes (só o par que sempre falha neste Mac), 8/8 no sandbox com a cobertura de espanhol, 11/11 no backend. Sem estouro horizontal em 320, 375, 820 e 1440, nos dois temas e nas duas línguas.</p>
+<p>868 de 870 testes de interface (só o par que sempre falha neste Mac), 8/8 no sandbox com a cobertura de espanhol. E, porque desta vez mexi no servidor, rodei o backend inteiro contra o PostgreSQL local: <b>1295 testes, todos passando</b>, incluindo um novo para essa recusa. Sem estouro horizontal em 320, 375, 820 e 1440, nos dois temas e nas duas línguas.</p>
 <p class="note"><b>Um susto no caminho, que o teste pegou:</b> minha primeira versão removia a doca do DOM depois de construída, e isso quebrou <b>nove testes</b> de outras áreas — os arredores de teste imitam o DOM e o objeto imitado não tem <code>remove()</code>. Em vez de contorcer o código para agradar os arredores, mudei a decisão para antes da construção, que é mais simples e mais correta. Voltaram todos.</p>
 <p class="note">Um teste antigo precisou de ajuste: a <b>#333</b> fixava a regra da caixinha como um texto exato, e agora ela é compartilhada com a tela de apagar conta. Mantive a intenção — o input de verdade fica escondido e o quadrado desenhado o segue — conferindo seletor por seletor em vez de a linha inteira.</p>
 </div></body></html>
