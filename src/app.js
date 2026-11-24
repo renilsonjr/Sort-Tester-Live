@@ -1178,6 +1178,7 @@ function showOwnerTools() {
   clock = null;
   const view = labPage(`
     <section class="lab-screen screen-owner">
+      ${backLink('owner-back')}
       <p class="lab-eyebrow">${esc(t('Owner'))}</p>
       <h1 class="lab-title">${esc(t('Owner tools'))}</h1>
       <aside class="lab-disclaimer">${esc(t('These are the only administrator powers this app has. Approving does not change anybody’s points, badge or history, and gives you no access to a player’s record.'))}</aside>
@@ -1211,7 +1212,6 @@ function showOwnerTools() {
         <span><strong>${esc(t('Accounts'))}</strong><small>${esc(t('Remove an account that should not exist.'))}</small></span>
         <span class="lab-arrow" aria-hidden="true">\u2192</span>
       </button>
-      <button id="owner-back" class="ghost">${esc(t('Back to Profile'))}</button>
     </section>
   `, 'profile', showOwnerTools);
   view.querySelector('#owner-accounts').addEventListener('click', () => showOwnerAccounts());
@@ -1248,11 +1248,11 @@ function showOwnerEligibility(message = null, bad = false) {
   clock = null;
   const view = labPage(`
     <section class="lab-screen">
+      ${backLink('elig-back')}
       <p class="lab-eyebrow">${esc(t('Owner'))}</p>
       <h1 class="lab-title">${esc(t('Prize eligibility'))}</h1>
       ${message ? `<div class="board-notice${bad ? ' board-notice-bad' : ''}" role="status"><p>${esc(message)}</p></div>` : ''}
       <div id="elig-panel"><p class="lab-intro" role="status">${esc(t('Loading…'))}</p></div>
-      <button id="elig-back" class="ghost">${esc(t('Back to Owner tools'))}</button>
     </section>
   `, 'profile', () => showOwnerEligibility(message, bad));
   view.querySelector('#elig-back').addEventListener('click', showOwnerTools);
@@ -1271,16 +1271,16 @@ async function fillEligibility(panel) {
     <p class="lab-intro">${esc(t('Approved sorters may win one of the three hats. Each sorter holds one approved account. New approvals close when the season ends; you can still withdraw one afterwards.'))}</p>
     ${body.approvals_open ? `
       <div class="owner-form">
-        <h2>${esc(t('Approve a sorter'))}</h2>
+        <h2 class="lab-eyebrow">${esc(t('Approve a sorter'))}</h2>
         <label class="field"><span>${esc(t('Player tag'))}</span>
           <input id="elig-tag" type="text" autocomplete="off" autocapitalize="characters" placeholder="#K7Q2MX"></label>
         <label class="field"><span>${esc(t('Roster reference'))}</span>
           <input id="elig-ref" type="text" autocomplete="off" placeholder="${esc(t('Primary Sort · Twilight · badge 4471'))}"></label>
-        <p class="lab-study-meta">${esc(t('The roster reference is how you identify this person on your own roster. It is never shown to players.'))}</p>
+        <p class="lab-intro">${esc(t('The roster reference is how you identify this person on your own roster. It is never shown to players.'))}</p>
         <button id="elig-approve" class="primary">${esc(t('Approve'))}</button>
       </div>
     ` : `<div class="board-notice"><h2>${esc(t('The season is closed to new approvals'))}</h2><p>${esc(t('Approvals close when the season ends, including the five-minute finishing window. You can still withdraw an approval that should not stand.'))}</p></div>`}
-    <h2 class="owner-count">${approvals.length
+    <h2 class="lab-eyebrow owner-count">${approvals.length
       ? `${esc(t('Approved this season'))} (${approvals.length})`
       : esc(t('Approved this season'))}</h2>
     ${approvals.length === 0
@@ -1353,11 +1353,11 @@ function showOwnerAccounts(message = null, bad = false) {
   clock = null;
   const view = labPage(`
     <section class="lab-screen">
+      ${backLink('acct-back')}
       <p class="lab-eyebrow">${esc(t('Owner'))}</p>
       <h1 class="lab-title">${esc(t('Accounts'))}</h1>
       ${message ? `<div class="board-notice${bad ? ' board-notice-bad' : ''}" role="status"><p>${esc(message)}</p></div>` : ''}
       <div id="acct-panel"><p class="lab-intro" role="status">${esc(t('Loading…'))}</p></div>
-      <button id="acct-back" class="ghost">${esc(t('Back to Owner tools'))}</button>
     </section>
   `, 'profile', () => showOwnerAccounts(message, bad));
   view.querySelector('#acct-back').addEventListener('click', showOwnerTools);
@@ -1383,7 +1383,7 @@ async function fillOwnerAccounts(panel) {
     <p class="lab-intro">${esc(t('Every account, newest first. This list shows a name, a tag and a date, and nothing of anybody’s points or history.'))}</p>
     <label class="field"><span>${esc(t('Find by name or tag'))}</span>
       <input id="acct-find" type="search" autocomplete="off"></label>
-    <h2 class="owner-count">${esc(t('Accounts'))} (${accounts.length})</h2>
+    <h2 class="lab-eyebrow owner-count">${esc(t('Accounts'))} (${accounts.length})</h2>
     <ul class="approved" id="acct-list">${accounts.map((row) => `
       <li data-find="${esc(`${row.username} ${row.tag}`.toLowerCase())}">
         <span class="approved-who">
@@ -1622,11 +1622,11 @@ function showSelection(message = null) {
   clock = null;
   const view = labPage(`
     <section class="lab-screen">
+      ${backLink('sel-back')}
       <p class="lab-eyebrow">${esc(t('Owner'))}</p>
       <h1 class="lab-title">${esc(t('Prize selection'))}</h1>
       ${message ? `<div class="board-notice" role="status"><p>${esc(message)}</p></div>` : ''}
       <div id="sel-panel"><p class="lab-intro" role="status">${esc(t('Loading\u2026'))}</p></div>
-      <button id="sel-back" class="ghost">${esc(t('Back to Owner tools'))}</button>
     </section>
   `, 'profile', () => showSelection(message));
   view.querySelector('#sel-back').addEventListener('click', showOwnerTools);
@@ -1641,8 +1641,8 @@ async function fillSelection(panel) {
     return;
   }
   if (body.cases.length === 0) {
-    panel.innerHTML = `<div class="owner-form"><h2>${esc(t('Nothing waiting'))}</h2>
-      <p class="lab-study-meta">${esc(t('A tie comes here only when the rules say so: still tied after the last round, no fresh questions left, or several players who did not finish competing for fewer hats.'))}</p></div>`;
+    panel.innerHTML = `<div class="owner-form"><h2 class="lab-eyebrow">${esc(t('Nothing waiting'))}</h2>
+      <p class="lab-intro">${esc(t('A tie comes here only when the rules say so: still tied after the last round, no fresh questions left, or several players who did not finish competing for fewer hats.'))}</p></div>`;
     return;
   }
   panel.innerHTML = `
@@ -1721,6 +1721,7 @@ function showCases(kind = 'tickets', message = null) {
   clock = null;
   const view = labPage(`
     <section class="lab-screen">
+      ${backLink('case-back')}
       <p class="lab-eyebrow">${esc(t('Owner'))}</p>
       <h1 class="lab-title">${esc(t('Case review'))}</h1>
       <aside class="lab-disclaimer">${esc(t('Closing a case records what you found. It never changes anybody’s points, badge or access, and it opens no ticket by itself. A connection flag is a pattern the server noticed, not evidence that somebody cheated.'))}</aside>
@@ -1730,7 +1731,6 @@ function showCases(kind = 'tickets', message = null) {
         <button type="button" role="tab" data-case="flags" aria-selected="${kind === 'flags'}">${esc(t('Flags'))}</button>
       </div>
       <div id="case-panel"><p class="lab-intro" role="status">${esc(t('Loading…'))}</p></div>
-      <button id="case-back" class="ghost">${esc(t('Back to Owner tools'))}</button>
     </section>
   `, 'profile', () => showCases(kind, message));
   view.querySelectorAll('[data-case]').forEach((button) => button.addEventListener('click', () => {
@@ -1768,8 +1768,8 @@ async function fillCases(panel, kind) {
   if (body.length === 0) {
     panel.innerHTML = `
       <div class="owner-form">
-        <h2>${esc(t('Nothing waiting'))}</h2>
-        <p class="lab-study-meta">${esc(kind === 'flags'
+        <h2 class="lab-eyebrow">${esc(t('Nothing waiting'))}</h2>
+        <p class="lab-intro">${esc(kind === 'flags'
           ? t('No open flags. A flag appears only when the server notices repeated connection loss in one attempt.')
           : t('No open tickets. Tickets only appear when a player opens one; a connection problem does not open a ticket by itself.'))}</p>
       </div>`;
@@ -1843,19 +1843,19 @@ function showRecovery(message = null, bad = false) {
   clock = null;
   const view = labPage(`
     <section class="lab-screen">
+      ${backLink('rec-back')}
       <p class="lab-eyebrow">${esc(t('Owner'))}</p>
       <h1 class="lab-title">${esc(t('Access recovery'))}</h1>
       ${message ? `<div class="board-notice${bad ? ' board-notice-bad' : ''}" role="status"><p>${esc(message)}</p></div>` : ''}
       <div class="owner-form">
-        <h2>${esc(t('Who is in front of you?'))}</h2>
+        <h2 class="lab-eyebrow">${esc(t('Who is in front of you?'))}</h2>
         <label class="field"><span>${esc(t('Player tag'))}</span>
           <input id="rec-tag" type="text" autocomplete="off" autocapitalize="characters" placeholder="#K7Q2MX"></label>
-        <p class="lab-study-meta">${esc(t('The tag is on their profile. It is how you find the account, not proof of who they are.'))}</p>
+        <p class="lab-intro">${esc(t('The tag is on their profile. It is how you find the account, not proof of who they are.'))}</p>
         <button id="rec-find" class="primary">${esc(t('Find the account'))}</button>
       </div>
-      <h2 class="owner-count">${esc(t('Recent recoveries'))}</h2>
+      <h2 class="lab-eyebrow owner-count">${esc(t('Recent recoveries'))}</h2>
       <div id="rec-list"><p class="lab-intro" role="status">${esc(t('Loading…'))}</p></div>
-      <button id="rec-back" class="ghost">${esc(t('Back to Owner tools'))}</button>
     </section>
   `, 'profile', () => showRecovery(message, bad));
   view.querySelector('#rec-back').addEventListener('click', showOwnerTools);
@@ -1895,13 +1895,13 @@ function showRecoveryMessages(message = null, bad = false) {
   clock = null;
   const view = labPage(`
     <section class="lab-screen">
+      ${backLink('msg-back')}
       <p class="lab-eyebrow">${esc(t('Owner'))}</p>
       <h1 class="lab-title">${esc(t('Recovery messages'))}</h1>
       ${message ? `<div class="board-notice${bad ? ' board-notice-bad' : ''}" role="status"><p>${esc(message)}</p></div>` : ''}
       <aside class="lab-disclaimer">${esc(t('A message proves nothing about who wrote it. Find the person, check them in person, then use Access recovery.'))}</aside>
       <button id="msg-recovery" class="ghost">${esc(t('Open Access recovery'))}</button>
       <div id="msg-list"><p class="lab-intro" role="status">${esc(t('Loading…'))}</p></div>
-      <button id="msg-back" class="ghost">${esc(t('Back to Owner tools'))}</button>
     </section>
   `, 'profile', () => showRecoveryMessages(message, bad));
   view.querySelector('#msg-back').addEventListener('click', showOwnerTools);
