@@ -1196,6 +1196,15 @@
   .lab-site-row .lab-site { margin-left: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 10.5px; letter-spacing: .08em; }
   .lab-settings-btn { flex: none; display: inline-flex; align-items: center; gap: 6px; padding: 7px 13px; border-radius: 999px; background: var(--glass-surface-sub); border: 1px solid var(--glass-border); color: var(--ink); font-size: 12px; font-weight: 800; white-space: nowrap; }
   .lab-settings-btn span { color: var(--gold); font-size: 14px; line-height: 1; }
+  /* #418: the chip was 90x33 with 44x44 controls directly above it. Growing
+     it to 44 would have pushed the sub-header down on every Profile screen,
+     so the hit area is extended instead and the chip looks the same.
+     Measured at 375x812: 8px of clear space above it (the row of buttons
+     ends at y=55, the chip starts at 63) and 12px below (the header ends at
+     108, the chip at 96), so -6px top and bottom gives 45px of target and
+     still touches nothing else. */
+  .lab-settings-btn { position: relative; }
+  .lab-settings-btn::after { content: ""; position: absolute; inset: -6px 0; }
 
   /* Ranked question: the route is the hero now */
   .tb-top { align-items: center; }
