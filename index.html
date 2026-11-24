@@ -180,25 +180,69 @@
   .auth-copy { margin: 0 0 4px; color: #54412f; font-size: 14px; line-height: 1.45; }
   .auth-screen input[readonly] { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; letter-spacing: 0.05em; }
 
+  /* The new-account screen (#333). The code field and a Copy button sit on
+     one line; the button never shrinks below the 44px touch minimum, and
+     the field takes whatever is left. */
+  .code-row { display: flex; gap: 8px; align-items: stretch; }
+  /* Measured at 375px. The field's normal 18px with its 0.9px letter-spacing
+     draws the 19-character code 36px wider than the space left beside the
+     Copy button, so it scrolled sideways and the player could not see the
+     whole code at once -- on the one screen where it is ever shown. At 15px
+     with normal spacing the text is 172px in a 197px box: 25px of slack, so
+     a slightly wider monospace fallback on another phone still fits. */
+  .auth-screen .code-row input { flex: 1 1 auto; min-width: 0; font-size: 15px; letter-spacing: normal; padding-left: 10px; padding-right: 10px; }
+  .code-copy {
+    flex: 0 0 auto; min-width: 72px; min-height: 44px; padding: 0 14px;
+    border: 1px solid var(--gold); border-radius: 12px;
+    background: transparent; color: var(--gold);
+    font-size: 13px; font-weight: 800; cursor: pointer;
+  }
+
+  /* The confirmation was a raw browser checkbox, centred, with its label on
+     the line below and not tied to it. It is one tappable row now: the real
+     input stays in the DOM for the keyboard and for screen readers, and the
+     square that is actually drawn follows its checked state. */
+  .check-row {
+    display: flex; align-items: center; gap: 11px;
+    min-height: 44px; padding: 4px 2px; cursor: pointer; text-align: left;
+  }
+  .check-row input { position: absolute; opacity: 0; width: 0; height: 0; }
+  .check-box {
+    flex: none; width: 22px; height: 22px; border-radius: 7px;
+    border: 2px solid var(--gold); display: grid; place-items: center;
+  }
+  .check-box::after {
+    content: "✓"; font-size: 15px; font-weight: 900; line-height: 1;
+    color: var(--accent-ink); opacity: 0;
+  }
+  .check-row input:checked + .check-box { background: var(--gold); }
+  .check-row input:checked + .check-box::after { opacity: 1; }
+  .check-row input:focus-visible + .check-box { outline: 3px solid var(--focus); outline-offset: 3px; }
+  .check-label { font-size: 14px; font-weight: 700; color: var(--ink); }
+
+  /* The picker's rows are .lab-choice now, the same row the Practice tab
+     uses, so the .deckbtn component this file restyled in each of its four
+     skin layers is gone (#331). What is left is the list that holds them,
+     the third line a test row has and the Practice tab's rows do not, and
+     the state for a deck not yet checked against the chart. */
   .decks { display: flex; flex-direction: column; gap: 10px; }
-  .deckbtn {
-    display: flex; flex-direction: column; gap: 2px; text-align: left;
-    background: var(--panel); border: 1px solid var(--line); color: var(--ink);
-    border-radius: 12px; padding: 15px 16px;
-  }
-  .deckbtn .dname { font-size: 18px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
-  .dsort {
-    font-style: normal; font-size: 10px; font-weight: 700;
-    letter-spacing: 0.12em; text-transform: uppercase;
-    border: 1px solid var(--line); border-radius: 999px;
-    padding: 2px 8px; color: var(--muted);
-  }
-  .deckbtn .dblurb { font-size: 14px; color: var(--muted); }
-  .deckbtn .dmeta {
+  .lab-choice-meta {
     font-size: 11px; color: var(--muted); text-transform: uppercase;
     letter-spacing: 0.1em; font-weight: 600; margin-top: 5px;
   }
-  .deckbtn.locked { opacity: 0.5; border-style: dashed; cursor: default; }
+  .lab-choice.locked { opacity: 0.5; border-style: dashed; cursor: default; }
+
+  /* The way back from a sub-screen. It was a full-width ghost button, which
+     is the shape of a primary action, sitting above the content it is meant
+     to be subordinate to. The 44px minimum hit area is kept by padding, not
+     by width. */
+  .lab-back {
+    display: inline-flex; align-items: center; gap: 7px;
+    align-self: flex-start; min-height: 44px; padding: 10px 14px 10px 10px;
+    border: 0; background: transparent; color: var(--muted);
+    font-size: 14px; font-weight: 800; cursor: pointer;
+  }
+  .lab-back:hover { color: var(--ink); }
   .deckname { font-size: 13px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.1em; font-weight: 600; margin-top: -10px; }
 
   .progress { font-size: 12px; color: var(--muted); letter-spacing: 0.1em; text-transform: uppercase; font-weight: 600; }
@@ -561,13 +605,11 @@
   .lab-study-row p { margin: 6px 0 0; color: var(--muted); font-size: 12px; line-height: 1.5; }
   .lab-main .field { margin: 8px 0; }
   .lab-main .decks { margin: 6px 0; }
-  .lab-main .deckbtn { border-radius: 19px; padding: 16px; box-shadow: 0 3px 12px #38261b0d; }
-  .lab-main .deckbtn .dname { font-family: "Space Grotesk", sans-serif; letter-spacing: -.03em; }
 
   /* The approved Twilight redesign: a plain black and white interface with
      the mascot's muted blue. Belt answer colors still come from BELT_STYLE. */
   body { background: #f7f3ec; color: var(--ink); font-family: Arial, Helvetica, sans-serif; }
-  h1, .lab-brand, .lab-section-heading, .lab-choice-icon, .lab-main .deckbtn .dname, .lab-nav i { font-family: Arial, Helvetica, sans-serif; }
+  h1, .lab-brand, .lab-section-heading, .lab-choice-icon, .lab-nav i { font-family: Arial, Helvetica, sans-serif; }
   #app { box-shadow: 0 12px 45px #38261b18; }
   .lab-top { padding: 20px 22px 15px; border-bottom: 1px solid var(--line); gap: 8px; }
   .lab-brand { font-size: 19px; font-weight: 800; letter-spacing: -.035em; }
@@ -596,10 +638,7 @@
   .lab-nav { background: var(--panel); backdrop-filter: none; gap: 0; padding: 0 max(0px, env(safe-area-inset-right)) max(0px, env(safe-area-inset-bottom)) max(0px, env(safe-area-inset-left)); }
   .lab-nav button { border-radius: 0; padding: 10px 5px 12px; }
   .lab-nav button[aria-current="page"] { background: var(--panel); box-shadow: inset 0 3px var(--ink); }
-  .lab-main .deckbtn, .ghost, .primary, input { border-radius: 0; }
-  .lab-main .deckbtn { box-shadow: none; }
-  .lab-main .deckbtn .dname { letter-spacing: 0; }
-  .lab-picker-heading { margin: 16px 0 2px; font-size: 16px; letter-spacing: -.02em; text-transform: none; color: var(--ink); }
+  .ghost, .primary, input { border-radius: 0; }
   .lab-service-tabs { display: grid; grid-template-columns: repeat(2, 1fr); gap: 7px; margin: 9px 0 18px; }
   .lab-service-tabs button { border: 1px solid var(--line); background: var(--panel); color: var(--ink); padding: 11px 8px; font-size: 13px; font-weight: 700; }
   .lab-service-tabs button[aria-pressed="true"] { border-color: var(--ink); background: var(--ink); color: var(--accent-ink); }
@@ -679,7 +718,7 @@
      hierarchy. The answer buttons and chart chips keep BELT_STYLE colors. */
   body { background: #f7f3ec; color: var(--ink); font-family: Nunito, "Trebuchet MS", sans-serif; font-weight: 600; }
   h1, h2, .lab-brand, .lab-section-heading, .lab-choice-icon,
-  .lab-main .deckbtn .dname, .lab-nav i { font-family: Nunito, "Trebuchet MS", sans-serif; }
+  .lab-nav i { font-family: Nunito, "Trebuchet MS", sans-serif; }
   h1 { font-weight: 900; letter-spacing: -.055em; }
   h2 { font-weight: 900; }
   #app { background: var(--bg); box-shadow: 0 20px 80px #38261b22; }
@@ -724,9 +763,6 @@
   .lab-chart-row { margin: 0 0 8px; padding: 13px 14px; border: 1px solid var(--line); border-radius: 17px; background: var(--panel); }
   .lab-chart-row strong { font-size: 20px; font-weight: 900; letter-spacing: -.03em; }
   .lab-chart-row .lab-belt-chip { min-width: 84px; min-height: 38px; border-radius: 11px; padding: 7px 10px; font-size: 12px; }
-  .lab-main .deckbtn { margin-bottom: 9px; border-radius: 19px; box-shadow: 0 4px 14px #38261b0d; }
-  .lab-main .deckbtn .dname { font-size: 17px; font-weight: 900; }
-  .lab-picker-heading { margin: 23px 0 11px; font-size: 20px; font-weight: 900; }
   .lab-main .primary, .lab-main .ghost, .primary, .ghost { border-radius: 14px; font-weight: 900; }
   /* The library's primary action: gold with dark text, not a brown fill.
      The gradient and the light edge come from the mockup's `.btn-primary`.
@@ -761,8 +797,8 @@
     .lab-site, .lab-tag { margin-left: 0; }
   }
   @media (prefers-reduced-motion: no-preference) {
-    .lab-choice, .lab-main .deckbtn { transition: transform .18s, box-shadow .18s; }
-    .lab-choice:hover, .lab-main .deckbtn:hover { transform: translateY(-2px); box-shadow: 0 12px 30px #38261b12; }
+    .lab-choice { transition: transform .18s, box-shadow .18s; }
+    .lab-choice:hover { transform: translateY(-2px); box-shadow: 0 12px 30px #38261b12; }
   }
 
   /* Promotion celebration (#95). Every piece starts invisible or small and

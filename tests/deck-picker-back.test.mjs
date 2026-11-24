@@ -17,7 +17,10 @@ function fn(name) {
 
 test('the picker shows a back control before the title and the list of tests', () => {
   const picker = fn('function showDeckPicker');
-  const back = picker.indexOf('id="picker-back"');
+  // The markup moved into the shared backLink() helper in #331, so the app
+  // has one Back rather than a copy per screen. What this test is about is
+  // unchanged: the picker's way out comes before the title and the list.
+  const back = picker.indexOf("backLink('picker-back')");
   assert.notEqual(back, -1, 'the picker has no back control at the top');
   assert.ok(back < picker.indexOf("t('Pick a test')"), 'back comes before the title');
   assert.ok(back < picker.indexOf('class="decks"'), 'back comes before the list');
@@ -29,9 +32,18 @@ test('back returns to the Practice screen the player came from', () => {
 });
 
 test('the back label is a translated word, with Spanish', () => {
-  const picker = fn('function showDeckPicker');
-  assert.match(picker, /id="picker-back"[^>]*>← \$\{esc\(t\('Back'\)\)\}/);
+  const helper = fn('function backLink');
+  assert.match(helper, /id="\$\{id\}" class="lab-back"/);
+  assert.match(helper, /<span aria-hidden="true">←<\/span> \$\{esc\(t\('Back'\)\)\}/);
   assert.match(i18n, /'Back': 'Volver'/);
+});
+
+test('the Profile sub-screens use the same Back, not a second one', () => {
+  // Both places had their own full-width ghost button, which is the shape of
+  // a primary action above content it should be subordinate to (#331).
+  assert.match(app, /backLink\('profile-back'\)/);
+  assert.doesNotMatch(app, /back\.textContent = `← \$\{t\('Back'\)\}`/,
+    'the Profile built its own Back again');
 });
 
 test('the controls under the list stay, for a player who scrolled down', () => {

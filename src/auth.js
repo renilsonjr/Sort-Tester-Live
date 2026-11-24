@@ -79,6 +79,32 @@ const FORGOT_ES = {
     'No se pudo enviar el mensaje. Busca al responsable en persona.',
   'Made by RJ. Meet the person behind the app':
     'Hecho por RJ. Conoce a quien está detrás de la app',
+  // The whole new-account flow (#333). The rest of this module is still
+  // English only, but this is the one screen where not understanding the
+  // warning costs the account: the Quiz Code is shown exactly once, and
+  // there is no recovery except finding the owner in person. Translating
+  // half of it would have left "Continue" in English beside a Spanish tick
+  // row, which reads worse than the all-English screen it replaced.
+  'Choose a username':
+    'Elige un nombre de usuario',
+  'Create account':
+    'Crear cuenta',
+  'Cancel':
+    'Cancelar',
+  'Save this Quiz Code. It will not be shown again.':
+    'Guarda este Quiz Code. No se volverá a mostrar.',
+  'Your Quiz Code':
+    'Tu Quiz Code',
+  'Continue':
+    'Continuar',
+  'I saved my Quiz Code':
+    'Guardé mi Quiz Code',
+  'Copy':
+    'Copiar',
+  'Copied':
+    'Copiado',
+  'Could not copy. Select the code and copy it by hand.':
+    'No se pudo copiar. Selecciona el código y cópialo a mano.',
 };
 
 function forgotText(source) {
@@ -161,32 +187,63 @@ export function createAuthPanel(container, onContinueAsGuest, onLoggedIn) {
     form.hidden = false;
     form.innerHTML = `
       <label class="field">
-        <span>Choose a username</span>
+        <span>${forgotText('Choose a username')}</span>
         <input id="register-username-input" type="text" autocomplete="off" placeholder="alice_1">
       </label>
-      <button id="register-submit" class="primary">Create account</button>
-      <button id="register-cancel" class="ghost">Cancel</button>
+      <button id="register-submit" class="primary">${forgotText('Create account')}</button>
+      <button id="register-cancel" class="ghost">${forgotText('Cancel')}</button>
     `;
     form.querySelector('#register-username-input').focus();
     form.querySelector('#register-submit').addEventListener('click', async () => {
       const username = form.querySelector('#register-username-input').value;
       const result = await registerAccount(username);
       if (result.ok) {
+        // This is the only time a Quiz Code is ever shown, and the screen
+        // was the least finished in the app (#333): the code could only be
+        // retyped by hand, 19 characters, or the account was lost; and the
+        // confirmation was a raw browser checkbox with its label on the
+        // next line, not tied to it and with no accessible name.
         form.innerHTML = `
-          <p class="notice">Save this Quiz Code. It will not be shown again.</p>
+          <p class="notice">${forgotText('Save this Quiz Code. It will not be shown again.')}</p>
           <div class="field">
-            <span>Your Quiz Code</span>
-            <input id="generated-login-id" type="text" readonly value="${result.data.login_id}">
+            <span>${forgotText('Your Quiz Code')}</span>
+            <div class="code-row">
+              <input id="generated-login-id" type="text" readonly value="${result.data.login_id}">
+              <button id="copy-login-id" class="code-copy" type="button">${forgotText('Copy')}</button>
+            </div>
           </div>
-          <label class="field">
-            <input id="saved-check" type="checkbox"> I saved my Quiz Code
+          <p class="auth-note" id="copy-status" role="status"></p>
+          <label class="check-row" for="saved-check">
+            <input id="saved-check" type="checkbox">
+            <span class="check-box" aria-hidden="true"></span>
+            <span class="check-label">${forgotText('I saved my Quiz Code')}</span>
           </label>
-          <button id="register-done" class="primary" disabled>Continue</button>
+          <button id="register-done" class="primary" disabled>${forgotText('Continue')}</button>
         `;
         const check = form.querySelector('#saved-check');
         const done = form.querySelector('#register-done');
         check.addEventListener('change', () => { done.disabled = !check.checked; });
         done.addEventListener('click', () => closeForm('#auth-register-btn'));
+
+        // One tap instead of 19 characters. The clipboard API needs a
+        // secure context, which the app always has (https, or localhost in
+        // development), but a browser can still refuse it -- so a refusal
+        // selects the code and says to copy it by hand rather than failing
+        // silently and leaving the player with no account.
+        const copy = form.querySelector('#copy-login-id');
+        const status = form.querySelector('#copy-status');
+        copy.addEventListener('click', async () => {
+          const field = form.querySelector('#generated-login-id');
+          try {
+            await navigator.clipboard.writeText(field.value);
+            copy.textContent = forgotText('Copied');
+            status.textContent = forgotText('Copied');
+            setTimeout(() => { copy.textContent = forgotText('Copy'); }, 2000);
+          } catch {
+            field.select();
+            status.textContent = forgotText('Could not copy. Select the code and copy it by hand.');
+          }
+        });
       } else if (result.status === 0) {
         showMessage('Could not reach the server. Nothing was created; try again in a moment.', true);
       } else {
