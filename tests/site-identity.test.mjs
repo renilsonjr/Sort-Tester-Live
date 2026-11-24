@@ -68,6 +68,9 @@ test('the app calls itself Sort Quiz on the sign-in screen and in the header', (
   const auth = readFileSync(new URL('../src/auth.js', import.meta.url), 'utf8');
   const app = readFileSync(new URL('../src/app.js', import.meta.url), 'utf8');
   assert.match(auth, /<h1 class="auth-title">Sort Quiz<\/h1>/);
-  assert.match(app, /<span class="lab-mark">RJ<\/span> Sort Quiz<\/div>/);
+  // The wordmark is wrapped in its own span since #341, so that a narrow
+  // phone can hide it and keep the four 44px header targets. The name is
+  // unchanged; only what CSS can reach is.
+  assert.match(app, /<span class="lab-mark">RJ<\/span> <span class="lab-wordmark">Sort Quiz<\/span><\/div>/);
   for (const source of [auth, app, html]) assert.doesNotMatch(source, /Sort Lab/);
 });

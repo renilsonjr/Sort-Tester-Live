@@ -1280,7 +1280,26 @@
   .lab-top { position: sticky; top: 0; z-index: 25; padding: 11px 18px; gap: 8px; background: var(--dock-bg); border-bottom: 1px solid var(--glass-border-subtle); backdrop-filter: blur(22px); -webkit-backdrop-filter: blur(22px); }
   .lab-mark { width: 31px; height: 31px; border-radius: 10px; font-size: 12px; }
   .lab-brand { font-size: 18px; gap: 9px; }
-  .lab-language button, .lab-theme-btn { width: 40px; min-height: 38px; border-radius: 11px; }
+  /* 44x44, not 40x38 (#341). Two earlier rules in this file already set
+     44x44 on these four; this compact-header layer was quietly undoing both,
+     which is why they measured 40x38 in the running app while the source
+     looked correct in three places out of four.
+     The room comes from the gap beside the brand: measured at 375px, the
+     four controls plus their gaps grow from 180px to 194px, and there were
+     44px of empty space between the brand and the first control. */
+  .lab-language button, .lab-theme-btn { width: 44px; min-height: 44px; border-radius: 11px; }
+
+  /* On a narrow phone the header row cannot hold the wordmark and four
+     44px targets at once. Measured at 339px: the row has 284px to give, and
+     the brand plus the controls want 321px -- it already overflowed before
+     this change, at 303px, and the theme button was being clipped at the
+     right edge. The targets are what matter here, so the wordmark goes and
+     the RJ mark stays; the app is still named in the page title and on the
+     sign-in screen. */
+  @media (max-width: 360px) {
+    .lab-wordmark { display: none; }
+    .lab-top-actions { gap: 5px; }
+  }
   /* Sized the flag before the flags were dropped (#326); now it is the label. */
   .lab-language button span:first-child { font-size: 13px; }
   .lab-language button { font-weight: 900; }
