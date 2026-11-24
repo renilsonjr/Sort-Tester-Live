@@ -67,10 +67,13 @@ test('#381 the dead avatar slot is gone', () => {
   assert.match(js, /#profile-avatar-mark/);
 });
 
-test('#381 the rows this issue does NOT cover are untouched', () => {
-  // Eight more character icons live on the owner menu, the ticket form and
-  // the tie-break screen. They are the same defect on screens round 3 did
-  // not walk, and they get their own sub-issue rather than a silent sweep.
-  assert.match(js, /<span class="lab-choice-icon">✓<\/span>/);
-  assert.match(js, /<span class="lab-choice-icon">\+<\/span>/);
+test('#381 the rows it left behind were taken deliberately, not swept', () => {
+  // This test used to assert the opposite: that the owner menu, Support and
+  // the tie-break still held their character icons, so that #381 could not
+  // quietly widen into screens round 3 had not walked. They got their own
+  // sub-issue, #404 walked them and drew them, so the thing being guarded
+  // is now that none of them came back. Same intent, other end of it:
+  // tests/character-icons.test.mjs holds the detail.
+  assert.doesNotMatch(js, /<span class="lab-choice-icon">✓<\/span>/);
+  assert.doesNotMatch(js, /<span class="lab-choice-icon">\+<\/span>/);
 });
