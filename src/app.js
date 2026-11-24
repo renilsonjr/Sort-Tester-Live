@@ -2467,29 +2467,54 @@ async function playRankedAttempt(attempt, mode, tally) {
       if (ring) { ring.style.setProperty('--pct', pct); ring.classList.toggle('low', left <= 3000); }
       const fill = view.querySelector('#rq-bar-fill');
       if (fill) fill.style.width = `${pct}%`;
-      if (left <= 0) stopTimer();
+      if (left <= 0) { stopTimer(); runOut(); }
     };
     paint();
     timer = setInterval(paint, 200);
   }
-  startCountdown(new Date(q.deadline_at).getTime(), 10000);
-  view.querySelectorAll('.belt').forEach((button) => button.addEventListener('click', async () => {
-    view.querySelectorAll('.belt').forEach((b) => { b.disabled = true; b.classList.toggle('picked', b === button); });
+
+  // #428: the clock reaching zero used to change nothing but the ring's
+  // colour. The four belts stayed enabled and the card sat there until the
+  // player pressed one, which is how they learned the question had already
+  // timed out and cost them its points. The press was never going anywhere:
+  // the server discards a choice sent past the deadline.
+  //
+  // So zero does what the press did, without the press. The belts go first,
+  // then the cue says what happened, then the same submit runs with no
+  // choice -- which is the truth, and which the server refuses outright if
+  // ITS clock says the question is still open (this page's may be fast),
+  // leaving the question on screen with its remaining seconds.
+  let over = false;
+  function runOut() {
+    if (over) return;
+    over = true;
+    view.querySelectorAll('.belt').forEach((b) => { b.disabled = true; });
+    const cue = view.querySelector('.rq-cue');
+    if (cue) { cue.textContent = t('Time ran out'); cue.classList.add('over'); }
+    submit(null, null);
+  }
+
+  async function submit(choice, button) {
     stopTimer();
-    const result = await attempt.answer(q.seq, button.dataset.belt);
+    const result = await attempt.answer(q.seq, choice);
     if (!result.ok) { playRankedAttempt(attempt, mode, tally); return; }
     const isRight = Boolean(result.data.correct);
-    if (isRight) {
-      button.classList.add('belt-correct');
-      playCorrectSfx();
-    } else {
-      button.classList.add('belt-incorrect');
-      playIncorrectSfx();
+    if (button) {
+      button.classList.add(isRight ? 'belt-correct' : 'belt-incorrect');
     }
+    if (isRight) playCorrectSfx(); else playIncorrectSfx();
     const nextTally = { correctCount: tally.correctCount + (isRight ? 1 : 0) };
     setTimeout(() => {
-      showRankedFeedback(attempt, mode, q, button.dataset.belt, result.data, nextTally);
+      showRankedFeedback(attempt, mode, q, choice, result.data, nextTally);
     }, 550);
+  }
+
+  startCountdown(new Date(q.deadline_at).getTime(), 10000);
+  view.querySelectorAll('.belt').forEach((button) => button.addEventListener('click', () => {
+    if (over) return;
+    over = true;
+    view.querySelectorAll('.belt').forEach((b) => { b.disabled = true; b.classList.toggle('picked', b === button); });
+    submit(button.dataset.belt, button);
   }));
   return view;
 }

@@ -1534,6 +1534,10 @@
   #rq-question { display: flex; flex-direction: column; gap: 10px; }
   #rq-question .belts { margin: 0; }
   .rq-cue { margin: 2px 0 0; }
+  /* #428: at zero the cue stops asking and says what happened, so it stops
+     looking like the prompt it was. The belts dim themselves: `.belts
+     .belt:disabled` is already half opacity. */
+  .rq-cue.over { color: var(--bad); }
   #rq-question .belts .belt { min-height: clamp(70px, 12.5dvh, 104px); }
 
   /* Ranked feedback */

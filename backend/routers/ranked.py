@@ -198,7 +198,11 @@ def _settle(conn, attempt_id) -> dict:
 
 class AnswerRequest(BaseModel):
     seq: int
-    choice: str
+    # None is "the clock ran out and nothing was sent" (#428). It is not a
+    # way to skip a question: submit_answer refuses it while the deadline
+    # still stands, so a page whose clock is fast gets a refusal rather than
+    # a wrong answer recorded against a player who never chose.
+    choice: str | None = None
 
 
 class StartRequest(BaseModel):
