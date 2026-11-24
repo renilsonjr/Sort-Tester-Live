@@ -17,6 +17,7 @@ from backend.db.entra_token import TokenUnavailable
 from backend.auth import deletion_list, settings as auth_settings
 from backend.auth.rate_limit import AddressAttemptLimiter, RegistrationLimiter
 from backend.auth.verification_gate import VerificationBusy
+from backend.sweep_interval import SweepInterval
 from backend.ranked import engine as ranked_engine
 from backend.routers import auth, ranked, recovery_messages as recovery_messages_router
 
@@ -64,6 +65,8 @@ def create_app() -> FastAPI:
         per_client=3, per_client_window=3600.0, total=50, total_window=86400.0
     )
 
+    # retention deletes what is days old: once a minute, not on every request
+    application.state.retention_interval = SweepInterval()
     # failed Quiz Code checks from one address (owner cap: 20 in 5 minutes)
     application.state.address_attempt_limiter = AddressAttemptLimiter()
 

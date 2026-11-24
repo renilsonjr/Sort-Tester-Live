@@ -66,7 +66,7 @@ def _db_connection():
         yield conn
 
 
-def get_db():
+def get_db(request: Request):
     with _db_connection() as conn:
         # The season closes by the clock, with no background timer: every
         # ranked request first finishes any season whose five-minute finishing
@@ -84,20 +84,36 @@ def get_db():
             ranked_tiebreaks.finalize_prizes(
                 conn, launch.season_id, clock=_CLOCK, bank=_reviewed_bank()
             )
-        # same idea for retention: a closed ticket's description goes fifteen
-        # days after its own closure, and an attempt's shared connection log
-        # goes fifteen days after the last case on it closes (#26)
-        support_retention.purge_due_cases(conn, clock=_CLOCK)
-        # and for accepted account deletions (#47)
-        purge_deleted_accounts(conn)
-        # expired session rows authenticate nobody but still point at an
-        # account, so they go a day after they die. One DELETE that
-        # matches nothing on an idle server.
-        auth_sessions.purge_expired_sessions(conn)
-        # a recovery message is free text and may name a person: it goes
-        # thirty days after the owner marked it resolved
-        recovery_messages.purge_resolved(conn, clock=_CLOCK)
+        # Everything above is the game's own clock and runs on every request.
+        # Retention below deletes what is days old, so it runs at most once a
+        # minute for the whole process (backend/sweep_interval.py).
+        if request.app.state.retention_interval.due():
+            _sweep_retention(conn)
         yield conn
+
+
+def _sweep_retention(conn) -> None:
+    """Delete what has outlived its retention period, and keep that.
+
+    Committed here rather than left to the route: most routes that carry
+    this sweep only read and never commit, and a sweep that waits a minute
+    for its next turn must not be rolled back by whichever request drew it.
+    Nothing else is open on the connection yet, so this commits the sweep
+    and only the sweep.
+    """
+    # a closed ticket's description goes fifteen days after its own closure,
+    # and an attempt's shared connection log goes fifteen days after the last
+    # case on it closes (#26)
+    support_retention.purge_due_cases(conn, clock=_CLOCK)
+    # accepted account deletions (#47)
+    purge_deleted_accounts(conn)
+    # expired session rows authenticate nobody but still point at an account,
+    # so they go a day after they die
+    auth_sessions.purge_expired_sessions(conn)
+    # a recovery message is free text and may name a person: it goes thirty
+    # days after the owner marked it resolved
+    recovery_messages.purge_resolved(conn, clock=_CLOCK)
+    conn.commit()
 
 
 def get_readonly_db():
@@ -924,10 +940,6 @@ def list_recovery_messages(
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden"
         ) from None
-    # this route only reads, but the retention sweep that ran before it may
-    # have deleted old resolved messages: keep that, so what the owner no
-    # longer sees is really gone and not just hidden for this request
-    conn.commit()
     return {
         "open": sum(1 for row in rows if row["resolved_at"] is None),
         "messages": [
