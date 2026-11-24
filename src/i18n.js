@@ -239,6 +239,12 @@ const ES = {
   'This result was not saved. This phone is not saving results.': 'Este resultado no se guardó. Este teléfono no está guardando resultados.',
   'No missorts.': 'Sin errores de clasificación.',
   'Missed': 'Errores',
+  // #387: said once over the list of missed rows. It used to close nine or
+  // ten rows out of ten in English; Spanish never carried it, so this is the
+  // first time it is said in Spanish at all. "Color", not "faja": that is the
+  // word the rest of the app uses for a belt ('Choose a belt' -> 'Elige un
+  // color').
+  'Check the service and the range before choosing a belt.': 'Revisa el servicio y el rango antes de elegir un color.',
   'said {answer}': 'respondió {answer}',
   'ran out of time': 'se acabó el tiempo',
   'Back to main page': 'Volver a la página principal',

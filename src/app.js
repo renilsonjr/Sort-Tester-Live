@@ -3601,6 +3601,7 @@ function renderResults(summary, saved) {
       ${saved ? '' : `<p class="warn">${esc(t('This result was not saved. This phone is not saving results.'))}</p>`}
       ${summary.missed.length === 0 ? `<p class="clean">${esc(t('No missorts.'))}</p>` : `
         <h2>${esc(t('Missed'))}</h2>
+        <p class="lab-intro">${esc(t('Check the service and the range before choosing a belt.'))}</p>
         <ul class="missed">
           ${summary.missed.map((r) => `
             <li>
