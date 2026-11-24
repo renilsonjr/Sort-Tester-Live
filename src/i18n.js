@@ -203,6 +203,9 @@ const ES = {
   'Time to practice': 'Hora de practicar',
   '{name} · Four belt choices per card. The clock starts when the first card appears.': '{name} · Cuatro colores por tarjeta. El reloj comienza al mostrar la primera.',
   'New challenge levels': 'Nuevos niveles',
+  // The sort name is said once per section now, in the eyebrow, instead of
+  // once per card on all ten cards (#331).
+  'Levels · Twilight': 'Niveles · Twilight',
   'Current quizzes · Twilight': 'Pruebas actuales · Twilight',
   '{count} questions · {seconds}s each': '{count} preguntas · {seconds} s cada una',
   '{count} cards · {seconds}s each': '{count} tarjetas · {seconds} s cada una',

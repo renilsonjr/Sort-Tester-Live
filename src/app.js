@@ -637,11 +637,13 @@ async function fillProfile(view, panel, tab) {
   else await fillSettings(panel);
   // History and Settings are sub-screens now (the mock profile has no tabs),
   // so give them a way back to the profile overview.
-  const back = document.createElement('button');
-  back.className = 'ghost';
-  back.textContent = `← ${t('Back')}`;
-  back.addEventListener('click', () => showProfile('overview'));
-  panel.prepend(back);
+  // The same compact Back the picker uses (#331). It was a full-width ghost
+  // button here too, which reads as a primary action above the content it is
+  // supposed to be subordinate to.
+  const back = document.createElement('div');
+  back.innerHTML = backLink('profile-back');
+  back.firstElementChild.addEventListener('click', () => showProfile('overview'));
+  panel.prepend(back.firstElementChild);
   return undefined;
 }
 
@@ -3119,12 +3121,20 @@ function stopIdleWatch() {
 function showNameEntry(previousName = '') {
   const view = labPage(`
     <section class="lab-screen">
+      <p class="lab-eyebrow">${esc(t('Practice'))}</p>
       <h1 class="lab-title">${esc(t('Quiz yourself'))}</h1>
-      <label class="field">
-        <span>${esc(t('Name or ID (optional)'))}</span>
-        <input id="name" type="text" autocomplete="off" autocapitalize="words" placeholder="${esc(t('e.g. J. Rivera'))}" value="${esc(previousName)}">
-      </label>
-      <button id="begin" class="primary">${esc(t('Pick a test'))}</button>
+      <!-- The field and its button were the only ones in the app standing
+           straight on the background, with no card and no eyebrow (#332).
+           This is the card the sign-in screen uses, which is where a player
+           last saw a field and a button together. The way out stays outside
+           it: Back is not part of the task the card holds. -->
+      <div class="auth-card">
+        <label class="field">
+          <span>${esc(t('Name or ID (optional)'))}</span>
+          <input id="name" type="text" autocomplete="off" autocapitalize="words" placeholder="${esc(t('e.g. J. Rivera'))}" value="${esc(previousName)}">
+        </label>
+        <button id="begin" class="primary">${esc(t('Pick a test'))}</button>
+      </div>
       <button id="back" class="ghost">${esc(t('Back to home'))}</button>
     </section>
   `, 'practice', () => showNameEntry(view.querySelector('#name').value));
@@ -3191,6 +3201,41 @@ function showStudy() {
   renderRows();
 }
 
+// One test in the picker.
+//
+// The picker used to have a component of its own -- .deckbtn, with .dname,
+// .dblurb, .dmeta and a .dsort chip -- restyled independently in each of the
+// four skin layers in index.html. It was the one list in the app that did
+// not look like the Practice tab's rows: no icon, no arrow, so nothing said
+// it was tappable, while the identical-looking Practice cards had both.
+//
+// It is the same row now: the icon tile carries the level number (or the
+// quiz mark for a service deck), and the arrow is the one every other
+// tappable row in the app has. The "TWILIGHT" chip that repeated on all ten
+// cards is gone -- the section eyebrow above the list already says it once.
+function deckRow(deck, { index = null, meta, locked = false }) {
+  const icon = index === null ? ICONS.quiz : `0${index + 1}`;
+  const body = `<span class="lab-choice-icon" aria-hidden="true">${icon}</span>
+      <span><strong>${esc(language.deckName(deck))}</strong><small>${esc(language.deckBlurb(deck))}</small><small class="lab-choice-meta">${esc(meta)}</small></span>`;
+  // A deck not yet checked against the chart is not playable, so it must not
+  // be a button and must not show the arrow that promises it opens.
+  if (locked) return `<div class="lab-choice locked">${body}</div>`;
+  return `<button class="lab-choice lab-choice-quiz" type="button" data-deck="${deck.id}">
+      ${body}<span class="lab-arrow" aria-hidden="true">→</span>
+    </button>`;
+}
+
+// The way back from a sub-screen.
+//
+// Both places that had one used a full-width .ghost button, which is the
+// shape of a primary action -- on the picker it was the heaviest thing on
+// screen, above the list it was meant to be subordinate to. This is the
+// same control at the weight it should have been, and it is shared so the
+// app has one Back rather than a copy per screen.
+function backLink(id) {
+  return `<button id="${id}" class="lab-back" type="button"><span aria-hidden="true">←</span> ${esc(t('Back'))}</button>`;
+}
+
 function showDeckPicker(name) {
   stopTick();
   clock = null;
@@ -3198,40 +3243,36 @@ function showDeckPicker(name) {
 
   const view = labPage(`
     <section class="lab-screen">
-      <button id="picker-back" class="ghost" type="button">← ${esc(t('Back'))}</button>
+      ${backLink('picker-back')}
+      <p class="lab-eyebrow">${esc(t('Practice'))}</p>
       <h1 class="lab-title">${esc(t('Pick a test'))}</h1>
-      <div class="decks">
-        ${DECKS.filter((deck) => deck.questionCount).map((deck, index) => `
-          <button class="deckbtn" data-deck="${deck.id}">
-            <span class="dname">0${index + 1} &middot; ${esc(language.deckName(deck))}<em class="dsort">Twilight</em></span>
-            <span class="dblurb">${esc(language.deckBlurb(deck))}</span>
-            <span class="dmeta">${esc(t('{count} questions · {seconds}s each', { count: deck.questionCount, seconds: CARD_SECONDS }))}</span>
-          </button>
-        `).join('')}
-      </div>
-      <h2 class="lab-picker-heading">${esc(t('Current quizzes · Twilight'))}</h2>
-      <div class="decks">
-        ${DECKS.filter((deck) => !deck.questionCount).map((deck) => (deck.verified ? `
-          <button class="deckbtn" data-deck="${deck.id}">
-            <span class="dname">${esc(language.deckName(deck))}<em class="dsort">${esc(deck.sort)}</em></span>
-            <span class="dblurb">${esc(language.deckBlurb(deck))}</span>
-            <span class="dmeta">${esc(t('{count} cards · {seconds}s each', { count: deck.practiceRunSize ?? deck.cards.length, seconds: CARD_SECONDS }))}</span>
-          </button>
-        ` : `
-          <div class="deckbtn locked">
-            <span class="dname">${esc(language.deckName(deck))}<em class="dsort">${esc(deck.sort)}</em></span>
-            <span class="dblurb">${esc(language.deckBlurb(deck))}</span>
-            <span class="dmeta">${esc(t('Not checked against the chart yet'))}</span>
-          </div>
-        `)).join('')}
-      </div>
+      <section class="home-stripe">
+        <p class="lab-eyebrow">${esc(t('Levels · Twilight'))}</p>
+        <div class="decks">
+          ${DECKS.filter((deck) => deck.questionCount).map((deck, index) => deckRow(deck, {
+            index,
+            meta: t('{count} questions · {seconds}s each', { count: deck.questionCount, seconds: CARD_SECONDS }),
+          })).join('')}
+        </div>
+      </section>
+      <section class="home-stripe">
+        <p class="lab-eyebrow">${esc(t('Current quizzes · Twilight'))}</p>
+        <div class="decks">
+          ${DECKS.filter((deck) => !deck.questionCount).map((deck) => deckRow(deck, {
+            locked: !deck.verified,
+            meta: deck.verified
+              ? t('{count} cards · {seconds}s each', { count: deck.practiceRunSize ?? deck.cards.length, seconds: CARD_SECONDS })
+              : t('Not checked against the chart yet'),
+          })).join('')}
+        </div>
+      </section>
       <button id="back" class="ghost">${esc(t('Edit name (optional)'))}</button>
       <button id="main-page" class="ghost">${esc(t('Main page'))}</button>
       ${entries.length ? `<button id="viewlog" class="ghost">${esc(t('Shift log'))} (${entries.length})</button>` : ''}
     </section>
   `, 'practice', () => showDeckPicker(name));
 
-  view.querySelectorAll('.deckbtn[data-deck]').forEach((button) => {
+  view.querySelectorAll('.lab-choice[data-deck]').forEach((button) => {
     button.addEventListener('click', () => {
       const deck = deckById(button.dataset.deck);
       if (!deck) return;
