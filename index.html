@@ -1314,6 +1314,18 @@
   .lab-launch { margin-top: 0; border-radius: var(--r-sm); background: var(--soft); border-color: var(--soft-line); }
   .lab-launch i { background: var(--gold); color: #2a1c10; }
   .lab-launch p { color: var(--muted); }
+  /* #452: the season bubble, a speech bubble at the top of Home, login and
+     profile. The tail points down at the screen it announces. */
+  .season-bubble { position: relative; display: flex; align-items: flex-start; gap: 11px; margin: 0 0 14px; padding: 12px 10px 12px 14px; border: 1px solid var(--soft-line); border-radius: var(--r-sm); background: var(--soft); text-align: left; }
+  .season-bubble[hidden] { display: none; }
+  .season-bubble::after { content: ""; position: absolute; left: 24px; bottom: -9px; width: 16px; height: 9px; background: var(--soft-line); clip-path: polygon(0 0, 100% 0, 50% 100%); }
+  .season-bubble i { display: grid; place-items: center; width: 30px; height: 30px; flex: none; border-radius: 50%; background: var(--gold); color: #2a1c10; font-style: normal; font-size: 15px; font-weight: 900; }
+  .season-bubble-body { flex: 1; min-width: 0; }
+  .season-bubble h2 { margin: 0; font-size: 15px; font-weight: 900; letter-spacing: -.02em; text-transform: none; color: var(--ink); }
+  .season-bubble p { margin: 3px 0 0; color: var(--muted); font-size: 13px; line-height: 1.45; }
+  .season-bubble-close { flex: none; width: 32px; height: 32px; margin: -4px -2px 0 0; padding: 0; border: 0; border-radius: 50%; background: transparent; color: var(--muted); font-size: 20px; line-height: 1; cursor: pointer; }
+  .season-bubble-close:hover, .season-bubble-close:focus-visible { background: var(--soft-line); color: var(--ink); }
+  .auth-screen > .season-bubble { width: 100%; }
   .lab-log-link { color: var(--ink); padding: 12px 4px; }
   .lab-log-link span:last-child { color: var(--gold); }
   /* #328 asked for a glass surface and a gold eyebrow here. The surface, yes:

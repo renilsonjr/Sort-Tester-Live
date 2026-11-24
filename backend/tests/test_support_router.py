@@ -327,4 +327,8 @@ class SeasonNoticeTests(unittest.TestCase):
     def test_it_carries_nothing_about_any_player(self):
         self._season("official", "Season 1")
         body = self.client.get("/api/ranked/season/notice").json()
-        self.assertEqual(set(body), {"started", "label", "started_at", "closes_at"})
+        self.assertEqual(
+            set(body),
+            {"started", "label", "started_at", "closes_at",
+             "announced_start", "announced_end"},
+        )

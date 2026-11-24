@@ -106,8 +106,12 @@ test('#442 the deadline a player can miss goes through it', () => {
 });
 
 test('#442 the season notice, where this was found, is formatted too', () => {
-  assert.match(app, /const started = language\.date\(notice\.started_at\);/);
-  assert.match(app, /const closes = notice\.closes_at \? language\.date\(notice\.closes_at\) : null;/);
+  // #452 moved the notice's wording to seasonNotice.js, which formats every
+  // date in the player's locale, read in Eastern time.
+  const notice = readFileSync(new URL('../src/seasonNotice.js', import.meta.url), 'utf8');
+  assert.match(notice, /const started = longDate\(notice\.started_at, locale\);/);
+  assert.match(notice, /const closes = notice\.closes_at \? longDate\(notice\.closes_at, locale\) : null;/);
+  assert.match(app, /seasonBubbleCopy\(notice, \{ t, locale: language\.locale/);
 });
 
 test('#442 the exported workbook follows the player too', () => {
