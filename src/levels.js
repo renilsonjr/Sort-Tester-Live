@@ -24,7 +24,12 @@ function cardsFromChart(service, includeExceptions = false, filter = () => true)
     confusions: BELTS.filter((other) => other !== belt && other !== 'CHECK'),
     why: detail
       ? `${detail}. On the Twilight ${service} chart, ${state} ${code} goes to ${belt}.`
-      : `On the Twilight ${service} chart, ${state} ${code} goes to ${belt}. Check the service and the range before choosing a belt.`,
+      // #387: the row says its own fact and stops. The advice that used to
+      // close every one of these -- "Check the service and the range before
+      // choosing a belt" -- is a constant, not a fact about this route, so
+      // the results screen says it once over the list. Spanish never carried
+      // it at all, so this also makes the two languages say the same thing.
+      : `On the Twilight ${service} chart, ${state} ${code} goes to ${belt}.`,
     tags: detail ? ['chart', 'exception'] : ['chart'],
   }));
 }
