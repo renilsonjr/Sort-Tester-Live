@@ -52,23 +52,25 @@ test('#440 both feedback screens draw the verdict', () => {
   assert.equal(marks.length, 2, 'expected the Ranked and Practice verdict marks');
 });
 
-test('#440 the crown is drawn at all three places it appears', () => {
-  // The issue counted one. There are three: the mark floating above the
-  // winner's disc, the disc ITSELF (where everyone else shows an avatar or
-  // an initial), and -- below the podium -- the place number in the list,
-  // which the crown replaces outright. All three found by grepping the
-  // glyph rather than by trusting the issue.
+test('#440 the crown is drawn, and #443 left it in one place', () => {
+  // #440 found the crown in THREE places -- floating above the winner's
+  // disc, inside the disc where everyone else shows an avatar, and below
+  // the podium where it replaced the place number -- and drew all three.
+  // #443 then took two of them away: a mark that displaces the identity it
+  // is marking is worse than one that sits beside it. What #440 was really
+  // guarding was that the crown is drawn rather than typed, and that holds.
   assert.match(app, /<div class="pcrown" aria-hidden="true">\$\{ICONS\.prizeHolder\}<\/div>/);
-  assert.match(app, /\$\{row\.hat \? ICONS\.prizeHolder : \(avatarEmoji\(row\.avatar\) \|\| esc\(row\.username\.slice\(0, 1\)\.toUpperCase\(\)\)\)\}/);
-  assert.match(app, /<span class="board-place">\$\{row\.hat \? ICONS\.prizeHolder : row\.place\}<\/span>/);
-  assert.equal((app.match(/ICONS\.prizeHolder/g) ?? []).length, 3);
+  assert.equal((app.match(/ICONS\.prizeHolder/g) ?? []).length, 1);
+  // and the two it was taken out of show what every other player shows
+  assert.match(app, /<div class="pdisc\$\{avatarEmoji\(row\.avatar\) \? ' has-avatar' : ''\}">\$\{avatarEmoji\(row\.avatar\) \|\| esc\(row\.username\.slice\(0, 1\)\.toUpperCase\(\)\)\}<\/div>/);
+  assert.match(app, /<span class="board-place">\$\{row\.place\}<\/span>/);
 });
 
 test('#440 the badge marks are heavier than the list icons', () => {
   // Each replaces a font-weight 900 glyph. At 22px a 2 stroke reads thin
   // for a verdict; 2.8 reads clumsy. Compared at all three weights against
   // the real screen before picking 2.4.
-  assert.match(css, /\.rq-mark svg, \.pcrown svg, \.pdisc svg, \.board-place svg \{[^}]*stroke-width: 2\.4;/);
+  assert.match(css, /\.rq-mark svg, \.pcrown svg \{[^}]*stroke-width: 2\.4;/);
   assert.match(css, /\.lab-nav i svg,[^}]*stroke-width: 2;/);
 });
 
@@ -76,16 +78,18 @@ test('#440 the verdict mark follows the font-size its screen declares', () => {
   // Three contexts already declare one -- 26px on the unused base, 22px in
   // .rq-head and .quiz-verdict. `em` means they go on deciding, and a
   // fourth context would need no new rule.
-  assert.match(css, /\.rq-mark svg, \.pcrown svg, \.pdisc svg, \.board-place svg \{[^}]*width: 1em; height: 1em;/);
+  assert.match(css, /\.rq-mark svg, \.pcrown svg \{[^}]*width: 1em; height: 1em;/);
   assert.match(css, /\.rq-head \.rq-mark \{[^}]*font-size: 22px;/);
   assert.match(css, /\.quiz-verdict \.rq-mark \{[^}]*font-size: 22px;/);
 });
 
-test('#440 the winner\'s disc sizes its mark to the disc, not to the text', () => {
-  // This is the one place `em` is wrong: 1em there is 18px, which is how a
-  // 10.8px crown ended up in a 56px circle.
-  assert.match(css, /\.pdisc svg \{ width: 28px; height: 28px; \}/);
-  assert.match(css, /\.pslot\.p1 \.pdisc svg \{ width: 36px; height: 36px; \}/);
+test('#443 nothing sizes a mark inside the disc any more', () => {
+  // #440 gave .pdisc its own 28/36px overrides, because `em` there is 18px
+  // and the crown it had to show was 10.8px of ink in a 56px circle. #443
+  // took the crown out of the disc, so those overrides size nothing and
+  // are gone rather than left behind to confuse the next reader.
+  assert.doesNotMatch(css, /\.pdisc svg/);
+  assert.doesNotMatch(css, /\.board-place svg/);
 });
 
 test('#440 the marks take their colour from the state, not from the drawing', () => {
