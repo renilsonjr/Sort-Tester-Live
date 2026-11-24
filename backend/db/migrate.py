@@ -36,20 +36,40 @@ def connect(conninfo: str) -> psycopg.Connection:
     return psycopg.connect(conninfo, row_factory=dict_row)
 
 
+def _is_plain_read(sql_text) -> bool:
+    """Whether *sql_text* is a statement that only reads.
+
+    Only a statement that starts with SELECT counts. One that starts with
+    WITH can write from inside the query, so it is treated as a write, and
+    so is anything that is not a string (a composed statement).
+    """
+    return isinstance(sql_text, str) and sql_text.lstrip()[:6].upper() == "SELECT"
+
+
 def execute(conn, sql_text: str, params=None):
     """Run *sql_text* on *conn* WITHOUT committing.
 
     Isolation comes from the caller's transaction handling — the schema
     tests roll back in cleanup so no rows leak between tests. When the
     connection is not already inside a transaction one is opened (and
-    left open for the caller's rollback/commit); the statement itself
-    runs under a savepoint, so an expected failure (e.g. a CHECK or
-    UNIQUE violation the test asserts on) does not abort the rest of
-    the transaction. Migration and DDL paths manage their own
-    transactions.
+    left open for the caller's rollback/commit).
+
+    A statement that writes runs under a savepoint, so an expected failure
+    (e.g. a CHECK or UNIQUE violation the caller handles, or a test asserts
+    on) does not abort the rest of the transaction.
+
+    A plain SELECT runs without one. A savepoint costs two more round
+    trips to the server for every statement, reads are most of what a
+    request does, and nothing a read can fail on is something a caller
+    recovers from: a SELECT that raises is a defect, and it ends the
+    transaction like any other unexpected error.
+
+    Migration and DDL paths manage their own transactions.
     """
     if conn.info.transaction_status == TransactionStatus.IDLE:
         conn.execute("BEGIN")
+    if _is_plain_read(sql_text):
+        return conn.execute(sql_text, params or ())
     name = f"migrate_sp_{next(_savepoint_counter)}"
     conn.execute(sql.SQL("SAVEPOINT {}").format(sql.Identifier(name)))
     try:
