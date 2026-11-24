@@ -912,6 +912,11 @@ function showAvatarPicker(chosen = undefined, message = null) {
   clock = null;
   const view = labPage(`
     <section class="lab-screen">
+      ${/* #424: the way out was a full-width ghost, pixel-identical to the
+            "No icon" button stacked right under it -- one clears your icon,
+            the other leaves, and nothing said which. Same compact Back the
+            deck picker and the leaderboard use, in the same place: first. */ ''}
+      ${backLink('av-back')}
       <p class="lab-eyebrow">${esc(t('Profile'))}</p>
       <h1 class="lab-title">${esc(t('Choose a profile icon'))}</h1>
       <p class="lab-intro">${esc(t('Shown on your profile and the leaderboard.'))}</p>
@@ -921,7 +926,6 @@ function showAvatarPicker(chosen = undefined, message = null) {
       </div>
       <p class="notice" id="av-said" role="status" hidden></p>
       <button id="av-none" class="ghost" type="button">${esc(t('No icon'))}</button>
-      <button id="av-back" class="ghost" type="button">${esc(t('Back'))}</button>
     </section>
   `, 'profile', () => showAvatarPicker(chosen, message));
 
