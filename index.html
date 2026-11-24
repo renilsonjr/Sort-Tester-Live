@@ -1630,6 +1630,11 @@
   .quiz-card .primary, .quiz-feedback .primary, .bail .primary { background: linear-gradient(135deg, var(--gold) 0%, #d89115 100%); color: #2a1c10; border: 1px solid rgba(255, 255, 255, 0.45); }
 
   /* Practice results */
+  /* #387: the one line of advice over the missed list. .lab-intro carries an
+     8px bottom margin for stacked shell screens, which here lands on top of
+     the column's own 12px gap -- measured 12px above the line and 20px below.
+     The screen's gap is the only spacing. */
+  .screen-results > .lab-intro { margin-bottom: 0; }
   .score-line { display: grid; grid-template-columns: 1fr 1fr; gap: 0; padding: 16px 10px; text-align: center; border-radius: var(--r-md); border: 1px solid var(--soft-line); background: linear-gradient(135deg, var(--soft) 0%, var(--glass-surface-sub) 62%); box-shadow: var(--glass-shadow), 0 0 28px -6px rgba(244, 189, 56, 0.32); }
   .score-line > div + div { border-left: 1px solid var(--glass-border); }
   .score-line .big { font-size: 40px; font-weight: 900; letter-spacing: -.04em; }
