@@ -2306,7 +2306,7 @@
         "row_kind": "exceptions",
         "state_label": "NJ",
         "code_label": "078 9",
-        "provenance": "photo"
+        "provenance": "owner-override-10"
       },
       "context": {
         "service": "2DA",
@@ -2320,16 +2320,16 @@
         ]
       },
       "exclusion_refs": [],
-      "difficulty": "Easy",
-      "correct_belt": "RED",
+      "difficulty": "Hard",
+      "correct_belt": "GOLD",
       "copy": {
         "en": {
           "prompt": "Which belt does this go to?",
-          "explanation": "2 Day Air NJ 078 9 goes to RED."
+          "explanation": "2 Day Air NJ 078 9 goes to GOLD. The final digit matters."
         },
         "es": {
           "prompt": "¿A qué color va?",
-          "explanation": "En Aéreo 2 días, NJ 078 9 va a RED."
+          "explanation": "En Aéreo 2 días, NJ 078 9 va a GOLD. El último dígito importa."
         }
       },
       "presentation": {
@@ -4866,7 +4866,7 @@
         "row_kind": "exceptions",
         "state_label": "NJ",
         "code_label": "078 9",
-        "provenance": "photo"
+        "provenance": "owner-override-10"
       },
       "context": {
         "service": "3DS",
@@ -4880,16 +4880,16 @@
         ]
       },
       "exclusion_refs": [],
-      "difficulty": "Easy",
-      "correct_belt": "RED",
+      "difficulty": "Hard",
+      "correct_belt": "GOLD",
       "copy": {
         "en": {
           "prompt": "Which belt does this go to?",
-          "explanation": "3 Day Select NJ 078 9 goes to RED."
+          "explanation": "3 Day Select NJ 078 9 goes to GOLD. The final digit matters."
         },
         "es": {
           "prompt": "¿A qué color va?",
-          "explanation": "En Select 3 días, NJ 078 9 va a RED."
+          "explanation": "En Select 3 días, NJ 078 9 va a GOLD. El último dígito importa."
         }
       },
       "presentation": {
@@ -9747,7 +9747,7 @@
         "row_kind": "exceptions",
         "state_label": "NJ",
         "code_label": "078 9",
-        "provenance": "photo"
+        "provenance": "owner-override-10"
       },
       "context": {
         "service": "GND",
@@ -9761,16 +9761,16 @@
         ]
       },
       "exclusion_refs": [],
-      "difficulty": "Easy",
-      "correct_belt": "RED",
+      "difficulty": "Hard",
+      "correct_belt": "GOLD",
       "copy": {
         "en": {
           "prompt": "Which belt does this go to?",
-          "explanation": "Ground NJ 078 9 goes to RED."
+          "explanation": "Ground NJ 078 9 goes to GOLD. The final digit matters."
         },
         "es": {
           "prompt": "¿A qué color va?",
-          "explanation": "En Terrestre, NJ 078 9 va a RED."
+          "explanation": "En Terrestre, NJ 078 9 va a GOLD. El último dígito importa."
         }
       },
       "presentation": {
@@ -10968,7 +10968,7 @@
         "row_kind": "exceptions",
         "state_label": "NJ",
         "code_label": "078 9",
-        "provenance": "photo"
+        "provenance": "owner-override-10"
       },
       "context": {
         "service": "NDA",
@@ -10982,16 +10982,16 @@
         ]
       },
       "exclusion_refs": [],
-      "difficulty": "Easy",
-      "correct_belt": "RED",
+      "difficulty": "Hard",
+      "correct_belt": "GOLD",
       "copy": {
         "en": {
           "prompt": "Which belt does this go to?",
-          "explanation": "Next Day Air NJ 078 9 goes to RED."
+          "explanation": "Next Day Air NJ 078 9 goes to GOLD. The final digit matters."
         },
         "es": {
           "prompt": "¿A qué color va?",
-          "explanation": "En Aéreo 1 día, NJ 078 9 va a RED."
+          "explanation": "En Aéreo 1 día, NJ 078 9 va a GOLD. El último dígito importa."
         }
       },
       "presentation": {

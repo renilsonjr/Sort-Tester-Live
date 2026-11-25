@@ -158,7 +158,7 @@ export const ROUTE_REFERENCE_VERSION = 'twilight-2026-11-08-r2';
       NJ|076 9|RED|NJ list
       NJ|077 0|RED|NJ list
       NJ|078 4|RED|NJ list
-      NJ|078 9|RED|NJ list
+      NJ|078 9|GOLD|Sort change
       NJ|079 9|ORANGE|Listed NJ preload exception
       NJ|081 9|RED|NJ list
       NJ|082 9|RED|NJ list

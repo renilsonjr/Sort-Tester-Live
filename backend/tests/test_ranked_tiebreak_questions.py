@@ -1,6 +1,6 @@
 """The five shared questions of each tie-break round (issue #24, slice 2).
 
-Run against the real pinned bank, so "ten fresh sets per season" is
+Run against the real pinned bank, so "eleven fresh sets per season" is
 measured here rather than assumed.
 """
 import random
@@ -93,14 +93,15 @@ class TiebreakQuestionTests(unittest.TestCase):
 
     # --- the pool ---
 
-    def test_the_pool_is_the_53_approved_hard_questions(self):
-        """Owner decision 2026-11-15: the regular bank's Hard questions."""
+    def test_the_pool_is_the_57_approved_hard_questions(self):
+        """Owner decision 2026-11-15: the regular bank's Hard questions.
+        57 since 2026-11-24, when NJ 078 9 became Hard in all four services."""
         pool = tiebreaks.fresh_questions(self.conn, self.season, BANK)
-        self.assertEqual(len(pool), 53)
+        self.assertEqual(len(pool), 57)
         self.assertTrue(all(q.difficulty.lower() == "hard" for q in pool))
 
-    def test_a_season_has_ten_fresh_sets(self):
-        self.assertEqual(tiebreaks.fresh_sets_left(self.conn, self.season, BANK), 10)
+    def test_a_season_has_eleven_fresh_sets(self):
+        self.assertEqual(tiebreaks.fresh_sets_left(self.conn, self.season, BANK), 11)
 
     # --- one round ---
 
@@ -132,18 +133,18 @@ class TiebreakQuestionTests(unittest.TestCase):
 
     # --- never reused ---
 
-    def test_no_question_is_reused_across_ten_rounds(self):
+    def test_no_question_is_reused_across_eleven_rounds(self):
         seen = set()
-        for _ in range(10):
+        for _ in range(11):
             round_id = self._round()
             self._assign(round_id)
             keys = {r["bank_key"] for r in self._round_questions(round_id)}
             self.assertFalse(keys & seen, "a question came back")
             seen |= keys
-        self.assertEqual(len(seen), 50)
+        self.assertEqual(len(seen), 55)
 
-    def test_the_eleventh_round_has_no_fresh_set(self):
-        for _ in range(10):
+    def test_the_twelfth_round_has_no_fresh_set(self):
+        for _ in range(11):
             self._assign(self._round())
         self.assertEqual(tiebreaks.fresh_sets_left(self.conn, self.season, BANK), 0)
         with self.assertRaises(tiebreaks.NoFreshSet):
@@ -157,12 +158,12 @@ class TiebreakQuestionTests(unittest.TestCase):
         pool = {q.canonical_id for q in tiebreaks.fresh_questions(self.conn, self.season, BANK)}
         self.assertFalse(used & pool)
 
-    def test_another_season_starts_with_all_53_again(self):
+    def test_another_season_starts_with_all_57_again(self):
         """No reuse within a season; a new season is a new pool."""
         for _ in range(3):
             self._assign(self._round())
         other = self._season("Next Season")
-        self.assertEqual(len(tiebreaks.fresh_questions(self.conn, other, BANK)), 53)
+        self.assertEqual(len(tiebreaks.fresh_questions(self.conn, other, BANK)), 57)
 
     def test_the_database_refuses_a_reused_question_even_if_the_code_slipped(self):
         first = self._round()
@@ -186,7 +187,7 @@ class TiebreakQuestionTests(unittest.TestCase):
         self.conn.rollback()
 
     def test_a_failed_assignment_writes_nothing(self):
-        for _ in range(10):
+        for _ in range(11):
             self._assign(self._round())
         self.conn.commit()
         doomed = self._round()
@@ -218,7 +219,7 @@ class TiebreakQuestionTests(unittest.TestCase):
             " VALUES (%s, 'replacement', 100, 1, %s) RETURNING id",
             (season, T0),
         )["id"]
-        for number in range(1, 11):
+        for number in range(1, 12):
             rid = migrate.fetch_one(
                 self.conn,
                 "INSERT INTO tiebreak_rounds (group_id, round_number, opened_at, deadline_at, status, hats)"
@@ -254,7 +255,7 @@ class TiebreakQuestionTests(unittest.TestCase):
             " opened_at, status) VALUES (%s, 'replacement', 100, 1, %s, 'resolved') RETURNING id",
             (season, T0),
         )["id"]
-        for number in range(1, 11):
+        for number in range(1, 12):
             rid = migrate.fetch_one(
                 self.conn,
                 "INSERT INTO tiebreak_rounds (group_id, round_number, opened_at, deadline_at, status, hats)"

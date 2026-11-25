@@ -652,8 +652,8 @@
       "kind": "exceptions",
       "state": "NJ",
       "code": "078 9",
-      "expectedBelt": "RED",
-      "provenance": "photo"
+      "expectedBelt": "GOLD",
+      "provenance": "owner-override-10"
     },
     {
       "id": "ground-exceptions-nj-0799",
@@ -1345,8 +1345,8 @@
       "kind": "exceptions",
       "state": "NJ",
       "code": "078 9",
-      "expectedBelt": "RED",
-      "provenance": "photo"
+      "expectedBelt": "GOLD",
+      "provenance": "owner-override-10"
     },
     {
       "id": "3dayselect-exceptions-nj-0799",
@@ -2074,8 +2074,8 @@
       "kind": "exceptions",
       "state": "NJ",
       "code": "078 9",
-      "expectedBelt": "RED",
-      "provenance": "photo"
+      "expectedBelt": "GOLD",
+      "provenance": "owner-override-10"
     },
     {
       "id": "2dayair-exceptions-nj-0799",
@@ -2479,8 +2479,8 @@
       "kind": "exceptions",
       "state": "NJ",
       "code": "078 9",
-      "expectedBelt": "RED",
-      "provenance": "photo"
+      "expectedBelt": "GOLD",
+      "provenance": "owner-override-10"
     },
     {
       "id": "nextdayair-exceptions-nj-0799",
