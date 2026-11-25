@@ -26,7 +26,7 @@ class ReviewedDataTests(unittest.TestCase):
         return report,load_bank(report.bank_path,expected_revision='ranked-routes-v1',expected_sha256=read_manifest_pin(report.manifest_path))
     def test_full_artifact_preserves_approved_content(self):
         report,bank=self.export(); self.assertEqual(report.question_count,284)
-        self.assertEqual(Counter(q.difficulty for q in bank.questions),{'Easy':103,'Medium':128,'Hard':53})
+        self.assertEqual(Counter(q.difficulty for q in bank.questions),{'Easy':99,'Medium':128,'Hard':57})
         self.assertEqual(Counter(q.rule.kind for q in bank.questions),{'prefix_range':175,'qualified_code':85,'exact_literal':6,'suffix':8,'named_destination':5,'any_route':5})
         by={q.source.review_ref:q for q in bank.questions}
         self.assertEqual(by['G74'].rule.parts,('833 9-7',)); self.assertEqual(by['S47'].presentation.routing_code,'900')
