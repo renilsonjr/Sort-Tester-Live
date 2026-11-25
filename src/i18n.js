@@ -326,6 +326,7 @@ const ES = {
   'Icon saved.': 'Icono guardado.',
   'Icon removed.': 'Icono quitado.',
   'Version': 'Versión',
+  'Security tested: grade A by ImmuniWeb': 'Seguridad probada: calificación A de ImmuniWeb',
   'Log out': 'Cerrar sesión',
   'Owner': 'Dueño',
   'These are the only administrator powers this app has. Approving does not change anybody’s points, badge or history, and gives you no access to a player’s record.': 'Estos son los únicos poderes de administrador que tiene esta app. Aprobar no cambia los puntos, la insignia ni el historial de nadie, y no te da acceso al registro de ningún jugador.',

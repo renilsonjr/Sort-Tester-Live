@@ -56,6 +56,14 @@ export async function leaveRecoveryMessage(message) {
 // the recovery message (#251), in both of the app's languages. The table
 // lives here, not in i18n.js, because this file is loaded on its own and
 // imports nothing; the storage key is the one i18n.js keeps the choice in.
+// The public result of an outside security test of this site, shown at the
+// foot of the sign-in screen as ImmuniWeb's own badge, served from here. A
+// link and a local image: nothing from another site runs or loads on the
+// page where the Quiz Code is typed. The same address is in app.js
+// (Settings); this file imports nothing, so it is written in both, and a
+// test keeps the two the same.
+const SECURITY_REPORT_URL = 'https://www.immuniweb.com/websec/sortquiz.app/8SXNOVH5/';
+
 const FORGOT_ES = {
   'Forgot my Quiz Code?':
     '¿Olvidaste tu Quiz Code?',
@@ -91,6 +99,7 @@ const FORGOT_ES = {
     'Crear cuenta, jugar y cómo ganar una gorra.',
   'Made by RJ. Meet the person behind the app':
     'Hecho por RJ. Conoce a quien está detrás de la app',
+  'Security tested: grade A by ImmuniWeb': 'Seguridad probada: calificación A de ImmuniWeb',
   // The whole new-account flow (#333). The rest of this module is still
   // English only, but this is the one screen where not understanding the
   // warning costs the account: the Quiz Code is shown exactly once, and
@@ -191,6 +200,7 @@ export function createAuthPanel(container, onContinueAsGuest, onLoggedIn) {
       <div id="auth-form" class="auth-card" hidden></div>
       <p id="auth-message" class="warn"></p>
       <p class="auth-footer"><a class="auth-footer-link" href="https://renilsonjr.pages.dev" target="_blank" rel="noopener noreferrer">${forgotText('Made by RJ. Meet the person behind the app')}</a></p>
+      <p class="auth-footer auth-footer-security"><a class="security-badge-link" href="${SECURITY_REPORT_URL}" target="_blank" rel="noopener noreferrer"><img class="security-badge" src="assets/immuniweb-badge.png" width="150" height="50" alt="${forgotText('Security tested: grade A by ImmuniWeb')}"></a></p>
     </div>
   `;
 
