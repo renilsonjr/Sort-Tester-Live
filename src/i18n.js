@@ -326,6 +326,7 @@ const ES = {
   'Icon saved.': 'Icono guardado.',
   'Icon removed.': 'Icono quitado.',
   'Version': 'Versión',
+  'Privacy': 'Privacidad',
   'Security tested: grade A by ImmuniWeb': 'Seguridad probada: calificación A de ImmuniWeb',
   'Log out': 'Cerrar sesión',
   'Owner': 'Dueño',

@@ -1322,6 +1322,7 @@ async function fillSettings(panel) {
     </button>
     <p class="profile-version" id="profile-version"></p>
     <p class="profile-security"><a class="security-badge-link" href="${SECURITY_REPORT_URL}" target="_blank" rel="noopener noreferrer"><img class="security-badge" src="assets/immuniweb-badge.png" width="150" height="50" alt="${esc(t('Security tested: grade A by ImmuniWeb'))}"></a></p>
+    <p class="auth-footer"><a id="profile-privacy" class="auth-footer-link" href="assets/privacy/privacy-${language.code === 'es' ? 'es' : 'en'}.html" target="_blank" rel="noopener">${esc(t('Privacy'))}</a></p>
   `;
   panel.querySelector('#profile-support').addEventListener('click', showSupport);
   panel.querySelector('#profile-logout').addEventListener('click', () => signOut());
