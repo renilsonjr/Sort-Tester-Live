@@ -198,6 +198,9 @@
      with normal spacing the text is 172px in a 197px box: 25px of slack, so
      a slightly wider monospace fallback on another phone still fits. */
   .auth-screen .code-row input { flex: 1 1 auto; min-width: 0; font-size: 15px; letter-spacing: normal; padding-left: 10px; padding-right: 10px; }
+  .code-field { position: relative; }
+  .code-field .glass-input { padding-right: 64px; }
+  .code-eye { position: absolute; right: 8px; top: 50%; transform: translateY(-50%); background: transparent; border: 0; color: var(--gold); font-weight: 800; font-size: 13px; padding: 6px 8px; cursor: pointer; min-height: 32px; }
   .code-copy {
     flex: 0 0 auto; min-width: 72px; min-height: 44px; padding: 0 14px;
     border: 1px solid var(--gold); border-radius: 12px;
