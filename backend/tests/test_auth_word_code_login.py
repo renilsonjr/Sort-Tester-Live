@@ -10,7 +10,7 @@ import unittest
 from fastapi.testclient import TestClient
 
 from backend.auth.credentials import hash_login_id
-from backend.db import migrate, settings
+from backend.db import migrate, pool, settings
 from backend.main import create_app
 
 BROWSER = {"User-Agent": "test/1.0", "Origin": "http://testserver"}
@@ -33,6 +33,12 @@ class WordCodeLoginTests(unittest.TestCase):
             raise unittest.SkipTest(str(exc)) from None
 
     def setUp(self):
+        # The pool is shared by the whole test process. Close it before the
+        # scratch database is dropped and made again, so no pooled connection
+        # (or a pool still trying to refill itself) points at the old one:
+        # in CI that left every request here waiting 30 s for a connection.
+        pool.close_pool()
+        self.addCleanup(pool.close_pool)
         try:
             migrate.reset_scratch_to_head(self.admin, settings.SCRATCH_DB_NAME)
         except settings.DatabaseConfigError as exc:
