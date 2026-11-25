@@ -57,7 +57,9 @@ test('headings balance and body copy avoids orphans', () => {
   assert.ok(balance, 'the balance rule is gone or its selector changed');
   assert.match(balance[1], /text-wrap:\s*balance/);
 
-  const pretty = css.match(/\n  \.home-spot-desc, \.lab-disclaimer, \.home-short small, \.lab-choice small \{([^}]*)\}/);
+  // `.home-spot-desc` left the group when the Ranked card's blurb was
+  // removed; the rule still covers every piece of body copy that is left.
+  const pretty = css.match(/\n  \.lab-disclaimer, \.home-short small, \.lab-choice small \{([^}]*)\}/);
   assert.ok(pretty, 'the pretty rule is gone or its selector changed');
   assert.match(pretty[1], /text-wrap:\s*pretty/);
 });

@@ -21,7 +21,13 @@ test('Profile offers it, next to Log out', () => {
   const settings = fn('async function fillSettings');
   assert.match(settings, /id="profile-signout-others"/);
   assert.match(settings, /t\('Sign out my other devices'\)/);
-  assert.match(settings, /t\('Ends every other phone or computer signed in to your account\. This one stays\.'\)/);
+  // The sentence used to be repeated on the row as well. It was removed
+  // there with the other sub-labels, and it is NOT lost: the screen the
+  // row opens carries the same words before anything happens, which is
+  // where the person is when they have to decide. Asserted there now.
+  assert.doesNotMatch(settings, /t\('Ends every other phone or computer/);
+  const screen = fn('function showSignOutOthers');
+  assert.match(screen, /t\('Ends every other phone or computer signed in to your account\. This one stays\.'\)/);
   assert.ok(
     settings.indexOf('profile-signout-others') > settings.indexOf('profile-logout'),
     'it sits after Log out, not before it',

@@ -112,19 +112,23 @@ test('#328 the disclaimer gets the surface but not an eyebrow', () => {
   assert.doesNotMatch(before, /lab-eyebrow/, 'the Home disclaimer was given an eyebrow');
 });
 
-test('#328 the Profile note stays a caption, not a fourth card', () => {
-  // It explains the four tiles directly above it. A card with its own gold
-  // eyebrow would make a footnote look like a section; what it lacked was the
-  // tie to what it explains.
-  const rule = css.match(/\n  \.pf-stats-note \{([^}]*)\}/)[1];
-  assert.match(rule, /text-align: left/);
-  assert.doesNotMatch(rule, /background:/, 'the caption was given a card');
+test('#328 the Profile note is gone, and left no rule behind', () => {
+  // #328 gave this note the look of a caption rather than a fourth card,
+  // because it explained the four tiles above it. The owner then removed
+  // the note itself as one of the sub-labels that say what the screen
+  // already shows. There is nothing left to style, so the rule went with
+  // it rather than staying as dead CSS.
+  assert.doesNotMatch(css, /\.pf-stats-note/);
+  assert.doesNotMatch(js, /pf-stats-note/);
 });
 
 test('the three new strings have Spanish', () => {
   // The coverage test checks this too, but it only runs in a sandbox on this
   // machine, so the pairs are asserted here where the suite always sees them.
+  // Two of the three now: the Shift log's sub-label was removed with the
+  // other repeated sub-labels, and its Spanish went with it rather than
+  // being left behind for the coverage test to trip over.
   assert.match(i18n, /'Your sessions': 'Tus sesiones'/);
-  assert.match(i18n, /'Your practice results saved on this phone\.': 'Tus resultados de práctica guardados en este teléfono\.'/);
   assert.match(i18n, /'Season': 'Temporada'/);
+  assert.doesNotMatch(i18n, /'Your practice results saved on this phone/);
 });
