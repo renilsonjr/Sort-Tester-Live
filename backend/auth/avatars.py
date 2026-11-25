@@ -4,8 +4,8 @@ The account stores one of these keys and nothing else: never the emoji,
 never anything the player typed. So whatever reaches a screen is one of the
 values this file lists, and a key that is not here is refused.
 
-The owner approved an all-animal set on 2026-11-22 and added eight more on
-2026-11-25. Animals keep the row even: they are full-colour glyphs of
+The owner approved an all-animal set on 2026-11-22 and added ten more on
+2026-11-25 (ten in all). Animals keep the row even: they are full-colour glyphs of
 similar weight on every phone, while symbols like a star or a bolt render
 flat and smaller next to them. None of them reads as a person or as a
 company mark.
@@ -43,6 +43,8 @@ KEYS = (
     "cat",
     "bear",
     "unicorn",
+    "tabby",
+    "giraffe",
 )
 
 

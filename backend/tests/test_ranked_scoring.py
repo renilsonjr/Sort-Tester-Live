@@ -210,14 +210,14 @@ class PromotionEdgeTests(unittest.TestCase):
 class PointsBoundsTests(unittest.TestCase):
     """A total that cannot be stored brings the account to a halt (audit M-3).
 
-    The balance columns are smallint, so they hold -32768..32767. Challenger
-    is deliberately uncapped and a perfect quiz is worth +300, so a dedicated
-    player passes 32767 inside a season -- and from then on every settlement
-    raises and the account can never finish another attempt.
+    Challenger is deliberately uncapped, so without a rule a dedicated
+    player simply keeps climbing. Owner decision 2026-11-16: clamp the
+    settled total, which makes the ceiling a real game rule rather than a
+    storage detail -- a Challenger at it stops gaining, like a capped badge.
 
-    Owner decision 2026-11-16: keep the columns and clamp the result at
-    +/-30000 instead of widening them. The ceiling is therefore a real game
-    rule, not just a storage detail.
+    The figure was +/-30000 while the columns were smallint (top 32767).
+    Owner decision 2026-11-25: too low a stopping point, so 0040 widened
+    the columns to integer and the clamp became +/-100000.
     """
 
     def test_a_win_cannot_push_the_total_past_the_ceiling(self):
@@ -260,10 +260,17 @@ class PointsBoundsTests(unittest.TestCase):
         self.assertEqual(result.adjustment, 0)
 
     def test_the_bounds_fit_the_columns_that_hold_them(self):
-        # smallint is -32768..32767, and the ledger also stores the
-        # difference between two bounded totals
-        self.assertLess(scoring.POINTS_CEILING, 32767)
-        self.assertGreater(scoring.POINTS_FLOOR, -32768)
+        # integer since 0040; the ledger also stores the difference between
+        # two bounded totals, so twice the span has to fit as well
+        self.assertLessEqual(scoring.POINTS_CEILING * 2, 2147483647)
+        self.assertGreaterEqual(scoring.POINTS_FLOOR * 2, -2147483648)
+
+    def test_the_clamp_is_the_figure_the_owner_set(self):
+        # the schema's CHECK carries the same two numbers (migration 0040),
+        # and a change to one without the other breaks the first settlement
+        # that reaches it
+        self.assertEqual(scoring.POINTS_CEILING, 100000)
+        self.assertEqual(scoring.POINTS_FLOOR, -100000)
 
 
 class InvalidInputTests(unittest.TestCase):
