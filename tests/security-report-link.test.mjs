@@ -7,6 +7,7 @@ import { readFileSync } from 'node:fs';
 const app = readFileSync(new URL('../src/app.js', import.meta.url), 'utf8');
 const i18n = readFileSync(new URL('../src/i18n.js', import.meta.url), 'utf8');
 const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
+const auth = readFileSync(new URL('../src/auth.js', import.meta.url), 'utf8');
 
 test('the link points at the public ImmuniWeb result for this site', () => {
   assert.match(app, /const SECURITY_REPORT_URL = 'https:\/\/www\.immuniweb\.com\/websec\/sortquiz\.app\/[A-Z0-9]+\/';/);
@@ -29,5 +30,20 @@ test('the sentence has Spanish', () => {
 
 test('nothing from the tester is loaded into the page', () => {
   assert.doesNotMatch(html, /immuniweb|ywxi|trustedsite/i);
-  assert.doesNotMatch(app, /<script[^>]*immuniweb|<img[^>]*immuniweb/i);
+  for (const source of [app, auth]) {
+    assert.doesNotMatch(source, /<script[^>]*immuniweb|<img[^>]*immuniweb|ywxi|trustedsite/i);
+  }
+});
+
+test('the sign-in screen shows it in its footer, under the maker line', () => {
+  const makerAt = auth.indexOf('Made by RJ. Meet the person behind the app\')}</a></p>');
+  const linkAt = auth.indexOf('<p class="auth-footer auth-footer-security"><a class="auth-footer-link" href="${SECURITY_REPORT_URL}" target="_blank" rel="noopener noreferrer">');
+  assert.ok(makerAt > 0 && linkAt > makerAt && linkAt - makerAt < 80);
+  assert.match(auth, /forgotText\('Security tested: grade A by ImmuniWeb'\)/);
+  assert.match(auth, /'Security tested: grade A by ImmuniWeb': 'Seguridad probada: calificación A de ImmuniWeb',/);
+});
+
+test('the sign-in screen and Settings link to the same report', () => {
+  const url = (source) => source.match(/const SECURITY_REPORT_URL = '([^']+)';/)[1];
+  assert.equal(url(auth), url(app));
 });
