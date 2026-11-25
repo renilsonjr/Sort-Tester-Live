@@ -278,9 +278,10 @@ function signedIn() {
 // The bottom navigation, which changes shape with the session. Study and
 // Quiz became one Practice tab in the approved navigation: both are ways of
 // practising, and the separate Ranked tab is what costs points.
-// The public result of an outside security test of this site. A link, not a
-// badge script: nothing from another site runs on these pages, and the
-// grade is read on the tester's own page, with its date.
+// The public result of an outside security test of this site, shown as the
+// badge ImmuniWeb issues for it (assets/immuniweb-badge.png, their own image,
+// served from here as their badge code expects). A link and a local image,
+// not a badge script: nothing from another site runs or loads on these pages.
 const SECURITY_REPORT_URL = 'https://www.immuniweb.com/websec/sortquiz.app/8SXNOVH5/';
 
 const ICONS = {
@@ -1320,7 +1321,7 @@ async function fillSettings(panel) {
       <span class="lab-arrow" aria-hidden="true">\u2192</span>
     </button>
     <p class="profile-version" id="profile-version"></p>
-    <p class="profile-security"><a href="${SECURITY_REPORT_URL}" target="_blank" rel="noopener noreferrer">${esc(t('Security tested: grade A by ImmuniWeb'))}</a></p>
+    <p class="profile-security"><a class="security-badge-link" href="${SECURITY_REPORT_URL}" target="_blank" rel="noopener noreferrer"><img class="security-badge" src="assets/immuniweb-badge.png" width="150" height="50" alt="${esc(t('Security tested: grade A by ImmuniWeb'))}"></a></p>
   `;
   panel.querySelector('#profile-support').addEventListener('click', showSupport);
   panel.querySelector('#profile-logout').addEventListener('click', () => signOut());
