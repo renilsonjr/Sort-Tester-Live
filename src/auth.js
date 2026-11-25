@@ -115,6 +115,14 @@ const FORGOT_ES = {
     'Copiar',
   'Copied':
     'Copiado',
+  'Show':
+    'Mostrar',
+  'Hide':
+    'Ocultar',
+  'Show Quiz Code':
+    'Mostrar Quiz Code',
+  'Hide Quiz Code':
+    'Ocultar Quiz Code',
   'Could not copy. Select the code and copy it by hand.':
     'No se pudo copiar. Selecciona el código y cópialo a mano.',
   'Your account was created. Sign in with the Quiz Code above.':
@@ -157,7 +165,10 @@ export function createAuthPanel(container, onContinueAsGuest, onLoggedIn) {
       <form id="auth-choices" class="auth-card" autocomplete="on">
         <p class="auth-eyebrow">Log in</p>
         <label class="sr-only" for="login-id-input">Quiz Code</label>
-        <input id="login-id-input" class="glass-input" type="password" name="quiz-code" autocomplete="current-password" placeholder="Your Quiz Code">
+        <div class="code-field">
+          <input id="login-id-input" class="glass-input" type="password" name="quiz-code" autocomplete="current-password" placeholder="Your Quiz Code">
+          <button id="auth-show-code-btn" class="code-eye" type="button" aria-pressed="false" aria-label="${forgotText('Show Quiz Code')}">${forgotText('Show')}</button>
+        </div>
         <button id="auth-login-btn" class="primary" type="submit">Log in with Quiz Code</button>
         <button id="auth-guest-btn" class="ghost" type="button">Continue as guest</button>
         <button id="auth-register-btn" class="auth-link" type="button">Need a Quiz Code? Create an account</button>
@@ -215,6 +226,18 @@ export function createAuthPanel(container, onContinueAsGuest, onLoggedIn) {
       showMessage('Invalid Quiz Code. Please try again.', true);
     }
   }
+  // Show/hide the Quiz Code while typing. The field stays a password field
+  // in the DOM by default, so the browser still treats it as one.
+  const showCodeBtn = container.querySelector('#auth-show-code-btn');
+  showCodeBtn.addEventListener('click', () => {
+    const input = container.querySelector('#login-id-input');
+    const showing = showCodeBtn.getAttribute('aria-pressed') !== 'true';
+    input.type = showing ? 'text' : 'password';
+    showCodeBtn.setAttribute('aria-pressed', String(showing));
+    showCodeBtn.setAttribute('aria-label', forgotText(showing ? 'Hide Quiz Code' : 'Show Quiz Code'));
+    showCodeBtn.textContent = forgotText(showing ? 'Hide' : 'Show');
+  });
+
   // A real <form> submit (button or Enter) is what lets the browser offer to
   // save the Quiz Code. The page itself never navigates.
   choices.addEventListener('submit', (event) => {
