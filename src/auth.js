@@ -93,6 +93,7 @@ const FORGOT_ES = {
   'The message could not be sent. Find the owner in person.':
     'No se pudo enviar el mensaje. Busca al responsable en persona.',
   // #451: the player manual, a PDF per language, opened before login.
+  'Privacy': 'Privacidad',
   'How to play':
     'Cómo jugar',
   'Sign up, play, and how to win a hat.':
@@ -150,6 +151,12 @@ const FORGOT_ES = {
 // an older manual doesn't keep showing it from its cache.
 const MANUAL_VERSION = '2026-11-25c';
 
+// What the app keeps about a player, and for how long: a plain page in each
+// language, opened in a new tab like the manual.
+function privacyHref() {
+  return `assets/privacy/privacy-${forgotText('Privacy') === 'Privacy' ? 'en' : 'es'}.html`;
+}
+
 function manualHref() {
   return `assets/manual/sortquiz-manual-${forgotText('How to play') === 'How to play' ? 'en' : 'es'}.pdf?v=${MANUAL_VERSION}`;
 }
@@ -201,6 +208,7 @@ export function createAuthPanel(container, onContinueAsGuest, onLoggedIn) {
       <p id="auth-message" class="warn"></p>
       <p class="auth-footer"><a class="auth-footer-link" href="https://renilsonjr.pages.dev" target="_blank" rel="noopener noreferrer">${forgotText('Made by RJ. Meet the person behind the app')}</a></p>
       <p class="auth-footer auth-footer-security"><a class="security-badge-link" href="${SECURITY_REPORT_URL}" target="_blank" rel="noopener noreferrer"><img class="security-badge" src="assets/immuniweb-badge.png" width="150" height="50" alt="${forgotText('Security tested: grade A by ImmuniWeb')}"></a></p>
+      <p class="auth-footer"><a id="auth-privacy" class="auth-footer-link" href="${privacyHref()}" target="_blank" rel="noopener">${forgotText('Privacy')}</a></p>
     </div>
   `;
 
