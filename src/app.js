@@ -1274,12 +1274,31 @@ function showDeletionAccepted() {
 }
 
 async function fillSettings(panel) {
+  // The order the owner set on 2026-11-25, read top to bottom: the things
+  // you change about yourself first, then the ways out, then the one that
+  // ends the account. Owner tools sits above all of it, because on the one
+  // account that has it, it is what that account is for.
   panel.innerHTML = `
     <button id="profile-owner" class="lab-choice" type="button" hidden>
       <span class="lab-choice-icon" aria-hidden="true">${ICONS.owner}</span>
       <span><strong>${esc(t('Owner tools'))}</strong></span>
-      <span class="lab-arrow" aria-hidden="true">→</span>
+      <span class="lab-arrow" aria-hidden="true">\u2192</span>
     </button>` + `
+    <button id="profile-avatar" class="lab-choice" type="button">
+      <span class="lab-choice-icon" aria-hidden="true">${ICONS.avatar}</span>
+      <span><strong>${esc(t('Profile icon'))}</strong></span>
+      <span class="lab-arrow" aria-hidden="true">\u2192</span>
+    </button>
+    <button id="profile-change-code" class="lab-choice" type="button">
+      <span class="lab-choice-icon" aria-hidden="true">${ICONS.accessRecovery}</span>
+      <span><strong>${esc(t('Change my Quiz Code'))}</strong></span>
+      <span class="lab-arrow" aria-hidden="true">\u2192</span>
+    </button>
+    <button id="profile-signout-others" class="lab-choice" type="button">
+      <span class="lab-choice-icon" aria-hidden="true">${ICONS.devices}</span>
+      <span><strong>${esc(t('Sign out my other devices'))}</strong></span>
+      <span class="lab-arrow" aria-hidden="true">\u2192</span>
+    </button>
     <button id="profile-support" class="lab-choice" type="button">
       <span class="lab-choice-icon" aria-hidden="true">${ICONS.support}</span>
       <span><strong>${esc(t('Support'))}</strong></span>
@@ -1288,21 +1307,6 @@ async function fillSettings(panel) {
     <button id="profile-logout" class="lab-choice" type="button">
       <span class="lab-choice-icon" aria-hidden="true">${ICONS.logOut}</span>
       <span><strong>${esc(t('Log out'))}</strong></span>
-      <span class="lab-arrow" aria-hidden="true">\u2192</span>
-    </button>
-    <button id="profile-avatar" class="lab-choice" type="button">
-      <span class="lab-choice-icon" aria-hidden="true">${ICONS.avatar}</span>
-      <span><strong>${esc(t('Profile icon'))}</strong></span>
-      <span class="lab-arrow" aria-hidden="true">\u2192</span>
-    </button>
-    <button id="profile-signout-others" class="lab-choice" type="button">
-      <span class="lab-choice-icon" aria-hidden="true">${ICONS.devices}</span>
-      <span><strong>${esc(t('Sign out my other devices'))}</strong></span>
-      <span class="lab-arrow" aria-hidden="true">\u2192</span>
-    </button>
-    <button id="profile-change-code" class="lab-choice" type="button">
-      <span class="lab-choice-icon" aria-hidden="true">${ICONS.accessRecovery}</span>
-      <span><strong>${esc(t('Change my Quiz Code'))}</strong></span>
       <span class="lab-arrow" aria-hidden="true">\u2192</span>
     </button>
     <button id="profile-delete" class="lab-choice lab-choice-quiz" type="button">

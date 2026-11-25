@@ -19,15 +19,15 @@ const jsKeys = [...avatars.matchAll(/\['([a-z_]+)', '/g)].map((m) => m[1]);
 const pyKeys = [...python.slice(python.indexOf('KEYS = ('), python.indexOf(')', python.indexOf('KEYS = (')))
   .matchAll(/"([a-z_]+)"/g)].map((m) => m[1]);
 
-test('the two lists hold the same fifteen keys, in the same order', () => {
-  assert.equal(jsKeys.length, 15);
+test('the two lists hold the same keys, in the same order', () => {
+  assert.ok(jsKeys.length >= 15);
   assert.deepEqual(jsKeys, pyKeys);
 });
 
 test('every key draws exactly one icon, and none repeats', () => {
   const drawn = [...avatars.matchAll(/\['[a-z_]+', '([^']+)'\]/g)].map((m) => m[1]);
-  assert.equal(drawn.length, 15);
-  assert.equal(new Set(drawn).size, 15);
+  assert.equal(drawn.length, jsKeys.length);
+  assert.equal(new Set(drawn).size, jsKeys.length);
 });
 
 test('an unknown key draws nothing rather than a broken glyph', () => {
@@ -41,7 +41,7 @@ test('Profile offers the choice', () => {
   assert.match(settings, /showAvatarPicker/);
 });
 
-test('the picker shows all fifteen and marks the one in use', () => {
+test('the picker shows every icon and marks the one in use', () => {
   const picker = fn('function showAvatarPicker');
   assert.match(picker, /AVATARS\.map/);
   assert.match(picker, /aria-pressed/);

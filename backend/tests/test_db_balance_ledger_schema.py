@@ -183,12 +183,15 @@ class BalanceLedgerTests(unittest.TestCase):
         )
 
     def test_a_balance_outside_the_bounds_is_refused(self):
-        # audit M-3: the columns are smallint, and an out-of-range total used
-        # to be accepted right up to the point where it overflowed and left
-        # the account unable to settle anything ever again
+        # audit M-3: an out-of-range total used to be accepted right up to
+        # the point where it overflowed the smallint columns and left the
+        # account unable to settle anything ever again. The columns are
+        # integer since 0040 and the bound is the owner's figure, not the
+        # column's: the rule has to be the database's too, or it holds only
+        # for as long as the one piece of code that writes it remembers.
         import psycopg
 
-        for points in (30001, -30001):
+        for points in (100001, -100001):
             with self.subTest(points=points):
                 # a savepoint, so the refusal does not roll back the account
                 # this test needs
@@ -202,7 +205,7 @@ class BalanceLedgerTests(unittest.TestCase):
                         )
 
     def test_the_bounds_allow_the_whole_range_the_game_can_reach(self):
-        for points in (30000, -30000, 0):
+        for points in (100000, -100000, 30000, -30000, 0):
             with self.subTest(points=points):
                 migrate.execute(
                     self.conn,

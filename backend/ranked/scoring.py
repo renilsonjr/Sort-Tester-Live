@@ -17,21 +17,27 @@ POINTS = {"easy": (10, -15), "medium": (20, -10), "hard": (30, -5)}
 QUIT_PENALTY = -10
 
 # How far a balance may travel in either direction (audit M-3). The columns
-# holding it are smallint, which stops at 32767 -- and Challenger is
-# deliberately uncapped, so a perfect quiz's +300 carries a dedicated player
-# past that inside one season. Every settlement after that raises, and the
-# account can never finish another attempt.
+# holding it are integer since migration 0040, which is far past anything
+# the game can reach -- but a Challenger is deliberately uncapped, so
+# without a rule a dedicated player simply keeps climbing, and the figure
+# that stops them is a decision about the game rather than about storage.
 #
-# Owner decision 2026-11-16: clamp here rather than widen the columns. So
-# this is a real rule of the game, not only a storage limit -- a Challenger
-# at the ceiling stops gaining, the way a capped badge does. The result
-# screen already names that case: the overflow shows as "did not fit in
-# Challenger", because a clamp and a badge cap produce the same shape.
+# Owner decision 2026-11-16: clamp rather than let it run. So this is a real
+# rule of the game -- a Challenger at the ceiling stops gaining, the way a
+# capped badge does. The result screen already names that case: the overflow
+# shows as "did not fit in Challenger", because a clamp and a badge cap
+# produce the same shape.
+#
+# Owner decision 2026-11-25: 30000 was too low a stopping point, so the
+# ceiling is 100000. At +300 for a perfect quiz that is about 334 of them.
+# The columns were smallint (top 32767) and had to be widened first, which
+# is what 0040 does; the two must stay in step, and
+# backend/tests/test_db_balance_ledger_schema.py holds them to it.
 #
 # Negative totals are a legitimate state: wrong answers deduct, and
 # ranks.badge_for reads a negative total as Iron.
-POINTS_CEILING = 30000
-POINTS_FLOOR = -30000
+POINTS_CEILING = 100000
+POINTS_FLOOR = -100000
 
 
 def _within_bounds(points: int) -> int:

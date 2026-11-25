@@ -17,9 +17,12 @@ ROUTE = "/api/auth/avatar"
 
 
 class AvatarListTests(unittest.TestCase):
-    def test_there_are_fifteen_keys_and_no_repeats(self):
-        self.assertEqual(len(avatars.KEYS), 15)
-        self.assertEqual(len(set(avatars.KEYS)), 15)
+    def test_the_keys_are_a_fixed_set_with_no_repeats(self):
+        # The count is not the point; it grows when the owner approves more
+        # (fifteen on 2026-11-22, eight more on 2026-11-25). What must hold
+        # is that it is a fixed list with nothing repeated in it.
+        self.assertEqual(len(set(avatars.KEYS)), len(avatars.KEYS))
+        self.assertGreaterEqual(len(avatars.KEYS), 15)
 
     def test_a_key_is_plain_and_short(self):
         for key in avatars.KEYS:
