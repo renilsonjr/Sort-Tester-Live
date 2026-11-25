@@ -12,9 +12,11 @@ all this converter understands.
 
 When a rule changes: edit both .md files, retake any screen that changed
 (screens/en, screens/es: phone size 375x812, local build, test accounts only,
-season bubble closed), then run this again.
+season bubble closed), then run this again, and bump MANUAL_VERSION in
+src/auth.js so phones don't keep an old copy.
 """
 import html
+import json
 import re
 import shutil
 import subprocess
@@ -24,6 +26,56 @@ from pathlib import Path
 HERE = Path(__file__).resolve().parent
 ASSETS = HERE.parent.parent / "assets" / "manual"
 CHROME = "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
+BANK = HERE.parent.parent / "backend" / "data" / "ranked" / "routes-v1.json"
+
+# The ZIP chart (part 5) is read from the Ranked question bank itself, so the
+# manual shows exactly the routes, belts and difficulty the quiz uses.
+SERVICES = [("GND", "Ground", "Terrestre"), ("NDA", "Next Day Air", "Aéreo 1 día"),
+            ("2DA", "2 Day Air", "Aéreo 2 días"), ("3DS", "3 Day Select", "Select 3 días")]
+POINTS = {"Easy": (10, -15), "Medium": (20, -10), "Hard": (30, -5)}
+LEVEL = {"en": {"Easy": "Easy", "Medium": "Medium", "Hard": "Hard"},
+         "es": {"Easy": "Fácil", "Medium": "Intermedia", "Hard": "Difícil"}}
+HEAD = {"en": ("State", "ZIP", "Belt", "Level", "Right", "Wrong"),
+        "es": ("Estado", "ZIP", "Banda", "Nivel", "Correcta", "Incorrecta")}
+MODE = {"en": {"+1": "marked +1", "EAM": "EAM", "suffix:1S": "", "suffix:2S": ""},
+        "es": {"+1": "marcado +1", "EAM": "EAM", "suffix:1S": "", "suffix:2S": ""}}
+BELT = {"RED": "#c0392b", "ORANGE": "#d35400", "YELLOW": "#f1c40f", "GREEN": "#2e7d32",
+        "BLUE": "#2453a6", "PURPLE": "#6a2c91", "PINK": "#b03a73", "BROWN": "#6d4c2f",
+        "GOLD": "#a8841f", "BLACK": "#111111"}
+
+
+def _zip_key(label):
+    digits = re.findall(r"\d+", label)
+    return (0, int(digits[0]), label) if digits else (1, 0, label)
+
+
+def zip_tables(language):
+    questions = json.loads(BANK.read_text(encoding="utf-8"))["questions"]
+    out = []
+    for code, en_name, es_name in SERVICES:
+        rows = [q for q in questions if q["context"]["service"] == code]
+        rows.sort(key=lambda q: (q["context"]["mode"] != "ordinary", _zip_key(q["source"]["code_label"])))
+        out.append(f"<h3>{en_name if language == 'en' else es_name}</h3>")
+        head = "".join(f"<th>{h}</th>" for h in HEAD[language])
+        body = []
+        for q in rows:
+            right, wrong = POINTS[q["difficulty"]]
+            belt = q["correct_belt"]
+            zip_label = q["source"]["code_label"]
+            extra = MODE[language].get(q["context"]["mode"], "")
+            if extra:
+                zip_label = f"{zip_label} ({extra})"
+            state = q["source"]["state_label"]
+            state = {"*": "—", "Any state": "Any" if language == "en" else "Todos"}.get(state, state)
+            ink = "#1e1a16" if belt in ("YELLOW",) else "#fff"
+            body.append(
+                f"<tr><td>{html.escape(state)}</td><td class='zip'>{html.escape(zip_label)}</td>"
+                f"<td><span class='belt' style='background:{BELT.get(belt, '#777')};color:{ink}'>{belt}</span></td>"
+                f"<td>{LEVEL[language][q['difficulty']]}</td><td class='pts'>+{right}</td><td class='pts'>−{-wrong}</td></tr>"
+            )
+        out.append(f"<table class='zips'><thead><tr>{head}</tr></thead><tbody>{''.join(body)}</tbody></table>")
+    return "\n".join(out)
+
 
 CSS = """
 @page { size: Letter; margin: 14mm 14mm 16mm; }
@@ -50,6 +102,14 @@ th { background: #f3ead8; }
 .shots { display: flex; gap: 10pt; flex: none; }
 .shots img { height: 245pt; border-radius: 9pt; border: 1pt solid #c9b48c; }
 h2 + .step, h3 + .step { margin-top: 2pt; }
+.chart-page { break-before: page; }
+table.zips { width: 100%; font-size: 9pt; margin: 2pt 0 10pt; }
+table.zips th, table.zips td { padding: 1.5pt 6pt; }
+table.zips tr { break-inside: avoid; }
+table.zips td.zip { font-family: Menlo, monospace; white-space: nowrap; }
+table.zips td.pts { text-align: right; font-variant-numeric: tabular-nums; }
+.belt { display: inline-block; min-width: 52pt; text-align: center; padding: 0 5pt; border-radius: 8pt;
+        font-weight: 700; font-size: 8pt; letter-spacing: .04em; }
 .faq-q { font-weight: 700; margin-top: 9pt; break-after: avoid; }
 """
 
@@ -61,7 +121,7 @@ def inline(text):
     return text
 
 
-def convert(markdown):
+def convert(markdown, language="en"):
     out, lines, i = [], markdown.splitlines(), 0
     while i < len(lines):
         line = lines[i].rstrip()
@@ -78,6 +138,14 @@ def convert(markdown):
                 text.insert(0, out.pop())
             out.append(f'<div class="step"><div class="txt">{"".join(text)}</div>'
                        f'<div class="shots">{tags}</div></div>')
+            i += 1
+            continue
+        if line == "<!-- ZIP-TABLE -->":
+            out.append(zip_tables(language))
+            i += 1
+            continue
+        if line == "<!-- NEW-PAGE -->":
+            out.append('<div class="chart-page"></div>')
             i += 1
             continue
         if line == "---":
@@ -133,7 +201,7 @@ def build(language):
     page.write_text(
         f'<!doctype html><html lang="{language}"><head><meta charset="utf-8">'
         f"<title>{html.escape(title)}</title><style>{CSS}</style></head>"
-        f"<body>{convert(source.read_text(encoding='utf-8'))}</body></html>",
+        f"<body>{convert(source.read_text(encoding='utf-8'), language)}</body></html>",
         encoding="utf-8",
     )
     subprocess.run(

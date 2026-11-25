@@ -148,3 +148,22 @@ Hoy no, desde la app no.
 
 **¿Cómo elimino mi cuenta y qué pierdo?**
 Ve a **Perfil → Ajustes → Eliminar la cuenta**. Se borran tu perfil, tu historial y tus puntos. **No se puede deshacer.** También sales para siempre de la competencia por los premios de esta temporada.
+
+---
+
+<!-- NEW-PAGE -->
+## 5. Tabla de ZIP: todas las rutas del Clasificatorio
+
+Estas son todas las rutas que puede preguntar el Clasificatorio, por servicio. Al lado de cada ZIP está la **banda** a la que va y cuántos **puntos** vale.
+
+**Los puntos dependen del nivel de la pregunta, no del color de la banda.** Cada ruta tiene un nivel (Fácil, Intermedia o Difícil), y ese nivel define los puntos: correcta **+10 / +20 / +30**, incorrecta o sin tiempo **−15 / −10 / −5**.
+
+Cómo leer un ZIP:
+- `070–089` es un rango de los tres primeros dígitos.
+- `087 1` son los tres primeros dígitos **más el siguiente**.
+- `890 0-0` es el código completo como aparece en la etiqueta.
+- **ends 1S / 2S** es un código que termina en esas letras, en cualquier estado.
+
+> En las pruebas de ascenso, una respuesta correcta suma 0. La práctica usa la misma tabla, pero nunca cambia los puntos.
+
+<!-- ZIP-TABLE -->
