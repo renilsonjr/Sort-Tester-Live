@@ -25,7 +25,7 @@ function fakeElement() {
       return children.get(selector);
     },
     addEventListener(type, handler) { listeners[type] = handler; },
-    async fire(type) { await listeners[type]?.(); },
+    async fire(type) { await listeners[type]?.({ preventDefault() {} }); },
   };
 }
 
@@ -114,7 +114,7 @@ test('a successful login opens the app', async () => {
   await withGlobalFetch(fetchFn, async () => {
     await auth.startAuthGate({ doc, fetchFn });
     panel.querySelector('#login-id-input').value = 'ABCD-EFGH-JKLM-NPQR';
-    await panel.querySelector('#auth-login-btn').fire('click');
+    await panel.querySelector('#auth-choices').fire('submit');
   });
   assert.equal(panel.hidden, true);
   assert.equal(app.hidden, false);
@@ -126,7 +126,7 @@ test('a failed login keeps the login screen', async () => {
   await withGlobalFetch(fetchFn, async () => {
     await auth.startAuthGate({ doc, fetchFn });
     panel.querySelector('#login-id-input').value = 'ABCD-EFGH-JKLM-NPQR';
-    await panel.querySelector('#auth-login-btn').fire('click');
+    await panel.querySelector('#auth-choices').fire('submit');
   });
   assert.equal(panel.hidden, false);
   assert.equal(app.hidden, true);
