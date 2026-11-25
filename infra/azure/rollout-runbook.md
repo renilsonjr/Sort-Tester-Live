@@ -169,10 +169,19 @@ The launch happens once and cannot be undone. It:
 - opens the official season, which ends on the date given, by default
   2026-12-31 at 11:59 p.m. Eastern.
 
-There is no launch button in the site, and the owner decided on
-2026-11-24 not to build one: the launch is used once, and a button that
-zeroes every balance would stay in the app for good. The launch is one
-request made by the owner's own signed-in browser, with the block below.
+The owner starts it from **Settings → Owner tools → Start the official
+season** (owner decision, 2026-11-24, replacing the earlier decision to
+use the console block alone). That row exists only while the Pre-Season is
+still running: once the official season is open it is gone, so there is no
+button left to press by mistake.
+
+The screen states what the launch does, takes the season name, and only
+wakes its button once `LAUNCH` is typed by hand; the Quiz Code is asked for
+as with every other owner action. Afterwards it reads the balance back from
+the server and shows it, so the first two checks below are already done.
+
+**The console block further down does the same thing and stays as the way
+round**, for a night when the screen does not load or does not behave.
 
 **Decided (owner, 2026-11-24):** the official season starts at
 **12:00 a.m. Eastern on 2026-12-01** and ends at the default, 2026-12-31
@@ -201,7 +210,19 @@ the season shorter; the end does not move.
 - [ ] Nobody is expected to be mid-quiz: an unfinished attempt is ended
       with no score.
 
-### The launch
+### The launch, on the screen
+
+1. Sign in at <https://sortquiz.app> as the owner.
+2. Settings → Owner tools → **Start the official season**.
+3. Read the red panel, leave or change the season name, type `LAUNCH`,
+   press the button and enter the Quiz Code when asked.
+4. The next screen says "The official season has started", with the name,
+   the closing date and the balance read back from the server.
+
+If anything about that screen is wrong, nothing has been launched until
+the last screen appears, and the block below is still there.
+
+### The launch, from the console (the way round)
 
 1. Sign in at <https://sortquiz.app> as the owner.
 2. Open the browser's developer console on that page (Chrome on a

@@ -1296,9 +1296,23 @@ function showOwnerTools() {
         <span><strong>${esc(t('Accounts'))}</strong><small>${esc(t('Remove an account that should not exist.'))}</small></span>
         <span class="lab-arrow" aria-hidden="true">\u2192</span>
       </button>
+      <button id="owner-launch" class="lab-choice lab-choice-quiz" type="button" hidden>
+        <span class="lab-choice-icon" aria-hidden="true">${ICONS.ranked}</span>
+        <span><strong>${esc(t('Start the official season'))}</strong><small>${esc(t('Once, when the Pre-Season ends.'))}</small></span>
+        <span class="lab-arrow" aria-hidden="true">\u2192</span>
+      </button>
     </section>
   `, 'profile', showOwnerTools);
   view.querySelector('#owner-accounts').addEventListener('click', () => showOwnerAccounts());
+  // The launch is used once. The row exists only while the Pre-Season is
+  // still running, so the day after the launch there is no button left to
+  // press by mistake, and no disabled row explaining a power nobody has
+  // any more (owner decision, #258).
+  const launch = view.querySelector('#owner-launch');
+  launch.addEventListener('click', () => showOwnerLaunch());
+  api('/ranked/season').then((season) => {
+    if (season?.phase === 'pre_season') launch.hidden = false;
+  });
   view.querySelector('#owner-eligibility').addEventListener('click', () => showOwnerEligibility());
   view.querySelector('#owner-recovery').addEventListener('click', () => showRecovery());
   view.querySelector('#owner-messages').addEventListener('click', () => showRecoveryMessages());
@@ -1537,6 +1551,112 @@ function confirmOwnerDelete(row) {
     go.disabled = cleaned() !== row.tag;
     error.textContent = result.reason || t('That did not work. Nothing has been changed.');
     error.hidden = false;
+  });
+  return view;
+}
+
+// Starting the official season (#258). The one irreversible thing in the
+// app: it ends open quizzes with no score, sets every balance to 0 and
+// opens the official season. Three gates, the same ones the route checks:
+// the owner's own account, the word LAUNCH typed by hand, and the Quiz
+// Code re-entered within five minutes (apiSendOwner asks when the server
+// says 428). The console block in infra/azure/rollout-runbook.md does the
+// same thing and stays as the way round if this screen ever fails.
+const LAUNCH_WORD = 'LAUNCH';
+const DEFAULT_SEASON_LABEL = 'Season 1';
+
+function showOwnerLaunch(message = null, bad = false) {
+  stopTick();
+  clock = null;
+  const view = labPage(`
+    <section class="lab-screen">
+      <p class="lab-eyebrow">${esc(t('Owner'))}</p>
+      <h1 class="lab-title">${esc(t('Start the official season'))}</h1>
+      ${message ? `<div class="board-notice board-notice-bad" role="status"><p>${esc(message)}</p></div>` : ''}
+      <div class="delete-warn">
+        <h2>${esc(t('This cannot be undone'))}</h2>
+        <p>${esc(t('Every quiz being played right now ends with no score.'))}</p>
+        <p>${esc(t('Every balance goes to 0 and everybody is Iron again.'))}</p>
+        <p>${esc(t('Pre-Season history is kept: everybody can still read their own.'))}</p>
+        <p>${esc(t('The official season opens and runs to its closing date. It can only be started once.'))}</p>
+      </div>
+      <label class="field">
+        <span>${esc(t('Season name'))}</span>
+        <input id="launch-label" type="text" autocomplete="off" value="${esc(DEFAULT_SEASON_LABEL)}">
+      </label>
+      <p class="lab-study-meta">${esc(t('Players see this name on the leaderboard.'))}</p>
+      <label class="field">
+        <span>${esc(t('Type LAUNCH to confirm'))}</span>
+        <input id="launch-word" type="text" autocomplete="off" autocapitalize="characters">
+      </label>
+      <p class="notice" id="launch-error" hidden></p>
+      <button id="launch-back" class="primary" type="button">${esc(t('Not yet'))}</button>
+      <button id="launch-go" class="ghost owner-danger" type="button" disabled>${esc(t('Start the official season'))}</button>
+    </section>
+  `, 'profile', () => showOwnerLaunch(message, bad));
+  const label = view.querySelector('#launch-label');
+  const word = view.querySelector('#launch-word');
+  const go = view.querySelector('#launch-go');
+  const error = view.querySelector('#launch-error');
+  const ready = () => word.value.trim().toUpperCase() === LAUNCH_WORD && label.value.trim() !== '';
+  const refresh = () => { go.disabled = !ready(); };
+  word.addEventListener('input', refresh);
+  label.addEventListener('input', refresh);
+  view.querySelector('#launch-back').addEventListener('click', showOwnerTools);
+  go.addEventListener('click', async () => {
+    go.disabled = true;
+    error.hidden = true;
+    const result = await apiSendOwner('POST', '/ranked/season/launch', {
+      label: label.value.trim(),
+      confirm: LAUNCH_WORD,
+    });
+    if (result.ok) {
+      // the season and the balance both changed: a kept copy would show
+      // the Pre-Season on the very screen that proves it ended
+      clearReadCache();
+      showLaunchDone(result.data);
+      return;
+    }
+    refresh();
+    error.textContent = result.reason || t('That did not work. Nothing has been changed.');
+    error.hidden = false;
+  });
+  return view;
+}
+
+// What the owner checks after a launch, done by the app instead of asked
+// of them: the season that is open now, and their own balance read back
+// from the server. The history line is the one thing they confirm by eye.
+function showLaunchDone(season) {
+  stopTick();
+  clock = null;
+  const closes = season?.closes_at ? language.dateTime(season.closes_at) : '';
+  const view = labPage(`
+    <section class="lab-screen">
+      <p class="lab-eyebrow">${esc(t('Owner'))}</p>
+      <h1 class="lab-title">${esc(t('The official season has started'))}</h1>
+      <div class="owner-form">
+        <p class="acct-name"><b>${esc(season?.label ?? '')}</b></p>
+        <p class="acct-meta">${esc(t('Closes'))} ${esc(closes)}</p>
+      </div>
+      <h2 class="owner-count">${esc(t('What changed'))}</h2>
+      <ul class="approved">
+        <li><span class="approved-who"><b id="launch-points">${esc(t('Checking…'))}</b>
+          <small>${esc(t('Every balance was reset in the same step, so yours tells the story.'))}</small></span></li>
+        <li><span class="approved-who"><b>${esc(t('Pre-Season history was kept'))}</b>
+          <small>${esc(t('Check it yourself: Profile, then See history.'))}</small></span></li>
+      </ul>
+      <button id="done-back" class="primary" type="button">${esc(t('Back to Owner tools'))}</button>
+    </section>
+  `, 'profile', () => showLaunchDone(season));
+  view.querySelector('#done-back').addEventListener('click', showOwnerTools);
+  // read back, rather than claim: the number comes from the server
+  api('/ranked/entry').then((entry) => {
+    const slot = view.querySelector('#launch-points');
+    if (!slot) return;
+    slot.textContent = entry
+      ? `${t('Your points are now')} ${language.number(entry.points)} (${entry.badge})`
+      : t('Your points could not be read just now.');
   });
   return view;
 }
