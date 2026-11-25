@@ -44,7 +44,7 @@ class OwnerRecoveryMessageTests(unittest.TestCase):
     def _sign_in(self, client, username):
         reg = client.post("/api/auth/register", json={"username": username})
         self.assertEqual(reg.status_code, 200, reg.text)
-        login = client.post("/api/auth/login", json={"login_id": reg.json()["login_id"]})
+        login = client.post("/api/auth/login", json={"username": username, "login_id": reg.json()["login_id"]})
         self.assertEqual(login.status_code, 200, login.text)
 
     def _leave(self, text):

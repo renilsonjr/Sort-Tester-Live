@@ -3,8 +3,8 @@ import string
 from uuid import UUID
 
 from backend.auth.credentials import (
-    derive_lookup_key,
     generate_login_id,
+    new_lookup_key,
     hash_login_id,
     normalize_login_id,
     verify_login_id,
@@ -61,7 +61,7 @@ def register_account(conn, username: str) -> tuple[UUID, str]:
     account_id = row["id"]
 
     login_id = generate_login_id(_settings)
-    lookup_key = derive_lookup_key(login_id)
+    lookup_key = new_lookup_key()
     verifier = hash_login_id(login_id, _settings)
     migrate.execute(
         conn,
@@ -74,11 +74,14 @@ def register_account(conn, username: str) -> tuple[UUID, str]:
     return account_id, login_id
 
 
-def find_login_candidates(conn, login_id: str) -> tuple[str | None, list[dict]]:
-    """Read the credentials a login ID could match. Checks nothing.
+def find_login_candidates(
+    conn, username: str, login_id: str
+) -> tuple[str | None, list[dict]]:
+    """Read the credentials a username + login ID could match. Checks nothing.
 
-    Returns (normalized login ID, candidate rows); the normalized form is
-    None when the ID is too malformed to name a credential at all.
+    The username names the account; its one active credential is the only
+    candidate. Returns (normalized login ID, candidate rows); the
+    normalized form is None when the code is too malformed to be one.
     """
     try:
         normalized = normalize_login_id(login_id)
@@ -89,9 +92,12 @@ def find_login_candidates(conn, login_id: str) -> tuple[str | None, list[dict]]:
         """
         SELECT lc.id, lc.account_id, lc.verifier
         FROM login_credentials lc
-        WHERE lc.lookup_key = %s AND lc.revoked_at IS NULL
+        JOIN accounts a ON a.id = lc.account_id
+        WHERE a.username_lower = %s
+          AND a.deleted_at IS NULL
+          AND lc.revoked_at IS NULL
         """,
-        (derive_lookup_key(normalized),),
+        ((username or "").strip().lower(),),
     )
     return normalized, candidates
 
@@ -107,7 +113,7 @@ def check_login_candidates(normalized: str | None, candidates: list[dict]) -> di
     key exists in the database.
     """
     if normalized is None:
-        verify_login_id("DAAA-AAAA-AAAA-AAAA", _get_dummy_verifier(), _settings)
+        verify_login_id("banana-48", _get_dummy_verifier(), _settings)
         return None
     if not candidates:
         verify_login_id(normalized, _get_dummy_verifier(), _settings)
@@ -144,18 +150,19 @@ def open_login_session(
 
 def login_with_id(
     conn,
+    username: str,
     login_id: str,
     ttl_seconds: int,
     ip_address: str | None,
     user_agent: str | None,
 ) -> tuple[str, UUID] | None:
-    """Authenticate with a login ID and create a session, on one connection.
+    """Authenticate with username + login ID and create a session, on one connection.
 
     The sign-in route runs the same three steps itself so that it holds no
     connection during the verification; this is the single-connection form
     for callers that are already inside a transaction.
     """
-    normalized, candidates = find_login_candidates(conn, login_id)
+    normalized, candidates = find_login_candidates(conn, username, login_id)
     candidate = check_login_candidates(normalized, candidates)
     if candidate is None:
         return None
@@ -219,7 +226,7 @@ def issue_new_login_id(conn, account_id: UUID) -> str:
     revoke_all_account_sessions(conn, account_id)
 
     new_login_id = generate_login_id(_settings)
-    lookup_key = derive_lookup_key(new_login_id)
+    lookup_key = new_lookup_key()
     verifier = hash_login_id(new_login_id, _settings)
     migrate.execute(
         conn,

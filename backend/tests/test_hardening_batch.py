@@ -49,7 +49,7 @@ class HardeningTestCase(unittest.TestCase):
         self.assertEqual(reg.status_code, 200, reg.text)
         login_id = reg.json()["login_id"]
         self.assertEqual(
-            client.post("/api/auth/login", json={"login_id": login_id}).status_code,
+            client.post("/api/auth/login", json={"username": username, "login_id": login_id}).status_code,
             200,
         )
         return login_id
@@ -139,7 +139,7 @@ class LoginRaceTests(HardeningTestCase):
         with mock.patch(
             "backend.routers.auth.get_account_by_session", return_value=None
         ):
-            response = client.post("/api/auth/login", json={"login_id": login_id})
+            response = client.post("/api/auth/login", json={"username": "racer_one", "login_id": login_id})
 
         self.assertEqual(response.status_code, 401, response.text)
 

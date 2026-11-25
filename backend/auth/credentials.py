@@ -1,4 +1,4 @@
-import hashlib
+import re
 import secrets
 
 import argon2
@@ -7,38 +7,53 @@ from argon2.exceptions import VerifyMismatchError
 
 from backend.auth.settings import AuthSettings
 from backend.auth.verification_gate import get_verification_gate
+from backend.auth.wordlist import WORDS
+
+# Quiz Codes issued before 2026-11-25: 16 Crockford base32 characters
+# (I, L, O and U never appear), shown in groups of four.
+_LEGACY_ALPHABET = set("0123456789ABCDEFGHJKMNPQRSTVWXYZ")
+_LEGACY_LENGTH = 16
+# Quiz Codes from 2026-11-25: one English word and two digits.
+_WORD_CODE = re.compile(r"[a-z]{3,8}[0-9]{2}")
 
 
 def normalize_login_id(login_id: str) -> str:
-    """Return the canonical form of a login ID.
+    """Return the canonical form of a login ID, either format.
 
-    Removes dashes and whitespace, uppercases, and rejects characters
-    outside the Crockford base32 alphabet (I, L, O, U are never accepted).
+    Dashes, spaces and case do not matter, so ``Banana-48``, ``banana 48``
+    and ``banana48`` are the same code. A 16-character code from before
+    2026-11-25 keeps its old rules (uppercase Crockford base32). Anything
+    that is neither shape raises ``ValueError``.
     """
-    cleaned = login_id.replace("-", "").replace(" ", "").strip().upper()
-    allowed = set("0123456789ABCDEFGHJKMNPQRSTVWXYZ")
-    for char in cleaned:
-        if char not in allowed:
-            raise ValueError(f"Invalid character in login ID: {char}")
-    return cleaned
+    cleaned = login_id.replace("-", "").replace(" ", "").strip()
+    upper = cleaned.upper()
+    if len(upper) == _LEGACY_LENGTH and set(upper) <= _LEGACY_ALPHABET:
+        return upper
+    lower = cleaned.lower()
+    if _WORD_CODE.fullmatch(lower):
+        return lower
+    raise ValueError("Not a Quiz Code")
 
 
-def generate_login_id(settings: AuthSettings) -> str:
-    """Generate a new login ID as a grouped, easy-to-type secret."""
-    raw = "".join(secrets.choice(settings.login_id_alphabet) for _ in range(settings.login_id_length))
-    group_size = settings.login_id_group_size
-    return "-".join(raw[i : i + group_size] for i in range(0, len(raw), group_size))
+def generate_login_id(settings: AuthSettings | None = None) -> str:
+    """Generate a new Quiz Code: one English word and two digits.
 
-
-def derive_lookup_key(login_id: str) -> str:
-    """Derive a non-secret lookup key from a login ID.
-
-    The lookup key is used to find the candidate credential row during login.
-    It is deterministic and collision-resistant but does not reveal the secret.
+    For example ``banana-48``. Both parts come from ``secrets``. Codes need
+    not be unique: sign-in names the account by username first.
     """
-    normalized = normalize_login_id(login_id)
-    digest = hashlib.sha256(normalized.encode("ascii")).digest()
-    return digest[:16].hex()
+    word = secrets.choice(WORDS)
+    return f"{word}-{secrets.randbelow(100):02d}"
+
+
+def new_lookup_key() -> str:
+    """A random value for ``login_credentials.lookup_key``.
+
+    The column is ``NOT NULL UNIQUE`` from the code-only sign-in days, when
+    it held a SHA-256 of the code. Sign-in now finds the credential by
+    account, and a hash of a word code could be reversed by trying every
+    code, so nothing derived from the code is stored any more.
+    """
+    return secrets.token_hex(16)
 
 
 def _hasher(settings: AuthSettings) -> PasswordHasher:

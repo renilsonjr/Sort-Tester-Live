@@ -56,7 +56,7 @@ class AvatarRouteTests(unittest.TestCase):
     def _player(self, username="icon_picker"):
         client = TestClient(self.app, headers=BROWSER)
         body = client.post("/api/auth/register", json={"username": username}).json()
-        client.post("/api/auth/login", json={"login_id": body["login_id"]})
+        client.post("/api/auth/login", json={"username": username, "login_id": body["login_id"]})
         return client, body["account_id"]
 
     def _stored(self, account_id):

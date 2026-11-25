@@ -38,7 +38,7 @@ test('auth.js answers a dead server instead of throwing', async () => {
   const auth = await load('auth.js');
   unreachable();
   for (const call of [
-    () => auth.loginWithId('ABCD-EFGH-JKLM-NPQR'),
+    () => auth.loginWithId('alice', 'banana-48'),
     () => auth.registerAccount('walker_1'),
     () => auth.logout(),
     () => auth.fetchMe(),
@@ -93,7 +93,7 @@ test('sign-in does not call a Quiz Code invalid when it was never checked', () =
   const source = readFileSync(new URL('../src/auth.js', import.meta.url), 'utf8');
   const doLogin = source.slice(source.indexOf('async function doLogin'));
   const refused = doLogin.indexOf('result.status === 429 || result.status === 503');
-  const invalid = doLogin.indexOf('Invalid Quiz Code. Please try again.');
+  const invalid = doLogin.indexOf('Invalid username or Quiz Code. Please try again.');
   assert.ok(refused > 0 && refused < invalid);
   assert.match(
     doLogin.slice(refused, invalid),

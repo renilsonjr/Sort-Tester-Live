@@ -40,7 +40,7 @@ class DeletionTestCase(unittest.TestCase):
         self.assertEqual(reg.status_code, 200, reg.text)
         login_id = reg.json()["login_id"]
         self.assertEqual(
-            client.post("/api/auth/login", json={"login_id": login_id}).status_code, 200
+            client.post("/api/auth/login", json={"username": username, "login_id": login_id}).status_code, 200
         )
         return client, login_id, reg.json()["account_id"]
 
@@ -118,7 +118,11 @@ class DeletionRequestTests(DeletionTestCase):
         self.assertEqual(client.get("/api/auth/me").status_code, 401)
         fresh = TestClient(create_app(), headers=BROWSER)
         self.assertEqual(
-            fresh.post("/api/auth/login", json={"login_id": login_id}).status_code, 401
+            fresh.post(
+                "/api/auth/login",
+                json={"username": "leaving_player", "login_id": login_id},
+            ).status_code,
+            401,
         )
         row = self._one(
             "SELECT (SELECT deleted_at FROM accounts WHERE id = %(a)s) AS deleted_at,"

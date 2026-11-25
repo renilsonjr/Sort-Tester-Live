@@ -1,3 +1,4 @@
+import zlib
 """Quiz Code checks are bounded: how many run at once, how many one address
 may fail in a window, and how much the limiters remember."""
 import os
@@ -252,17 +253,28 @@ class SignInLimitsTests(unittest.TestCase):
         trusted.start()
         self.addCleanup(trusted.stop)
 
-    def _login(self, login_id, address, client=None):
+    def _login(self, login_id, address, client=None, username=None):
+        # A registered code signs in with its own username. A wrong code is
+        # tried against an account of its own (one name per code), so these
+        # tests reach the per-address cap and not the per-account one.
+        if username is None:
+            username = getattr(self, "_names", {}).get(
+                login_id, f"nobody_{zlib.crc32(login_id.encode())}"
+            )
         return (client or self.client).post(
             "/api/auth/login",
-            json={"login_id": login_id},
+            json={"username": username, "login_id": login_id},
             headers={"X-Forwarded-For": address},
         )
 
     def _register(self, username):
-        return self.client.post(
+        login_id = self.client.post(
             "/api/auth/register", json={"username": username}
         ).json()["login_id"]
+        if not hasattr(self, "_names"):
+            self._names = {}
+        self._names[login_id] = username
+        return login_id
 
     def _count_checks(self):
         real = auth_router.check_login_candidates
@@ -301,7 +313,7 @@ class SignInLimitsTests(unittest.TestCase):
         codes = [
             self._login("not a code!!", "192.168.40.6").status_code for _ in range(21)
         ]
-        # the per-code limit (10) is reached first; either way none is a 500
+        # the per-account limit (10) is reached first; either way none is a 500
         # and nothing past the address cap is checked
         self.assertEqual(codes[:10], [401] * 10)
         self.assertEqual(set(codes[10:]), {429})
@@ -385,9 +397,14 @@ class SignInLimitsTests(unittest.TestCase):
                 json={"login_id": wrong_code(n)},
                 headers={"X-Forwarded-For": "192.168.40.11"},
             ).status_code
-            for n in range(21)
+            for n in range(11)
         ]
-        self.assertEqual(codes, [403] * 20 + [429])
+        # the per-account limit (10) stops re-entry first ...
+        self.assertEqual(codes, [403] * 10 + [429])
+        # ... and those ten counted against the address too: ten more
+        # failures from it, on other accounts, reach its cap of twenty
+        others = [self._login(wrong_code(n), "192.168.40.11").status_code for n in range(11)]
+        self.assertEqual(others, [401] * 10 + [429])
 
 
 if __name__ == "__main__":

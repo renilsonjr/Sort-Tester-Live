@@ -114,7 +114,9 @@ class OwnerDeletesAnAccountTests(OwnerDeletionTestCase):
         owner, _ = self._owner()
         player, login_id, account_id = self._player("test_account")
         second = TestClient(create_app(), headers=BROWSER)
-        self.assertEqual(second.post("/api/auth/login", json={"login_id": login_id}).status_code, 200)
+        self.assertEqual(second.post(
+            "/api/auth/login", json={"username": "test_account", "login_id": login_id}
+        ).status_code, 200)
         tag = self._tag(account_id)
         res = self._remove(owner, account_id, tag)
         self.assertEqual(res.status_code, 202, res.text)
@@ -123,7 +125,9 @@ class OwnerDeletesAnAccountTests(OwnerDeletionTestCase):
         self.assertEqual(player.get("/api/auth/me").status_code, 401)
         self.assertEqual(second.get("/api/auth/me").status_code, 401)
         again = TestClient(create_app(), headers=BROWSER)
-        self.assertEqual(again.post("/api/auth/login", json={"login_id": login_id}).status_code, 401)
+        self.assertEqual(again.post(
+            "/api/auth/login", json={"username": "test_account", "login_id": login_id}
+        ).status_code, 401)
         self.assertFalse(self._alive(account_id))
         # the owner is untouched
         self.assertEqual(owner.get("/api/auth/me").status_code, 200)

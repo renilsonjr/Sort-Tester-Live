@@ -55,7 +55,7 @@ class ReauthTests(unittest.TestCase):
         self.assertEqual(reg.status_code, 200, reg.text)
         login_id = reg.json()["login_id"]
         self.assertEqual(
-            client.post("/api/auth/login", json={"login_id": login_id}).status_code, 200
+            client.post("/api/auth/login", json={"username": username, "login_id": login_id}).status_code, 200
         )
         return login_id
 
@@ -117,7 +117,10 @@ class ReauthTests(unittest.TestCase):
         """A cookie on another device starts with nothing."""
         self._reauth(self.owner, self.owner_login)
         laptop = TestClient(create_app(), headers=BROWSER)
-        laptop.post("/api/auth/login", json={"login_id": self.owner_login})
+        laptop.post(
+            "/api/auth/login",
+            json={"username": "the_owner", "login_id": self.owner_login},
+        )
         self.assertEqual(self._approve(client=laptop).status_code, 428)
 
     # --- what the login ID check refuses ---

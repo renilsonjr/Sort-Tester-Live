@@ -173,7 +173,7 @@ class SessionsCollectNoAddressTests(SessionLifecycleTestCase):
         self.assertEqual(reg.status_code, 200, reg.text)
         self.assertEqual(
             client.post(
-                "/api/auth/login", json={"login_id": reg.json()["login_id"]}
+                "/api/auth/login", json={"username": "privacy_one", "login_id": reg.json()["login_id"]}
             ).status_code,
             200,
         )

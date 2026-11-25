@@ -19,7 +19,7 @@ const js = auth.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '');
 
 test('#334 Continue signs the new player in', () => {
   assert.match(js, /const newLoginId = result\.data\.login_id;/);
-  assert.match(js, /const signedIn = await loginWithId\(newLoginId\);/);
+  assert.match(js, /const signedIn = await loginWithId\(username, newLoginId\);/);
   assert.match(js, /if \(onLoggedIn\) onLoggedIn\(signedIn\.data\);/);
   // The old behaviour was this and only this.
   assert.doesNotMatch(js, /done\.addEventListener\('click', \(\) => closeForm/);
@@ -32,7 +32,7 @@ test('#334 a failed sign-in leaves the player where they can still act', () => {
   const handler = js.slice(js.indexOf("done.addEventListener('click'"));
   const body = handler.slice(0, handler.indexOf('\n        });'));
   assert.match(body, /done\.disabled = false;/);
-  assert.match(body, /showMessage\(forgotText\('Your account was created\. Sign in with the Quiz Code above\.'\), true\);/);
+  assert.match(body, /showMessage\(forgotText\('Your account was created\. Sign in with your username and the Quiz Code above\.'\), true\);/);
   // closeForm happens only on the success branch.
   const close = body.indexOf('closeForm');
   assert.ok(close !== -1 && close < body.indexOf('done.disabled = false'),
@@ -40,5 +40,5 @@ test('#334 a failed sign-in leaves the player where they can still act', () => {
 });
 
 test('#334 the new message has Spanish, like the rest of this flow', () => {
-  assert.match(auth, /'Your account was created\. Sign in with the Quiz Code above\.':\s*\n\s*'Tu cuenta se creó\. Inicia sesión con el Quiz Code de arriba\.',/);
+  assert.match(auth, /'Your account was created\. Sign in with your username and the Quiz Code above\.':\s*\n\s*'Tu cuenta se creó\. Inicia sesión con tu nombre de usuario y el Quiz Code de arriba\.',/);
 });

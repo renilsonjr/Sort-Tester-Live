@@ -14,13 +14,13 @@ Abre **sortquiz.app** en tu teléfono. Esa es toda la app; no hay nada que insta
 **Paso 2.** Elige un **nombre de usuario**: de 3 a 24 letras, números o `_`. Los demás jugadores lo ven en la clasificación. No se puede cambiar después, así que elige bien. Toca **Crear cuenta**.
 ![](screens/es/02-username.jpg)
 
-**Paso 3.** La app te muestra tu **Quiz Code**. Es la ÚNICA forma de entrar. No hay contraseña ni correo.
+**Paso 3.** La app te muestra tu **Quiz Code**: una palabra en inglés y dos números, como **banana-48**. Entras con tu **nombre de usuario** y este código. No hay contraseña ni correo.
 - Se muestra **una sola vez**.
 - Tómale una foto o anótalo **ahora**.
 - Marca **Guardé mi Quiz Code** y toca **Continuar**. Ya estás dentro.
 ![](screens/es/03-quiz-code.jpg)
 
-**Paso 4. La próxima vez que entres:** escribe tu Quiz Code y toca **Log in with Quiz Code** (entrar con Quiz Code).
+**Paso 4. La próxima vez que entres:** escribe tu **nombre de usuario** y tu **Quiz Code**, y toca **Log in with Quiz Code** (entrar con Quiz Code). Tu navegador puede ofrecerte guardarlos.
 ![](screens/es/04-login-code.jpg)
 
 Tu perfil muestra tu **etiqueta**: seis letras y números, como `#AB12CD`. Nunca cambia. La necesitas para poder ganar una gorra (parte 3).
@@ -118,6 +118,9 @@ La clasificación de la competencia muestra solo a los jugadores que cumplen. Lo
 
 **Perdí mi Quiz Code. ¿Qué hago?**
 No hay botón para recuperarlo. Toca **¿Olvidaste tu Quiz Code?** para dejar un mensaje y luego busca al responsable **en persona en el trabajo**. Te puede dar un código nuevo para la **misma** cuenta. Tus puntos se mantienen.
+
+**¿Puedo cambiar mi Quiz Code?**
+Sí, con la sesión iniciada: **Perfil → Ajustes → Cambiar mi Quiz Code**. Escribe tu código actual y recibes uno nuevo. El anterior deja de funcionar al momento. Los códigos de antes también siguen funcionando.
 
 **No soy sorter de Primary Sort Twilight en Saddle Brook. ¿Puedo jugar?**
 Sí. Puedes jugar, ganar puntos e insignias y ver tu propio puesto en tu perfil. Solo que no te pueden aprobar para una gorra, así que no apareces en la clasificación de la competencia.

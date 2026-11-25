@@ -94,7 +94,7 @@ class RuntimeRoleTests(unittest.TestCase):
             with TestClient(create_app(), headers=BROWSER) as client:
                 registered = client.post("/api/auth/register", json={"username": "runtime_login"})
                 self.assertEqual(registered.status_code, 200)
-                logged_in = client.post("/api/auth/login", json={"login_id": registered.json()["login_id"]})
+                logged_in = client.post("/api/auth/login", json={"username": "runtime_login", "login_id": registered.json()["login_id"]})
                 self.assertEqual(logged_in.status_code, 200)
                 self.assertEqual(client.get("/api/auth/me").status_code, 200)
                 self.assertEqual(client.post("/api/auth/logout").status_code, 204)

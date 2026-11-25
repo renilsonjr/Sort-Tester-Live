@@ -128,7 +128,7 @@ jobs:
           [ "$code" = 200 ] || { echo "register: $code $(cat /tmp/register.json)"; docker logs "$container"; exit 1; }
           login_id=$(python3 -c 'import json; print(json.load(open("/tmp/register.json"))["login_id"])')
           code=$(curl -s -c "$jar" -o /dev/null -w '%{http_code}' -X POST "$base/api/auth/login" \
-            -H "$same_origin" -H 'Content-Type: application/json' -d "{\"login_id\":\"$login_id\"}")
+            -H "$same_origin" -H 'Content-Type: application/json' -d "{\"username\":\"ci_check\",\"login_id\":\"$login_id\"}")
           [ "$code" = 200 ] || { echo "login: $code"; exit 1; }
           curl -fsS -b "$jar" "$base/api/auth/me" | grep -q '"username":"ci_check"' || { echo "me failed"; exit 1; }
 
@@ -161,7 +161,7 @@ jobs:
             -H "Origin: $public" -H 'Content-Type: application/json' -d '{"username":"hosted_check"}'
           login_id=$(python3 -c 'import json; print(json.load(open("/tmp/hosted.json"))["login_id"])')
           curl -si -X POST "$base/api/auth/login" -H "Origin: $public" \
-            -H 'Content-Type: application/json' -d "{\"login_id\":\"$login_id\"}" >/tmp/hosted-login.txt
+            -H 'Content-Type: application/json' -d "{\"username\":\"hosted_check\",\"login_id\":\"$login_id\"}" >/tmp/hosted-login.txt
           cookie=$(grep -i '^set-cookie:' /tmp/hosted-login.txt || true)
           [ -n "$cookie" ] || { echo 'Login set no cookie'; cat /tmp/hosted-login.txt; exit 1; }
           for flag in Secure HttpOnly SameSite; do
@@ -172,7 +172,7 @@ jobs:
           # With a public origin configured, the ingress host alone is not enough.
           code=$(curl -s -o /dev/null -w '%{http_code}' -X POST "$base/api/auth/login" \
             -H 'Origin: https://evil.example' -H 'Content-Type: application/json' \
-            -d "{\"login_id\":\"$login_id\"}")
+            -d "{\"username\":\"hosted_check\",\"login_id\":\"$login_id\"}")
           [ "$code" = 403 ] || { echo "cross-site login: expected 403, got $code"; exit 1; }
           echo 'Hosted configuration passed'
 

@@ -44,7 +44,7 @@ test('it asks before doing anything', () => {
 
 test('it says what to do when somebody else knows the Quiz Code', () => {
   const screen = fn('function showSignOutOthers');
-  assert.match(screen, /t\('If someone else knows your Quiz Code, ask the owner in person for a new one\.'\)/);
+  assert.match(screen, /t\('If someone else knows your Quiz Code, change it in Settings\.'\)/);
 });
 
 test('it goes through the Quiz Code gate and the right route', () => {
@@ -79,7 +79,7 @@ test('every sentence has Spanish', () => {
     'Sign out my other devices',
     'Ends every other phone or computer signed in to your account. This one stays.',
     'Your Quiz Code keeps working. Anyone using it elsewhere has to enter it again.',
-    'If someone else knows your Quiz Code, ask the owner in person for a new one.',
+    'If someone else knows your Quiz Code, change it in Settings.',
     'No other device was signed in.',
     '{count} other device was signed out.',
     '{count} other devices were signed out.',

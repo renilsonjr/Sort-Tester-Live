@@ -596,7 +596,7 @@ function askForLoginId(reason) {
         <h2 id="reauth-title">${esc(t('Confirm it is you'))}</h2>
         <p class="lab-study-meta">${esc(reason || t('Re-enter your Quiz Code to continue. It stays confirmed on this device for five minutes.'))}</p>
         <label class="field"><span>${esc(t('Your Quiz Code'))}</span>
-          <input id="reauth-input" type="password" autocomplete="current-password" spellcheck="false" placeholder="ABCD-EFGH-JKLM-NPQR"></label>
+          <input id="reauth-input" type="password" autocomplete="current-password" spellcheck="false" placeholder="banana-48"></label>
         <p class="notice" id="reauth-error" role="status" hidden></p>
         <button class="primary" type="submit">${esc(t('Confirm'))}</button>
         <button class="ghost" type="button" id="reauth-cancel">${esc(t('Cancel'))}</button>
@@ -1069,7 +1069,7 @@ function showSignOutOthers() {
       <h1 class="lab-title">${esc(t('Sign out my other devices'))}</h1>
       <p class="lab-intro">${esc(t('Ends every other phone or computer signed in to your account. This one stays.'))}</p>
       <p class="lab-intro">${esc(t('Your Quiz Code keeps working. Anyone using it elsewhere has to enter it again.'))}</p>
-      <p class="lab-intro">${esc(t('If someone else knows your Quiz Code, ask the owner in person for a new one.'))}</p>
+      <p class="lab-intro">${esc(t('If someone else knows your Quiz Code, change it in Settings.'))}</p>
       <p class="notice" id="signout-others-said" role="status" hidden></p>
       <button id="signout-others-go" class="primary" type="button">${esc(t('Sign out my other devices'))}</button>
       <button id="signout-others-cancel" class="ghost" type="button">${esc(t('Cancel'))}</button>
@@ -1094,6 +1094,92 @@ function showSignOutOthers() {
     said.textContent = ended === 0
       ? t('No other device was signed in.')
       : t(ended === 1 ? '{count} other device was signed out.' : '{count} other devices were signed out.', { count: ended });
+  });
+  return view;
+}
+
+// Change my Quiz Code (owner decision 2026-11-25). Behind the same re-entry
+// gate as signing out other devices: a stolen session alone must not be
+// able to take the account by changing its code. The server ends every
+// other session and keeps this device signed in. The new code is shown
+// here once, next to the username, inside one form, so the browser can
+// offer to update the saved pair.
+function showChangeCode() {
+  stopTick();
+  clock = null;
+  const view = labPage(`
+    <section class="lab-screen">
+      <p class="lab-eyebrow">${esc(t('Settings'))}</p>
+      <h1 class="lab-title">${esc(t('Change my Quiz Code'))}</h1>
+      <p class="lab-intro">${esc(t('You get a new Quiz Code. The old one stops working at once.'))}</p>
+      <p class="lab-intro">${esc(t('Every other phone or computer signed in to your account is signed out. This one stays.'))}</p>
+      <p class="notice" id="change-code-said" role="status" hidden></p>
+      <button id="change-code-go" class="primary" type="button">${esc(t('Change my Quiz Code'))}</button>
+      <button id="change-code-cancel" class="ghost" type="button">${esc(t('Cancel'))}</button>
+      <div id="change-code-result"></div>
+    </section>
+  `, 'profile', showChangeCode);
+
+  const said = view.querySelector('#change-code-said');
+  const go = view.querySelector('#change-code-go');
+  const cancel = view.querySelector('#change-code-cancel');
+  cancel.addEventListener('click', () => showProfile('settings'));
+  go.addEventListener('click', async () => {
+    go.disabled = true;
+    const result = await apiSendOwner('POST', '/auth/login-id/change');
+    if (!result.ok || !result.data?.login_id) {
+      said.hidden = false;
+      said.classList.remove('done');
+      said.textContent = `${result.reason || t('That did not work.')} ${t('Nothing was changed.')}`;
+      go.disabled = false;
+      return;
+    }
+    go.hidden = true;
+    cancel.hidden = true;
+    said.hidden = true;
+    const box = view.querySelector('#change-code-result');
+    box.innerHTML = `
+      <form id="change-code-form" autocomplete="on">
+        <p class="notice">${esc(t('Save this Quiz Code. It will not be shown again.'))}</p>
+        <label class="field"><span>${esc(t('Username'))}</span>
+          <input id="change-code-username" type="text" name="username" autocomplete="username" readonly value="${esc(session?.username ?? '')}"></label>
+        <div class="field">
+          <span>${esc(t('Your new Quiz Code'))}</span>
+          <div class="code-row">
+            <input id="change-code-value" type="text" name="quiz-code" autocomplete="new-password" readonly value="${esc(result.data.login_id)}">
+            <button id="change-code-copy" class="code-copy" type="button">${esc(t('Copy'))}</button>
+          </div>
+        </div>
+        <p class="auth-note" id="change-code-copied" role="status"></p>
+        <label class="check-row" for="change-code-saved">
+          <input id="change-code-saved" type="checkbox">
+          <span class="check-box" aria-hidden="true"></span>
+          <span class="check-label">${esc(t('I saved my Quiz Code'))}</span>
+        </label>
+        <button id="change-code-done" class="primary" type="submit" disabled>${esc(t('Done'))}</button>
+      </form>`;
+    const formEl = box.querySelector('#change-code-form');
+    const saved = box.querySelector('#change-code-saved');
+    const done = box.querySelector('#change-code-done');
+    const field = box.querySelector('#change-code-value');
+    const copied = box.querySelector('#change-code-copied');
+    saved.addEventListener('change', () => { done.disabled = !saved.checked; });
+    box.querySelector('#change-code-copy').addEventListener('click', async () => {
+      try {
+        await navigator.clipboard.writeText(field.value);
+        copied.textContent = t('Copied');
+      } catch {
+        field.select();
+        copied.textContent = t('Could not copy. Select the code and copy it by hand.');
+      }
+    });
+    // A password field is what a password manager looks for when the form
+    // is submitted. The page does not navigate; it goes back to Settings.
+    formEl.addEventListener('submit', (event) => {
+      event.preventDefault();
+      field.type = 'password';
+      setTimeout(() => showProfile('settings'), 0);
+    });
   });
   return view;
 }
@@ -1214,6 +1300,11 @@ async function fillSettings(panel) {
       <span><strong>${esc(t('Sign out my other devices'))}</strong></span>
       <span class="lab-arrow" aria-hidden="true">\u2192</span>
     </button>
+    <button id="profile-change-code" class="lab-choice" type="button">
+      <span class="lab-choice-icon" aria-hidden="true">${ICONS.accessRecovery}</span>
+      <span><strong>${esc(t('Change my Quiz Code'))}</strong></span>
+      <span class="lab-arrow" aria-hidden="true">\u2192</span>
+    </button>
     <button id="profile-delete" class="lab-choice lab-choice-quiz" type="button">
       <span class="lab-choice-icon" aria-hidden="true">${ICONS.deleteAccount}</span>
       <span><strong>${esc(t('Delete account'))}</strong></span>
@@ -1225,6 +1316,7 @@ async function fillSettings(panel) {
   panel.querySelector('#profile-logout').addEventListener('click', () => signOut());
   panel.querySelector('#profile-avatar').addEventListener('click', () => showAvatarPicker());
   panel.querySelector('#profile-signout-others').addEventListener('click', showSignOutOthers);
+  panel.querySelector('#profile-change-code').addEventListener('click', showChangeCode);
   panel.querySelector('#profile-delete').addEventListener('click', showDeleteAccount);
   // One account in the whole app is the owner's. For everybody else the
   // row stays absent rather than disabled: a locked door still says there

@@ -57,7 +57,7 @@ class AnswerFeedbackTests(unittest.TestCase):
         self.conn.commit()
         self.client = TestClient(create_app(), headers=BROWSER)
         reg = self.client.post("/api/auth/register", json={"username": "feedback_player"})
-        self.client.post("/api/auth/login", json={"login_id": reg.json()["login_id"]})
+        self.client.post("/api/auth/login", json={"username": "feedback_player", "login_id": reg.json()["login_id"]})
 
     def _start(self):
         r = self.client.post("/api/ranked/attempts")
@@ -102,8 +102,9 @@ class AnswerFeedbackTests(unittest.TestCase):
         seen = set()
         for _ in range(5):
             other = TestClient(create_app(), headers=BROWSER)
-            reg = other.post("/api/auth/register", json={"username": f"opt_{len(seen)}_{_}"})
-            other.post("/api/auth/login", json={"login_id": reg.json()["login_id"]})
+            name = f"opt_{len(seen)}_{_}"
+            reg = other.post("/api/auth/register", json={"username": name})
+            other.post("/api/auth/login", json={"username": name, "login_id": reg.json()["login_id"]})
             r = other.post("/api/ranked/attempts")
             other.headers[CAPABILITY_HEADER] = r.json()["capability"]
             q = other.get(f"/api/ranked/attempts/{r.json()['attempt_id']}/current").json()

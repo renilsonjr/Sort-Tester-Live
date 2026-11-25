@@ -14,9 +14,7 @@ class AuthSettingsTests(unittest.TestCase):
     # and covers time_cost and parallelism, which this never did.
     def test_auth_settings_loads_from_env(self):
         settings = AuthSettings()
-        self.assertEqual(settings.login_id_total_groups, 4)
-        self.assertEqual(settings.login_id_group_size, 4)
-        self.assertEqual(settings.login_id_alphabet, "0123456789ABCDEFGHJKMNPQRSTVWXYZ")
+        self.assertGreater(settings.session_ttl_seconds, 0)
 
 
 if __name__ == "__main__":

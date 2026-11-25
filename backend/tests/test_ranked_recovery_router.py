@@ -53,7 +53,7 @@ class RecoveryRouterTests(unittest.TestCase):
     def _sign_in(self, client, username):
         reg = client.post("/api/auth/register", json={"username": username})
         self.assertEqual(reg.status_code, 200, reg.text)
-        login = client.post("/api/auth/login", json={"login_id": reg.json()["login_id"]})
+        login = client.post("/api/auth/login", json={"username": username, "login_id": reg.json()["login_id"]})
         self.assertEqual(login.status_code, 200, login.text)
         return reg.json()["login_id"]
 
@@ -107,7 +107,7 @@ class RecoveryRouterTests(unittest.TestCase):
         first = self.owner.post(f"/api/ranked/owner/recoveries/{request_id}/handover")
         self.assertEqual(first.status_code, 200, first.text)
         login_id = first.json()["login_id"]
-        self.assertEqual(len(login_id.replace("-", "")), 16)
+        self.assertRegex(login_id, r"^[a-z]{3,8}-[0-9]{2}$")
 
         second = self.owner.post(f"/api/ranked/owner/recoveries/{request_id}/handover")
         self.assertEqual(second.status_code, 422)
@@ -120,7 +120,9 @@ class RecoveryRouterTests(unittest.TestCase):
             f"/api/ranked/owner/recoveries/{request_id}/handover"
         ).json()["login_id"]
         fresh = TestClient(create_app(), headers=BROWSER)
-        signed_in = fresh.post("/api/auth/login", json={"login_id": login_id})
+        signed_in = fresh.post(
+            "/api/auth/login", json={"username": "dock_owl", "login_id": login_id}
+        )
         self.assertEqual(signed_in.status_code, 200, signed_in.text)
         self.assertEqual(signed_in.json()["username"], "dock_owl")
 

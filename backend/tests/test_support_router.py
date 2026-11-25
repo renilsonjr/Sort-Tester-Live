@@ -37,7 +37,7 @@ class SupportRouterTests(unittest.TestCase):
         reg = client.post("/api/auth/register", json={"username": username})
         self.assertEqual(reg.status_code, 200, reg.text)
         login_id = reg.json()["login_id"]
-        res = client.post("/api/auth/login", json={"login_id": login_id})
+        res = client.post("/api/auth/login", json={"username": username, "login_id": login_id})
         self.assertEqual(res.status_code, 200, res.text)
         return res.json()
 

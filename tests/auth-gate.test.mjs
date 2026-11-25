@@ -113,7 +113,8 @@ test('a successful login opens the app', async () => {
   const fetchFn = fakeFetch({ login: jsonResponse(200, { username: 'alice', tag: '1234' }) });
   await withGlobalFetch(fetchFn, async () => {
     await auth.startAuthGate({ doc, fetchFn });
-    panel.querySelector('#login-id-input').value = 'ABCD-EFGH-JKLM-NPQR';
+    panel.querySelector('#login-username-input').value = 'alice';
+    panel.querySelector('#login-id-input').value = 'banana-48';
     await panel.querySelector('#auth-choices').fire('submit');
   });
   assert.equal(panel.hidden, true);
@@ -125,7 +126,8 @@ test('a failed login keeps the login screen', async () => {
   const fetchFn = fakeFetch({ login: jsonResponse(401, {}) });
   await withGlobalFetch(fetchFn, async () => {
     await auth.startAuthGate({ doc, fetchFn });
-    panel.querySelector('#login-id-input').value = 'ABCD-EFGH-JKLM-NPQR';
+    panel.querySelector('#login-username-input').value = 'alice';
+    panel.querySelector('#login-id-input').value = 'banana-48';
     await panel.querySelector('#auth-choices').fire('submit');
   });
   assert.equal(panel.hidden, false);

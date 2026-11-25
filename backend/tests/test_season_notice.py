@@ -98,7 +98,7 @@ class SeasonNoticeTests(unittest.TestCase):
         login_id = self.client.post(
             "/api/auth/register", json={"username": "notice_user"}
         ).json()["login_id"]
-        self.client.post("/api/auth/login", json={"login_id": login_id})
+        self.client.post("/api/auth/login", json={"username": "notice_user", "login_id": login_id})
         self._refuse_every_sweep()
 
         with self.assertRaises(Swept):
