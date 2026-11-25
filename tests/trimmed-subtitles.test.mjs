@@ -58,6 +58,29 @@ test('every circled sub-label is gone from the app', () => {
   }
 });
 
+test('the sign-in screen lost its two lines too', () => {
+  // Asked for after the first pass, from a screenshot of the live site.
+  // These two are in auth.js, which the sign-in page loads on its own --
+  // they were hardcoded English, with no Spanish to orphan.
+  const auth = readFileSync(join(root, 'src/auth.js'), 'utf8');
+  assert.doesNotMatch(auth, /Learn the chart\. Play Ranked\. Climb the leaderboard\./);
+  assert.doesNotMatch(auth, /Ranked needs a Quiz Code\. Guests get Practice only\./);
+  // .auth-sub had nothing left to style; .auth-note still carries the
+  // copy-status line and the two on the recovery form, so it stays.
+  assert.doesNotMatch(css, /\.auth-sub/);
+  assert.match(css, /\.auth-note \{/);
+  assert.ok(auth.includes('class="auth-note"'), 'auth-note is still used');
+});
+
+test('the sign-in screen keeps the two links that are the way forward', () => {
+  // "Continue as guest" no longer explains that a guest gets Practice
+  // only. The two links under it are the only route for somebody without
+  // a code, so they must not be swept next.
+  const auth = readFileSync(join(root, 'src/auth.js'), 'utf8');
+  assert.match(auth, /Need a Quiz Code\? Create an account/);
+  assert.match(auth, /Forgot my Quiz Code\?/);
+});
+
 test('the sub-labels that are NOT repetition stayed', () => {
   // Worth pinning, because the sweep above invites someone to finish the
   // job. These are not second lines repeating a title:

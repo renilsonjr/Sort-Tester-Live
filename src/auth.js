@@ -149,7 +149,6 @@ export function createAuthPanel(container, onContinueAsGuest, onLoggedIn) {
       <div class="brandmark" aria-hidden="true">RJ</div>
       <div class="auth-head">
         <h1 class="auth-title">Sort Quiz</h1>
-        <p class="auth-sub">Learn the chart. Play Ranked. Climb the leaderboard.</p>
       </div>
       <div id="auth-choices" class="auth-card">
         <p class="auth-eyebrow">Log in</p>
@@ -157,7 +156,6 @@ export function createAuthPanel(container, onContinueAsGuest, onLoggedIn) {
         <input id="login-id-input" class="glass-input" type="text" autocomplete="off" placeholder="Your Quiz Code">
         <button id="auth-login-btn" class="primary">Log in with Quiz Code</button>
         <button id="auth-guest-btn" class="ghost">Continue as guest</button>
-        <p class="auth-note">Ranked needs a Quiz Code. Guests get Practice only.</p>
         <button id="auth-register-btn" class="auth-link" type="button">Need a Quiz Code? Create an account</button>
         <button id="auth-forgot-btn" class="auth-link" type="button">${forgotText('Forgot my Quiz Code?')}</button>
       </div>
