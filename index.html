@@ -1141,6 +1141,13 @@
   .auth-note { margin: 2px 0 0; color: var(--muted); font-size: 12.5px; text-align: center; }
   .auth-link { background: transparent; border: 0; color: var(--gold); font-weight: 800; font-size: 13px; width: 100%; padding: 4px; cursor: pointer; }
   /* A quiet line under everything: who made the app (#267). */
+  /* #451: How to play, the manual PDF, under the login card */
+  .auth-howto { display: flex; width: 100%; align-items: center; gap: 12px; padding: 12px 14px; border: 1px solid var(--soft-line); border-radius: var(--r-sm, 14px); background: var(--soft); color: var(--ink); text-decoration: none; text-align: left; }
+  .auth-howto > span:first-child { display: grid; place-items: center; width: 32px; height: 32px; flex: none; border-radius: 50%; background: var(--gold); color: #2a1c10; font-weight: 900; }
+  .auth-howto strong { display: block; font-size: 15px; }
+  .auth-howto small { display: block; color: var(--muted); font-size: 12.5px; }
+  .auth-howto:hover { border-color: var(--gold); }
+  .auth-howto:focus-visible { outline: 3px solid var(--gold); outline-offset: 3px; }
   .auth-footer { margin: 6px 0 0; font-size: 12.5px; text-align: center; }
   .auth-footer-link { color: var(--muted); font-weight: 700; text-decoration: underline; text-underline-offset: 3px; padding: 8px 4px; display: inline-block; }
   .auth-footer-link:hover { color: var(--gold); }

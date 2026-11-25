@@ -84,6 +84,11 @@ const FORGOT_ES = {
     'No se pudo contactar con el servidor. No se envió nada; inténtalo de nuevo en un momento.',
   'The message could not be sent. Find the owner in person.':
     'No se pudo enviar el mensaje. Busca al responsable en persona.',
+  // #451: the player manual, a PDF per language, opened before login.
+  'How to play':
+    'Cómo jugar',
+  'Sign up, play, and how to win a hat.':
+    'Crear cuenta, jugar y cómo ganar una gorra.',
   'Made by RJ. Meet the person behind the app':
     'Hecho por RJ. Conoce a quien está detrás de la app',
   // The whole new-account flow (#333). The rest of this module is still
@@ -115,6 +120,12 @@ const FORGOT_ES = {
   'Your account was created. Sign in with the Quiz Code above.':
     'Tu cuenta se creó. Inicia sesión con el Quiz Code de arriba.',
 };
+
+// The manual PDF in the visitor's language (#451); built by
+// docs/player-manual/build_pdf.py into assets/manual/.
+function manualHref() {
+  return `assets/manual/sortquiz-manual-${forgotText('How to play') === 'How to play' ? 'en' : 'es'}.pdf`;
+}
 
 function forgotText(source) {
   let spanish = false;
@@ -150,6 +161,12 @@ export function createAuthPanel(container, onContinueAsGuest, onLoggedIn) {
         <button id="auth-register-btn" class="auth-link" type="button">Need a Quiz Code? Create an account</button>
         <button id="auth-forgot-btn" class="auth-link" type="button">${forgotText('Forgot my Quiz Code?')}</button>
       </div>
+      ${/* #451: the manual is for people who have no account yet, so it
+            sits on this screen, outside the login card. */ ''}
+      <a id="auth-howto" class="auth-howto" href="${manualHref()}" target="_blank" rel="noopener">
+        <span aria-hidden="true">?</span>
+        <span><strong>${forgotText('How to play')}</strong><small>${forgotText('Sign up, play, and how to win a hat.')}</small></span>
+      </a>
       <div id="auth-form" class="auth-card" hidden></div>
       <p id="auth-message" class="warn"></p>
       <p class="auth-footer"><a class="auth-footer-link" href="https://renilsonjr.pages.dev" target="_blank" rel="noopener noreferrer">${forgotText('Made by RJ. Meet the person behind the app')}</a></p>
