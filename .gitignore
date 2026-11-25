@@ -63,3 +63,6 @@ infra/azure/*params*.json
 
 # worktrees
 .worktrees/
+# built copies; the served ones are in assets/manual/
+docs/player-manual/*.pdf
+docs/player-manual/.manual.*.html
