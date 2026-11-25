@@ -25,6 +25,34 @@ from backend.routers import auth, ranked, recovery_messages as recovery_messages
 FRONTEND_ROOT = Path(__file__).resolve().parent.parent
 
 
+class RevalidatedStatic(StaticFiles):
+    """``src/`` and ``assets/``, with the same "ask me first" instruction
+    the home page already carries.
+
+    Until #462 these were served with an ETag and no Cache-Control at all,
+    so each browser invented its own freshness window and a returning
+    phone could go on running code from weeks before. The design meant to
+    prevent that was a version tag in the URL -- ``src/app.js?v=...`` --
+    and it failed in the plainest way: nobody changed the tag. On
+    2026-11-25 the tags in index.html read ``20261121`` with sixty-two
+    commits to ``src/`` since, and the tags app.js uses for its OWN
+    imports read ``20261108``. chart.js was behind that second one, which
+    is where the routing answers live: a player could be taught NJ 078 9
+    goes to RED, three weeks after it was corrected to GOLD, with nothing
+    on screen to say the code was stale.
+
+    A tag only works if a human remembers to change it, and this is the
+    evidence that they do not. ``no-cache`` asks the server instead, and
+    the ETag turns an unchanged file into a 304 that costs nothing -- so
+    the browser still stores everything, and a deploy always lands.
+    """
+
+    def file_response(self, *args, **kwargs):  # type: ignore[override]
+        response = super().file_response(*args, **kwargs)
+        response.headers["cache-control"] = "no-cache"
+        return response
+
+
 def create_app() -> FastAPI:
     configured = os.environ.get("SORT_TEST_DEV_ORIGINS", "").strip()
     origins = [value.strip() for value in configured.split(",")] if configured else []
@@ -159,8 +187,10 @@ def create_app() -> FastAPI:
         # and cost an afternoon of looking in the wrong place.
         #
         # The page carries the whole stylesheet inline, so a stale copy is
-        # a stale design. src/ and assets/ are fine on the default: their
-        # URLs carry a version tag when they change.
+        # a stale design. src/ and assets/ used to be left on the default,
+        # on the reasoning that "their URLs carry a version tag when they
+        # change" -- which held only as long as somebody changed the tag.
+        # They did not, for sixty-two commits. See RevalidatedStatic.
         return FileResponse(
             index_page,
             media_type="text/html",
@@ -168,7 +198,11 @@ def create_app() -> FastAPI:
         )
 
     for folder in ("src", "assets"):
-        application.mount(f"/{folder}", StaticFiles(directory=FRONTEND_ROOT / folder), name=folder)
+        application.mount(
+            f"/{folder}",
+            RevalidatedStatic(directory=FRONTEND_ROOT / folder),
+            name=folder,
+        )
 
     return application
 

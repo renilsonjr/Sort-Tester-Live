@@ -59,3 +59,66 @@ class StaticFrontendTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class StaticCachingTests(unittest.TestCase):
+    """#462: a deploy has to reach a phone that already has the app open.
+
+    Before this, src/ and assets/ went out with an ETag and no
+    Cache-Control, so each browser invented a freshness window of its own.
+    The home page said "ask me first"; the code behind it said nothing,
+    and a returning browser could keep running modules from weeks earlier.
+    """
+
+    def setUp(self) -> None:
+        self.client = TestClient(main.create_app())
+
+    def test_every_served_file_asks_before_reusing_it(self) -> None:
+        for path in (
+            "/",
+            "/src/app.js",
+            "/src/auth.js",
+            "/src/chart.js",
+            "/assets/nunito-variable.ttf",
+        ):
+            with self.subTest(path=path):
+                response = self.client.get(path)
+                self.assertEqual(response.status_code, 200)
+                self.assertEqual(response.headers.get("cache-control"), "no-cache")
+
+    def test_an_unchanged_file_still_costs_nothing(self) -> None:
+        # `no-cache` is not `no-store`: the browser keeps the copy and the
+        # ETag turns the second request into a 304 with no body. If this
+        # stops holding, the fix above has become a download on every
+        # page view, on phones in a warehouse.
+        first = self.client.get("/src/app.js")
+        etag = first.headers["etag"]
+        again = self.client.get("/src/app.js", headers={"if-none-match": etag})
+        self.assertEqual(again.status_code, 304)
+        self.assertEqual(again.content, b"")
+
+    def test_a_changed_file_is_sent_again(self) -> None:
+        # The whole point: a new build has a new ETag, so the conditional
+        # request misses and the browser gets the new bytes.
+        response = self.client.get(
+            "/src/app.js", headers={"if-none-match": '"not-the-current-file"'}
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertGreater(len(response.content), 0)
+
+    def test_the_version_tag_in_the_url_no_longer_decides_freshness(self) -> None:
+        # The old design. Asking for the same file under a stale tag, a
+        # current tag and no tag must give the same answer and the same
+        # instruction -- the URL is not what keeps it fresh any more.
+        answers = [
+            self.client.get(path)
+            for path in (
+                "/src/app.js",
+                "/src/app.js?v=readcache-20261121",
+                "/src/app.js?v=anything-at-all",
+            )
+        ]
+        for response in answers:
+            self.assertEqual(response.status_code, 200)
+            self.assertEqual(response.headers.get("cache-control"), "no-cache")
+        self.assertEqual(len({response.content for response in answers}), 1)

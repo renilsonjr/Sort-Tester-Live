@@ -154,15 +154,15 @@ export function createAuthPanel(container, onContinueAsGuest, onLoggedIn) {
       <div class="auth-head">
         <h1 class="auth-title">Sort Quiz</h1>
       </div>
-      <div id="auth-choices" class="auth-card">
+      <form id="auth-choices" class="auth-card" autocomplete="on">
         <p class="auth-eyebrow">Log in</p>
         <label class="sr-only" for="login-id-input">Quiz Code</label>
-        <input id="login-id-input" class="glass-input" type="text" autocomplete="off" placeholder="Your Quiz Code">
-        <button id="auth-login-btn" class="primary">Log in with Quiz Code</button>
-        <button id="auth-guest-btn" class="ghost">Continue as guest</button>
+        <input id="login-id-input" class="glass-input" type="password" name="quiz-code" autocomplete="current-password" placeholder="Your Quiz Code">
+        <button id="auth-login-btn" class="primary" type="submit">Log in with Quiz Code</button>
+        <button id="auth-guest-btn" class="ghost" type="button">Continue as guest</button>
         <button id="auth-register-btn" class="auth-link" type="button">Need a Quiz Code? Create an account</button>
         <button id="auth-forgot-btn" class="auth-link" type="button">${forgotText('Forgot my Quiz Code?')}</button>
-      </div>
+      </form>
       ${/* #451: the manual is for people who have no account yet, so it
             sits on this screen, outside the login card. */ ''}
       <a id="auth-howto" class="auth-howto" href="${manualHref()}" target="_blank" rel="noopener">
@@ -215,9 +215,11 @@ export function createAuthPanel(container, onContinueAsGuest, onLoggedIn) {
       showMessage('Invalid Quiz Code. Please try again.', true);
     }
   }
-  container.querySelector('#auth-login-btn').addEventListener('click', doLogin);
-  container.querySelector('#login-id-input').addEventListener('keydown', (event) => {
-    if (event.key === 'Enter') { event.preventDefault(); doLogin(); }
+  // A real <form> submit (button or Enter) is what lets the browser offer to
+  // save the Quiz Code. The page itself never navigates.
+  choices.addEventListener('submit', (event) => {
+    event.preventDefault();
+    return doLogin();
   });
 
   container.querySelector('#auth-register-btn').addEventListener('click', () => {
