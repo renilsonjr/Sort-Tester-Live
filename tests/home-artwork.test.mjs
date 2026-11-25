@@ -16,15 +16,23 @@ test('Home no longer carries the poster', () => {
   assert.doesNotMatch(home, /home-podium\.jpg/);
 });
 
-test('the Ranked card states the prize in English and Spanish', () => {
-  for (const sentence of ['Play for the podium', 'The top 3 win a UPS hat.']) {
-    assert.ok(home.includes(`t('${sentence}')`), `Home should show: ${sentence}`);
+test('Home states the prize in English and Spanish', () => {
+  // This used to read the sentence under the Ranked card's title -- "15
+  // questions, ten seconds each. The top 3 win a UPS hat." -- which the
+  // owner had removed as repetition. What it was guarding is that Home
+  // says what the prize IS, in both languages, and Home still does: the
+  // prize tile two stripes down carries the cap picture with "UPS hat"
+  // over "Top 3 prize". The evidence moved; the guarantee did not.
+  assert.ok(home.includes("t('Play for the podium')"), 'Home should show: Play for the podium');
+  for (const label of ['UPS hat', 'Top 3 prize']) {
+    assert.ok(home.includes(`t('${label}')`), `the prize tile should show: ${label}`);
   }
   const language = createLanguage();
-  assert.match(language.text('The top 3 win a UPS hat.'), /top 3 win a UPS hat/);
+  assert.equal(language.text('UPS hat'), 'UPS hat');
   language.set('es');
   assert.match(language.text('Play for the podium'), /podio/);
-  assert.match(language.text('The top 3 win a UPS hat.'), /gorra de UPS/);
+  assert.match(language.text('UPS hat'), /Gorra de UPS/);
+  assert.match(language.text('Top 3 prize'), /top 3/);
 });
 
 test('the prize tile shows the cut-out cap, inside a phone download budget', () => {

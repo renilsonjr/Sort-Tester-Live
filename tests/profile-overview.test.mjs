@@ -42,10 +42,14 @@ test('every Profile stat label has a Spanish translation', () => {
 test('Practices counts this device\'s finished sessions, not a dash', () => {
   const body = overview();
   assert.match(body, /practiceCountLabel\(log\.all\(\)\)/);
-  // and the screen says where the number comes from, in both languages
+  // The note under the tiles -- "Practices counts the sessions in the Shift
+  // log on this device." -- was removed with the other sub-labels. What the
+  // test still guards is the part that was ever load-bearing: the number is
+  // the length of THIS device's log, not a server count, so it reads from
+  // log.all() above. The sentence explaining that is gone from the screen.
   const note = 'Practices counts the sessions in the Shift log on this device.';
-  assert.ok(body.includes(`t('${note}')`));
-  assert.ok(i18n.includes(`'${note}': '`));
+  assert.ok(!body.includes(`t('${note}')`));
+  assert.ok(!i18n.includes(`'${note}': '`));
 });
 
 test('the Practices number is the log length, and a full log says so', () => {

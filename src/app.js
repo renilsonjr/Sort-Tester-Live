@@ -420,12 +420,11 @@ function showPractice() {
     <section class="lab-screen screen-practice">
       <p class="lab-eyebrow">${esc(t('Practice'))}</p>
       <h1 class="lab-title tab-title">${esc(t('Study and practice'))}</h1>
-      <p class="lab-intro tab-intro">${esc(t('Practice never changes Ranked points.'))}</p>
       <section class="home-stripe">
         <p class="lab-eyebrow">${esc(t('Learn'))}</p>
         <button id="study" class="lab-choice" type="button">
           <span class="lab-choice-icon" aria-hidden="true">${ICONS.chart}</span>
-          <span><strong>${esc(t('Know the chart'))}</strong><small>${esc(t('Browse every service by state and ZIP range.'))}</small></span>
+          <span><strong>${esc(t('Know the chart'))}</strong></span>
           <span class="lab-arrow" aria-hidden="true">→</span>
         </button>
       </section>
@@ -433,7 +432,7 @@ function showPractice() {
         <p class="lab-eyebrow">${esc(t('Test yourself'))}</p>
         <button id="quiz" class="lab-choice lab-choice-quiz" type="button">
           <span class="lab-choice-icon" aria-hidden="true">${ICONS.quiz}</span>
-          <span><strong>${esc(t('Take a quiz'))}</strong><small>${esc(t('Start with Ground, then build up to the full chart.'))}</small></span>
+          <span><strong>${esc(t('Take a quiz'))}</strong></span>
           <span class="lab-arrow" aria-hidden="true">→</span>
         </button>
       </section>
@@ -807,7 +806,6 @@ async function fillOverview(panel) {
       ${statCell(log.available ? practiceCountLabel(log.all()) : DASH, t('Practices'))}
       ${statCell(place, t('Place'))}
     </div>
-    <p class="pf-stats-note">${esc(t('Practices counts the sessions in the Shift log on this device.'))}</p>
     </section>
     ${entry.mode === 'promotion' ? `
     <div class="profile-promo">
@@ -1193,32 +1191,32 @@ async function fillSettings(panel) {
   panel.innerHTML = `
     <button id="profile-owner" class="lab-choice" type="button" hidden>
       <span class="lab-choice-icon" aria-hidden="true">${ICONS.owner}</span>
-      <span><strong>${esc(t('Owner tools'))}</strong><small>${esc(t('Prize eligibility, access recovery, case review.'))}</small></span>
+      <span><strong>${esc(t('Owner tools'))}</strong></span>
       <span class="lab-arrow" aria-hidden="true">→</span>
     </button>` + `
     <button id="profile-support" class="lab-choice" type="button">
       <span class="lab-choice-icon" aria-hidden="true">${ICONS.support}</span>
-      <span><strong>${esc(t('Support'))}</strong><small>${esc(t('Your tickets.'))}</small></span>
+      <span><strong>${esc(t('Support'))}</strong></span>
       <span class="lab-arrow" aria-hidden="true">\u2192</span>
     </button>
     <button id="profile-logout" class="lab-choice" type="button">
       <span class="lab-choice-icon" aria-hidden="true">${ICONS.logOut}</span>
-      <span><strong>${esc(t('Log out'))}</strong><small>${esc(t('Ends this session on this device. Your points and history stay.'))}</small></span>
+      <span><strong>${esc(t('Log out'))}</strong></span>
       <span class="lab-arrow" aria-hidden="true">\u2192</span>
     </button>
     <button id="profile-avatar" class="lab-choice" type="button">
       <span class="lab-choice-icon" aria-hidden="true">${ICONS.avatar}</span>
-      <span><strong>${esc(t('Profile icon'))}</strong><small>${esc(t('Shown on your profile and the leaderboard.'))}</small></span>
+      <span><strong>${esc(t('Profile icon'))}</strong></span>
       <span class="lab-arrow" aria-hidden="true">\u2192</span>
     </button>
     <button id="profile-signout-others" class="lab-choice" type="button">
       <span class="lab-choice-icon" aria-hidden="true">${ICONS.devices}</span>
-      <span><strong>${esc(t('Sign out my other devices'))}</strong><small>${esc(t('Ends every other phone or computer signed in to your account. This one stays.'))}</small></span>
+      <span><strong>${esc(t('Sign out my other devices'))}</strong></span>
       <span class="lab-arrow" aria-hidden="true">\u2192</span>
     </button>
     <button id="profile-delete" class="lab-choice lab-choice-quiz" type="button">
       <span class="lab-choice-icon" aria-hidden="true">${ICONS.deleteAccount}</span>
-      <span><strong>${esc(t('Delete account'))}</strong><small>${esc(t('Removes your profile, history and points.'))}</small></span>
+      <span><strong>${esc(t('Delete account'))}</strong></span>
       <span class="lab-arrow" aria-hidden="true">\u2192</span>
     </button>
     <p class="profile-version" id="profile-version"></p>
@@ -2462,7 +2460,7 @@ async function fillRanked(panel, title) {
       <p class="notice">${esc(t('Could not load the season. Your points are safe.'))}</p>
       <button id="ranked-board" class="lab-choice" type="button">
         <span class="lab-choice-icon" aria-hidden="true">${ICONS.board}</span>
-        <span><strong>${esc(t('Leaderboard'))}</strong><small>${esc(t('See the standings.'))}</small></span>
+        <span><strong>${esc(t('Leaderboard'))}</strong></span>
         <span class="lab-arrow" aria-hidden="true">→</span>
       </button>
     `;
@@ -2493,7 +2491,7 @@ async function fillRanked(panel, title) {
       <p class="home-climb-note">${esc(balanceLine(entry))}</p>
       ${open ? `
       <button id="ranked-start" class="primary" type="button">${esc(atCap ? t('Start promotion') : t('Start Ranked quiz'))} <span aria-hidden="true">\u2192</span></button>
-      <p class="rk-fine">${esc(t('15 questions, ten seconds each.'))}</p>` : ''}
+` : ''}
     </div>
     ${closes ? `<p class="lab-intro">${esc(t(open ? 'Closes' : 'Closed'))}: ${esc(closes)}</p>` : ''}
     ${atCap ? `
@@ -2506,7 +2504,7 @@ async function fillRanked(panel, title) {
       <p class="lab-eyebrow">${esc(t('Standings'))}</p>
       <button id="ranked-board" class="lab-choice" type="button">
         <span class="lab-choice-icon" aria-hidden="true">${ICONS.board}</span>
-        <span><strong>${esc(t('Leaderboard'))}</strong><small>${esc(t('See the standings.'))}</small></span>
+        <span><strong>${esc(t('Leaderboard'))}</strong></span>
         <span class="lab-arrow" aria-hidden="true">→</span>
       </button>
     </section>
@@ -3191,7 +3189,6 @@ function showStart() {
         <div class="home-spot">
           <span class="home-pill" id="home-season" hidden></span>
           <h2 class="home-spot-title">${esc(t('Play for the podium'))}</h2>
-          <p class="home-spot-desc">${esc(t('15 questions, ten seconds each.'))} ${esc(t('The top 3 win a UPS hat.'))}</p>
           <div class="home-spot-row">
             ${signedIn() ? `
             <div class="home-standing" id="home-ident"><small>${esc(t('Your balance'))}</small><b>…</b></div>
@@ -3209,11 +3206,11 @@ function showStart() {
         <div class="home-shortcuts">
           <button id="home-practice" class="home-short" type="button">
             <span class="home-short-ic" aria-hidden="true">${ICONS.practice}</span>
-            <strong>${esc(t('Practice'))}</strong><small>${esc(t('Practice never changes Ranked points.'))}</small>
+            <strong>${esc(t('Practice'))}</strong>
           </button>
           <button id="home-study" class="home-short" type="button">
             <span class="home-short-ic" aria-hidden="true">${ICONS.chart}</span>
-            <strong>${esc(t('Know the chart'))}</strong><small>${esc(t('Browse every service by state and ZIP range.'))}</small>
+            <strong>${esc(t('Know the chart'))}</strong>
           </button>
         </div>
       </section>
@@ -3222,7 +3219,7 @@ function showStart() {
         <p class="lab-eyebrow">${esc(t('Your sessions'))}</p>
         <button id="viewlog" class="lab-choice" type="button">
           <span class="lab-choice-icon" aria-hidden="true">${ICONS.history}</span>
-          <span><strong>${esc(t('Shift log'))}${entries.length ? ` (${entries.length})` : ''}</strong><small>${esc(t('Your practice results saved on this phone.'))}</small></span>
+          <span><strong>${esc(t('Shift log'))}${entries.length ? ` (${entries.length})` : ''}</strong></span>
           <span class="lab-arrow" aria-hidden="true">→</span>
         </button>
       </section>
