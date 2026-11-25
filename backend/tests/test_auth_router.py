@@ -35,13 +35,13 @@ class AuthRouterTests(unittest.TestCase):
         data = response.json()
         self.assertIn("account_id", data)
         self.assertIn("login_id", data)
-        self.assertEqual(len(data["login_id"].replace("-", "")), 16)
+        self.assertRegex(data["login_id"], r"^[a-z]{3,8}-[0-9]{2}$")
 
     def test_login_endpoint_sets_session_cookie(self):
         reg = self.client.post("/api/auth/register", json={"username": "router_user2"})
         login_id = reg.json()["login_id"]
 
-        response = self.client.post("/api/auth/login", json={"login_id": login_id})
+        response = self.client.post("/api/auth/login", json={"username": "router_user2", "login_id": login_id})
         self.assertEqual(response.status_code, 200)
         self.assertIn("sort_tester_session", self.client.cookies)
         data = response.json()
@@ -54,7 +54,7 @@ class AuthRouterTests(unittest.TestCase):
     def test_logout_endpoint_clears_session(self):
         reg = self.client.post("/api/auth/register", json={"username": "router_user3"})
         login_id = reg.json()["login_id"]
-        self.client.post("/api/auth/login", json={"login_id": login_id})
+        self.client.post("/api/auth/login", json={"username": "router_user3", "login_id": login_id})
 
         response = self.client.post("/api/auth/logout")
         self.assertEqual(response.status_code, 204)
@@ -130,7 +130,7 @@ class SessionWritePersistenceTests(unittest.TestCase):
     def _login(self, username):
         reg = self.client.post("/api/auth/register", json={"username": username})
         login_id = reg.json()["login_id"]
-        self.client.post("/api/auth/login", json={"login_id": login_id})
+        self.client.post("/api/auth/login", json={"username": username, "login_id": login_id})
 
     def test_last_seen_at_advances_across_authenticated_requests(self):
         self._login("h1_user")

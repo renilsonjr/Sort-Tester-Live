@@ -36,8 +36,8 @@ export async function registerAccount(username) {
   return api('POST', '/auth/register', { username });
 }
 
-export async function loginWithId(loginId) {
-  return api('POST', '/auth/login', { login_id: loginId });
+export async function loginWithId(username, loginId) {
+  return api('POST', '/auth/login', { username, login_id: loginId });
 }
 
 export async function logout() {
@@ -119,21 +119,27 @@ const FORGOT_ES = {
     'Mostrar',
   'Hide':
     'Ocultar',
+  'Your username':
+    'Tu nombre de usuario',
+  'Username':
+    'Nombre de usuario',
+  'Invalid username or Quiz Code. Please try again.':
+    'Nombre de usuario o Quiz Code incorrecto. Inténtalo de nuevo.',
+  'Your account was created. Sign in with your username and the Quiz Code above.':
+    'Tu cuenta se creó. Inicia sesión con tu nombre de usuario y el Quiz Code de arriba.',
   'Show Quiz Code':
     'Mostrar Quiz Code',
   'Hide Quiz Code':
     'Ocultar Quiz Code',
   'Could not copy. Select the code and copy it by hand.':
     'No se pudo copiar. Selecciona el código y cópialo a mano.',
-  'Your account was created. Sign in with the Quiz Code above.':
-    'Tu cuenta se creó. Inicia sesión con el Quiz Code de arriba.',
 };
 
 // The manual PDF in the visitor's language (#451); built by
 // docs/player-manual/build_pdf.py into assets/manual/.
 // Bump MANUAL_VERSION whenever the PDFs are rebuilt, so a phone that opened
 // an older manual doesn't keep showing it from its cache.
-const MANUAL_VERSION = '2026-11-25';
+const MANUAL_VERSION = '2026-11-25b';
 
 function manualHref() {
   return `assets/manual/sortquiz-manual-${forgotText('How to play') === 'How to play' ? 'en' : 'es'}.pdf?v=${MANUAL_VERSION}`;
@@ -164,6 +170,8 @@ export function createAuthPanel(container, onContinueAsGuest, onLoggedIn) {
       </div>
       <form id="auth-choices" class="auth-card" autocomplete="on">
         <p class="auth-eyebrow">Log in</p>
+        <label class="sr-only" for="login-username-input">${forgotText('Username')}</label>
+        <input id="login-username-input" class="glass-input" type="text" name="username" autocomplete="username" autocapitalize="none" spellcheck="false" placeholder="${forgotText('Your username')}">
         <label class="sr-only" for="login-id-input">Quiz Code</label>
         <div class="code-field">
           <input id="login-id-input" class="glass-input" type="password" name="quiz-code" autocomplete="current-password" placeholder="Your Quiz Code">
@@ -207,11 +215,12 @@ export function createAuthPanel(container, onContinueAsGuest, onLoggedIn) {
     message.className = isError ? 'notice' : 'warn';
   }
 
-  // The login ID is entered directly on the entry card (mock's single-card
-  // entry); "Log in with ID" (or Enter) submits it.
+  // Username + Quiz Code are entered directly on the entry card; the
+  // username names the account and the code proves it (2026-11-25).
   async function doLogin() {
+    const username = container.querySelector('#login-username-input').value.trim();
     const loginId = container.querySelector('#login-id-input').value;
-    const result = await loginWithId(loginId);
+    const result = await loginWithId(username, loginId);
     if (result.ok) {
       showMessage(`Welcome, ${result.data.username}#${result.data.tag}`);
       if (onLoggedIn) onLoggedIn(result.data);
@@ -223,7 +232,7 @@ export function createAuthPanel(container, onContinueAsGuest, onLoggedIn) {
       // "invalid" here would send someone with the right code to recovery.
       showMessage('Too many attempts. Wait a moment and try again.', true);
     } else {
-      showMessage('Invalid Quiz Code. Please try again.', true);
+      showMessage(forgotText('Invalid username or Quiz Code. Please try again.'), true);
     }
   }
   // Show/hide the Quiz Code while typing. The field stays a password field
@@ -268,12 +277,23 @@ export function createAuthPanel(container, onContinueAsGuest, onLoggedIn) {
         // retyped by hand, 19 characters, or the account was lost; and the
         // confirmation was a raw browser checkbox with its label on the
         // next line, not tied to it and with no accessible name.
+        //
+        // The username and the code sit in one <form> together, so that on
+        // Continue the browser can offer to save them as a pair -- phones
+        // only offer that for a username + secret (owner test, 2026-11-25).
+        // The username is the one the server just accepted, so it is only
+        // letters, digits and underscores.
         form.innerHTML = `
+          <form id="register-save-form" autocomplete="on">
           <p class="notice">${forgotText('Save this Quiz Code. It will not be shown again.')}</p>
+          <div class="field">
+            <span>${forgotText('Username')}</span>
+            <input id="generated-username" type="text" name="username" autocomplete="username" readonly value="${username}">
+          </div>
           <div class="field">
             <span>${forgotText('Your Quiz Code')}</span>
             <div class="code-row">
-              <input id="generated-login-id" type="text" readonly value="${result.data.login_id}">
+              <input id="generated-login-id" type="text" name="quiz-code" autocomplete="new-password" readonly value="${result.data.login_id}">
               <button id="copy-login-id" class="code-copy" type="button">${forgotText('Copy')}</button>
             </div>
           </div>
@@ -283,8 +303,13 @@ export function createAuthPanel(container, onContinueAsGuest, onLoggedIn) {
             <span class="check-box" aria-hidden="true"></span>
             <span class="check-label">${forgotText('I saved my Quiz Code')}</span>
           </label>
-          <button id="register-done" class="primary" disabled>${forgotText('Continue')}</button>
+          <button id="register-done" class="primary" type="submit" disabled>${forgotText('Continue')}</button>
+          </form>
         `;
+        // The page never navigates; Continue's click does the signing in.
+        form.querySelector('#register-save-form')?.addEventListener('submit', (event) => {
+          event.preventDefault();
+        });
         const check = form.querySelector('#saved-check');
         const done = form.querySelector('#register-done');
         check.addEventListener('change', () => { done.disabled = !check.checked; });
@@ -302,15 +327,21 @@ export function createAuthPanel(container, onContinueAsGuest, onLoggedIn) {
         const newLoginId = result.data.login_id;
         done.addEventListener('click', async () => {
           done.disabled = true;
-          const signedIn = await loginWithId(newLoginId);
+          // A password field is what a password manager looks for when the
+          // form is submitted; it goes back to plain text if sign-in fails,
+          // because the code must stay readable on this screen.
+          const codeField = form.querySelector('#generated-login-id');
+          codeField.type = 'password';
+          const signedIn = await loginWithId(username, newLoginId);
           if (signedIn.ok) {
             closeForm('#auth-register-btn');
             showMessage(`Welcome, ${signedIn.data.username}#${signedIn.data.tag}`);
             if (onLoggedIn) onLoggedIn(signedIn.data);
             return;
           }
+          codeField.type = 'text';
           done.disabled = false;
-          showMessage(forgotText('Your account was created. Sign in with the Quiz Code above.'), true);
+          showMessage(forgotText('Your account was created. Sign in with your username and the Quiz Code above.'), true);
         });
 
         // One tap instead of 19 characters. The clipboard API needs a

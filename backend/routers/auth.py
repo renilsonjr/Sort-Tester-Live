@@ -4,12 +4,19 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
 from pydantic import BaseModel, Field
 
-from backend.auth.rate_limit import _client_key, _login_rate_key, get_login_rate_limiter
+from backend.auth.rate_limit import (
+    _account_key,
+    _client_key,
+    _login_rate_key,
+    get_account_login_limiter,
+    get_login_rate_limiter,
+)
 from backend.auth.service import (
     admin_regenerate_login_id,
     check_login_candidates,
     find_login_candidates,
     get_account_by_session,
+    issue_new_login_id,
     open_login_session,
     register_account,
 )
@@ -71,6 +78,33 @@ def _counted_check(request: Request):
             attempts.release(client)
 
 
+def _check_attempt_limits(request: Request, username: str) -> tuple[str, str]:
+    """Refuse with 429 when this account is out of attempts.
+
+    Two counters, both keyed by account: one per client (10 failures in 5
+    minutes) and one across all clients (30 in a day, then an hour's
+    pause). Returns the two keys for recording the outcome.
+    """
+    keys = (_login_rate_key(request, username), _account_key(username))
+    if not get_login_rate_limiter().is_allowed(keys[0]) or not (
+        get_account_login_limiter().is_allowed(keys[1])
+    ):
+        raise HTTPException(
+            status_code=status.HTTP_429_TOO_MANY_REQUESTS, detail="Too many requests"
+        )
+    return keys
+
+
+def _record_failed_attempt(keys: tuple[str, str]) -> None:
+    get_login_rate_limiter().record_failure(keys[0])
+    get_account_login_limiter().record_failure(keys[1])
+
+
+def _record_successful_attempt(keys: tuple[str, str]) -> None:
+    get_login_rate_limiter().record_success(keys[0])
+    get_account_login_limiter().record_success(keys[1])
+
+
 def get_db():
     with _db_connection() as conn:
         yield conn
@@ -87,7 +121,11 @@ class RegisterResponse(BaseModel):
 
 
 class LoginRequest(BaseModel):
-    login_id: str
+    # Generous bounds rather than the sign-up pattern, so a malformed name
+    # is refused like any other wrong pair (401), never with a different
+    # status that says something about it.
+    username: str = Field(min_length=1, max_length=64)
+    login_id: str = Field(max_length=64)
 
 
 class LoginResponse(BaseModel):
@@ -172,10 +210,7 @@ def register(request: Request, payload: RegisterRequest):
 
 @router.post("/login", response_model=LoginResponse)
 def login(request: Request, response: Response, payload: LoginRequest):
-    limiter = get_login_rate_limiter()
-    rate_key = _login_rate_key(request, payload.login_id)
-    if not limiter.is_allowed(rate_key):
-        raise HTTPException(status_code=status.HTTP_429_TOO_MANY_REQUESTS, detail="Too many requests")
+    keys = _check_attempt_limits(request, payload.username)
 
     auth_settings = get_auth_settings()
     with _counted_check(request) as check:
@@ -183,11 +218,13 @@ def login(request: Request, response: Response, payload: LoginRequest):
         # verification is the slow part, and a connection kept through it
         # is one that nobody else can use.
         with _db_connection() as conn:
-            normalized, candidates = find_login_candidates(conn, payload.login_id)
+            normalized, candidates = find_login_candidates(
+                conn, payload.username, payload.login_id
+            )
         candidate = check_login_candidates(normalized, candidates)
         if candidate is None:
             check.mark_failed()
-            limiter.record_failure(rate_key)
+            _record_failed_attempt(keys)
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized")
         with _db_connection() as conn:
             result = open_login_session(
@@ -199,7 +236,7 @@ def login(request: Request, response: Response, payload: LoginRequest):
             )
             if result is None:
                 raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized")
-            limiter.record_success(rate_key)
+            _record_successful_attempt(keys)
             token, _ = result
             account = get_account_by_session(conn, token)
             conn.commit()
@@ -332,10 +369,7 @@ def reauthenticate_session(
     from backend.auth import reauth
     from backend.ranked.clock import system_clock
 
-    limiter = get_login_rate_limiter()
-    rate_key = _login_rate_key(request, payload.login_id)
-    if not limiter.is_allowed(rate_key):
-        raise HTTPException(status_code=status.HTTP_429_TOO_MANY_REQUESTS, detail="Too many requests")
+    keys = _check_attempt_limits(request, account["username"])
     with _counted_check(request) as check, _db_connection() as conn:
         try:
             reauth.reauthenticate(
@@ -346,7 +380,7 @@ def reauthenticate_session(
             )
         except reauth.WrongLoginId:
             check.mark_failed()
-            limiter.record_failure(rate_key)
+            _record_failed_attempt(keys)
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="That Quiz Code does not match this account.",
@@ -393,6 +427,62 @@ def revoke_other_sessions(
     return {"ended": ended}
 
 
+class ChangeLoginIdResponse(BaseModel):
+    login_id: str
+
+
+@router.post("/login-id/change", response_model=ChangeLoginIdResponse)
+def change_login_id(
+    request: Request,
+    response: Response,
+    account: dict = Depends(_current_account),
+):
+    """Replace the signed-in player's Quiz Code with a new one (2026-11-25).
+
+    Behind the recent re-entry gate, so a stolen session alone cannot take
+    the account over by changing the code. The old code stops working and
+    every session ends, this one included; a fresh session is opened for
+    this device in the same transaction, so the player stays signed in.
+    The new code is returned once and kept nowhere.
+    """
+    from backend.auth import reauth
+    from backend.auth.sessions import create_session
+    from backend.ranked.clock import system_clock
+
+    auth_settings = get_auth_settings()
+    raw_token = request.cookies.get("sort_tester_session") or ""
+    with _db_connection() as conn:
+        try:
+            reauth.require_recent(conn, raw_token, clock=system_clock())
+        except reauth.ReauthRequired:
+            raise HTTPException(
+                status_code=status.HTTP_428_PRECONDITION_REQUIRED,
+                detail=(
+                    "Re-enter your Quiz Code to continue. It stays confirmed"
+                    " on this device for five minutes."
+                ),
+            ) from None
+        new_login_id = issue_new_login_id(conn, account["id"])
+        token, _ = create_session(
+            conn,
+            account["id"],
+            auth_settings.session_ttl_seconds,
+            None,
+            None,
+        )
+        conn.commit()
+    response.set_cookie(
+        key="sort_tester_session",
+        value=token,
+        httponly=True,
+        secure=auth_settings.cookie_secure,
+        samesite="lax",
+        path="/",
+        max_age=auth_settings.session_ttl_seconds,
+    )
+    return {"login_id": new_login_id}
+
+
 @router.post("/account/delete", status_code=status.HTTP_202_ACCEPTED)
 def delete_account(
     request: Request,
@@ -408,16 +498,13 @@ def delete_account(
             status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
             detail="Acknowledge that deletion cannot be undone",
         )
-    limiter = get_login_rate_limiter()
-    rate_key = _login_rate_key(request, payload.login_id)
-    if not limiter.is_allowed(rate_key):
-        raise HTTPException(status_code=status.HTTP_429_TOO_MANY_REQUESTS, detail="Too many requests")
+    keys = _check_attempt_limits(request, account["username"])
     with _counted_check(request) as check, _db_connection() as conn:
         try:
             request_deletion(conn, account["id"], payload.login_id)
         except WrongLoginIdError:
             check.mark_failed()
-            limiter.record_failure(rate_key)
+            _record_failed_attempt(keys)
             raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden") from None
         except OwnerAccountError:
             raise HTTPException(

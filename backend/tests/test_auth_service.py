@@ -33,9 +33,9 @@ class AuthServiceTests(unittest.TestCase):
     def test_register_and_login_round_trip(self):
         account_id, login_id = register_account(self.conn, "alice_1")
         self.assertIsInstance(account_id, UUID)
-        self.assertEqual(len(login_id.replace("-", "")), 16)
+        self.assertRegex(login_id, r"^[a-z]{3,8}-[0-9]{2}$")
 
-        result = login_with_id(self.conn, login_id, 3600, "127.0.0.1", "test")
+        result = login_with_id(self.conn, "alice_1", login_id, 3600, "127.0.0.1", "test")
         self.assertIsNotNone(result)
         token, session_id = result
         self.assertIsInstance(session_id, UUID)
@@ -46,7 +46,7 @@ class AuthServiceTests(unittest.TestCase):
         self.assertEqual(account["username"], "alice_1")
 
     def test_login_with_wrong_id_returns_none(self):
-        result = login_with_id(self.conn, "WRNG-WRNG-WRNG-WRNG", 3600, None, None)
+        result = login_with_id(self.conn, "nobody_here", "WRNG-WRNG-WRNG-WRNG", 3600, None, None)
         self.assertIsNone(result)
 
     def test_the_unchecked_admin_regenerate_is_gone(self):
@@ -68,14 +68,14 @@ class AuthServiceTests(unittest.TestCase):
         """The piece recovery uses: the old credential and every session
         stop at the moment the new login ID starts."""
         target_id, login_id = register_account(self.conn, "bob_2")
-        token, _ = login_with_id(self.conn, login_id, 3600, None, None)
+        token, _ = login_with_id(self.conn, "bob_2", login_id, 3600, None, None)
         self.assertIsNotNone(get_account_by_session(self.conn, token))
 
         new_login_id = issue_new_login_id(self.conn, target_id)
         self.assertNotEqual(new_login_id, login_id)
         self.assertIsNone(get_account_by_session(self.conn, token))
-        self.assertIsNone(login_with_id(self.conn, login_id, 3600, None, None))
-        self.assertIsNotNone(login_with_id(self.conn, new_login_id, 3600, None, None))
+        self.assertIsNone(login_with_id(self.conn, "bob_2", login_id, 3600, None, None))
+        self.assertIsNotNone(login_with_id(self.conn, "bob_2", new_login_id, 3600, None, None))
 
 
 if __name__ == "__main__":

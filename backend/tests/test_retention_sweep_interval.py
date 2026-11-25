@@ -63,7 +63,7 @@ class RequestSweepTests(unittest.TestCase):
         self.app = create_app()
         self.client = TestClient(self.app, headers=BROWSER)
         reg = self.client.post("/api/auth/register", json={"username": "sweep_player"})
-        self.client.post("/api/auth/login", json={"login_id": reg.json()["login_id"]})
+        self.client.post("/api/auth/login", json={"username": "sweep_player", "login_id": reg.json()["login_id"]})
 
     def _spies(self):
         retention = mock.Mock(side_effect=ranked_router._sweep_retention)

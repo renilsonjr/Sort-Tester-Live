@@ -26,7 +26,7 @@ test('the sign-in panel says Quiz Code', () => {
   assert.match(auth, /forgotText\('Forgot my Quiz Code\?'\)/);
   assert.match(auth, /Save this Quiz Code\. It will not be shown again\./);
   assert.match(auth, /I saved my Quiz Code/);
-  assert.match(auth, /Invalid Quiz Code\. Please try again\./);
+  assert.match(auth, /Invalid username or Quiz Code\. Please try again\./);
 });
 
 test('no screen text in the sign-in panel uses the old name', () => {

@@ -42,12 +42,19 @@ class RevokeOtherSessionsTests(unittest.TestCase):
     def _account(self, username="two_device_player"):
         client = TestClient(self.app, headers=BROWSER)
         body = client.post("/api/auth/register", json={"username": username}).json()
+        if not hasattr(self, "_names"):
+            self._names = {}
+        self._names[body["login_id"]] = username
         return body["account_id"], body["login_id"]
 
     def _device(self, login_id):
         client = TestClient(self.app, headers=BROWSER)
         self.assertEqual(
-            client.post("/api/auth/login", json={"login_id": login_id}).status_code, 200
+            client.post(
+                "/api/auth/login",
+                json={"username": self._names[login_id], "login_id": login_id},
+            ).status_code,
+            200,
         )
         return client
 

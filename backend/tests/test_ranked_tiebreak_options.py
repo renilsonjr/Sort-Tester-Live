@@ -72,7 +72,7 @@ class OptionsTests(unittest.TestCase):
         client = TestClient(create_app(), headers=BROWSER)
         reg = client.post("/api/auth/register", json={"username": name})
         self.assertEqual(reg.status_code, 200, reg.text)
-        client.post("/api/auth/login", json={"login_id": reg.json()["login_id"]})
+        client.post("/api/auth/login", json={"username": name, "login_id": reg.json()["login_id"]})
         cid = migrate.fetch_one(
             self.conn, "SELECT id FROM accounts WHERE username_lower = %s", (name,)
         )["id"]

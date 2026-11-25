@@ -111,7 +111,7 @@ class RecoveryTests(unittest.TestCase):
         request = self._open()
         handover = recovery.hand_over(self.conn, self.owner, request.id, clock=self.clock)
         self.assertEqual(handover.username, "dock_owl")
-        self.assertEqual(len(handover.login_id.replace("-", "")), 16)
+        self.assertRegex(handover.login_id, r"^[a-z]{3,8}-[0-9]{2}$")
 
     def test_a_link_recorded_after_the_request_is_not_a_prior_link(self):
         """Approving the roster in the same breath as the recovery is the
@@ -172,8 +172,16 @@ class RecoveryTests(unittest.TestCase):
         handover = recovery.hand_over(self.conn, self.owner, request.id, clock=self.clock)
         self.conn.commit()
         # the issued login ID really signs that account in
+        username = migrate.fetch_one(
+            self.conn, "SELECT username FROM accounts WHERE id = %s", (self.player,)
+        )["username"]
         session = login_with_id(
-            self.conn, handover.login_id, ttl_seconds=3600, ip_address=None, user_agent=None
+            self.conn,
+            username,
+            handover.login_id,
+            ttl_seconds=3600,
+            ip_address=None,
+            user_agent=None,
         )
         self.assertIsNotNone(session)
         live = migrate.fetch_all(

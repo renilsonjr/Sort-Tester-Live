@@ -236,26 +236,44 @@ def _client_key(request) -> str:
     return _address(entries[-proxies]) or connection
 
 
-def _login_rate_key(request, login_id: str) -> str:
-    """The limiter key for an attempt on one credential (audit H-2).
+def _login_rate_key(request, username: str) -> str:
+    """The limiter key for an attempt on one account (audit H-2).
 
-    Keyed by the client *and* the credential it is trying. Keyed by the
-    client alone, ten guesses at one login ID refused every other login ID
+    Keyed by the client *and* the account it is trying. Keyed by the
+    client alone, ten guesses at one account refused every other account
     from that address -- and behind a single ingress that address is
     everyone, so anyone could lock the whole app out of signing in.
 
-    The target is the credential's lookup key, which is derived, not
-    secret, and never leaves the process. An ID too malformed to derive
-    one from shares a single bucket: it cannot name an account, so it
-    cannot lock one out.
+    The account is named by its username (lowercased). Until 2026-11-25
+    this was keyed by a hash of the code tried, which was fine while codes
+    were 16 random characters; with word codes it would give every guess
+    a fresh bucket, so it is keyed by account now.
     """
-    from backend.auth.credentials import derive_lookup_key
+    return f"{_client_key(request)}|{_account_key(username)}"
 
-    try:
-        target = derive_lookup_key(login_id)
-    except ValueError:
-        target = "invalid"
-    return f"{_client_key(request)}|{target}"
+
+def _account_key(username: str) -> str:
+    return (username or "").strip().lower()
+
+
+# Owner decision, 2026-11-25: 30 failed checks against one account in a
+# day, from anywhere, pause that account's sign-in for an hour. Each
+# further failure in the same day starts the hour again. Word codes are
+# guessable from many addresses at once; this caps that per account. The
+# cost is that someone who knows a username can pause that player's
+# sign-in, which the owner accepted.
+ACCOUNT_DAILY_FAILURES = 30
+ACCOUNT_PAUSE_SECONDS = 3600.0
+
+_account_limiter = LoginRateLimiter(
+    max_failures=ACCOUNT_DAILY_FAILURES,
+    window_seconds=86400.0,
+    lockout_seconds=ACCOUNT_PAUSE_SECONDS,
+)
+
+
+def get_account_login_limiter() -> LoginRateLimiter:
+    return _account_limiter
 
 
 class RegistrationLimiter:

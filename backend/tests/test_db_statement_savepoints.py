@@ -149,7 +149,7 @@ class AnswerRequestCostTests(unittest.TestCase):
         conn.commit()
         self.client = TestClient(create_app(), headers=BROWSER)
         reg = self.client.post("/api/auth/register", json={"username": "cost_player"})
-        self.client.post("/api/auth/login", json={"login_id": reg.json()["login_id"]})
+        self.client.post("/api/auth/login", json={"username": "cost_player", "login_id": reg.json()["login_id"]})
         started = self.client.post("/api/ranked/attempts").json()
         self.attempt = started["attempt_id"]
         self.client.headers["X-Attempt-Capability"] = started["capability"]

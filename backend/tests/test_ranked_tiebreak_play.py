@@ -76,7 +76,7 @@ class TiebreakPlayTests(unittest.TestCase):
     def _sign_in(self, client, username, points):
         reg = client.post("/api/auth/register", json={"username": username})
         self.assertEqual(reg.status_code, 200, reg.text)
-        client.post("/api/auth/login", json={"login_id": reg.json()["login_id"]})
+        client.post("/api/auth/login", json={"username": username, "login_id": reg.json()["login_id"]})
         account_id = migrate.fetch_one(
             self.conn, "SELECT id FROM accounts WHERE username_lower = %s", (username,)
         )["id"]

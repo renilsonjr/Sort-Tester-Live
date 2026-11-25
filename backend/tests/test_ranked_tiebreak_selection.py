@@ -41,7 +41,7 @@ class SelectionTests(unittest.TestCase):
         self.owner_client = TestClient(create_app(), headers=BROWSER)
         reg = self.owner_client.post("/api/auth/register", json={"username": "the_owner"})
         self.owner_login = reg.json()["login_id"]
-        self.owner_client.post("/api/auth/login", json={"login_id": self.owner_login})
+        self.owner_client.post("/api/auth/login", json={"username": "the_owner", "login_id": self.owner_login})
         migrate.execute(
             self.conn, "UPDATE accounts SET is_owner = true WHERE username_lower = 'the_owner'"
         )
@@ -203,7 +203,7 @@ class SelectionTests(unittest.TestCase):
     def test_a_player_cannot_see_or_record_selections(self):
         player = TestClient(create_app(), headers=BROWSER)
         reg = player.post("/api/auth/register", json={"username": "nosy_player"})
-        player.post("/api/auth/login", json={"login_id": reg.json()["login_id"]})
+        player.post("/api/auth/login", json={"username": "nosy_player", "login_id": reg.json()["login_id"]})
         self.assertEqual(player.get("/api/ranked/owner/selections").status_code, 403)
         self.assertEqual(
             player.post(

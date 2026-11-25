@@ -12,13 +12,13 @@ Open **sortquiz.app** on your phone. That's the whole app; nothing to install.
 **Step 2.** Pick a **username**: 3 to 24 letters, numbers or `_`. Other players see it on the leaderboard. You can't change it later, so choose well.
 ![](screens/en/02-username.jpg)
 
-**Step 3.** The app shows your **Quiz Code**. This is the ONLY way to log in. There is no password and no email.
+**Step 3.** The app shows your **Quiz Code**: one English word and two numbers, like **banana-48**. You log in with your **username** and this code. There is no password and no email.
 - It is shown **one time only**.
 - Take a photo of it or write it down **now**.
 - Tick **I saved my Quiz Code**, then tap **Continue**. You're in.
 ![](screens/en/03-quiz-code.jpg)
 
-**Step 4. Next time you log in:** type your Quiz Code and tap **Log in with Quiz Code**.
+**Step 4. Next time you log in:** type your **username** and your **Quiz Code**, then tap **Log in with Quiz Code**. Your browser may offer to save them.
 ![](screens/en/04-login-code.jpg)
 
 Your profile shows your **tag**, six letters and numbers like `#AB12CD`. It never changes. You'll need it to qualify for a hat (part 3).
@@ -116,6 +116,9 @@ The competition leaderboard shows only qualified players. Everyone else can stil
 
 **I lost my Quiz Code. What now?**
 There's no reset button. Tap **Forgot my Quiz Code?** to leave a message, then find the owner **in person at work**. They can give you a new code for the **same** account. Your points stay.
+
+**Can I change my Quiz Code?**
+Yes, while you are logged in: **Profile → Settings → Change my Quiz Code**. Type your current code, and you get a new one. The old one stops working at once. Codes from before still work too.
 
 **I'm not a Primary Sort Twilight sorter at Saddle Brook. Can I play?**
 Yes. You can play, earn points and badges, and see your own place on your profile. You just can't be approved for a hat, so you won't appear on the competition leaderboard.
