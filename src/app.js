@@ -824,7 +824,7 @@ async function fillOverview(panel) {
     </section>
     <button id="pf-history" class="lab-choice" type="button">
       <span class="lab-choice-icon" aria-hidden="true">${ICONS.history}</span>
-      <span><strong>${esc(t('See history'))}</strong><small>${esc(t('Your Ranked quizzes, one by one.'))}</small></span>
+      <span><strong>${esc(t('See history'))}</strong></span>
       <span class="lab-arrow" aria-hidden="true">→</span>
     </button>
   `;

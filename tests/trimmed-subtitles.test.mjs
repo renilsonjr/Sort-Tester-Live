@@ -48,9 +48,34 @@ test('every circled sub-label is gone from the app', () => {
     'Practices counts the sessions in the Shift log on this device.',
     '15 questions, ten seconds each.',
     'The top 3 win a UPS hat.',
+    // Not in the screenshots -- it is below the fold on Profile -- but it
+    // was the last one of this kind, and the owner asked for it once it
+    // was pointed out.
+    'Your Ranked quizzes, one by one.',
   ];
   for (const text of circled) {
     assert.ok(!app.includes(`t('${text}')`), `still shown: ${text}`);
+  }
+});
+
+test('the sub-labels that are NOT repetition stayed', () => {
+  // Worth pinning, because the sweep above invites someone to finish the
+  // job. These are not second lines repeating a title:
+  //
+  //   the owner menu's rows explain administrative actions whose names
+  //   give nothing away -- "Prize selection" does not tell you it is the
+  //   ties the rules send you;
+  //   Support's Create ticket says what a ticket may be about, and the
+  //   locked state says why there is none;
+  //   and the rest are captions for values -- a tag, a date, a balance.
+  for (const kept of [
+    'Who may win a hat this season.',
+    'In person, for a sorter who lost their Quiz Code.',
+    'Tickets players opened, and connection flags.',
+    'Remove an account that should not exist.',
+    'About one of your own Ranked attempts.',
+  ]) {
+    assert.ok(app.includes(`t('${kept}')`), `should have stayed: ${kept}`);
   }
 });
 
