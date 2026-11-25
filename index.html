@@ -186,6 +186,12 @@
   .auth-eyebrow { margin: 0; color: var(--accent); font-size: 11px; font-weight: 900; letter-spacing: .13em; text-transform: uppercase; }
   .auth-copy { margin: 0 0 4px; color: #54412f; font-size: 14px; line-height: 1.45; }
   .auth-screen input[readonly] { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; letter-spacing: 0.05em; }
+  /* The sign-up and change-code forms only tie username + code together
+     for the browser's password manager; they add no box of their own, so
+     the card's spacing and full-width buttons reach their fields. */
+  #register-save-form, #change-code-form, #change-code-result { display: contents; }
+  /* The username shown beside a new code is a name, not a code. */
+  .auth-screen input#generated-username { font-family: inherit; letter-spacing: normal; }
 
   /* The new-account screen (#333). The code field and a Copy button sit on
      one line; the button never shrinks below the 44px touch minimum, and

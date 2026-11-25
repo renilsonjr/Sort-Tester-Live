@@ -42,3 +42,12 @@ test('every new line has Spanish', () => {
     assert.ok(i18n.includes(`'${line}':`), line);
   }
 });
+
+test('the save forms add no box, so the card layout reaches their fields', () => {
+  // The forms exist only so a password manager sees username + code as a
+  // pair. Without this the Continue/Done buttons lost their full width and
+  // the card's spacing (found while retaking the manual's screenshots).
+  const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
+  assert.match(html, /#register-save-form, #change-code-form, #change-code-result \{ display: contents; \}/);
+  assert.match(html, /\.auth-screen input#generated-username \{ font-family: inherit;/);
+});
