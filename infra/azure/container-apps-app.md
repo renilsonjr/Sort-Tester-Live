@@ -937,16 +937,17 @@ keep their own configuration; this template applies only to Container Apps.
 
 The check below verifies that the rightmost address is supplied by the ingress,
 not the client. Repeat it after a change to the proxy topology, using fictional
-login IDs and two different networks, with `URL` set to the staging URL:
+Quiz Codes for a username that does not exist (since 2026-11-25 sign-in takes
+username + code) and two different networks, with `URL` set to the staging URL:
 
 ```sh
 # A. From one machine: a different forged address on every request.
 for n in $(seq 1 12); do curl -s -o /dev/null -w '%{http_code} ' -X POST "$URL/api/auth/login" \
   -H "Origin: $URL" -H 'Content-Type: application/json' -H "X-Forwarded-For: 9.9.9.$n" \
-  -d '{"login_id":"AAAA-AAAA-AAAA-AAAA"}'; done; echo
+  -d '{"username":"nobody_proxy_check","login_id":"wrong-00"}'; done; echo
 # B. Straight afterwards, from a DIFFERENT network (Cloud Shell, a phone on mobile data):
 curl -s -o /dev/null -w '%{http_code}\n' -X POST "$URL/api/auth/login" \
-  -H "Origin: $URL" -H 'Content-Type: application/json' -d '{"login_id":"AAAA-AAAA-AAAA-AAAA"}'
+  -H "Origin: $URL" -H 'Content-Type: application/json' -d '{"username":"nobody_proxy_check","login_id":"wrong-00"}'
 ```
 
 **Verified on staging, 2026-11-14:** with `trustedProxies=1`, A gave ten `401`
