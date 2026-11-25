@@ -139,7 +139,7 @@ const FORGOT_ES = {
 // docs/player-manual/build_pdf.py into assets/manual/.
 // Bump MANUAL_VERSION whenever the PDFs are rebuilt, so a phone that opened
 // an older manual doesn't keep showing it from its cache.
-const MANUAL_VERSION = '2026-11-25b';
+const MANUAL_VERSION = '2026-11-25c';
 
 function manualHref() {
   return `assets/manual/sortquiz-manual-${forgotText('How to play') === 'How to play' ? 'en' : 'es'}.pdf?v=${MANUAL_VERSION}`;

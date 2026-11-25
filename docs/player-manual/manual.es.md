@@ -11,12 +11,12 @@ Abre **sortquiz.app** en tu teléfono. Esa es toda la app; no hay nada que insta
 **Paso 1.** En la pantalla de inicio de sesión, toca **Need a Quiz Code? Create an account** (crear una cuenta).
 ![](screens/es/01-login-create.jpg)
 
-**Paso 2.** Elige un **nombre de usuario**: de 3 a 24 letras, números o `_`. Los demás jugadores lo ven en la clasificación. No se puede cambiar después, así que elige bien. Toca **Crear cuenta**.
+**Paso 2.** Elige un **nombre de usuario**: de 3 a 24 letras, números o `_`. Los demás jugadores lo ven en la clasificación. No se puede cambiar después, así que elige bien. **Lo necesitas cada vez que entras.** Toca **Crear cuenta**.
 ![](screens/es/02-username.jpg)
 
 **Paso 3.** La app te muestra tu **Quiz Code**: una palabra en inglés y dos números, como **banana-48**. Entras con tu **nombre de usuario** y este código. No hay contraseña ni correo.
 - Se muestra **una sola vez**.
-- Tómale una foto o anótalo **ahora**.
+- Toma una foto de la pantalla o anota tu **nombre de usuario y tu código** **ahora**.
 - Marca **Guardé mi Quiz Code** y toca **Continuar**. Ya estás dentro.
 ![](screens/es/03-quiz-code.jpg)
 
@@ -121,6 +121,10 @@ No hay botón para recuperarlo. Toca **¿Olvidaste tu Quiz Code?** para dejar un
 
 **¿Puedo cambiar mi Quiz Code?**
 Sí, con la sesión iniciada: **Perfil → Ajustes → Cambiar mi Quiz Code**. Escribe tu código actual y recibes uno nuevo. El anterior deja de funcionar al momento. Los códigos de antes también siguen funcionando.
+![](screens/es/17-change-code.jpg)
+
+**Olvidé mi nombre de usuario.**
+Está en tu **perfil** y junto a tu nombre en la app. Si no tienes la sesión iniciada, pregúntale al responsable **en persona en el trabajo**, que lo puede buscar.
 
 **No soy sorter de Primary Sort Twilight en Saddle Brook. ¿Puedo jugar?**
 Sí. Puedes jugar, ganar puntos e insignias y ver tu propio puesto en tu perfil. Solo que no te pueden aprobar para una gorra, así que no apareces en la clasificación de la competencia.
