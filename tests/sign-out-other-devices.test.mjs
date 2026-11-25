@@ -17,7 +17,7 @@ function fn(name) {
   return body.slice(0, body.indexOf('\n}\n'));
 }
 
-test('Profile offers it, next to Log out', () => {
+test('Profile offers it', () => {
   const settings = fn('async function fillSettings');
   assert.match(settings, /id="profile-signout-others"/);
   assert.match(settings, /t\('Sign out my other devices'\)/);
@@ -28,10 +28,9 @@ test('Profile offers it, next to Log out', () => {
   assert.doesNotMatch(settings, /t\('Ends every other phone or computer/);
   const screen = fn('function showSignOutOthers');
   assert.match(screen, /t\('Ends every other phone or computer signed in to your account\. This one stays\.'\)/);
-  assert.ok(
-    settings.indexOf('profile-signout-others') > settings.indexOf('profile-logout'),
-    'it sits after Log out, not before it',
-  );
+  // Where it sits is the owner's order of 2026-11-25, asserted as a whole
+  // sequence in tests/settings-order.test.mjs. It moved above Log out
+  // there: the ways out are the last pair, and this is not one of them.
   assert.match(settings, /showSignOutOthers/);
 });
 
