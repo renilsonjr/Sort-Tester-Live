@@ -12,7 +12,8 @@ all this converter understands.
 
 When a rule changes: edit both .md files, retake any screen that changed
 (screens/en, screens/es: phone size 375x812, local build, test accounts only,
-season bubble closed), then run this again.
+season bubble closed), then run this again, and bump MANUAL_VERSION in
+src/auth.js so phones don't keep an old copy.
 """
 import html
 import json
