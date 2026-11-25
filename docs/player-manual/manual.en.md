@@ -146,3 +146,22 @@ Not in the app today.
 
 **How do I delete my account, and what do I lose?**
 Go to **Profile → Settings → Delete account**. Your profile, history and points are erased. **You can't undo it.** You also leave this season's prize race for good.
+
+---
+
+<!-- NEW-PAGE -->
+## 5. ZIP chart: every route in the Ranked quiz
+
+This is every route the Ranked quiz can ask, by service. Next to each ZIP is the **belt** it goes to and how many **points** it's worth.
+
+**Points come from the question's level, not from the belt color.** Each route has one level (Easy, Medium or Hard), and that level sets the points: right **+10 / +20 / +30**, wrong or time out **−15 / −10 / −5**.
+
+How to read a ZIP:
+- `070–089` is a range of the first three digits.
+- `087 1` means the first three digits **plus the next one**.
+- `890 0-0` is the full code as printed on the label.
+- **ends 1S / 2S** means a code ending in those letters, in any state.
+
+> In promotion quizzes a right answer adds 0 instead. Practice uses the same chart, but never changes points.
+
+<!-- ZIP-TABLE -->
