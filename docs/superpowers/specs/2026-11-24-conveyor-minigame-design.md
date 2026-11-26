@@ -178,7 +178,18 @@ Measured on November 26, 2026. None of this replaces the owner playing on an iPh
 | Hard | 26 | x4 | 74 |
 | Expert | 34 | x4 | 106 |
 
-**x4 cannot be reached in Easy at all.** It needs 15 straight and an Easy round now holds 13 packages. The owner had accepted x4 being hardest in Easy when the round was two minutes; this is a different fact and was put to him the day the round changed.
+At those speeds x4 could not be reached in Easy at all: it needs 15 straight and the round held 13 packages.
+
+**The same day the owner asked for every mode to run a little faster.** Speeds went up by about a fifth: Easy 42 to 50, Medium 60 to 72, Hard 84 to 100, Expert from `84 + 48p` to `100 + 58p`. A faster belt also brings more packages, because they are spaced by distance:
+
+| Mode | Speed (px/s) | Packages in a round | Perfect score | One arrives every |
+|---|---|---|---|---|
+| Easy | 50 | 15 | 30 | 3.7 s |
+| Medium | 72 | 22 | 58 | 2.6 s |
+| Hard | 100 | 31 | 94 | 1.9 s |
+| Expert | 100 to 158 | 41 | 134 | 1.9 s down to 1.2 s |
+
+In Easy the 15th straight sort is the last package of the round, so the badge reaches x4 but no package is ever scored at x4 there. The end of Expert is now one package every 1.2 seconds, faster than the 1.4 seconds flagged for the owner to judge on a phone.
 
 Scores stored before the change were made in two-minute rounds. They were the owner's own test rounds in the Pre-Season.
 

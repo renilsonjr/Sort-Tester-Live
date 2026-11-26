@@ -132,13 +132,17 @@ export function drawRoute(pool, rand = Math.random) {
 // Every number here is an assistant proposal, never measured. #397 tunes them
 // after the owner plays, which is why they live in one place.
 export const EXPERT_DECK_SWITCH = 1 / 3;
+// Raised by about a fifth on 2026-11-26, when the round became one minute and
+// the owner asked for every mode to run a little faster (was 42, 60, 84 and
+// 84 + 48p). Expert still opens at Hard's speed and climbs by a little over
+// half again.
 export const MODES = {
-  easy: { deck: () => 'level-basic', speed: () => 42 },
-  medium: { deck: () => 'level-medium', speed: () => 60 },
-  hard: { deck: () => 'level-hard', speed: () => 84 },
+  easy: { deck: () => 'level-basic', speed: () => 50 },
+  medium: { deck: () => 'level-medium', speed: () => 72 },
+  hard: { deck: () => 'level-hard', speed: () => 100 },
   expert: {
     deck: progress => (progress < EXPERT_DECK_SWITCH ? 'level-medium' : 'level-hard'),
-    speed: progress => 84 + 48 * Math.min(1, Math.max(0, progress)),
+    speed: progress => 100 + 58 * Math.min(1, Math.max(0, progress)),
   },
 };
 
