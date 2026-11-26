@@ -266,10 +266,17 @@
   /* The way back from a sub-screen. It was a full-width ghost button, which
      is the shape of a primary action, sitting above the content it is meant
      to be subordinate to. The 44px minimum hit area is kept by padding, not
-     by width. */
+     by width.
+
+     Which is also why the arrow used to sit 10px right of the title it
+     belongs under: the padding that makes the target pushes the ink in.
+     The negative margin moves the box back onto the title's line and
+     leaves the 44px alone -- the arrow lines up, the target does not
+     shrink. Measured on all twelve screens that carry it. */
   .lab-back {
     display: inline-flex; align-items: center; gap: 7px;
     align-self: flex-start; min-height: 44px; padding: 10px 14px 10px 10px;
+    margin-left: -10px;
     border: 0; background: transparent; color: var(--muted);
     font-size: 14px; font-weight: 800; cursor: pointer;
   }
@@ -1950,14 +1957,11 @@
        badge and the link sat under different columns on the owner and
        non-owner screens.
 
-       Back also read 10px right of the title, because its 44px hit area is
-       made of padding and the padding pushed the arrow in. The negative
-       margin puts the arrow on the title's line and leaves the hit area
-       alone. */
+       The arrow's own alignment is not here: it is on .lab-back itself, so
+       every screen that carries one gets it, the phone included. */
     .screen-profile > #profile-panel > .lab-back {
       grid-column: 1 / -1;
       justify-self: start;
-      margin-left: -10px;
     }
     .screen-profile > #profile-panel > #profile-version,
     .screen-profile > #profile-panel > .profile-security,

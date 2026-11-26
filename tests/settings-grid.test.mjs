@@ -36,15 +36,21 @@ test('Back crosses both columns, so the choices pair from the first row', () => 
   assert.match(app, /panel\.prepend\(back\.firstElementChild\);/);
 });
 
-test('Back is pulled back onto the title\'s line, without losing its hit area', () => {
+test('Back is pulled onto the title\'s line on every screen, hit area intact', () => {
   // The 44px target is made of padding (#331), and the left padding is what
   // pushed the arrow in. A negative margin moves the box, not the padding.
-  const rule = css.match(/\.screen-profile > #profile-panel > \.lab-back \{([^}]*)\}/)[1];
-  assert.match(rule, /margin-left: -10px/);
-  assert.match(rule, /justify-self: start/);
+  //
+  // It lives on .lab-back itself, not in the desktop block, because the
+  // same 10px showed on the phone and on all twelve screens that carry a
+  // Back. Putting it here twice would make it -20px on the desktop, which
+  // is the mistake this test exists to catch.
   const back = css.match(/\n  \.lab-back \{([^}]*)\}/)[1];
+  assert.match(back, /margin-left: -10px/);
   assert.match(back, /min-height: 44px/);
   assert.match(back, /padding: 10px 14px 10px 10px/);
+  const desktop = css.match(/\.screen-profile > #profile-panel > \.lab-back \{([^}]*)\}/)[1];
+  assert.doesNotMatch(desktop, /margin-left/, 'the pull is on .lab-back; here it would double');
+  assert.match(desktop, /justify-self: start/);
 });
 
 test('the tail is one block under the columns, not two dealt cells', () => {
@@ -54,11 +60,13 @@ test('the tail is one block under the columns, not two dealt cells', () => {
   }
 });
 
-test('the phone is untouched: the panel is only a grid on the desktop', () => {
-  // #273's rule. The grid rules live inside the 900px block, and below it
-  // the panel is the flex column it always was.
-  const desktop = html.slice(html.indexOf('@media (min-width: 900px)'));
-  assert.ok(desktop.includes('#profile-panel > .lab-back'), 'the fix must sit inside the desktop block');
-  const phone = html.slice(0, html.indexOf('@media (min-width: 900px)'));
-  assert.ok(!phone.includes('#profile-panel > .lab-back'), 'nothing about Back belongs outside it');
+test('only the column rules are desktop-only; the phone keeps its flex column', () => {
+  // #273's rule. The grid rules live inside the 900px block, so below it
+  // the panel is the flex column it always was. The arrow's alignment is
+  // deliberately NOT in there: the phone had the same indent.
+  const cut = html.indexOf('@media (min-width: 900px)');
+  const desktop = html.slice(cut), phone = html.slice(0, cut);
+  assert.ok(desktop.includes('#profile-panel > .lab-back'), 'the column rule must sit inside the desktop block');
+  assert.ok(!phone.includes('#profile-panel > .lab-back'), 'no column rule belongs outside it');
+  assert.ok(phone.includes('margin-left: -10px'), 'the arrow alignment must reach the phone');
 });
