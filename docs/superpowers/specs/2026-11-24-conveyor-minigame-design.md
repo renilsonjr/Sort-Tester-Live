@@ -121,7 +121,7 @@ The dependency order from #392 is unchanged: data, then logic, then screen, then
 
 **Stage 3 — #395 · screen and input. Built on November 26, 2026 (PR #483).** Adds three screens the prototype does not have: mode selection, a visible countdown, and the end-of-round summary from rule 18. Build the rule 19 sparkle ring and cartoon combo badge, the rule 20 verdict on the package, and the rule 21 sound and its toggle here. Also build the Home stripe described above. **Issue text needs the new screens added.**
 
-**Stage 4 — #396 · integration into Practice.** Its current text forbids new stored data, which now conflicts with the approved best-score rule. Replace the prohibition with the persistence boundary above, including the table and its GRANT. This stage also adds the fifth tab to `navTabs()` and wires it, with the dock measured at phone width. Mounting and unmounting must clear the animation frame, the round clock and the pointer and keyboard listeners, so re-entering the tab cannot leave two belts or two clocks running. **Issue text needs rewriting.**
+**Stage 4 — #396 · integration into Practice. Built on November 26, 2026 (PR #484).** Its current text forbids new stored data, which now conflicts with the approved best-score rule. Replace the prohibition with the persistence boundary above, including the table and its GRANT. This stage also adds the fifth tab to `navTabs()` and wires it, with the dock measured at phone width. Mounting and unmounting must clear the animation frame, the round clock and the pointer and keyboard listeners, so re-entering the tab cannot leave two belts or two clocks running. **Issue text needs rewriting.**
 
 **Stage 5 — #397 · iPhone validation and release.** Mostly unchanged. Add two checks: reconcile the clock, score, combo and the three counters against a controlled two-minute run, and confirm the Escalation curve stays playable on a phone. Tune the rule 16 ceiling here, after the owner plays.
 
@@ -145,6 +145,51 @@ Stage 1 is built in `src/conveyor/routes.js`, tested in `tests/conveyor-routes.t
 | Expert | 465 | 3,902 |
 
 The prototype in `mockups/handler-prototype.html` still shows ranges. It was not updated, and it is not the specification; where the two disagree, this document and `src/conveyor/routes.js` win.
+
+## Stage 5 findings, before the owner plays
+
+Measured on November 26, 2026. None of this replaces the owner playing on an iPhone, which is what #397 is for; it is what could be established without one, so that session starts from numbers rather than from a blank page.
+
+**The round reconciles.** `tests/conveyor-reconcile.test.mjs` plays a full two-minute round in every mode with a deterministic player, records every sort, missort and drop, and recomputes the score, the streak and the three counters independently from rules 13 to 17. The engine and the recomputation agree at every event in all four modes, including a round driven to zero and held there.
+
+**The routing content holds.** All 491 cards and 8,043 labels offer one correct belt and only real wrong ones, each checked against the chart row it came from. Over 20,000 draws the correct belt was on the left 49.9% of the time.
+
+**What each combo tier costs.** `node tools/handler-tiers.mjs` prints this; run it again after changing a constant.
+
+| Mode | Packages in a round | Wrong 1 in 25 | Wrong 1 in 15 | Wrong 1 in 10 | Wrong 1 in 7 |
+|---|---|---|---|---|---|
+| Easy | 26 | x4, 66 points | x3, 44 | x2, 31 | x2, 23 |
+| Medium | 38 | x4, 89 | x3, 63 | x2, 47 | x2, 33 |
+| Hard | 53 | x4, 133 | x3, 89 | x2, 63 | x2, 46 |
+| Expert | 69 | x4, 176 | x3, 117 | x2, 85 | x2, 61 |
+
+Two things in that table answer #397's question, and one of them runs against intuition:
+
+- **x4 asks for roughly one mistake in twenty or better.** A player wrong one time in ten never leaves x2, in any mode.
+- **x4 is hardest to reach in Easy, not easiest.** It needs 15 straight, and an Easy round holds only 26 packages, so the streak is more than half the round. Expert holds 69. The slow belt gives more time per package and fewer chances to build the streak.
+
+Whether that is right is the owner's call. The knobs, each a single named constant:
+
+| What it changes | Constant | File | Now |
+|---|---|---|---|
+| Sorts per multiplier step | `COMBO_STEP` | `src/conveyor/engine.js` | 5 |
+| Highest multiplier | `COMBO_CAP` | `src/conveyor/engine.js` | 4 |
+| Round length | `ROUND_MS` | `src/conveyor/engine.js` | 120000 |
+| Packages in sight | `PACKAGE_GAP_RATIO` | `src/conveyor/engine.js` | 1/3 of the lane |
+| Belt speed per mode | `MODES` | `src/conveyor/routes.js` | 42 / 60 / 84 / 84 to 132 px/s |
+| When Expert's deck hardens | `EXPERT_DECK_SWITCH` | `src/conveyor/routes.js` | 1/3 of the round |
+| Swipe distance | `SWIPE_MIN` | `src/conveyor/view.js` | 52px |
+| Sound levels | `MASTER_GAIN`, `MUSIC_GAIN`, `BELT_GAIN` | `src/conveyor/audio.js` | 0.85 / 0.15 / 0.035 |
+
+They stay in the module that uses them rather than in one shared file, because `engine.js` imports nothing by design and a test holds it to that.
+
+**Expert at the end of the round.** The belt reaches 132 px/s: a package crosses the lane in 4.2 seconds and a new one arrives every 1.4. Whether that is playable is a question for a thumb on a phone, not for a table.
+
+**The verdict under colour blindness.** The distance between the green and the red, in RGB, is 206 for typical vision, 110 under simulated protanopia and **43 under simulated deuteranopia**, where the two are close to one colour. The tick and the cross are therefore the only channel that survives, which is why rule 20 requires them and a test holds them in place.
+
+**Frame time.** With three packages on the belt, the multiplier at x4 and the sparkle ring at its densest, on Expert at 113 px/s: median 16.7 ms, 95th percentile 17.5 ms, worst frame 17.6 ms over 60 frames. That is desktop Chrome drawing a 670 by 942 canvas at a device pixel ratio of 2. **It is not a phone**, and #397's performance target is still to be agreed with the owner on a measured device.
+
+**Not verified, and only the owner can:** play on an actual iPhone and Safari; the sound with and without headphones; edge swipes and scroll conflicts on a real touch screen; whether the numbers above feel right.
 
 ## Delivery boundaries
 
