@@ -161,6 +161,17 @@ function manualHref() {
   return `assets/manual/sortquiz-manual-${forgotText('How to play') === 'How to play' ? 'en' : 'es'}.pdf?v=${MANUAL_VERSION}`;
 }
 
+// Text placed into markup is escaped here, as app.js does with esc(). This
+// file imports nothing, so it keeps its own copy.
+function escapeHtml(value) {
+  return String(value ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
 function forgotText(source) {
   let spanish = false;
   try {
@@ -306,12 +317,12 @@ export function createAuthPanel(container, onContinueAsGuest, onLoggedIn) {
           <p class="notice">${forgotText('Save this Quiz Code. It will not be shown again.')}</p>
           <div class="field">
             <span>${forgotText('Username')}</span>
-            <input id="generated-username" type="text" name="username" autocomplete="username" readonly value="${username}">
+            <input id="generated-username" type="text" name="username" autocomplete="username" readonly value="${escapeHtml(username)}">
           </div>
           <div class="field">
             <span>${forgotText('Your Quiz Code')}</span>
             <div class="code-row">
-              <input id="generated-login-id" type="text" name="quiz-code" autocomplete="new-password" readonly value="${result.data.login_id}">
+              <input id="generated-login-id" type="text" name="quiz-code" autocomplete="new-password" readonly value="${escapeHtml(result.data.login_id)}">
               <button id="copy-login-id" class="code-copy" type="button">${forgotText('Copy')}</button>
             </div>
           </div>
