@@ -149,6 +149,10 @@ export function createHandlerScreen({
   // keeping a second one, so the header switch silences the game too.
   soundPref = { isEnabled: () => true, toggle: () => true },
   bestScores = memoryBest(),
+  // The leaderboard's read (#417) and the app's own way of drawing a
+  // player's chosen icon. Without a board the button is simply not offered.
+  board = null,
+  avatarOf = () => '',
   random = Math.random,
   reducedMotion = () => typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches,
 } = {}) {
@@ -222,6 +226,7 @@ export function createHandlerScreen({
               <span class="hd-mode-best">${esc(t('Your best'))}: <strong>${bestScores.get(key)}</strong></span>
             </button></li>`).join('')}
         </ul>
+        ${board ? `<button type="button" class="hd-board-open" data-hd-board-open>${esc(t('Handler leaderboard'))}</button>` : ''}
         <div class="hd-rules">
           <h3>${esc(t('How it scores'))}</h3>
           <ul>
@@ -237,6 +242,88 @@ export function createHandlerScreen({
     for (const button of root.querySelectorAll('[data-hd-mode]')) {
       on(button, 'click', () => startCountdown(button.dataset.hdMode));
     }
+    const open = root.querySelector('[data-hd-board-open]');
+    if (open) on(open, 'click', () => showBoard(mode ?? MODE_ORDER[0]));
+  }
+
+  // The leaderboard (#417). One board per mode, never a combined one, and
+  // titled so nobody reads it as Ranked standing: it says Handler and it
+  // names the season. The frame is drawn at once and the rows arrive into
+  // it, so changing mode never blanks the screen.
+  let boardRequest = 0;
+  function showBoard(which) {
+    stopLoop();
+    audio?.stop();
+    root.innerHTML = `
+      <section class="hd hd-board" aria-labelledby="hd-board-title">
+        <p class="hd-eyebrow" data-hd-board-season>${esc(t('Handler'))}</p>
+        <h2 id="hd-board-title" class="hd-title">${esc(t('Handler leaderboard'))}</h2>
+        <div class="hd-board-tabs" role="group" aria-label="${esc(t('Mode'))}">
+          ${MODE_ORDER.map(key => `
+            <button type="button" class="hd-board-tab" data-hd-board-mode="${esc(key)}" aria-pressed="false">${esc(t(MODE_COPY[key][0]))}</button>`).join('')}
+        </div>
+        <p class="hd-board-note" data-hd-board-note></p>
+        <ol class="hd-board-rows" data-hd-board-rows></ol>
+        <p class="hd-board-you" data-hd-board-you hidden></p>
+        <button type="button" class="hd-back" data-hd-back>${esc(t('Back to modes'))}</button>
+        <p class="sr-only" data-hd-live role="status" aria-live="polite"></p>
+      </section>`;
+    for (const tab of root.querySelectorAll('[data-hd-board-mode]')) {
+      on(tab, 'click', () => loadBoard(tab.dataset.hdBoardMode));
+    }
+    on(root.querySelector('[data-hd-back]'), 'click', showModes);
+    loadBoard(which);
+  }
+
+  async function loadBoard(which) {
+    const request = boardRequest += 1;
+    for (const tab of root.querySelectorAll('[data-hd-board-mode]')) {
+      tab.setAttribute('aria-pressed', String(tab.dataset.hdBoardMode === which));
+    }
+    const note = root.querySelector('[data-hd-board-note]');
+    const list = root.querySelector('[data-hd-board-rows]');
+    const you = root.querySelector('[data-hd-board-you]');
+    if (!note || !list || !you) return;
+    list.setAttribute('aria-busy', 'true');
+    const answer = await board.load(which);
+    // A slower answer for a mode the player has already left is dropped, and
+    // so is one that arrives after the screen has moved on.
+    if (request !== boardRequest || !root.contains(list)) return;
+    list.removeAttribute('aria-busy');
+    you.hidden = true;
+    if (answer.state !== 'ok') {
+      list.innerHTML = '';
+      note.textContent = answer.state === 'guest'
+        ? t('Sign in to see the Handler leaderboard.')
+        : t('The leaderboard could not be loaded. Try again in a moment.');
+      say(note.textContent);
+      return;
+    }
+    const season = root.querySelector('[data-hd-board-season]');
+    if (season && answer.seasonLabel) season.textContent = `${t('Handler')} · ${answer.seasonLabel}`;
+    const modeName = t(MODE_COPY[which][0]);
+    note.textContent = answer.rows.length === 0
+      ? t('Nobody has scored in {mode} this season yet.', { mode: modeName })
+      : answer.open
+        ? t('Best two-minute score in {mode} this season.', { mode: modeName })
+        : t('The season is over. This is how {mode} finished.', { mode: modeName });
+    list.innerHTML = answer.rows.map(row => {
+      const icon = avatarOf(row.avatar);
+      return `
+        <li class="hd-board-row${row.you ? ' you' : ''}">
+          <span class="hd-board-place">${row.place}${row.tied ? '<abbr title="' + esc(t('Tied')) + '">=</abbr>' : ''}</span>
+          <span class="hd-board-icon" aria-hidden="true">${icon || esc(String(row.username).slice(0, 1).toUpperCase())}</span>
+          <span class="hd-board-name">${esc(row.username)}<small>#${esc(row.tag)}</small>${row.you ? ` <em>${esc(t('You'))}</em>` : ''}</span>
+          <strong class="hd-board-score">${row.score}</strong>
+        </li>`;
+    }).join('');
+    // Past the cut the reader still learns where they stand.
+    if (answer.you && !answer.rows.some(row => row.you)) {
+      you.hidden = false;
+      you.textContent = t('Your place: {place} of {players}, with {score}.',
+        { place: answer.you.place, players: answer.players, score: answer.you.score });
+    }
+    say(note.textContent);
   }
 
   function startCountdown(next) {
@@ -337,8 +424,11 @@ export function createHandlerScreen({
         <h2 id="hd-summary-title" class="hd-title">${esc(t('Round over'))}</h2>
         <p class="hd-final"><span>${esc(t('Score'))}</span><strong>${summary.score}</strong></p>
         ${bestScores.saved === false
-          // A guest is told plainly rather than shown a silent zero.
-          ? `<p class="hd-best-old">${esc(t('Scores are kept only while you are signed in. This one is not saved.'))}</p>`
+          // A guest, or a round played between seasons, is told plainly
+          // rather than shown a silent zero.
+          ? `<p class="hd-best-old">${esc(bestScores.betweenSeasons
+            ? t('The season is over, so this score is not saved. Scores count again when the next season starts.')
+            : t('Scores are kept only while you are signed in. This one is not saved.'))}</p>`
           : beaten
             ? `<p class="hd-best-new">${esc(t('A new best for {mode}.', { mode: t(MODE_COPY[mode][0]) }))}</p>`
             : `<p class="hd-best-old">${esc(t('Your best for {mode} is {score}.', { mode: t(MODE_COPY[mode][0]), score: previous }))}</p>`}
@@ -927,5 +1017,5 @@ export function createHandlerScreen({
   }
 
   showModes();
-  return { unmount, showModes, get mode() { return mode; }, get game() { return game; } };
+  return { unmount, showModes, showBoard, get mode() { return mode; }, get game() { return game; } };
 }

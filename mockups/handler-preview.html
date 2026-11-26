@@ -72,6 +72,17 @@
       routes,
       audio: createHandlerAudio({ getContext: getAudioContext, isEnabled: isSoundEnabled }),
       soundPref: { isEnabled: isSoundEnabled, toggle: toggleSound },
+      // Made-up players, preview only: the app reads the real board.
+      board: { load: async mode => ({
+        state: 'ok', mode, seasonLabel: 'Pre-Season', open: true, players: mode === 'expert' ? 0 : 5, you: mode === 'expert' ? null : { place: 3, score: 61, tied: false },
+        rows: mode === 'expert' ? [] : [
+          { place: 1, username: 'beltrunner', tag: '4821', avatar: null, score: 88, tied: true, you: false },
+          { place: 1, username: 'scanfast', tag: '0917', avatar: null, score: 88, tied: true, you: false },
+          { place: 3, username: 'you_here', tag: '2204', avatar: null, score: 61, tied: false, you: true },
+          { place: 4, username: 'a_very_long_username_indeed', tag: '7730', avatar: null, score: 40, tied: false, you: false },
+          { place: 5, username: 'nightshift', tag: '1002', avatar: null, score: 7, tied: false, you: false },
+        ],
+      }) },
     });
     // A handle for driving the preview from the console or from a test, so a
     // combo can be forced without playing for a minute. Preview only: the app

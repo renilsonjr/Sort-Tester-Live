@@ -133,6 +133,14 @@ The dependency order from #392 is unchanged: data, then logic, then screen, then
 - **Guests never appear.** A guest's score is still not stored anywhere.
 - **Lifetime and deletion follow Ranked.** A deleted account is not listed (`deleted_at IS NULL`, as on the Ranked board), and its stored scores go with the account. Like the Ranked board, it is visible only to signed-in players.
 
+**Built on November 26, 2026.** How those decisions were turned into code, and three choices made while building them, each approved by the owner the same day:
+
+- **No new table.** Migration `0042` adds the season to `handler_best_scores`, so a best is one per account, per mode, per season. Nothing is erased when a season starts; the new season simply has no rows. The Pre-Season is a season like any other.
+- **Between seasons a score is not stored.** The season is the one admitting Ranked play at that moment; when none is, the round still plays and the summary says the score was not saved, in different words from the guest message.
+- **An ended season keeps its board.** `GET /api/handler/leaderboard?mode=` answers for the newest season: live while it admits play, as it finished afterwards, and empty once the next one opens.
+- **Deleting an account removes its Handler scores**, in every season. Before this the rows stayed in the table behind the account's deletion mark. The app now runs a `DELETE` on this table, so the runtime role needs that privilege before the image is swapped; the migration carries the full `GRANT`.
+- **The screen** opens from a button on the mode list and has one tab per mode. Its title says Handler and names the season. A row shows place, icon, username, tag and score; a score of zero is not listed; ties share a place.
+
 Two things do not carry over from Ranked, because they are about the prize: there is no owner approval step (`participant_links`) and no minimum of one completed Ranked quiz. Scores are never compared across modes (rule 16), and nothing from this board feeds Ranked points, prizes, badges or the Shift log.
 
 - **The board starts over each season.** It follows the Ranked season: when a new season begins, every mode's board is empty again. The stage 4 table keeps one all-time best per account and mode, so this needs the score stored per season, which is a schema change with its own GRANT.

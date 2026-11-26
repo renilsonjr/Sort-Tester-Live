@@ -28,6 +28,7 @@ class HandlerBestScoreTestCase(unittest.TestCase):
             raise unittest.SkipTest(str(exc)) from None
 
     def setUp(self):
+        self.login_ids = {}
         migrate.reset_scratch_to_head(self.admin, settings.SCRATCH_DB_NAME)
         conn = migrate.connect(self.conninfo)
         migrate.execute(conn, "INSERT INTO seasons (phase, label) VALUES ('pre_season', 'Pre')")
@@ -43,7 +44,16 @@ class HandlerBestScoreTestCase(unittest.TestCase):
             client.post("/api/auth/login", json={"username": username, "login_id": login_id}).status_code,
             200,
         )
+        self.login_ids[username] = login_id
         return client, registration.json()["account_id"]
+
+    def _sql(self, sql, params=()):
+        conn = migrate.connect(self.conninfo)
+        try:
+            migrate.execute(conn, sql, params)
+            conn.commit()
+        finally:
+            conn.close()
 
     def _one(self, sql, params=()):
         conn = migrate.connect(self.conninfo)
@@ -154,6 +164,76 @@ class HandlerBestScoreTestCase(unittest.TestCase):
         self.assertEqual(self._one("SELECT count(*) AS rows FROM handler_best_scores")["rows"], 0)
 
 
+    # -- a best score belongs to a season (#417) --------------------------
+
+    def test_a_new_season_opens_with_every_best_at_zero_and_erases_nothing(self):
+        client, _ = self._player()
+        client.put("/api/handler/best", json={"mode": "easy", "score": 30})
+        self._sql("UPDATE seasons SET closed_at = now()")
+        self._sql("INSERT INTO seasons (phase, label) VALUES ('official', 'Season 1')")
+        answer = client.get("/api/handler/best").json()
+        self.assertEqual(answer["best"]["easy"], 0)
+        self.assertTrue(answer["in_season"])
+        # a lower score than last season's is this season's best
+        raised = client.put("/api/handler/best", json={"mode": "easy", "score": 4}).json()
+        self.assertEqual(raised, {"mode": "easy", "best": 4, "saved": True})
+        rows = self._one("SELECT count(*) AS rows, max(score) AS top FROM handler_best_scores")
+        self.assertEqual((rows["rows"], rows["top"]), (2, 30))
+
+    def test_between_seasons_a_score_is_not_stored_and_the_answer_says_so(self):
+        client, _ = self._player()
+        self._sql("UPDATE seasons SET closed_at = now()")
+        answer = client.put("/api/handler/best", json={"mode": "easy", "score": 9})
+        self.assertEqual(answer.status_code, 200, answer.text)
+        self.assertEqual(answer.json(), {"mode": "easy", "best": 0, "saved": False})
+        self.assertEqual(self._one("SELECT count(*) AS rows FROM handler_best_scores")["rows"], 0)
+        read = client.get("/api/handler/best").json()
+        self.assertFalse(read["in_season"])
+        self.assertEqual(set(read["best"].values()), {0})
+
+    def test_a_bad_score_is_still_refused_between_seasons(self):
+        client, _ = self._player()
+        self._sql("UPDATE seasons SET closed_at = now()")
+        self.assertEqual(
+            client.put("/api/handler/best", json={"mode": "nightmare", "score": 1}).status_code, 400
+        )
+
+    def test_an_account_that_deletes_itself_leaves_no_score_in_any_season(self):
+        client, account_id = self._player()
+        client.put("/api/handler/best", json={"mode": "easy", "score": 11})
+        self._sql("UPDATE seasons SET closed_at = now()")
+        self._sql("INSERT INTO seasons (phase, label) VALUES ('official', 'Season 1')")
+        client.put("/api/handler/best", json={"mode": "hard", "score": 5})
+        other, _ = self._player("bystander")
+        other.put("/api/handler/best", json={"mode": "easy", "score": 2})
+        gone = client.post(
+            "/api/auth/account/delete",
+            json={"login_id": self.login_ids["handlerplayer"], "acknowledge": True},
+        )
+        self.assertEqual(gone.status_code, 202, gone.text)
+        # the account row is kept and only marked, so this is not the cascade
+        self.assertIsNotNone(self._one("SELECT deleted_at FROM accounts WHERE id = %s", (account_id,))["deleted_at"])
+        left = self._one("SELECT count(*) AS rows FROM handler_best_scores WHERE account_id = %s", (account_id,))
+        self.assertEqual(left["rows"], 0)
+        self.assertEqual(self._one("SELECT count(*) AS rows FROM handler_best_scores")["rows"], 1)
+
+    def test_scores_stored_before_seasons_applied_move_to_the_newest_season(self):
+        from alembic import command
+
+        client, account_id = self._player()
+        config = migrate._alembic_config(self.conninfo)
+        try:
+            command.downgrade(config, "0041")
+            self._sql(
+                "INSERT INTO handler_best_scores (account_id, mode, score) VALUES (%s, 'easy', 21)",
+                (account_id,),
+            )
+            command.upgrade(config, "head")
+        finally:
+            config.attributes["connection"].dispose()
+        self.assertEqual(client.get("/api/handler/best").json()["best"]["easy"], 21)
+
+
 class HandlerBestScoreRulesTestCase(unittest.TestCase):
     """The rules that need no database."""
 
@@ -188,4 +268,14 @@ class HandlerBestScoreRulesTestCase(unittest.TestCase):
         for mode, score in (("nightmare", 1), ("easy", -1), ("easy", best_scores.SCORE_CEILING + 1), ("easy", True)):
             with self.subTest(mode=mode, score=score):
                 with self.assertRaises(best_scores.ScoreRefused):
-                    best_scores.record(object(), "account", mode, score)
+                    best_scores.record(object(), "account", "season", mode, score)
+
+    def test_the_season_migration_says_the_role_needs_delete(self):
+        # Deleting an account now runs a DELETE on this table as the app.
+        # Without the privilege, account deletion itself would fail.
+        from pathlib import Path
+
+        text = (Path(__file__).resolve().parents[1] / "migrations" / "versions"
+                / "0042_handler_scores_per_season.py").read_text(encoding="utf-8")
+        self.assertIn("GRANT SELECT, INSERT, UPDATE, DELETE ON handler_best_scores", text)
+        self.assertIn("then swap the image", text)

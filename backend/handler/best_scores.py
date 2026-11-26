@@ -6,11 +6,18 @@ timestamps, no telemetry. Scores from different modes are never compared or
 summed, because a two-minute round in Easy is not a two-minute round in
 Hard, so they are separate rows and separate answers.
 
-A score only ever goes up. The client is not trusted to know the previous
+Since #417 that number belongs to a season (owner decision, 2026-11-26):
+the personal best and the leaderboard both start over when a new season
+does. The season is the one admitting Ranked play at that moment, the same
+answer Ranked itself uses. Between seasons there is none, and a score made
+then is not stored: the caller says so on screen, as it does for a guest.
+
+Within a season a score only ever goes up. The client is not trusted to know the previous
 best, so the raise happens in the database in one statement rather than as
 a read followed by a write, which two tabs could interleave.
 """
 from backend.db import migrate
+from backend.ranked import seasons
 
 # The four modes, repeated from the migration's CHECK so a bad mode is
 # refused before it reaches the database.
@@ -26,38 +33,60 @@ class ScoreRefused(Exception):
     """The mode or the score is not one this table accepts."""
 
 
-def best_scores(conn, account_id) -> dict:
-    """Every mode's best for this account, zero where nothing is stored."""
+def current_season(conn, now):
+    """The season a Handler score made at ``now`` belongs to, or ``None``
+    between seasons. Ranked's own rule, read rather than repeated."""
+    return seasons.admitting_season(conn, now)
+
+
+def best_scores(conn, account_id, season_id) -> dict:
+    """Every mode's best for this account in this season, zero where
+    nothing is stored -- which is every mode when there is no season."""
+    if season_id is None:
+        return {mode: 0 for mode in MODES}
     rows = migrate.fetch_all(
         conn,
-        "SELECT mode, score FROM handler_best_scores WHERE account_id = %s",
-        (account_id,),
+        "SELECT mode, score FROM handler_best_scores"
+        " WHERE account_id = %s AND season_id = %s",
+        (account_id, season_id),
     )
     stored = {row["mode"]: row["score"] for row in rows}
     return {mode: stored.get(mode, 0) for mode in MODES}
 
 
-def record(conn, account_id, mode: str, score: int) -> int:
-    """Keep *score* if it beats what is stored. Returns the best after."""
+def record(conn, account_id, season_id, mode: str, score: int) -> int | None:
+    """Keep *score* if it beats this season's stored best. Returns the best
+    after, or ``None`` when there is no season to store it in."""
     if mode not in MODES:
         raise ScoreRefused(f"Unknown mode: {mode}")
     if not isinstance(score, int) or isinstance(score, bool):
         raise ScoreRefused("A score is a whole number.")
     if score < 0 or score > SCORE_CEILING:
         raise ScoreRefused("A score is between 0 and the ceiling.")
-    return _upsert(conn, account_id, mode, score)
+    if season_id is None:
+        return None
+    return _upsert(conn, account_id, season_id, mode, score)
 
 
-def _upsert(conn, account_id, mode: str, score: int) -> int:
+def _upsert(conn, account_id, season_id, mode: str, score: int) -> int:
     row = migrate.fetch_one(
         conn,
         """
-        INSERT INTO handler_best_scores (account_id, mode, score)
-        VALUES (%s, %s, %s)
-        ON CONFLICT (account_id, mode) DO UPDATE
+        INSERT INTO handler_best_scores (season_id, account_id, mode, score)
+        VALUES (%s, %s, %s, %s)
+        ON CONFLICT (season_id, account_id, mode) DO UPDATE
             SET score = GREATEST(handler_best_scores.score, EXCLUDED.score)
         RETURNING score
         """,
-        (account_id, mode, score),
+        (season_id, account_id, mode, score),
     )
     return row["score"]
+
+
+def forget_account(conn, account_id) -> None:
+    """Remove every Handler score this account ever made, in every season.
+    Part of deleting an account: its scores go with it rather than staying
+    in the table behind the account's deletion mark."""
+    migrate.execute(
+        conn, "DELETE FROM handler_best_scores WHERE account_id = %s", (account_id,)
+    )

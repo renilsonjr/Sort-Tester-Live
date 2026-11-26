@@ -1929,6 +1929,7 @@
   }
   .hd-icon-btn[aria-pressed="false"] { opacity: .72; }
   .hd-hint { margin: 0; color: var(--hd-ink-faint); font-size: 11px; }
+  .hd-board-open:focus-visible, .hd-board-tab:focus-visible,
   .hd-icon-btn:focus-visible, .hd-mode:focus-visible, .hd-dest:focus-visible,
   .hd-again:focus-visible, .hd-back:focus-visible { outline: 3px solid var(--hd-gold); outline-offset: 3px; }
 
@@ -1945,13 +1946,47 @@
   .hd-again { background: var(--hd-orange); color: #2b1c10; border: 1px solid #b4632a; }
   .hd-back { background: var(--hd-700); color: var(--hd-ink); border: 1px solid var(--hd-600); }
 
+  /* The Handler leaderboard (#417). Same skin as the rest of Handler, and it
+     says Handler and the season in its title so it is never read as Ranked. */
+  .hd-board-open {
+    min-height: 48px; border-radius: 14px; cursor: pointer; font-weight: 800;
+    background: var(--hd-700); color: var(--hd-gold); border: 1px solid var(--hd-600);
+  }
+  .hd-board-tabs { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
+  .hd-board-tab {
+    min-height: 44px; padding: 0 4px; border-radius: 12px; cursor: pointer; font-weight: 800; font-size: 13px;
+    background: var(--hd-800); color: var(--hd-ink-soft); border: 1px solid var(--hd-700);
+  }
+  .hd-board-tab[aria-pressed="true"] { background: var(--hd-orange); color: #2b1c10; border-color: #b4632a; }
+  .hd-board-note, .hd-board-you { margin: 0; color: var(--hd-ink-soft); font-size: 0.84rem; text-wrap: pretty; }
+  .hd-board-you { color: var(--hd-ink); font-weight: 700; }
+  .hd-board-rows { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; transition: opacity .15s ease-out; }
+  .hd-board-rows[aria-busy="true"] { opacity: .5; }
+  .hd-board-row {
+    display: grid; grid-template-columns: 34px 32px minmax(0, 1fr) auto; align-items: center; gap: 10px;
+    min-height: 48px; padding: 6px 12px; border-radius: 12px;
+    background: var(--hd-800); border: 1px solid var(--hd-700);
+  }
+  .hd-board-row.you { border-color: var(--hd-gold); background: var(--hd-700); }
+  .hd-board-place { font-weight: 800; font-variant-numeric: tabular-nums; color: var(--hd-ink-soft); }
+  .hd-board-place abbr { text-decoration: none; margin-left: 1px; color: var(--hd-ink-faint); }
+  .hd-board-icon {
+    width: 32px; height: 32px; border-radius: 50%; display: grid; place-items: center;
+    background: var(--hd-600); font-weight: 800; font-size: 15px; line-height: 1;
+  }
+  .hd-board-name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 700; }
+  .hd-board-name small { color: var(--hd-ink-faint); font-weight: 600; margin-left: 2px; }
+  .hd-board-name em { font-style: normal; font-size: 10px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: var(--hd-gold); margin-left: 4px; }
+  .hd-board-score { font-size: 1.15rem; color: var(--hd-gold); font-variant-numeric: tabular-nums; }
+
   /* Every Handler button answers the press the same way, and the answer can
      be interrupted: a transition, not a keyframe. */
-  .hd-mode, .hd-icon-btn, .hd-again, .hd-back, .hd-dest {
+  .hd-mode, .hd-icon-btn, .hd-again, .hd-back, .hd-dest, .hd-board-open, .hd-board-tab {
     transition: scale .12s ease-out, filter .12s ease-out, background-color .15s ease-out;
     -webkit-tap-highlight-color: transparent;
   }
-  .hd-mode:active, .hd-icon-btn:active, .hd-again:active, .hd-back:active, .hd-dest:active { scale: .96; }
+  .hd-mode:active, .hd-icon-btn:active, .hd-again:active, .hd-back:active, .hd-dest:active,
+  .hd-board-open:active, .hd-board-tab:active { scale: .96; }
   @media (hover: hover) {
     .hd-mode:hover, .hd-icon-btn:hover, .hd-back:hover { background: var(--hd-600); }
     .hd-again:hover { filter: brightness(1.06); }
@@ -1972,7 +2007,8 @@
   @media (prefers-reduced-motion: reduce) {
     .hd-combo, .hd-combo::after { transition: none; animation: none !important; rotate: 0deg; }
     .hd-combo.off, .hd-combo.lost { scale: 1; translate: 0 0; filter: blur(0); }
-    .hd-mode:active, .hd-icon-btn:active, .hd-again:active, .hd-back:active, .hd-dest:active { scale: 1; }
+    .hd-mode:active, .hd-icon-btn:active, .hd-again:active, .hd-back:active, .hd-dest:active,
+    .hd-board-open:active, .hd-board-tab:active { scale: 1; }
     .hd-modes > *, .hd-summary > *, .hd-count-number.pop { animation: none; }
   }
 
