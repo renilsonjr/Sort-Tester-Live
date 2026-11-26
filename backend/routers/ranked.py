@@ -29,6 +29,7 @@ from backend.ranked import profile_stats as ranked_profile_stats
 from backend.support import retention as support_retention
 from backend.support import tickets as support_tickets
 from backend.ranked.clock import system_clock
+from backend.text_input import PlainText
 from backend.ranked_bank.catalog import load_reviewed_bank
 
 router = APIRouter(prefix="/api/ranked", tags=["ranked"])
@@ -462,8 +463,8 @@ LAUNCH_CONFIRMATION = "LAUNCH"
 class LaunchRequest(BaseModel):
     # every field is optional here so that the owner check runs before any
     # complaint about the body; the endpoint validates them itself
-    label: str = ""
-    confirm: str = ""
+    label: PlainText = ""
+    confirm: PlainText = ""
     closes_at: datetime | None = None
 
 
@@ -685,7 +686,7 @@ def _require_recent_reauth(request: Request, conn) -> None:
 # owner was never granted those: what is missing is missing on purpose.
 class ApproveRequest(BaseModel):
     tag: str
-    roster_reference: str
+    roster_reference: PlainText
 
 
 def _approval_json(approval) -> dict:
@@ -1152,7 +1153,7 @@ def close_flag(
 class CreateTicketRequest(BaseModel):
     attempt_id: str
     # unbounded free text is storage whose size someone else chooses
-    description: str | None = Field(default=None, max_length=2000)
+    description: PlainText | None = Field(default=None, max_length=2000)
 
 
 class CloseTicketRequest(BaseModel):

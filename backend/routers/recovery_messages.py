@@ -9,6 +9,7 @@ from pydantic import BaseModel, Field
 
 from backend.auth import recovery_messages
 from backend.auth.rate_limit import _client_key
+from backend.text_input import PlainText
 from backend.db import pool, settings
 from backend.ranked.clock import system_clock
 
@@ -22,7 +23,7 @@ TOO_MANY = "Too many messages; find the owner in person."
 class RecoveryMessageRequest(BaseModel):
     # A ceiling on what is parsed at all. The real rule (500 after
     # trimming) lives in backend/auth/recovery_messages.py.
-    message: str = Field(max_length=4000)
+    message: PlainText = Field(max_length=4000)
 
 
 @router.post("/recovery-messages", status_code=status.HTTP_201_CREATED)
