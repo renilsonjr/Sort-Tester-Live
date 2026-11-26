@@ -179,3 +179,54 @@ test('a server that is down costs the player nothing on screen', async () => {
   assert.deepEqual(MODES.map(mode => best.get(mode)), [0, 0, 0, 0]);
   assert.match(String(best.lastError), /offline/);
 });
+
+// ---- the leaderboard (#417) ----------------------------------------------
+
+const { modules: [{ createHandlerBoard }], cleanup: cleanupBoard } = await loadAppModules(['src/conveyor/board.js']);
+after(cleanupBoard);
+
+test('the board is asked for one named mode and answers in plain states', async () => {
+  const urls = [];
+  const replies = [
+    answer(200, { mode: 'hard', season_label: 'Pre-Season', open: true, players: 1, you: { place: 1, score: 9, tied: false },
+      rows: [{ place: 1, username: 'anna', tag: '0001', avatar: null, score: 9, tied: false, you: true }] }),
+    answer(401, null),
+    answer(500, null),
+  ];
+  const fetchFn = async url => { urls.push(url); return replies.shift(); };
+  const board = createHandlerBoard({ fetchFn });
+  const ok = await board.load('hard');
+  assert.equal(urls[0], '/api/handler/leaderboard?mode=hard');
+  assert.equal(ok.state, 'ok');
+  assert.equal(ok.seasonLabel, 'Pre-Season');
+  assert.equal(ok.rows[0].username, 'anna');
+  assert.deepEqual(await board.load('easy'), { state: 'guest' });
+  assert.deepEqual(await board.load('easy'), { state: 'error' });
+  assert.deepEqual(await createHandlerBoard({ fetchFn: async () => { throw new Error('offline'); } }).load('easy'), { state: 'error' });
+});
+
+test('the leaderboard screen cannot be mistaken for Ranked and never combines modes', async () => {
+  const view = await read('src/conveyor/view.js');
+  // It says Handler and names the season.
+  assert.match(view, /t\('Handler leaderboard'\)/);
+  assert.match(view, /`\$\{t\('Handler'\)\} · \$\{answer\.seasonLabel\}`/);
+  // One tab per mode, straight from MODE_ORDER: no "overall" tab can appear.
+  assert.match(view, /MODE_ORDER\.map\(key => `\s+<button type="button" class="hd-board-tab"/);
+  assert.doesNotMatch(view, /overall|all modes/i);
+  // A stale answer for a mode the player already left is dropped.
+  assert.match(view, /if \(request !== boardRequest \|\| !root\.contains\(list\)\) return;/);
+  // A failure and a guest are said, never drawn as an empty board.
+  assert.match(view, /Sign in to see the Handler leaderboard\./);
+  assert.match(view, /The leaderboard could not be loaded\./);
+  // The app wires the real read and its own icon drawing.
+  const appSource = await read('src/app.js');
+  assert.match(appSource, /board: createHandlerBoard\(\),\s+avatarOf: avatarEmoji,/);
+});
+
+test('the screen shows no more identity than the board sends', async () => {
+  const view = await read('src/conveyor/view.js');
+  const rowTemplate = view.slice(view.indexOf('<li class="hd-board-row'), view.indexOf('</li>`', view.indexOf('<li class="hd-board-row')));
+  for (const field of rowTemplate.match(/row\.\w+/g)) {
+    assert.ok(['row.you', 'row.place', 'row.tied', 'row.username', 'row.tag', 'row.score'].includes(field), field);
+  }
+});

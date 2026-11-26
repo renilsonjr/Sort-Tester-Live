@@ -21,6 +21,7 @@ import * as conveyorRoutes from './conveyor/routes.js';
 import { createHandlerScreen } from './conveyor/view.js';
 import { createHandlerAudio } from './conveyor/audio.js';
 import { createBestScores } from './conveyor/bestScores.js';
+import { createHandlerBoard } from './conveyor/board.js';
 
 const app = document.getElementById('app');
 const log = createShiftLog(typeof localStorage === 'undefined' ? null : localStorage);
@@ -469,6 +470,8 @@ function showHandler() {
     audio: createHandlerAudio({ getContext: getAudioContext, isEnabled: isSoundEnabled }),
     soundPref: { isEnabled: isSoundEnabled, toggle: toggleSound },
     bestScores: best,
+    board: createHandlerBoard(),
+    avatarOf: avatarEmoji,
   });
   // The stored bests arrive after the first paint, so the mode list is
   // redrawn once they do. A guest's load() answers 401 and the screen says
