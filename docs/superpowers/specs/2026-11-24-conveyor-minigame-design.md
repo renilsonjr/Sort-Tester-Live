@@ -2,7 +2,7 @@
 
 Player-facing name: **Handler**. Internal name and issue titles: conveyor.
 
-**Status:** Design approved by the owner on November 24, 2026. Nothing is implemented. No issue text has been edited and no issue has been created from this document yet.
+**Status:** Design approved by the owner on November 24, 2026. The issues were rewritten from it on November 26, 2026, and stage 1 is built. Stages 2 to 6 are not started.
 
 Parent tracker: issue #392. Sub-issues #393, #394, #395, #396, #397. This document supersedes the "choices still to make" list in #392 for the three areas the owner settled on November 24, 2026 (round end, difficulty modes, score persistence); every other caveat in #392 still stands.
 
@@ -12,13 +12,15 @@ Parent tracker: issue #392. Sub-issues #393, #394, #395, #396, #397. This docume
 
 ## Game rules
 
-Rules 1–11 restate the concept agreed in #392. Rules 12–21 are the owner's November 24 decisions.
+Rules 1–11 restate the concept agreed in #392. Rules 12–21 are the owner's November 24 decisions. Rule 22 is the label decision of November 26, 2026.
 
 **The belt**
 
 1. Packages enter at the top and travel down toward the player. Following packages stay visible in the queue behind the front one.
 2. Only the front package can be sorted.
 3. The label shows the routing code **and the service**, because routing depends on both. Never fabricate a five-digit ZIP from a prefix or preload code.
+
+Settled on November 26, 2026 (rule 22 below): the label shows **one concrete code**, never a chart range.
 
 **The choice**
 
@@ -51,6 +53,13 @@ The sparkle is an icy cyan, chosen to sit far from the BLUE belt's navy so a glo
 
 20. The outcome is said **on the package itself**: it washes green with a tick on a sort, red with a cross on a missort or a drop, holds for a beat where it was, then leaves the belt. The colour and the glyph always travel together, because red and green alone fail red-green colour blindness. There is **no running commentary under the belt**; the owner found that text pulled the eye off the lane, and the screen it used now belongs to the game. The outcome still goes to a visually hidden live region for screen readers.
 21. The game has **sound**: an arcade loop, the belt's own running noise whose pitch follows the live belt speed, and one cue each for a sort, a missort, a drop and **reaching a combo tier**. A drop sounds like a thud rather than like a wrong answer, because they are different mistakes. The tier cue is a rising arpeggio, longer and higher at each step, and it plays inside the badge's bump so the sound and the movement are one event. The belt's own noise stays quiet — it is the room, not an instrument, and the sort and missort cues have to cut through it. A **sound toggle** is always visible and its setting is remembered; audio starts only after the player starts a round, never on page load. The game must be fully playable with the sound off, which rule 20 guarantees.
+
+22. The label shows **one code, never a range**. A chart main row is written as a range of three-digit prefixes because that is the shape of a chart row; a package in the hub carries one code. So the adapter **draws one prefix out of the range**, which is what a handler reads off a label. Two things keep the draw honest:
+
+- A prefix that any exception row of the same service touches is **removed from the draw**. `TN|370–385` is BROWN but `TN|376–378` is BLUE, so 376, 377 and 378 never come out of the BROWN row. `NE|575 3-6` is ORANGE inside a BROWN range, so 575 is removed as well: its answer turns on a fourth digit the label would not show, which makes a bare `575` a question with no right answer. Those prefixes are not lost, because the exception rows carry them with the fourth digit visible.
+- The removed set is **computed from the chart, never typed by hand**, so correcting the chart recomputes it. A test asserts the computed set equals the `exclusion_refs` the owner reviewed in `backend/data/ranked/routes-v1.json`, in both directions, so correcting one side and forgetting the other fails the suite instead of teaching a player the wrong belt.
+
+A full five-digit ZIP was asked for and is **not possible from repository data**: neither the chart, the Ranked bank nor the player manual holds a ZIP list, and the chart routes by prefix. The owner declined adding an external ZIP dataset on November 26, 2026, so the label stops at the prefix, or at the prefix and fourth digit where the chart writes one. Do not reintroduce a generated five-digit ZIP as an improvement; rule 3 forbids it.
 
 The owner's reason for rules 14 and 15: a missort has a real cost in the hub, because the package goes to the wrong place and comes back. The x4 ceiling in rule 16 is an assistant proposal chosen without measurement; it is expected to be tuned in stage 5 after the owner plays, so it must live in a single named constant.
 
@@ -91,9 +100,9 @@ The first release stores exactly one thing: the best score for each of the four 
 
 The dependency order from #392 is unchanged: data, then logic, then screen, then integration, then release. What changes is the content of four issues, plus one new stage.
 
-**Stage 1 — #393 · routing data and modes.** The issue currently asks the owner to confirm the surface; that is now answered, so it becomes work rather than a question. Wire the four modes to the existing level decks and build the adapter that selects a card and assembles the two-option pair. Decide the Escalation deck-change and acceleration rules here. **Issue text needs rewriting.**
+**Stage 1 — #393 · routing data and modes. Built on November 26, 2026.** The four modes are wired to the existing level decks, the adapter draws a card and assembles the two-option pair, and the Expert acceleration and deck-change rules are decided: Expert opens at Hard's speed and climbs by half again over the round, with the deck hardening one third of the way in. Every tuning number sits in `MODES` in one place, for #397 to change after the owner plays. The stage touches no DOM, no canvas, no audio and no storage.
 
-**Stage 2 — #394 · game engine.** Adds the two-minute clock, the combo and multiplier, the zero floor and the Expert acceleration curve to the existing acceptance list. All of it is browser-independent logic, testable with a fake clock and an injected random source. Rules 1–21 become tests here. **Issue text needs the new rules added.**
+**Stage 2 — #394 · game engine.** Adds the two-minute clock, the combo and multiplier, the zero floor and the Expert acceleration curve to the existing acceptance list. All of it is browser-independent logic, testable with a fake clock and an injected random source. Rules 1–22 become tests here. **Issue text needs the new rules added.**
 
 **Stage 3 — #395 · screen and input.** Adds three screens the prototype does not have: mode selection, a visible countdown, and the end-of-round summary from rule 18. Build the rule 19 sparkle ring and cartoon combo badge, the rule 20 verdict on the package, and the rule 21 sound and its toggle here. Also build the Home stripe described above. **Issue text needs the new screens added.**
 
@@ -109,7 +118,18 @@ A playable prototype exists as a private artifact, updated November 24, 2026 to 
 
 The prototype's routing content is generated from the app's own `LEVEL_DECKS` on `origin/main` at `178d940` — 26 Basic, 186 Medium and 280 Hard cards — using the real `BELT_STYLE` colors. The decks are read straight from the chart, so this is the app's current routing content, but the owner has not re-approved it for a game and the `CHECK` belt is excluded by the deck filter.
 
-**A finding for stage 1.** 367 of those 492 cards carry a *range* as their code, such as `010–024`, because that is the shape of a chart row. A package in the hub has one code, not a range, so a label reading `010–024` is a question about a chart row wearing a package's clothes. Rule 3 forbids inventing a five-digit ZIP from a range, so the prototype shows the range as-is. Stage 1 has to decide which it is: the label shows the range and the game stays a chart drill, or the adapter picks a concrete code inside the range from an owner-approved source. This is a content decision, not a rendering one.
+**That finding is now closed.** 367 of those 492 cards carried a *range* as their code, such as `010–024`, because that is the shape of a chart row. Rule 22 settles it: the adapter draws one prefix out of the range and removes the prefixes any exception of the same service touches. Measured across the chart, that is 26 prefix-and-service pairs, and the reviewed Ranked bank marks the same 26 through its `exclusion_refs`.
+
+Stage 1 is built in `src/conveyor/routes.js`, tested in `tests/conveyor-routes.test.mjs`. What the modes now offer, measured rather than estimated:
+
+| Mode | Deck cards | Distinct labels |
+|---|---|---|
+| Easy | 26 | 332 |
+| Medium | 186 | 3,809 |
+| Hard | 279 | 3,902 |
+| Expert | 465 | 3,902 |
+
+The prototype in `mockups/handler-prototype.html` still shows ranges. It was not updated, and it is not the specification; where the two disagree, this document and `src/conveyor/routes.js` win.
 
 ## Delivery boundaries
 
