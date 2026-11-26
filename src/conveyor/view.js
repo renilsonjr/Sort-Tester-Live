@@ -326,9 +326,12 @@ export function createHandlerScreen({
         <p class="hd-eyebrow">${esc(t(MODE_COPY[mode][0]))} · ${esc(t('Two minutes on the belt'))}</p>
         <h2 id="hd-summary-title" class="hd-title">${esc(t('Round over'))}</h2>
         <p class="hd-final"><span>${esc(t('Score'))}</span><strong>${summary.score}</strong></p>
-        ${beaten
-          ? `<p class="hd-best-new">${esc(t('A new best for {mode}.', { mode: t(MODE_COPY[mode][0]) }))}</p>`
-          : `<p class="hd-best-old">${esc(t('Your best for {mode} is {score}.', { mode: t(MODE_COPY[mode][0]), score: previous }))}</p>`}
+        ${bestScores.saved === false
+          // A guest is told plainly rather than shown a silent zero.
+          ? `<p class="hd-best-old">${esc(t('Scores are kept only while you are signed in. This one is not saved.'))}</p>`
+          : beaten
+            ? `<p class="hd-best-new">${esc(t('A new best for {mode}.', { mode: t(MODE_COPY[mode][0]) }))}</p>`
+            : `<p class="hd-best-old">${esc(t('Your best for {mode} is {score}.', { mode: t(MODE_COPY[mode][0]), score: previous }))}</p>`}
         <dl class="hd-stats">
           <div><dt>${esc(t('Right belt'))}</dt><dd>${summary.sorts}</dd></div>
           <div><dt>${esc(t('Wrong belt'))}</dt><dd>${summary.missorts}</dd></div>

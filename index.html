@@ -1786,6 +1786,20 @@
      .lab-screen with its own 16px gap between them. */
   .chart-aside { display: contents; }
 
+  /* Five tabs and a long label (#396).
+
+     Handler's tab makes the signed-in dock five wide. Measured rather than
+     eyeballed: at 320px each tab is 64px, and "Clasificatorio" -- the
+     Spanish Ranked label -- is 68.9px of text at the dock's 11px, so it was
+     clipped. At 10px it is 62.7px and fits, with 65.8px at 375px.
+
+     The size drops only when the dock is five wide, so a guest's three tabs
+     and the four-tab dock are untouched. The word itself is not shortened:
+     it is the owner's, and a label the player has to decode is worse than a
+     slightly smaller one.
+     --------------------------------------------------------------------- */
+  .lab-nav-tight button { font-size: 10px; }
+
   /* ---------------------------------------------------------------------
      Handler, the conveyor mini-game (#395).
 

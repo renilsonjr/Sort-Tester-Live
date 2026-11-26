@@ -38,7 +38,9 @@ test('#427 the dock is never built, not hidden', () => {
   // -- and no CSS has to beat `.lab-nav { display: grid !important }`,
   // which is what hiding it would have meant.
   assert.match(app, /const attemptLive = content\.includes\('data-attempt-live'\);/);
-  assert.match(app, /\$\{attemptLive \? '' : `<nav class="lab-nav"/);
+  // The class carries a modifier when the dock is five wide (#396), so the
+  // assertion is about the conditional that builds it, not the class text.
+  assert.match(app, /\$\{attemptLive \? '' : `<nav class="lab-nav/);
   assert.doesNotMatch(css, /#app\.attempt-live \.lab-nav \{ display: none/);
 });
 
