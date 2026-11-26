@@ -37,7 +37,10 @@ class ApiDocumentationTests(unittest.TestCase):
 
 class SecurityHeaderTests(unittest.TestCase):
     # /api/auth/me needs the database; an unknown /api path exercises the same prefix.
-    PATHS = ("/", "/src/app.js", "/health", "/api/does-not-exist", "/does-not-exist")
+    PATHS = (
+        "/", "/src/app.js", "/assets/privacy/privacy-en.html", "/health",
+        "/api/does-not-exist", "/does-not-exist",
+    )
 
     def test_every_response_carries_the_fixed_headers(self):
         app = client()
@@ -48,11 +51,19 @@ class SecurityHeaderTests(unittest.TestCase):
                 self.assertEqual(headers["x-frame-options"], "DENY")
                 self.assertEqual(headers["referrer-policy"], "same-origin")
                 self.assertIn("max-age=", headers["strict-transport-security"])
+                self.assertEqual(
+                    headers["permissions-policy"],
+                    "camera=(), microphone=(), geolocation=(), payment=(), usb=()",
+                )
 
     def test_refusals_carry_them_too(self):
         refused = client().post("/api/auth/login", json={}, headers={"Origin": "https://evil.example"})
         self.assertEqual(refused.status_code, 403)
         self.assertEqual(refused.headers["x-content-type-options"], "nosniff")
+        self.assertIn("camera=()", refused.headers["permissions-policy"])
+        too_big = client().post("/api/auth/login", content=b"x" * (65 * 1024))
+        self.assertEqual(too_big.status_code, 413)
+        self.assertIn("camera=()", too_big.headers["permissions-policy"])
 
     def test_content_security_policy_allows_only_what_the_page_uses(self):
         policy = client().get("/").headers["content-security-policy"]

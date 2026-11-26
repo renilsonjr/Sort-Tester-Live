@@ -36,3 +36,12 @@ test('both pages say the same things', () => {
     assert.equal((html.match(/<section>/g) || []).length, 4);
   }
 });
+
+test('the pages tell the truth about the export download and the Shift log', () => {
+  for (const html of Object.values(pages)) {
+    assert.ok(html.includes('cdn.sheetjs.com'), 'names the one outside download');
+    assert.ok(html.includes('Shift log'), 'mentions the Shift log kept on the device');
+  }
+  assert.doesNotMatch(pages.en, /No other company’s code runs in the app\.</);
+  assert.doesNotMatch(pages.es, /no se ejecuta código de ninguna otra empresa\.</);
+});
