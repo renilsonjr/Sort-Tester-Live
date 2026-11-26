@@ -170,10 +170,12 @@ export function createHandlerScreen({
   };
 
   const MODE_COPY = {
-    easy: ['Easy', 'A slow belt and the Basic routes'],
-    medium: ['Medium', 'A normal belt and the Medium routes'],
-    hard: ['Hard', 'A fast belt and the full chart'],
-    expert: ['Expert', 'Opens fast, keeps speeding up, and the routes harden'],
+    // Names only. Each mode carried a line of description until the owner
+    // asked for them to go (2026-11-26): the mode list is a list of names.
+    easy: ['Easy'],
+    medium: ['Medium'],
+    hard: ['Hard'],
+    expert: ['Expert'],
   };
 
   let game = null;
@@ -217,12 +219,10 @@ export function createHandlerScreen({
       <section class="hd hd-modes" aria-labelledby="hd-modes-title">
         <p class="hd-eyebrow">${esc(t('Two minutes on the belt'))}</p>
         <h2 id="hd-modes-title" class="hd-title">${esc(t('Handler'))}</h2>
-        <p class="hd-lede">${esc(t('Send each package to the right belt before it runs off the end.'))}</p>
         <ul class="hd-mode-list">
           ${MODE_ORDER.map(key => `
             <li><button type="button" class="hd-mode" data-hd-mode="${esc(key)}">
               <span class="hd-mode-name">${esc(t(MODE_COPY[key][0]))}</span>
-              <span class="hd-mode-blurb">${esc(t(MODE_COPY[key][1]))}</span>
               <span class="hd-mode-best">${esc(t('Your best'))}: <strong>${bestScores.get(key)}</strong></span>
             </button></li>`).join('')}
         </ul>
@@ -352,8 +352,11 @@ export function createHandlerScreen({
   function showPlaying() {
     root.innerHTML = `
       <section class="hd hd-play" aria-labelledby="hd-play-title">
-        <p class="hd-eyebrow">${esc(t('Two minutes on the belt'))}</p>
-        <h2 id="hd-play-title" class="hd-title">${esc(t('Handler'))}</h2>
+        <p class="hd-eyebrow">${esc(t(MODE_COPY[mode][0]))} · ${esc(t('Two minutes on the belt'))}</p>
+        <div class="hd-play-head">
+          <h2 id="hd-play-title" class="hd-title">${esc(t('Handler'))}</h2>
+          <button type="button" class="hd-leave" data-hd-leave><span aria-hidden="true">←</span> ${esc(t('Change mode'))}</button>
+        </div>
         <div class="hd-strip">
           <div><dt>${esc(t('Score'))}</dt><dd data-hd-score>0</dd></div>
           <div><dt>${esc(t('Time left'))}</dt><dd data-hd-clock>2:00</dd></div>
@@ -473,6 +476,9 @@ export function createHandlerScreen({
       say(enabled ? t('Sound on.') : t('Sound off.'));
     });
     on(root.querySelector('[data-hd-restart]'), 'click', () => startCountdown(mode));
+    // The way out of a round (owner, 2026-11-26: there was none). Leaving
+    // abandons the round: nothing is scored and nothing is saved.
+    on(root.querySelector('[data-hd-leave]'), 'click', showModes);
     for (const button of root.querySelectorAll('[data-hd-side]')) {
       on(button, 'click', () => resolve(Number(button.dataset.hdSide)));
     }

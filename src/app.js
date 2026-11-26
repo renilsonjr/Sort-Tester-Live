@@ -3410,7 +3410,6 @@ function showStart() {
           <button id="home-handler" class="home-short" type="button">
             <span class="home-short-ic" aria-hidden="true">${ICONS.handler}</span>
             <strong>${esc(t('Sort packages against the clock'))}</strong>
-            <small>${esc(t('Two minutes on the belt. Each mode keeps its own best score.'))}</small>
           </button>
         </div>
       </section>

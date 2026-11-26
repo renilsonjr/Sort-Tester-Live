@@ -594,7 +594,6 @@ const ES = {
   'Your place: {place} of {players}, with {score}.': 'Tu puesto: {place} de {players}, con {score}.',
   'The season is over, so this score is not saved. Scores count again when the next season starts.': 'La temporada terminó, así que esta puntuación no se guarda. Las puntuaciones vuelven a contar cuando empiece la próxima temporada.',
   'Sort packages against the clock': 'Clasifica paquetes contra el reloj',
-  'Two minutes on the belt. Each mode keeps its own best score.': 'Dos minutos en la banda. Cada modo guarda su propia mejor puntuación.',
   'Swipe the front box, tap a side belt, or use the arrow keys.': 'Desliza la caja de delante, toca una banda lateral o usa las flechas.',
   'Ground': 'Terrestre',
   'Next Day Air': 'Aéreo 1 día',
@@ -603,14 +602,9 @@ const ES = {
   // Handler, the conveyor mini-game (#395). 'Score' and 'Hard' already have
   // entries above and mean the same thing here, so they are not repeated.
   // 'Handler' stays 'Handler': it is the job title, not a description.
-  'Send each package to the right belt before it runs off the end.': 'Envía cada paquete a la banda correcta antes de que se salga por el final.',
   'Easy': 'Fácil',
   'Medium': 'Intermedio',
   'Expert': 'Experto',
-  'A slow belt and the Basic routes': 'Banda lenta y las rutas básicas',
-  'A normal belt and the Medium routes': 'Banda normal y las rutas intermedias',
-  'A fast belt and the full chart': 'Banda rápida y la tabla completa',
-  'Opens fast, keeps speeding up, and the routes harden': 'Empieza rápida, acelera cada vez más y las rutas se endurecen',
   'Your best': 'Tu mejor',
   'How it scores': 'Cómo se puntúa',
   'A round lasts two minutes. It ends on the clock, not when packages run out.': 'Una ronda dura dos minutos. Termina con el reloj, no cuando se acaban los paquetes.',
