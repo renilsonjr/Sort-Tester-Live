@@ -135,7 +135,7 @@ The dependency order from #392 is unchanged: data, then logic, then screen, then
 
 Two things do not carry over from Ranked, because they are about the prize: there is no owner approval step (`participant_links`) and no minimum of one completed Ranked quiz. Scores are never compared across modes (rule 16), and nothing from this board feeds Ranked points, prizes, badges or the Shift log.
 
-**Still open:** Ranked standings belong to a season. Whether the Handler board is all-time or starts over with each season has not been asked yet.
+- **The board starts over each season.** It follows the Ranked season: when a new season begins, every mode's board is empty again. The stage 4 table keeps one all-time best per account and mode, so this needs the score stored per season, which is a schema change with its own GRANT.
 
 ## Prototype status
 
