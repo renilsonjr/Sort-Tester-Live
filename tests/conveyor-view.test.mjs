@@ -280,3 +280,16 @@ test('losing a real streak scatters the ring instead of switching it off', () =>
   assert.ok(BURST_S < 0.5, 'the scatter must be over quickly and never flash the screen');
   assert.ok(viewSource.includes("ctx.globalCompositeOperation = 'lighter'"), 'the stars add light rather than painting dots');
 });
+
+test('Handler is readable on the light page, and a round can be left', async () => {
+  const { readFile } = await import('node:fs/promises');
+  const html = await readFile(new URL('../index.html', import.meta.url), 'utf8');
+  // Owner, on an iPhone in light mode, 2026-11-26: cream ink on a cream page.
+  // Handler carries its own dark ground instead of borrowing the page's.
+  assert.match(html, /\.hd \{[^}]*background: var\(--hd-900\);[^}]*\}/);
+  // And there was no way out of a round once it had started.
+  assert.match(viewSource, /data-hd-leave/);
+  assert.match(viewSource, /on\(root\.querySelector\('\[data-hd-leave\]'\), 'click', showModes\);/);
+  // The lines he asked to remove stay removed.
+  assert.doesNotMatch(viewSource, /hd-lede|hd-mode-blurb/);
+});

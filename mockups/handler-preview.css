@@ -1804,10 +1804,21 @@
     --hd-orange: #dc8542; --hd-gold: #ffca6a; --hd-spark: #9fe8ff; --hd-dark: #0b2230;
     display: flex; flex-direction: column; gap: 12px;
     color: var(--hd-ink);
+    /* Handler brings its own dark ground with it. Its ink is cream, so on the
+       app's light page the title and every line outside a card vanished
+       (seen on the owner's iPhone, 2026-11-26). The negative margin lets the
+       ground reach into the page's own padding, so the stage keeps the width
+       stageLayout() was measured for. */
+    background: var(--hd-900); margin: -12px; padding: 12px; border-radius: 22px;
+  }
+  .hd-play-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+  .hd-leave {
+    flex: none; min-height: 44px; padding: 0 12px; border-radius: 12px; cursor: pointer;
+    background: var(--hd-700); color: var(--hd-ink); border: 1px solid var(--hd-600);
+    font-weight: 700; font-size: 13px; white-space: nowrap;
   }
   .hd-eyebrow { margin: 0; color: var(--hd-ink-faint); font-size: 10px; font-weight: 800; letter-spacing: .18em; text-transform: uppercase; }
   .hd-title { margin: 0; font-size: clamp(30px, 8vw, 40px); line-height: 1.05; letter-spacing: -.03em; color: var(--hd-ink); text-wrap: balance; }
-  .hd-lede { margin: 0; color: var(--hd-ink-soft); text-wrap: pretty; }
 
   .hd-strip {
     display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1.5fr); margin: 0;
@@ -1827,11 +1838,11 @@
     background: var(--hd-800); border: 1px solid var(--hd-700); color: var(--hd-ink);
   }
   .hd-mode-name { font-weight: 800; letter-spacing: -.01em; }
-  .hd-mode-blurb, .hd-mode-best { color: var(--hd-ink-soft); font-size: 0.84rem; }
+  .hd-mode-best { color: var(--hd-ink-soft); font-size: 0.84rem; }
   .hd-mode-best strong { color: var(--hd-gold); }
   .hd-rules { background: var(--hd-800); border: 1px solid var(--hd-700); border-radius: 14px; padding: 12px 14px; }
   .hd-rules h3 { margin: 0 0 6px; font-size: 0.95rem; text-wrap: balance; }
-  .hd-rules li, .hd-mode-blurb { text-wrap: pretty; }
+  .hd-rules li { text-wrap: pretty; }
   .hd-rules ul { margin: 0; padding-left: 18px; color: var(--hd-ink-soft); font-size: 0.84rem; display: grid; gap: 4px; }
 
   .hd-count { align-items: center; justify-content: center; min-height: 46vh; }
@@ -1929,7 +1940,7 @@
   }
   .hd-icon-btn[aria-pressed="false"] { opacity: .72; }
   .hd-hint { margin: 0; color: var(--hd-ink-faint); font-size: 11px; }
-  .hd-board-open:focus-visible, .hd-board-tab:focus-visible,
+  .hd-board-open:focus-visible, .hd-board-tab:focus-visible, .hd-leave:focus-visible,
   .hd-icon-btn:focus-visible, .hd-mode:focus-visible, .hd-dest:focus-visible,
   .hd-again:focus-visible, .hd-back:focus-visible { outline: 3px solid var(--hd-gold); outline-offset: 3px; }
 
@@ -1981,12 +1992,12 @@
 
   /* Every Handler button answers the press the same way, and the answer can
      be interrupted: a transition, not a keyframe. */
-  .hd-mode, .hd-icon-btn, .hd-again, .hd-back, .hd-dest, .hd-board-open, .hd-board-tab {
+  .hd-mode, .hd-icon-btn, .hd-again, .hd-back, .hd-dest, .hd-board-open, .hd-board-tab, .hd-leave {
     transition: scale .12s ease-out, filter .12s ease-out, background-color .15s ease-out;
     -webkit-tap-highlight-color: transparent;
   }
   .hd-mode:active, .hd-icon-btn:active, .hd-again:active, .hd-back:active, .hd-dest:active,
-  .hd-board-open:active, .hd-board-tab:active { scale: .96; }
+  .hd-board-open:active, .hd-board-tab:active, .hd-leave:active { scale: .96; }
   @media (hover: hover) {
     .hd-mode:hover, .hd-icon-btn:hover, .hd-back:hover { background: var(--hd-600); }
     .hd-again:hover { filter: brightness(1.06); }
@@ -2008,7 +2019,7 @@
     .hd-combo, .hd-combo::after { transition: none; animation: none !important; rotate: 0deg; }
     .hd-combo.off, .hd-combo.lost { scale: 1; translate: 0 0; filter: blur(0); }
     .hd-mode:active, .hd-icon-btn:active, .hd-again:active, .hd-back:active, .hd-dest:active,
-    .hd-board-open:active, .hd-board-tab:active { scale: 1; }
+    .hd-board-open:active, .hd-board-tab:active, .hd-leave:active { scale: 1; }
     .hd-modes > *, .hd-summary > *, .hd-count-number.pop { animation: none; }
   }
 

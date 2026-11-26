@@ -9,7 +9,7 @@
 // each one is a named constant for #397 to change after the owner plays.
 
 // Rule 12: the round ends when the clock reaches zero.
-export const ROUND_MS = 120000;
+export const ROUND_MS = 60000;
 // Rule 16: the multiplier rises one step every COMBO_STEP straight sorts and
 // stops at COMBO_CAP.
 export const COMBO_STEP = 5;
@@ -30,7 +30,7 @@ export const PACKAGE_GAP_RATIO = 1 / 3;
 export const DEFAULT_LANE = 420;
 // A tab that was asleep, or a long frame, must not dump the queue over the
 // drop edge in one tick. Motion and the clock share this clamp, so a round is
-// two minutes of played time rather than two minutes of wall clock.
+// a minute of played time rather than a minute of wall clock.
 export const MAX_TICK_MS = 250;
 
 export function multiplierFor(combo) {

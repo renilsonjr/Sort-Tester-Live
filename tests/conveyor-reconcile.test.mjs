@@ -2,7 +2,7 @@ import test, { after } from 'node:test';
 import assert from 'node:assert/strict';
 import { loadAppModules } from './helpers/load-app-modules.mjs';
 
-// #397: "Reconcile a controlled two-minute run by hand."
+// #397: "Reconcile a controlled run by hand (two minutes then; the round is one minute since 2026-11-26)."
 //
 // These tests do not ask the engine what the score was. They record every
 // event a full round produces and recompute the score, the streak and the
@@ -23,7 +23,7 @@ function seeded(seed) {
 
 // A deterministic player: mostly right, wrong every missEvery-th decision,
 // and asleep on every sleepEvery-th package, which then runs off the end.
-function play(mode, { seed = 2026, tickMs = 16, missEvery = 7, sleepEvery = 23 } = {}) {
+function play(mode, { seed = 2026, tickMs = 16, missEvery = 7, sleepEvery = 11 } = {}) {
   const rand = seeded(seed);
   const pools = new Map();
   const pool = deck => {
@@ -95,7 +95,7 @@ function byHand(events) {
 }
 
 for (const mode of routes.MODE_ORDER) {
-  test(`a full two-minute ${mode} round reconciles event by event`, () => {
+  test(`a full one-minute ${mode} round reconciles event by event`, () => {
     const { game, events } = play(mode);
     const hand = byHand(events);
     const summary = game.summary();
