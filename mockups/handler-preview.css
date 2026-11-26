@@ -1825,9 +1825,9 @@
     position: relative; height: min(58vh, 560px); min-height: 340px;
     border-radius: 16px; overflow: hidden; background: var(--hd-800);
     border: 1px solid var(--hd-700);
-    touch-action: pan-y;
   }
-  .hd-canvas { display: block; width: 100%; height: 100%; }
+  .hd-canvas { display: block; width: 100%; height: 100%; touch-action: none; cursor: grab; }
+  .hd-canvas:active { cursor: grabbing; }
   .hd-edges {
     position: absolute; top: 14px; left: 16px; right: 16px; margin: 0;
     display: flex; justify-content: space-between; pointer-events: none;
@@ -1856,23 +1856,50 @@
   .hd-dest-sub { font-size: 8px; letter-spacing: .12em; opacity: .75; font-weight: 700; }
 
   /* The cartoon combo badge: top right, above the destinations, clear of
-     the belt by the gutter stageLayout() reserves. */
+     the belt by the gutter stageLayout() reserves. Scale and blur on the way
+     in and out, so it pops rather than merely appearing. */
   .hd-combo {
-    position: absolute; right: 8px; top: 34px; margin: 0; width: 48px;
-    padding: 5px 4px; border-radius: 12px; text-align: center;
-    font-weight: 800; font-size: 1.3rem; font-variant-numeric: tabular-nums;
-    color: var(--hd-dark); background: var(--hd-spark);
+    --spark: #9fe8ff;
+    position: absolute; right: 12px; top: 36px; margin: 0; z-index: 2; pointer-events: none;
+    /* Stacked, not side by side. The prototype sets the two parts in a row,
+       which makes the badge wide enough to sit over the belt again -- the one
+       thing the owner said it must never do. Stacking keeps his badge and his
+       rule at the same time, inside the column stageLayout() reserves. */
+    display: flex; flex-direction: column; align-items: center; gap: 1px;
+    width: 58px; padding: 5px 2px; border-radius: 14px; text-align: center;
+    color: var(--hd-dark); background: var(--spark);
     border: 3px solid var(--hd-dark);
-    box-shadow: 0 4px 0 var(--hd-dark), 0 0 22px -2px var(--hd-spark);
-    rotate: -3deg;
+    box-shadow: 0 4px 0 var(--hd-dark), 0 0 22px -2px var(--spark);
+    translate: 0 0; rotate: -3deg; scale: 1; opacity: 1; filter: blur(0);
     transition: opacity .2s cubic-bezier(.2,0,0,1), scale .2s cubic-bezier(.2,0,0,1),
-                translate .2s ease-out, background-color .18s ease-out, box-shadow .18s ease-out;
+                filter .2s cubic-bezier(.2,0,0,1), translate .2s ease-out,
+                background-color .18s ease-out, box-shadow .18s ease-out;
   }
-  .hd-combo.t3 { background: #d8f3ff; box-shadow: 0 4px 0 var(--hd-dark), 0 0 30px -2px var(--hd-spark); }
-  .hd-combo.t4 { background: var(--hd-gold); box-shadow: 0 4px 0 var(--hd-dark), 0 0 36px -2px var(--hd-gold); }
-  .hd-combo.off { opacity: 0; scale: .25; translate: 0 -6px; }
-  .hd-combo.lost { opacity: 0; scale: 1; translate: 0 -14px; }
-  .hd-combo.bump { animation: hd-bump 320ms ease; }
+  .hd-combo b { font-size: 21px; line-height: 1; font-weight: 800; font-variant-numeric: tabular-nums; letter-spacing: -.02em; }
+  .hd-combo small { font-size: 7px; line-height: 1.15; letter-spacing: .04em; color: #2b5468; text-transform: uppercase; font-weight: 700; }
+  /* A sparkle sits on the corner, the way a cartoon shine does. */
+  .hd-combo::after {
+    content: ""; position: absolute; right: -7px; top: -9px; width: 16px; height: 16px;
+    background: #fff;
+    clip-path: polygon(50% 0, 58% 42%, 100% 50%, 58% 58%, 50% 100%, 42% 58%, 0 50%, 42% 42%);
+    filter: drop-shadow(0 0 5px var(--spark));
+  }
+  .hd-combo.t3 { --spark: #6dd8ff; box-shadow: 0 4px 0 var(--hd-dark), 0 0 32px 0 var(--spark); }
+  .hd-combo.t4 { --spark: #c6f3ff; padding: 6px 2px; box-shadow: 0 4px 0 var(--hd-dark), 0 0 44px 4px #7fe0ff; }
+  .hd-combo.t4 b { font-size: 24px; }
+  /* Only the top tier twinkles, and it twinkles three times rather than for
+     ever. The prototype loops this one; the app does not allow an infinite
+     animation anywhere in this stylesheet (tests/promotion-celebration.test.mjs
+     asserts it for the whole page), so Handler follows the app here. Three
+     passes reads almost the same and then rests. */
+  .hd-combo.t4::after { animation: hd-twinkle 1.1s ease-in-out 3; }
+  @keyframes hd-twinkle { 50% { scale: 1.45; rotate: 40deg; } }
+  .hd-combo.off { opacity: 0; scale: .25; filter: blur(4px); translate: 0 -6px; }
+  .hd-combo.lost {
+    opacity: 0; scale: 1; filter: blur(2px); translate: 0 -14px;
+    transition: opacity .16s ease-out, filter .16s ease-out, translate .16s ease-out;
+  }
+  .hd-combo.bump { animation: hd-bump .3s cubic-bezier(.2,0,0,1); }
   @keyframes hd-bump { 40% { scale: 1.16; rotate: -6deg; } }
 
   .hd-bar { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
@@ -1902,8 +1929,8 @@
      slats. It changes no game rule: the tier is still carried by the badge's
      colour and by the written multiplier, and the verdict keeps its glyph. */
   @media (prefers-reduced-motion: reduce) {
-    .hd-combo { transition: none; animation: none !important; rotate: 0deg; }
-    .hd-combo.off, .hd-combo.lost { scale: 1; translate: 0 0; }
+    .hd-combo, .hd-combo::after { transition: none; animation: none !important; rotate: 0deg; }
+    .hd-combo.off, .hd-combo.lost { scale: 1; translate: 0 0; filter: blur(0); }
     .hd-dest:active { scale: 1; }
   }
 

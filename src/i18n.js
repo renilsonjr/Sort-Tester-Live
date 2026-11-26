@@ -580,6 +580,7 @@ const ES = {
   'RIGHT BELT': 'BANDA DERECHA',
   'END OF BELT / DON’T DROP IT': 'FIN DE LA BANDA / NO LO DEJES CAER',
   'Restart round': 'Reiniciar ronda',
+  '{n} in a row': '{n} seguidos',
   'Swipe the front box, tap a side belt, or use the arrow keys.': 'Desliza la caja de delante, toca una banda lateral o usa las flechas.',
   'Ground': 'Terrestre',
   'Next Day Air': 'Aéreo 1 día',

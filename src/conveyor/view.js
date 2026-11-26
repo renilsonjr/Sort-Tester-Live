@@ -72,7 +72,7 @@ export const SKIN = {
 // which is what makes room for the side destinations AND the badge at once.
 // Measured on a 375px phone, a badge merely pinned to the right edge sat 15px
 // over the lane, so "put it on the right" is not enough on its own.
-export const BADGE_GUTTER = 64;
+export const BADGE_GUTTER = 72;
 export const FRAME_PAD = 18;
 
 export function stageLayout(width) {
@@ -269,7 +269,7 @@ export function createHandlerScreen({
           <!-- Rule 19: the badge is pinned to the right of the stage, above
                the destinations. It must never sit over the belt, where it
                would cover the code on the package coming down. -->
-          <p class="hd-combo off" data-hd-combo aria-hidden="true"><span data-hd-combo-x>x2</span></p>
+          <p class="hd-combo off" data-hd-combo aria-hidden="true"><b data-hd-combo-x>x2</b><small data-hd-combo-run></small></p>
           <!-- The destinations are tabs on the belt's own edges, which is
                where the player's thumbs already are. -->
           <button type="button" class="hd-dest left" data-hd-side="0">
@@ -725,6 +725,8 @@ export function createHandlerScreen({
     // The tier is written as well as coloured, so stilling the motion or
     // losing the colour removes no information.
     if (value) value.textContent = `x${spec.tier}`;
+    const run = root.querySelector('[data-hd-combo-run]');
+    if (run) run.textContent = t('{n} in a row', { n: shot.combo });
     if (spec.tier > shownTier) {
       // Rule 21: the tier cue plays inside the badge's bump, so the sound and
       // the movement are one event.

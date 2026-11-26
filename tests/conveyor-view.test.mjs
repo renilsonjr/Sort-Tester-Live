@@ -175,13 +175,31 @@ test('Handler keeps a skin of its own and does not follow the day theme', () => 
   assert.ok(Object.values(SKIN).every(value => /^#[0-9a-f]{6}$/.test(value)));
 });
 
+test('the sound levels are the owner\'s, not a guess', () => {
+  // An earlier pass of audio.js invented these and came out two to three
+  // times too quiet, which is why the game sounded as though it had none.
+  // They are the prototype's numbers now.
+  assert.match(audioSource, /MASTER_GAIN = 0\.85/);
+  assert.match(audioSource, /MUSIC_GAIN = 0\.15/);
+  assert.match(audioSource, /BELT_GAIN = 0\.035/);
+  // The cues go straight to master, so they always cut through the belt.
+  assert.match(audioSource, /osc\.connect\(envelope\)\.connect\(bus \|\| master\)/);
+  // A drop is a thud, not a wrong answer.
+  assert.match(audioSource, /dropped = \(\) => \{ if \(context\) blip\(150/);
+  // The tier arpeggio is longer and higher at each step.
+  assert.match(audioSource, /multiplier >= 4 \? \[12, 16, 19, 24, 28\]/);
+});
+
 test('audio opens on the gesture that starts a round, never on load', () => {
   const start = viewSource.indexOf('function startCountdown');
   const end = viewSource.indexOf('function showPlaying');
   assert.match(viewSource.slice(start, end), /audio\?\.start\(\)/);
   // Nothing may start audio at module scope.
   assert.ok(!/^\s*audio\.start\(\)/m.test(viewSource));
-  assert.match(audioSource, /if \(running\) return;/);
+  // start() is idempotent: a second round must not stack a second belt or a
+  // second melody on top of the first.
+  assert.match(audioSource, /if \(master\) return true;/);
+  assert.match(audioSource, /if \(!timer\) timer = setInterval/);
 });
 
 // ---------------------------------------------------------------------------

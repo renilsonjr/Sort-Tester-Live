@@ -1,168 +1,175 @@
 // Handler (internal name: conveyor) stage 3 -- rule 21, the sound.
 //
-// Four cues and two beds, all synthesised: there is no audio file in the
-// repository and this adds none. The audio context and the on/off preference
-// are the app's own (src/sound.js), so the header switch that silences the
-// quiz silences Handler too. Nothing here is created until start() runs, and
-// start() runs when the player starts a round -- never on page load.
+// A faithful port of the prototype's synthesiser, which is the version the
+// owner approved. Levels and note choices are HIS, not mine: an earlier pass
+// of this file guessed them and came out two to three times too quiet, which
+// is why the game sounded like it had no sound at all. Do not retune by ear
+// without saying so -- #397 is where the owner tunes these after playing.
 //
-// The levels were set by ear on the prototype after the owner asked three
-// times for the belt to be quieter. The belt is the room, not an instrument:
-// the sort and missort cues have to cut through it.
+// Everything is synthesised: there is no audio file in the repository and
+// this adds none. The audio context and the on/off preference are the app's
+// own (src/sound.js), so the header switch that silences the quiz silences
+// Handler too. Nothing is created until start() runs, and start() runs when
+// the player starts a round -- never on page load.
+
+// One master, then a bus per bed, exactly as the prototype has it. The cues
+// go straight to master so they always cut through the belt.
+export const MASTER_GAIN = 0.85;
+export const MUSIC_GAIN = 0.15;
+// The belt is the room, not an instrument. The owner asked three times for it
+// to come down; this is where it stopped.
 export const BELT_GAIN = 0.035;
 export const HUM_GAIN = 0.012;
-export const MUSIC_GAIN = 0.03;
-// The belt noise follows the live speed, which is most of why Expert feels
-// like Expert. These two map the modes' speed range onto the filter.
-export const BELT_SPEED_FLOOR = 42;
-export const BELT_SPEED_CEILING = 132;
+export const MELODY_MS = 150;
 
-const MELODY = [0, 4, 7, 12, 7, 4, 2, 4];
-const BASE_HZ = 196; // G3, under the belts rather than over them.
-
-// A short noise buffer, looped, is the belt. A sawtooth under it is the motor.
-function brownNoise(context, seconds = 2) {
-  const buffer = context.createBuffer(1, Math.floor(context.sampleRate * seconds), context.sampleRate);
-  const data = buffer.getChannelData(0);
-  let last = 0;
-  for (let i = 0; i < data.length; i += 1) {
-    // A deterministic walk rather than Math.random, so two runs sound alike
-    // and a test can assert the buffer without a seeded generator.
-    const step = Math.sin(i * 0.000731) * 0.6 + Math.sin(i * 0.004297) * 0.4;
-    last = (last + step * 0.02) / 1.02;
-    data[i] = last * 3.2;
-  }
-  return buffer;
-}
+const MELODY = [0, 3, 7, 3, 5, 3, 0, -2, 0, 3, 7, 10, 7, 5, 3, 0];
+const BASS = [0, 0, -5, -5, -7, -7, -5, -5];
+const hz = semitone => 220 * (2 ** (semitone / 12));
 
 export function createHandlerAudio({ getContext, isEnabled = () => true } = {}) {
   if (typeof getContext !== 'function') throw new Error('createHandlerAudio needs a getContext function');
   let context = null;
-  let bus = null;
+  let master = null;
+  let musicBus = null;
   let beltBus = null;
-  let beltSource = null;
   let beltFilter = null;
   let hum = null;
-  let humGain = null;
-  let musicTimer = null;
-  let musicStep = 0;
-  let running = false;
-
-  const live = () => running && context && isEnabled();
-
-  function now() {
-    return context.currentTime;
-  }
+  let beltSource = null;
+  let timer = null;
+  let playing = false;
+  let step = 0;
 
   // One voice. Every cue is built from this, so a cue can never outlive its
   // own envelope and leave an oscillator running.
-  function voice({ type = 'square', hz, from = 0, length = 0.14, gain = 0.12, slideTo = null }) {
-    if (!live()) return;
+  function blip(frequency, at, duration, type, gain, slideTo = null, bus = null) {
+    if (!context || !isEnabled()) return;
     try {
       const osc = context.createOscillator();
       const envelope = context.createGain();
       osc.type = type;
-      const at = now() + from;
-      osc.frequency.setValueAtTime(hz, at);
-      if (slideTo !== null) osc.frequency.linearRampToValueAtTime(slideTo, at + length);
-      envelope.gain.setValueAtTime(0.0001, at);
-      envelope.gain.exponentialRampToValueAtTime(gain, at + 0.012);
-      envelope.gain.exponentialRampToValueAtTime(0.0001, at + length);
-      osc.connect(envelope);
-      envelope.connect(bus);
+      osc.frequency.setValueAtTime(frequency, at);
+      if (slideTo) osc.frequency.exponentialRampToValueAtTime(slideTo, at + duration);
+      envelope.gain.setValueAtTime(0, at);
+      envelope.gain.linearRampToValueAtTime(gain, at + 0.012);
+      envelope.gain.exponentialRampToValueAtTime(0.0008, at + duration);
+      osc.connect(envelope).connect(bus || master);
       osc.start(at);
-      osc.stop(at + length + 0.02);
+      osc.stop(at + duration + 0.03);
     } catch { /* A device that refuses a voice just stays quiet. */ }
   }
 
-  function tickMusic() {
-    if (!live()) return;
-    const semitone = MELODY[musicStep % MELODY.length];
-    voice({ type: 'square', hz: BASE_HZ * (2 ** (semitone / 12)), length: 0.26, gain: MUSIC_GAIN });
-    if (musicStep % 4 === 0) voice({ type: 'triangle', hz: BASE_HZ / 2, length: 0.38, gain: MUSIC_GAIN * 1.2 });
-    musicStep += 1;
-    musicTimer = setTimeout(tickMusic, 300);
+  function tick() {
+    if (!context || !playing || !isEnabled()) return;
+    const at = context.currentTime + 0.03;
+    blip(hz(MELODY[step % MELODY.length] + 12), at, 0.15, 'square', 0.5, null, musicBus);
+    if (step % 2 === 0) blip(hz(BASS[(step / 2) % BASS.length] - 12), at, 0.26, 'triangle', 0.75, null, musicBus);
+    step += 1;
   }
 
-  function start() {
-    if (running) return;
+  function build() {
+    if (master) return true;
     const next = getContext();
-    if (!next) return;
+    if (!next) return false;
     context = next;
-    running = true;
     try {
-      bus = context.createGain();
-      bus.gain.value = 1;
-      bus.connect(context.destination);
+      master = context.createGain();
+      master.gain.value = MASTER_GAIN;
+      master.connect(context.destination);
 
+      musicBus = context.createGain();
+      musicBus.gain.value = MUSIC_GAIN;
+      musicBus.connect(master);
+
+      // The belt comes up from silence when the round starts, rather than
+      // banging on with the first frame.
       beltBus = context.createGain();
-      beltBus.gain.value = BELT_GAIN;
-      beltBus.connect(context.destination);
+      beltBus.gain.value = 0;
+      beltBus.connect(master);
 
+      // Low-passed brown noise for the rubber, plus a sawtooth motor under it.
+      const length = Math.floor(context.sampleRate * 2);
+      const buffer = context.createBuffer(1, length, context.sampleRate);
+      const data = buffer.getChannelData(0);
+      let value = 0;
+      for (let i = 0; i < length; i += 1) {
+        value = value * 0.94 + (Math.random() * 2 - 1) * 0.06;
+        data[i] = Math.max(-1, Math.min(1, value * 3));
+      }
+      beltSource = context.createBufferSource();
+      beltSource.buffer = buffer;
+      beltSource.loop = true;
       beltFilter = context.createBiquadFilter();
       beltFilter.type = 'lowpass';
-      beltFilter.frequency.value = 520;
-      beltFilter.connect(beltBus);
+      beltFilter.frequency.value = 420;
+      beltSource.connect(beltFilter).connect(beltBus);
 
-      beltSource = context.createBufferSource();
-      beltSource.buffer = brownNoise(context);
-      beltSource.loop = true;
-      beltSource.connect(beltFilter);
-      beltSource.start(0);
-
-      humGain = context.createGain();
-      humGain.gain.value = HUM_GAIN;
-      humGain.connect(beltBus);
       hum = context.createOscillator();
       hum.type = 'sawtooth';
       hum.frequency.value = 58;
-      hum.connect(humGain);
-      hum.start(0);
+      const humFilter = context.createBiquadFilter();
+      humFilter.type = 'lowpass';
+      humFilter.frequency.value = 150;
+      const humGain = context.createGain();
+      humGain.gain.value = HUM_GAIN;
+      hum.connect(humFilter).connect(humGain).connect(beltBus);
 
-      musicStep = 0;
-      tickMusic();
+      beltSource.start();
+      hum.start();
+      return true;
     } catch {
-      running = false;
+      master = null;
+      return false;
     }
+  }
+
+  function start() {
+    if (!build()) return;
+    playing = true;
+    if (!timer) timer = setInterval(tick, MELODY_MS);
   }
 
   function stop() {
-    running = false;
-    if (musicTimer) { clearTimeout(musicTimer); musicTimer = null; }
-    for (const node of [beltSource, hum]) {
-      try { node?.stop?.(0); } catch { /* Already stopped. */ }
-    }
-    for (const node of [bus, beltBus, beltFilter, humGain]) {
-      try { node?.disconnect?.(); } catch { /* Already gone. */ }
-    }
-    beltSource = null; hum = null; beltFilter = null; beltBus = null; humGain = null; bus = null;
+    playing = false;
+    if (timer) { clearInterval(timer); timer = null; }
+    try { beltBus?.gain.setTargetAtTime(0, context.currentTime, 0.07); } catch { /* already quiet */ }
   }
 
-  // The belt's voice follows the live speed. A ramp rather than a jump, so an
-  // accelerating Expert belt rises instead of stepping.
+  // The belt's voice follows the live speed, which is most of why Expert
+  // feels like Expert. Ramps rather than jumps, so an accelerating belt rises
+  // instead of stepping.
   function belt(speed) {
-    if (!live() || !beltFilter) return;
-    const span = BELT_SPEED_CEILING - BELT_SPEED_FLOOR;
-    const amount = Math.min(1, Math.max(0, (speed - BELT_SPEED_FLOOR) / span));
+    if (!context || !beltFilter || !playing || !isEnabled()) return;
+    const amount = Math.min(1, Math.max(0, (speed - 42) / 90));
+    const now = context.currentTime;
     try {
-      beltFilter.frequency.setTargetAtTime(420 + 680 * amount, now(), 0.25);
-      if (hum) hum.frequency.setTargetAtTime(52 + 26 * amount, now(), 0.25);
-    } catch { /* An old context without setTargetAtTime keeps one pitch. */ }
+      beltBus.gain.setTargetAtTime(BELT_GAIN, now, 0.2);
+      beltFilter.frequency.setTargetAtTime(330 + 520 * amount, now, 0.25);
+      hum.frequency.setTargetAtTime(52 + 34 * amount, now, 0.25);
+    } catch { /* an old context keeps one pitch */ }
   }
 
-  // Rule 20's three outcomes, and rule 21's tier cue.
-  const sorted = () => { voice({ type: 'square', hz: 740, length: 0.09, gain: 0.14 }); voice({ type: 'square', hz: 1110, from: 0.07, length: 0.12, gain: 0.13 }); };
-  const missort = () => { voice({ type: 'sawtooth', hz: 260, length: 0.16, gain: 0.14, slideTo: 150 }); };
+  const now = () => context.currentTime;
+  const sorted = () => {
+    if (!context) return;
+    blip(880, now(), 0.07, 'square', 0.2);
+    blip(1318, now() + 0.07, 0.12, 'square', 0.18);
+  };
+  const missort = () => { if (context) blip(300, now(), 0.26, 'sawtooth', 0.2, 90); };
   // A drop is a thud, not a wrong answer: they are different mistakes.
-  const dropped = () => { voice({ type: 'triangle', hz: 120, length: 0.2, gain: 0.18, slideTo: 62 }); };
-  // The tier cue is a rising arpeggio, longer and higher at each step, played
-  // inside the badge's bump so the sound and the movement are one event.
+  const dropped = () => { if (context) blip(150, now(), 0.22, 'sine', 0.3, 52); };
+
+  // Reaching a tier: a short rising arpeggio, longer and higher at each step,
+  // timed to land inside the badge's 300ms bump so the sound and the movement
+  // read as one event.
   function tier(multiplier) {
-    const steps = Math.max(2, Math.min(4, Math.round(multiplier)));
-    for (let i = 0; i < steps; i += 1) {
-      voice({ type: 'square', hz: 520 * (2 ** ((steps * 2 + i * 4) / 12)), from: i * 0.055, length: 0.1 + i * 0.02, gain: 0.12 });
-    }
+    if (!context) return;
+    const at = now();
+    const steps = multiplier >= 4 ? [12, 16, 19, 24, 28]
+      : multiplier >= 3 ? [7, 12, 16, 19]
+        : [0, 7, 12];
+    steps.forEach((semitone, i) => blip(hz(semitone + 12), at + i * 0.055, 0.15, 'square', 0.14 + 0.02 * multiplier));
+    if (multiplier >= 4) blip(hz(31), at + 0.3, 0.26, 'triangle', 0.1);
   }
 
-  return { start, stop, belt, sorted, missort, dropped, tier, get running() { return running; } };
+  return { start, stop, belt, sorted, missort, dropped, tier, get running() { return playing; } };
 }
