@@ -35,6 +35,9 @@ SECURITY_HEADERS = {
     "X-Frame-Options": "DENY",
     "Referrer-Policy": "same-origin",
     "Content-Security-Policy": CONTENT_SECURITY_POLICY,
+    # The app never uses these device features; saying so means a script that
+    # somehow ran here still could not ask for them.
+    "Permissions-Policy": "camera=(), microphone=(), geolocation=(), payment=(), usb=()",
 }
 
 MAX_BODY_BYTES = 64 * 1024
