@@ -11,7 +11,7 @@ const [viewSource, audioSource, indexHtml, previewCss, previewHtml, i18nSource] 
 ]);
 const { modules: [view], cleanup } = await loadAppModules(['src/conveyor/view.js']);
 after(cleanup);
-const { BADGE_GUTTER, SPARK_RGB, VERDICT, formatClock, sparkleSpec, stageLayout } = view;
+const { BADGE_GUTTER, FRAME_PAD, SKIN, SPARK_RGB, VERDICT, formatClock, sparkleSpec, stageLayout } = view;
 
 // ---------------------------------------------------------------------------
 // Rule 19, the owner's correction: the badge never sits over the lane.
@@ -21,14 +21,27 @@ const { BADGE_GUTTER, SPARK_RGB, VERDICT, formatClock, sparkleSpec, stageLayout 
 // centred in the width that is left once the badge has its column.
 // ---------------------------------------------------------------------------
 
-test('the lane never reaches the badge column, at any width', () => {
+test('the belt never reaches the badge column, at any width', () => {
   for (let width = 280; width <= 1200; width += 7) {
     const layout = stageLayout(width);
-    assert.ok(layout.laneRight <= layout.badgeLeft,
-      `at ${width}px the lane reaches ${layout.laneRight} and the badge starts at ${layout.badgeLeft}`);
-    assert.ok(layout.centre + layout.packW / 2 <= layout.badgeLeft,
+    assert.ok(layout.frameRight <= layout.badgeLeft,
+      `at ${width}px the frame reaches ${layout.frameRight} and the badge starts at ${layout.badgeLeft}`);
+    assert.ok(layout.packRight <= layout.badgeLeft,
       `at ${width}px a package would run under the badge`);
-    assert.ok(layout.laneLeft >= 0 && layout.packW > 60, `at ${width}px the lane fell off the left`);
+    assert.ok(layout.frameLeft >= 0, `at ${width}px the frame fell off the left`);
+    assert.ok(layout.packW >= 80, `at ${width}px the package is ${layout.packW}px wide and the code stops being readable`);
+    assert.ok(layout.packW < layout.beltW, 'a package must sit inside the belt, not over its frame');
+  }
+});
+
+test('the side destinations never cover the package', () => {
+  // They sit on the belt's edges, which is where the thumbs are, and they may
+  // overlap the frame. Covering the code is what they must never do.
+  for (let width = 280; width <= 1200; width += 11) {
+    const layout = stageLayout(width);
+    const tabRight = width * 0.02 + Math.min(150, width * 0.22);
+    assert.ok(tabRight <= layout.packLeft,
+      `at ${width}px the left destination reaches ${tabRight} and the package starts at ${layout.packLeft}`);
   }
 });
 
@@ -41,6 +54,7 @@ test('the badge sits in the gutter the layout reserves', async () => {
   const right = Number(/right:\s*(\d+)px/.exec(rule)[1]);
   const width = Number(/width:\s*(\d+)px/.exec(rule)[1]);
   assert.ok(right + width <= BADGE_GUTTER, `the badge needs ${right + width}px but only ${BADGE_GUTTER}px is reserved`);
+  assert.ok(FRAME_PAD > 0);
 });
 
 // ---------------------------------------------------------------------------
@@ -113,7 +127,8 @@ test('reduced motion stills the movement without touching a rule', () => {
   assert.match(block, /animation:\s*none/);
   // The tier is still carried by the badge's colour and its written
   // multiplier, so stilling the motion removes no information.
-  assert.match(viewSource, /value\.textContent = `x\$\{spec\.tier\}`/);
+  assert.ok(viewSource.includes('value.textContent = `x${spec.tier}`'),
+    'the tier must be written, not only coloured');
 });
 
 test('every control can be reached by finger and by keyboard', () => {
@@ -127,7 +142,7 @@ test('every control can be reached by finger and by keyboard', () => {
     }
     return null;
   };
-  for (const selector of ['.hd-icon-btn', '.hd-choice', '.hd-again', '.hd-back', '.hd-mode']) {
+  for (const selector of ['.hd-icon-btn', '.hd-dest', '.hd-again', '.hd-back', '.hd-mode']) {
     const rule = ruleFor(selector);
     assert.ok(rule, `${selector} has no rule of its own`);
     const height = /min-height:\s*(\d+)px/.exec(rule);
@@ -141,8 +156,22 @@ test('every control can be reached by finger and by keyboard', () => {
 });
 
 test('both destinations show the belt name, never the colour alone', () => {
-  assert.match(viewSource, /button\.textContent = option \? t\(option\.belt\) : ''/);
+  assert.match(viewSource, /\.hd-dest-name'\)\.textContent = option \? option\.belt : ''/);
   assert.match(viewSource, /BELT_STYLE\[option\.belt\]/);
+});
+
+test('Handler keeps a skin of its own and does not follow the day theme', () => {
+  const block = indexHtml.slice(indexHtml.indexOf('Handler, the conveyor mini-game'), indexHtml.indexOf('Desktop (#273'));
+  // The slice opens inside the block's own comment, so drop everything up to
+  // that comment's end before looking: the comment explains that Handler must
+  // not follow the day theme, and saying so is not doing it.
+  const rules = block.slice(block.indexOf('*/') + 2).replace(/\/\*[\s\S]*?\*\//g, '');
+  assert.ok(!rules.includes('data-theme'),
+    'Handler is dark in both themes by owner decision; do not theme it');
+  assert.match(block, /\.hd \{[^}]*--hd-900:/, 'the skin must declare its own tokens on .hd');
+  // The canvas cannot read a token, so the same palette lives in SKIN.
+  assert.equal(SKIN.room, '#2a1b15');
+  assert.ok(Object.values(SKIN).every(value => /^#[0-9a-f]{6}$/.test(value)));
 });
 
 test('audio opens on the gesture that starts a round, never on load', () => {

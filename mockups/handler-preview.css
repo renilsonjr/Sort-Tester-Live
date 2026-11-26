@@ -1770,116 +1770,141 @@
   /* ---------------------------------------------------------------------
      Handler, the conveyor mini-game (#395).
 
-     Everything here is built from the app's own tokens, so both themes come
-     free and nothing new has to be redefined for light mode.
+     Handler has a SKIN OF ITS OWN and stays dark in both app themes (owner
+     decision, 2026-11-26). It is a game inside the app, not another app
+     screen, and this is the look the owner approved on the prototype. That is
+     why this block declares its own tokens on .hd instead of using the app's:
+     nothing here should follow html[data-theme="day"].
 
      Two rules in this block are owner corrections, not taste:
-       * .hd-combo is pinned to the RIGHT of the stage. It must never sit over
-         the lane, where it would cover the code on the package coming down,
-         and reading that code early is the whole skill the game trains.
+       * .hd-combo is pinned to the RIGHT and sits ABOVE the destinations. It
+         must never cover the code on the package coming down, and reading
+         that code early is the whole skill the game trains.
        * The combo effect is a sparkle. An earlier version set the package and
          the belt on fire and the owner rejected it. Do not add a glow to the
-         lane, the stage or the belt.
+         belt, the frame or the stage.
      --------------------------------------------------------------------- */
-  /* The canvas cannot read a token, so the lane's colour is published here
-     and read back with getComputedStyle. Without this the lane is a heavy
-     grey slab in the day theme. */
-  :root { --hd-lane: rgba(0, 0, 0, 0.22); --hd-box: #d8c6ad; --hd-box-line: rgba(60, 38, 20, 0.55); }
-  html[data-theme="day"] { --hd-lane: rgba(90, 60, 25, 0.09); }
+  .hd {
+    --hd-ink: #f6e8d2; --hd-ink-soft: #c7a988; --hd-ink-faint: #9b7f61;
+    --hd-900: #1d1310; --hd-800: #2a1b15; --hd-700: #3a271d; --hd-600: #4d3425;
+    --hd-orange: #dc8542; --hd-gold: #ffca6a; --hd-spark: #9fe8ff; --hd-dark: #0b2230;
+    display: flex; flex-direction: column; gap: 12px;
+    color: var(--hd-ink);
+  }
+  .hd-eyebrow { margin: 0; color: var(--hd-ink-faint); font-size: 10px; font-weight: 800; letter-spacing: .18em; text-transform: uppercase; }
+  .hd-title { margin: 0; font-size: clamp(30px, 8vw, 40px); line-height: 1.05; letter-spacing: -.03em; color: var(--hd-ink); }
+  .hd-lede { margin: 0; color: var(--hd-ink-soft); }
 
-  .hd { display: flex; flex-direction: column; gap: 14px; }
-  .hd-title { margin: 0; font-size: 1.35rem; color: var(--ink); }
-  .hd-lede { margin: 0; color: var(--muted); }
+  .hd-strip {
+    display: grid; grid-template-columns: repeat(3, 1fr); margin: 0;
+    background: var(--hd-800); border: 1px solid var(--hd-700); border-radius: 14px; overflow: hidden;
+  }
+  .hd-strip > div { padding: 9px 11px; border-left: 1px solid var(--hd-700); }
+  .hd-strip > div:first-child { border-left: 0; }
+  .hd-strip dt { margin: 0 0 2px; color: var(--hd-ink-faint); font-size: 8.5px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; }
+  .hd-strip dd { margin: 0; font-size: 20px; font-weight: 800; font-variant-numeric: tabular-nums; }
+  .hd-strip > div:first-child dd { color: var(--hd-gold); }
 
-  .hd-mode-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+  .hd-mode-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 9px; }
   .hd-mode {
     width: 100%; min-height: 64px; display: grid; gap: 2px; text-align: left;
     padding: 12px 14px; border-radius: 14px; cursor: pointer;
-    background: var(--glass-surface); border: 1px solid var(--glass-border); color: var(--ink);
-    backdrop-filter: var(--blur-md);
+    background: var(--hd-800); border: 1px solid var(--hd-700); color: var(--hd-ink);
   }
-  .hd-mode-name { font-weight: 700; }
-  .hd-mode-blurb, .hd-mode-best { color: var(--muted); font-size: 0.86rem; }
-  .hd-mode-best strong { color: var(--gold); }
-  .hd-rules { background: var(--sunk); border: 1px solid var(--line); border-radius: 14px; padding: 12px 14px; }
-  .hd-rules h3 { margin: 0 0 6px; font-size: 0.95rem; color: var(--ink); }
-  .hd-rules ul { margin: 0; padding-left: 18px; color: var(--muted); font-size: 0.86rem; display: grid; gap: 4px; }
+  .hd-mode-name { font-weight: 800; letter-spacing: -.01em; }
+  .hd-mode-blurb, .hd-mode-best { color: var(--hd-ink-soft); font-size: 0.84rem; }
+  .hd-mode-best strong { color: var(--hd-gold); }
+  .hd-rules { background: var(--hd-800); border: 1px solid var(--hd-700); border-radius: 14px; padding: 12px 14px; }
+  .hd-rules h3 { margin: 0 0 6px; font-size: 0.95rem; }
+  .hd-rules ul { margin: 0; padding-left: 18px; color: var(--hd-ink-soft); font-size: 0.84rem; display: grid; gap: 4px; }
 
-  .hd-count { align-items: center; justify-content: center; min-height: 50vh; }
-  .hd-count-number { margin: 0; font-size: 5rem; font-weight: 800; color: var(--gold); font-variant-numeric: tabular-nums; }
-
-  .hd-bar { display: flex; align-items: center; gap: 10px; }
-  .hd-clock, .hd-score { font-variant-numeric: tabular-nums; color: var(--ink); font-weight: 700; }
-  .hd-score-label { color: var(--muted); font-weight: 500; font-size: 0.8rem; }
-  .hd-score { margin-right: auto; }
-  .hd-icon-btn {
-    min-height: 44px; min-width: 44px; padding: 0 12px; border-radius: 12px; cursor: pointer;
-    background: var(--accent); color: var(--accent-ink); border: 1px solid var(--line); font-weight: 600;
-  }
-  .hd-icon-btn:focus-visible, .hd-mode:focus-visible, .hd-choice:focus-visible,
-  .hd-again:focus-visible, .hd-back:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
-  .hd-icon-btn[aria-pressed="false"] { opacity: 0.72; }
+  .hd-count { align-items: center; justify-content: center; min-height: 46vh; }
+  .hd-count-number { margin: 0; font-size: 5rem; font-weight: 800; color: var(--hd-gold); font-variant-numeric: tabular-nums; }
 
   .hd-stage {
-    position: relative; height: min(62vh, 620px); min-height: 360px;
-    border-radius: 16px; overflow: hidden;
-    background: linear-gradient(180deg, var(--sunk), var(--panel));
-    border: 1px solid var(--line);
+    position: relative; height: min(58vh, 560px); min-height: 340px;
+    border-radius: 16px; overflow: hidden; background: var(--hd-800);
+    border: 1px solid var(--hd-700);
     touch-action: pan-y;
   }
   .hd-canvas { display: block; width: 100%; height: 100%; }
+  .hd-edges {
+    position: absolute; top: 14px; left: 16px; right: 16px; margin: 0;
+    display: flex; justify-content: space-between; pointer-events: none;
+  }
+  .hd-edges span { font-size: 8.5px; letter-spacing: .14em; color: var(--hd-ink-faint); font-weight: 700; }
   .hd-paused {
     position: absolute; inset: 0; margin: 0; display: grid; place-items: center;
-    background: rgba(0, 0, 0, 0.55); color: #fff; font-weight: 700; font-size: 1.2rem;
+    background: #1d1310c4; color: var(--hd-ink); font-weight: 800; font-size: 1.2rem;
   }
 
-  /* The cartoon combo badge. Right-hand side, clear of the lane. */
-  .hd-combo {
-    /* Inside the 76px column stageLayout() reserves on the right. The lane
-       is centred in what is left, so this can never cover a package. */
-    position: absolute; right: 10px; top: 38px; margin: 0; width: 56px;
-    padding: 6px 4px; border-radius: 12px; text-align: center;
-    font-weight: 800; font-size: 1.4rem; font-variant-numeric: tabular-nums;
-    color: #0a1a22; background: linear-gradient(180deg, #bdeaff, #6fd0f5);
-    border: 3px solid #0a1a22;
-    box-shadow: 0 4px 0 #0a1a22, 0 0 22px -2px rgba(150, 226, 255, 0.9);
-    rotate: -3deg;
-    transition: opacity 180ms ease, translate 220ms ease, scale 180ms ease;
+  /* The destinations: tabs on the belt's own edges, where the thumbs are. */
+  .hd-dest {
+    position: absolute; top: 57%; transform: translateY(-50%);
+    width: 22%; max-width: 150px; min-height: 108px;
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px;
+    padding: 10px 4px; border-radius: 14px; cursor: pointer;
+    border: 1px solid #ffffff38; border-bottom: 5px solid #0006;
+    box-shadow: 0 14px 28px #0004; user-select: none;
   }
-  .hd-combo.t3 { background: linear-gradient(180deg, #d8f3ff, #39b8ef); box-shadow: 0 4px 0 #0a1a22, 0 0 30px -2px rgba(150, 226, 255, 1); }
-  .hd-combo.t4 { background: linear-gradient(180deg, #fff3cf, #ffc75a); box-shadow: 0 4px 0 #0a1a22, 0 0 36px -2px rgba(255, 202, 106, 1); }
-  .hd-combo.off { opacity: 0; translate: 0 -10px; }
-  .hd-combo.lost { opacity: 0; translate: 0 -28px; }
+  .hd-dest.left { left: 2%; }
+  .hd-dest.right { right: 2%; }
+  .hd-dest:active { filter: brightness(.9); scale: .98; }
+  .hd-dest:disabled { opacity: .45; cursor: default; }
+  .hd-dest-arrow { font-size: 26px; line-height: 1; font-weight: 600; opacity: .85; }
+  .hd-dest-name { font-size: clamp(12px, 3.2vw, 18px); font-weight: 800; letter-spacing: .04em; }
+  .hd-dest-sub { font-size: 8px; letter-spacing: .12em; opacity: .75; font-weight: 700; }
+
+  /* The cartoon combo badge: top right, above the destinations, clear of
+     the belt by the gutter stageLayout() reserves. */
+  .hd-combo {
+    position: absolute; right: 8px; top: 34px; margin: 0; width: 48px;
+    padding: 5px 4px; border-radius: 12px; text-align: center;
+    font-weight: 800; font-size: 1.3rem; font-variant-numeric: tabular-nums;
+    color: var(--hd-dark); background: var(--hd-spark);
+    border: 3px solid var(--hd-dark);
+    box-shadow: 0 4px 0 var(--hd-dark), 0 0 22px -2px var(--hd-spark);
+    rotate: -3deg;
+    transition: opacity .2s cubic-bezier(.2,0,0,1), scale .2s cubic-bezier(.2,0,0,1),
+                translate .2s ease-out, background-color .18s ease-out, box-shadow .18s ease-out;
+  }
+  .hd-combo.t3 { background: #d8f3ff; box-shadow: 0 4px 0 var(--hd-dark), 0 0 30px -2px var(--hd-spark); }
+  .hd-combo.t4 { background: var(--hd-gold); box-shadow: 0 4px 0 var(--hd-dark), 0 0 36px -2px var(--hd-gold); }
+  .hd-combo.off { opacity: 0; scale: .25; translate: 0 -6px; }
+  .hd-combo.lost { opacity: 0; scale: 1; translate: 0 -14px; }
   .hd-combo.bump { animation: hd-bump 320ms ease; }
   @keyframes hd-bump { 40% { scale: 1.16; rotate: -6deg; } }
 
-  .hd-choices { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-  .hd-choice {
-    min-height: 56px; border-radius: 14px; cursor: pointer;
-    border: 2px solid rgba(0, 0, 0, 0.35); font-weight: 800; font-size: 1.05rem;
-    letter-spacing: 0.02em;
+  .hd-bar { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .hd-icon-btn {
+    min-height: 44px; padding: 0 10px; border-radius: 12px; cursor: pointer;
+    background: var(--hd-700); color: var(--hd-ink); border: 1px solid var(--hd-600); font-weight: 700;
   }
-  .hd-choice:disabled { opacity: 0.4; cursor: default; }
+  .hd-icon-btn[aria-pressed="false"] { opacity: .72; }
+  .hd-hint { margin: 0; color: var(--hd-ink-faint); font-size: 11px; }
+  .hd-icon-btn:focus-visible, .hd-mode:focus-visible, .hd-dest:focus-visible,
+  .hd-again:focus-visible, .hd-back:focus-visible { outline: 3px solid var(--hd-gold); outline-offset: 3px; }
 
   .hd-final { display: flex; align-items: baseline; justify-content: space-between; margin: 0; }
-  .hd-final strong { font-size: 2.4rem; color: var(--gold); font-variant-numeric: tabular-nums; }
-  .hd-best-new { margin: 0; color: var(--good); font-weight: 700; }
-  .hd-best-old { margin: 0; color: var(--muted); }
+  .hd-final strong { font-size: 2.4rem; color: var(--hd-gold); font-variant-numeric: tabular-nums; }
+  .hd-best-new { margin: 0; color: var(--hd-gold); font-weight: 800; }
+  .hd-best-old { margin: 0; color: var(--hd-ink-soft); }
   .hd-stats { margin: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-  .hd-stats > div { background: var(--sunk); border: 1px solid var(--line); border-radius: 12px; padding: 8px 10px; }
-  .hd-stats dt { color: var(--muted); font-size: 0.78rem; }
-  .hd-stats dd { margin: 0; font-weight: 700; font-variant-numeric: tabular-nums; color: var(--ink); }
+  .hd-stats > div { background: var(--hd-800); border: 1px solid var(--hd-700); border-radius: 12px; padding: 8px 10px; }
+  .hd-stats dt { color: var(--hd-ink-faint); font-size: 0.76rem; }
+  .hd-stats dd { margin: 0; font-weight: 800; font-variant-numeric: tabular-nums; }
   .hd-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-  .hd-again, .hd-back { min-height: 48px; border-radius: 14px; cursor: pointer; font-weight: 700; }
-  .hd-again { background: var(--gold); color: #2b1c10; border: 1px solid var(--gold-line); }
-  .hd-back { background: var(--accent); color: var(--accent-ink); border: 1px solid var(--line); }
+  .hd-again, .hd-back { min-height: 48px; border-radius: 14px; cursor: pointer; font-weight: 800; }
+  .hd-again { background: var(--hd-orange); color: #2b1c10; border: 1px solid #b4632a; }
+  .hd-back { background: var(--hd-700); color: var(--hd-ink); border: 1px solid var(--hd-600); }
 
-  /* Reduced motion stills the twinkle, the bump and the lift. It changes no
-     game rule: the tier is still carried by the badge's colour and by the
-     written multiplier, and the verdict still carries its glyph. */
+  /* Reduced motion stills the twinkle, the bump, the lift and the running
+     slats. It changes no game rule: the tier is still carried by the badge's
+     colour and by the written multiplier, and the verdict keeps its glyph. */
   @media (prefers-reduced-motion: reduce) {
     .hd-combo { transition: none; animation: none !important; rotate: 0deg; }
-    .hd-combo.off, .hd-combo.lost { translate: 0 0; }
+    .hd-combo.off, .hd-combo.lost { scale: 1; translate: 0 0; }
+    .hd-dest:active { scale: 1; }
   }
 
   /* ---------------------------------------------------------------------

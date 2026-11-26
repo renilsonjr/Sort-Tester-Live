@@ -13,6 +13,7 @@
 //     badge covered the code on the package coming down, and reading that code
 //     early is the whole skill the game trains.
 import { BELT_STYLE } from './../belts.js';
+import { SERVICE_LABEL } from './../questions.js?v=chart-destination-20261108-r2';
 
 // Rule 19: icy cyan, chosen to sit far from the BLUE belt's navy (#1f4e9c) so
 // a glow around a package can never be read as a routing colour.
@@ -26,28 +27,64 @@ export const VERDICT = {
   dropped: { rgb: '248,113,113', glyph: '✗' },
 };
 export const VERDICT_HOLD_MS = 260;
-// Rule 19, the owner's correction, enforced by geometry rather than by eye.
-// The badge gets a column of its own on the right, and the lane and the
-// packages are centred in what is left. Measured on a 375px phone, a badge
-// merely pinned to the right edge still sat 15px over the lane, so "put it on
-// the right" is not enough on its own.
-export const BADGE_GUTTER = 76;
+// Handler has a skin of its own and stays dark in both app themes (owner
+// decision, 2026-11-26). It is a game inside the app, not another app screen,
+// and the look is the one the owner approved on the prototype. These are the
+// prototype's colours, kept here rather than in index.html because the canvas
+// cannot read a token.
+export const SKIN = {
+  room: '#2a1b15',
+  roomLine: '#3d2a1e',
+  frameOuter: '#7a5536',
+  frameOuterLine: '#996c45',
+  frameInner: '#241610',
+  belt: '#43301f',
+  slatDark: '#32231a',
+  slatLight: '#64462e',
+  guide: '#9b7247',
+  edge: '#c49a62',
+  edgeTeeth: '#38261a',
+  boxFace: '#c79454',
+  boxFaceIdle: '#a98351',
+  boxLine: '#6b4527',
+  boxTape: '#e5b674',
+  boxTapeCentre: '#e9c68a',
+  boxTapeLine: '#b68d54',
+  label: '#fffaf0',
+  labelIdle: '#eadfc9',
+  labelInk: '#2b1d14',
+  labelSoft: '#7a6450',
+  labelFaint: '#897260',
+  barcode: '#38261a',
+  ink: '#c7a988',
+};
 
-// Where the lane and the packages sit, given the stage width. Exported so a
-// test can assert the lane never reaches the badge's column.
+// Rule 19, the owner's correction, enforced by geometry rather than by eye.
+// The badge keeps a column on the right, and the belt is narrow and centred --
+// which is what makes room for the side destinations AND the badge at once.
+// Measured on a 375px phone, a badge merely pinned to the right edge sat 15px
+// over the lane, so "put it on the right" is not enough on its own.
+export const BADGE_GUTTER = 64;
+export const FRAME_PAD = 18;
+
 export function stageLayout(width) {
-  const usable = Math.max(120, width - BADGE_GUTTER);
-  const centre = usable / 2;
-  const packW = Math.min(190, usable * 0.62);
-  const laneW = Math.min(240, usable * 0.82);
+  // Centred, like the prototype. The third term is what keeps the frame clear
+  // of the badge's column on a narrow phone: the belt gives up width before
+  // the badge gives up its place.
+  const beltW = Math.max(96, Math.min(300, width * 0.47, width - 2 * FRAME_PAD - 2 * BADGE_GUTTER));
+  const centre = width / 2;
+  const packW = Math.min(195, beltW * 0.9);
   return {
-    usable,
     centre,
+    beltW,
+    beltLeft: centre - beltW / 2,
+    beltRight: centre + beltW / 2,
+    frameLeft: centre - beltW / 2 - FRAME_PAD,
+    frameRight: centre + beltW / 2 + FRAME_PAD,
     packW,
-    packH: Math.min(120, packW * 0.66),
-    laneW,
-    laneLeft: centre - laneW / 2,
-    laneRight: centre + laneW / 2,
+    packH: packW * 0.69,
+    packLeft: centre - packW / 2,
+    packRight: centre + packW / 2,
     badgeLeft: width - BADGE_GUTTER,
   };
 }
@@ -104,6 +141,12 @@ export function createHandlerScreen({
   const { createGame, COMBO_STEP, COMBO_CAP, LEFT, RIGHT } = engine;
   const { MODES, MODE_ORDER, routePool, drawRoute } = routes;
 
+  const DECK_LABEL = {
+    'level-basic': 'BASIC SORT',
+    'level-medium': 'MEDIUM SORT',
+    'level-hard': 'HARD SORT',
+  };
+
   const MODE_COPY = {
     easy: ['Easy', 'A slow belt and the Basic routes'],
     medium: ['Medium', 'A normal belt and the Medium routes'],
@@ -123,20 +166,6 @@ export function createHandlerScreen({
   let canvas = null;
   let ctx = null;
   let size = { w: 0, h: 0 };
-  // Canvas colours that follow the theme. Read once per mount from the CSS
-  // custom properties above, because getComputedStyle in the paint loop would
-  // be a layout read on every frame.
-  let paintColours = { lane: 'rgba(0,0,0,0.22)', box: '#d8c6ad', boxLine: 'rgba(60,38,20,0.55)' };
-  function readColours() {
-    if (typeof getComputedStyle !== 'function' || !canvas) return;
-    const style = getComputedStyle(canvas);
-    const read = (name, fallback) => style.getPropertyValue(name).trim() || fallback;
-    paintColours = {
-      lane: read('--hd-lane', paintColours.lane),
-      box: read('--hd-box', paintColours.box),
-      boxLine: read('--hd-box-line', paintColours.boxLine),
-    };
-  }
   const pools = new Map();
   const listeners = [];
 
@@ -162,6 +191,7 @@ export function createHandlerScreen({
     audio?.stop();
     root.innerHTML = `
       <section class="hd hd-modes" aria-labelledby="hd-modes-title">
+        <p class="hd-eyebrow">${esc(t('Two minutes on the belt'))}</p>
         <h2 id="hd-modes-title" class="hd-title">${esc(t('Handler'))}</h2>
         <p class="hd-lede">${esc(t('Send each package to the right belt before it runs off the end.'))}</p>
         <ul class="hd-mode-list">
@@ -213,42 +243,58 @@ export function createHandlerScreen({
   }
 
   function showPlaying() {
-    const definition = MODES[mode];
+    root.innerHTML = `
+      <section class="hd hd-play" aria-labelledby="hd-play-title">
+        <p class="hd-eyebrow">${esc(t('Two minutes on the belt'))}</p>
+        <h2 id="hd-play-title" class="hd-title">${esc(t('Handler'))}</h2>
+        <div class="hd-strip">
+          <div><dt>${esc(t('Score'))}</dt><dd data-hd-score>0</dd></div>
+          <div><dt>${esc(t('Time left'))}</dt><dd data-hd-clock>2:00</dd></div>
+          <div><dt>${esc(t('Sorted / wrong / dropped'))}</dt><dd data-hd-tally>0 / 0 / 0</dd></div>
+        </div>
+        <div class="hd-stage">
+          <canvas data-hd-canvas class="hd-canvas" role="img"
+            aria-label="${esc(t('The belt. The package at the front shows its routing code and service.'))}"></canvas>
+          <p class="hd-edges" aria-hidden="true"><span>${esc(t('INBOUND / TOP'))}</span><span data-hd-deck></span></p>
+          <!-- Rule 19: the badge is pinned to the right of the stage, above
+               the destinations. It must never sit over the belt, where it
+               would cover the code on the package coming down. -->
+          <p class="hd-combo off" data-hd-combo aria-hidden="true"><span data-hd-combo-x>x2</span></p>
+          <!-- The destinations are tabs on the belt's own edges, which is
+               where the player's thumbs already are. -->
+          <button type="button" class="hd-dest left" data-hd-side="0">
+            <span class="hd-dest-arrow" aria-hidden="true">←</span>
+            <span class="hd-dest-name"></span>
+            <span class="hd-dest-sub">${esc(t('LEFT BELT'))}</span>
+          </button>
+          <button type="button" class="hd-dest right" data-hd-side="1">
+            <span class="hd-dest-arrow" aria-hidden="true">→</span>
+            <span class="hd-dest-name"></span>
+            <span class="hd-dest-sub">${esc(t('RIGHT BELT'))}</span>
+          </button>
+          <p class="hd-paused" data-hd-paused hidden>${esc(t('Paused'))}</p>
+        </div>
+        <div class="hd-bar">
+          <button type="button" class="hd-icon-btn" data-hd-pause aria-pressed="false">${esc(t('Pause'))}</button>
+          <button type="button" class="hd-icon-btn" data-hd-restart>${esc(t('Restart round'))}</button>
+          <button type="button" class="hd-icon-btn" data-hd-sound aria-pressed="true">${esc(t('Sound'))}</button>
+        </div>
+        <p class="hd-hint">${esc(t('Swipe the front box, tap a side belt, or use the arrow keys.'))}</p>
+        <p class="sr-only" data-hd-live role="status" aria-live="polite"></p>
+      </section>`;
+    canvas = root.querySelector('[data-hd-canvas]');
+    ctx = canvas?.getContext?.('2d') ?? null;
+    // Measure BEFORE the game exists. laneFor() reads the stage, and a game
+    // built first gets the lane of whatever stage was there last -- which
+    // dropped packages half way up a taller screen.
+    measure();
     game = createGame({
-      mode: definition,
+      mode: MODES[mode],
       laneLength: laneFor(),
       questionSource: deck => drawRoute(poolFor(deck), random),
     });
     verdicts = [];
     shownTier = 1;
-    root.innerHTML = `
-      <section class="hd hd-play" aria-labelledby="hd-play-title">
-        <h2 id="hd-play-title" class="sr-only">${esc(t('Handler'))} — ${esc(t(MODE_COPY[mode][0]))}</h2>
-        <div class="hd-bar">
-          <span class="hd-clock" data-hd-clock>2:00</span>
-          <span class="hd-score"><span class="hd-score-label">${esc(t('Score'))}</span> <strong data-hd-score>0</strong></span>
-          <button type="button" class="hd-icon-btn" data-hd-pause aria-pressed="false">${esc(t('Pause'))}</button>
-          <button type="button" class="hd-icon-btn" data-hd-sound aria-pressed="true">${esc(t('Sound'))}</button>
-        </div>
-        <div class="hd-stage">
-          <canvas data-hd-canvas class="hd-canvas" role="img"
-            aria-label="${esc(t('The belt. The package at the front shows its routing code and service.'))}"></canvas>
-          <!-- Rule 19: the badge is pinned to the right of the stage. It must
-               never sit over the lane, where it would cover the code on the
-               package coming down. -->
-          <p class="hd-combo off" data-hd-combo aria-hidden="true"><span data-hd-combo-x>x2</span></p>
-          <p class="hd-paused" data-hd-paused hidden>${esc(t('Paused'))}</p>
-        </div>
-        <div class="hd-choices" role="group" aria-label="${esc(t('Send the package'))}">
-          <button type="button" class="hd-choice" data-hd-side="0"></button>
-          <button type="button" class="hd-choice" data-hd-side="1"></button>
-        </div>
-        <p class="sr-only" data-hd-live role="status" aria-live="polite"></p>
-      </section>`;
-    canvas = root.querySelector('[data-hd-canvas]');
-    ctx = canvas?.getContext?.('2d') ?? null;
-    measure();
-    readColours();
     bindPlaying();
     say(t('Round started.'));
     last = null;
@@ -265,6 +311,7 @@ export function createHandlerScreen({
     const percent = Math.round(summary.accuracy * 100);
     root.innerHTML = `
       <section class="hd hd-summary" aria-labelledby="hd-summary-title">
+        <p class="hd-eyebrow">${esc(t(MODE_COPY[mode][0]))} · ${esc(t('Two minutes on the belt'))}</p>
         <h2 id="hd-summary-title" class="hd-title">${esc(t('Round over'))}</h2>
         <p class="hd-final"><span>${esc(t('Score'))}</span><strong>${summary.score}</strong></p>
         ${beaten
@@ -309,6 +356,7 @@ export function createHandlerScreen({
       if (enabled) audio?.start(); else audio?.stop();
       say(enabled ? t('Sound on.') : t('Sound off.'));
     });
+    on(root.querySelector('[data-hd-restart]'), 'click', () => startCountdown(mode));
     for (const button of root.querySelectorAll('[data-hd-side]')) {
       on(button, 'click', () => resolve(Number(button.dataset.hdSide)));
     }
@@ -364,7 +412,7 @@ export function createHandlerScreen({
   // and it holds for a beat before the package leaves the belt.
   function mark(item, kind) {
     if (!item) return;
-    verdicts.push({ y: item.y, route: item.route, kind, at: 0 });
+    verdicts.push({ y: item.y, route: item.route, id: item.id, kind, at: 0 });
   }
 
   // ------------------------------------------------------------------- paint
@@ -393,68 +441,225 @@ export function createHandlerScreen({
     return Math.max(220, size.h) + packageBox().h;
   }
 
-  function paintPackage(item, alpha, verdict, sparkle, clock) {
-    const { w, h, centre } = packageBox();
-    const x = centre - w / 2;
-    const y = item.y - h;
+  function roundRect(x, y, w, h, r, fill, stroke) {
+    ROUND_RECT(ctx, x, y, w, h, r);
+    if (fill) { ctx.fillStyle = fill; ctx.fill(); }
+    if (stroke) { ctx.strokeStyle = stroke; ctx.stroke(); }
+  }
+
+  // Rule 19: a ring of cold four-point stars orbiting the box, more of them
+  // and brighter as the streak holds. Additive blending, so each star adds
+  // light rather than painting a dot over the belt.
+  //
+  // This is a SPARKLE. The owner rejected a version where the package and the
+  // belt caught fire; do not bring tongues, embers or a lane glow back.
+  function paintSparkles(w, h, spec, clock, alpha) {
+    if (!spec.count || reducedMotion()) return;
+    const orbit = Math.max(w, h) * 0.6;
     ctx.save();
-    ctx.globalAlpha = alpha;
-
-    if (sparkle && sparkle.count && !reducedMotion()) {
-      ctx.save();
-      ctx.globalCompositeOperation = 'lighter';
-      for (let i = 0; i < sparkle.count; i += 1) {
-        const angle = (i / sparkle.count) * Math.PI * 2 + clock / 900;
-        const twinkle = 0.45 + 0.55 * Math.abs(Math.sin(clock / 320 + i));
-        const radius = Math.max(w, h) * 0.66 + Math.sin(clock / 500 + i) * 5;
-        const px = x + w / 2 + Math.cos(angle) * radius;
-        const py = y + h / 2 + Math.sin(angle) * radius * 0.72;
-        const s = (2.4 + 2.6 * sparkle.intensity) * twinkle;
-        ctx.fillStyle = `rgba(${SPARK_RGB},${0.75 * twinkle * sparkle.intensity})`;
-        // A four-point star: a sparkle, never a flame. The owner rejected
-        // the fire version; do not bring tongues or embers back.
-        ctx.beginPath();
-        ctx.moveTo(px, py - s * 2.1); ctx.lineTo(px + s * 0.5, py - s * 0.5);
-        ctx.lineTo(px + s * 2.1, py); ctx.lineTo(px + s * 0.5, py + s * 0.5);
-        ctx.lineTo(px, py + s * 2.1); ctx.lineTo(px - s * 0.5, py + s * 0.5);
-        ctx.lineTo(px - s * 2.1, py); ctx.lineTo(px - s * 0.5, py - s * 0.5);
-        ctx.closePath(); ctx.fill();
-      }
-      ctx.restore();
-    }
-
-    ROUND_RECT(ctx, x, y, w, h, 14);
-    ctx.fillStyle = paintColours.box;
-    ctx.fill();
-    ctx.lineWidth = 3;
-    ctx.strokeStyle = paintColours.boxLine;
-    ctx.stroke();
-
-    ctx.fillStyle = '#2b1c10';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.font = `700 ${Math.round(h * 0.36)}px system-ui, sans-serif`;
-    ctx.fillText(String(item.route.code ?? ''), x + w / 2, y + h * 0.42);
-    ctx.font = `600 ${Math.round(h * 0.17)}px system-ui, sans-serif`;
-    ctx.fillText(`${item.route.svc ?? ''} · ${item.route.state ?? ''}`, x + w / 2, y + h * 0.74);
-
-    if (verdict) {
-      const spec = VERDICT[verdict];
-      ROUND_RECT(ctx, x, y, w, h, 14);
-      ctx.fillStyle = `rgba(${spec.rgb},0.42)`;
-      ctx.fill();
-      ctx.lineWidth = 5;
-      ctx.strokeStyle = `rgb(${spec.rgb})`;
+    ctx.globalCompositeOperation = 'lighter';
+    const rim = ctx.createRadialGradient(0, 0, orbit * 0.52, 0, 0, orbit * 1.15);
+    rim.addColorStop(0, `rgba(${SPARK_RGB},0)`);
+    rim.addColorStop(0.55, `rgba(${SPARK_RGB},${0.1 + 0.1 * spec.intensity})`);
+    rim.addColorStop(1, `rgba(${SPARK_RGB},0)`);
+    ctx.fillStyle = rim;
+    ctx.beginPath(); ctx.arc(0, 0, orbit * 1.15, 0, Math.PI * 2); ctx.fill();
+    for (let i = 0; i < spec.count; i += 1) {
+      const angle = i * 2.399 + clock * 0.004;
+      const radius = orbit * (0.78 + 0.22 * Math.sin(i * 1.7));
+      const sx = Math.cos(angle) * radius * 1.08;
+      const sy = Math.sin(angle) * radius * 0.78;
+      // Two offset sines rather than randomness, so the ring breathes
+      // instead of strobing.
+      const beat = Math.abs(Math.sin(clock * 0.09 + i * 1.3));
+      const size = (2 + 2.6 * spec.intensity) * (0.35 + 0.65 * beat);
+      if (size < 0.5) continue;
+      ctx.globalAlpha = alpha * (0.35 + 0.65 * beat) * (0.5 + 0.5 * spec.intensity);
+      const glow = ctx.createRadialGradient(sx, sy, 0, sx, sy, size * 1.9);
+      glow.addColorStop(0, 'rgba(255,255,255,1)');
+      glow.addColorStop(0.35, `rgba(${SPARK_RGB},.85)`);
+      glow.addColorStop(1, `rgba(${SPARK_RGB},0)`);
+      ctx.fillStyle = glow;
+      ctx.beginPath(); ctx.arc(sx, sy, size * 1.9, 0, Math.PI * 2); ctx.fill();
+      ctx.strokeStyle = 'rgba(255,255,255,.9)';
+      ctx.lineWidth = Math.max(0.8, size * 0.3);
+      ctx.beginPath();
+      ctx.moveTo(sx - size * 1.7, sy); ctx.lineTo(sx + size * 1.7, sy);
+      ctx.moveTo(sx, sy - size * 1.7); ctx.lineTo(sx, sy + size * 1.7);
       ctx.stroke();
-      // The glyph travels with the colour, always.
-      ctx.font = `800 ${Math.round(h * 0.52)}px system-ui, sans-serif`;
-      ctx.lineWidth = 6;
-      ctx.strokeStyle = 'rgba(20,12,6,0.65)';
-      ctx.strokeText(spec.glyph, x + w / 2, y + h / 2);
-      ctx.fillStyle = '#ffffff';
-      ctx.fillText(spec.glyph, x + w / 2, y + h / 2);
     }
     ctx.restore();
+  }
+
+  // Rule 20: the whole box washes green on a sort and red on a missort or a
+  // drop, with a rim of the same colour and a glyph over it. The colour and
+  // the glyph always travel together, because red and green alone fail
+  // red-green colour blindness and a player with the sound off would then
+  // have no verdict at all.
+  function paintVerdict(w, h, kind, alpha) {
+    const spec = VERDICT[kind];
+    if (!spec) return;
+    ctx.save();
+    ctx.globalCompositeOperation = 'lighter';
+    ctx.globalAlpha = alpha * 0.5;
+    roundRect(-w / 2, -h / 2, w, h, 9, `rgba(${spec.rgb},0.75)`);
+    ctx.restore();
+    ctx.globalAlpha = alpha;
+    ctx.lineWidth = 5;
+    roundRect(-w / 2, -h / 2, w, h, 9, null, `rgba(${spec.rgb},1)`);
+    ctx.save();
+    ctx.globalCompositeOperation = 'lighter';
+    ctx.globalAlpha = alpha * 0.55;
+    const halo = ctx.createRadialGradient(0, 0, w * 0.34, 0, 0, w * 0.85);
+    halo.addColorStop(0, `rgba(${spec.rgb},0.45)`);
+    halo.addColorStop(1, `rgba(${spec.rgb},0)`);
+    ctx.fillStyle = halo;
+    ctx.beginPath(); ctx.arc(0, 0, w * 0.85, 0, Math.PI * 2); ctx.fill();
+    ctx.restore();
+    ctx.globalAlpha = alpha;
+    ctx.lineCap = 'round';
+    const s = w * 0.14;
+    const glyph = () => {
+      ctx.beginPath();
+      if (kind === 'sorted') {
+        ctx.moveTo(-s, 0); ctx.lineTo(-s * 0.2, s * 0.8); ctx.lineTo(s, -s * 0.8);
+      } else {
+        ctx.moveTo(-s * 0.8, -s * 0.8); ctx.lineTo(s * 0.8, s * 0.8);
+        ctx.moveTo(s * 0.8, -s * 0.8); ctx.lineTo(-s * 0.8, s * 0.8);
+      }
+      ctx.stroke();
+    };
+    ctx.strokeStyle = 'rgba(20,12,8,.5)'; ctx.lineWidth = Math.max(4, w * 0.055) + 4; glyph();
+    ctx.strokeStyle = '#fff'; ctx.lineWidth = Math.max(4, w * 0.055); glyph();
+    ctx.lineCap = 'butt';
+  }
+
+  // A package is a taped box carrying a shipping label: the service in small
+  // caps, the routing code large, the state under it and a barcode along the
+  // bottom. The code is the one thing the player has to read at speed, so it
+  // is the largest thing on the box and it shrinks only when it is long.
+  function paintPackage(item, alpha, verdict, sparkle, clock) {
+    const { w, h, centre } = packageBox();
+    ctx.save();
+    ctx.translate(centre, item.y - h / 2);
+    ctx.globalAlpha = alpha;
+
+    if (sparkle) paintSparkles(w, h, sparkle, clock, alpha);
+
+    const active = Boolean(item.front);
+    ctx.shadowColor = '#0006';
+    ctx.shadowBlur = active ? 20 : 10;
+    ctx.shadowOffsetY = active ? 10 : 6;
+    roundRect(-w / 2, -h / 2, w, h, 9, active ? SKIN.boxFace : SKIN.boxFaceIdle, SKIN.boxLine);
+    ctx.shadowColor = 'transparent';
+    ctx.shadowBlur = 0;
+    ctx.shadowOffsetY = 0;
+
+    // Packing tape: one strip across the top, one down the middle.
+    roundRect(-w / 2 + 2, -h / 2 + 2, w - 4, 13, 7, SKIN.boxTape);
+    ctx.fillStyle = SKIN.boxTapeCentre;
+    ctx.fillRect(-w * 0.09, -h / 2, w * 0.18, h);
+    ctx.strokeStyle = SKIN.boxTapeLine;
+    ctx.lineWidth = 1;
+    ctx.strokeRect(-w * 0.09, -h / 2, w * 0.18, h);
+
+    const lw = w * 0.78;
+    const lh = h * 0.79;
+    roundRect(-lw / 2, -lh / 2 + 3, lw, lh, 4, active ? SKIN.label : SKIN.labelIdle);
+
+    const code = String(item.route.code ?? '');
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'alphabetic';
+    // The service on the left and the state on the right of one line. They
+    // shared a line with the barcode before, and collided with it.
+    ctx.fillStyle = SKIN.labelSoft;
+    ctx.font = `700 ${Math.max(8, w * 0.045)}px system-ui, sans-serif`;
+    ctx.fillText(t(SERVICE_LABEL[item.route.svc] ?? item.route.svc ?? ''), -lw / 2 + 11, -lh / 2 + 18);
+    ctx.textAlign = 'right';
+    ctx.fillStyle = SKIN.labelFaint;
+    ctx.fillText(String(item.route.state ?? '').slice(0, 16), lw / 2 - 11, -lh / 2 + 18);
+    ctx.textAlign = 'left';
+    // The routing code is the one thing that has to be read at speed, so it
+    // is the biggest thing on the label and shrinks only when it is long.
+    ctx.fillStyle = SKIN.labelInk;
+    ctx.font = `800 ${code.length > 7 ? w * 0.12 : code.length > 5 ? w * 0.145 : w * 0.2}px system-ui, sans-serif`;
+    ctx.fillText(code, -lw / 2 + 10, 14);
+    // A barcode, so the label reads as a label. Its bars come from the
+    // package number, not from randomness, so one package keeps one barcode.
+    let bx = -lw / 2 + 11;
+    ctx.fillStyle = SKIN.barcode;
+    const seed = Number(String(item.id).replace(/\D/g, '')) || 1;
+    for (let i = 0; i < 31; i += 1) {
+      const bw = ((i * 7 + seed) % 3 + 1) * 0.65;
+      ctx.fillRect(bx, lh / 2 - 15, bw, 10);
+      bx += bw + 1.1;
+      if (bx > lw / 2 - 10) break;
+    }
+
+    if (verdict) paintVerdict(w, h, verdict, alpha);
+    ctx.restore();
+  }
+
+  // The belt itself: a frame, moving slats, dashed guides down each side and
+  // a toothed edge at the bottom. It stays the belt -- the streak shows only
+  // around the package, which is what the owner asked for after the fire
+  // version went too far.
+  function paintBelt(clock) {
+    const layout = stageLayout(size.w);
+    const edge = size.h - 42;
+
+    ctx.fillStyle = SKIN.room;
+    ctx.fillRect(0, 0, size.w, size.h);
+    ctx.strokeStyle = SKIN.roomLine;
+    ctx.lineWidth = 1;
+    for (let y = 25; y < size.h; y += 42) {
+      ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(size.w, y); ctx.stroke();
+    }
+
+    roundRect(layout.frameLeft, -20, layout.beltW + FRAME_PAD * 2, edge + 35, 17, SKIN.frameOuter, SKIN.frameOuterLine);
+    roundRect(layout.beltLeft - 9, -20, layout.beltW + 18, edge + 27, 12, SKIN.frameInner);
+    roundRect(layout.beltLeft, -20, layout.beltW, edge + 19, 8, SKIN.belt);
+
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(layout.beltLeft, 0, layout.beltW, edge + 6);
+    ctx.clip();
+    // The slats scroll with the clock, so the belt is visibly running even
+    // when no package is on it.
+    const offset = reducedMotion() ? 0 : clock / 24 % 26;
+    for (let y = -30 + offset; y < edge + 30; y += 26) {
+      ctx.fillStyle = SKIN.slatDark; ctx.fillRect(layout.beltLeft, y, layout.beltW, 3);
+      ctx.fillStyle = SKIN.slatLight; ctx.fillRect(layout.beltLeft, y + 3, layout.beltW, 1);
+    }
+    ctx.restore();
+
+    ctx.strokeStyle = SKIN.guide;
+    ctx.setLineDash([4, 13]);
+    ctx.beginPath();
+    ctx.moveTo(layout.beltLeft - 13, 0); ctx.lineTo(layout.beltLeft - 13, edge);
+    ctx.moveTo(layout.beltRight + 13, 0); ctx.lineTo(layout.beltRight + 13, edge);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    roundRect(layout.frameLeft, edge + 3, layout.beltW + FRAME_PAD * 2, 16, 5, SKIN.edge);
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(layout.frameLeft, edge + 4, layout.beltW + FRAME_PAD * 2, 14);
+    ctx.clip();
+    ctx.fillStyle = SKIN.edgeTeeth;
+    for (let x = layout.frameLeft - 22; x < layout.frameRight + 22; x += 25) {
+      ctx.beginPath();
+      ctx.moveTo(x, edge + 3); ctx.lineTo(x + 12, edge + 3);
+      ctx.lineTo(x + 24, edge + 20); ctx.lineTo(x + 12, edge + 20);
+      ctx.fill();
+    }
+    ctx.restore();
+
+    ctx.fillStyle = SKIN.ink;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'alphabetic';
+    ctx.font = '700 9px system-ui, sans-serif';
+    ctx.fillText(t('END OF BELT / DON’T DROP IT'), layout.centre, size.h - 10);
   }
 
   function paintHud() {
@@ -463,6 +668,10 @@ export function createHandlerScreen({
     const score = root.querySelector('[data-hd-score]');
     if (clock) clock.textContent = formatClock(shot.remainingMs);
     if (score) score.textContent = String(shot.score);
+    const tally = root.querySelector('[data-hd-tally]');
+    if (tally) tally.textContent = `${shot.sorts} / ${shot.missorts} / ${shot.drops}`;
+    const deck = root.querySelector('[data-hd-deck]');
+    if (deck) deck.textContent = t(DECK_LABEL[shot.deck] ?? '');
 
     paintChoices(shot);
 
@@ -473,6 +682,8 @@ export function createHandlerScreen({
     badge.classList.toggle('off', spec.tier < 2);
     badge.classList.toggle('t3', spec.tier === 3);
     badge.classList.toggle('t4', spec.tier >= 4);
+    // The tier is written as well as coloured, so stilling the motion or
+    // losing the colour removes no information.
     if (value) value.textContent = `x${spec.tier}`;
     if (spec.tier > shownTier) {
       // Rule 21: the tier cue plays inside the badge's bump, so the sound and
@@ -483,14 +694,13 @@ export function createHandlerScreen({
       audio?.tier(spec.tier);
       say(t('Streak x{n}.', { n: spec.tier }));
     }
-    if (spec.tier < shownTier) badge.classList.add('lost');
-    else badge.classList.remove('lost');
+    badge.classList.toggle('lost', spec.tier < shownTier);
     shownTier = spec.tier;
   }
 
-  // The two destinations, rule 4: each shows the belt colour AND its written
-  // name, so the colour is never the only thing carrying the answer. They are
-  // read off the front package, so they cannot change under a gesture.
+  // Rule 4: each destination shows the belt colour AND its written name, so
+  // the colour is never the only thing carrying the answer. They are read off
+  // the front package, so they cannot change under a gesture.
   let shownOptions = '';
   function paintChoices(shot) {
     const front = shot.packages.find(item => item.front);
@@ -501,7 +711,7 @@ export function createHandlerScreen({
     for (const button of root.querySelectorAll('[data-hd-side]')) {
       const option = options[Number(button.dataset.hdSide)];
       const style = option ? BELT_STYLE[option.belt] : null;
-      button.textContent = option ? t(option.belt) : '';
+      button.querySelector('.hd-dest-name').textContent = option ? option.belt : '';
       button.disabled = !option;
       button.style.background = style?.bg ?? '';
       button.style.color = style?.fg ?? '';
@@ -512,20 +722,17 @@ export function createHandlerScreen({
     if (!ctx) return;
     const shot = game.snapshot();
     ctx.clearRect(0, 0, size.w, size.h);
-
-    // The lane. It stays the belt: nothing on it reacts to the combo.
-    const layout = stageLayout(size.w);
-    ctx.fillStyle = paintColours.lane;
-    ctx.fillRect(layout.laneLeft, 0, layout.laneW, size.h);
+    paintBelt(clock);
 
     const sparkle = sparkleSpec(shot.combo, COMBO_STEP, COMBO_CAP);
     for (let i = shot.packages.length - 1; i >= 0; i -= 1) {
       const item = shot.packages[i];
-      paintPackage(item, item.front ? 1 : 0.82, null, item.front ? sparkle : null, clock);
+      paintPackage(item, item.front ? 1 : 0.69, null, item.front ? sparkle : null, clock);
     }
     for (const verdict of verdicts) {
       const age = verdict.at / VERDICT_HOLD_MS;
-      paintPackage({ y: verdict.y, route: verdict.route, front: false }, Math.max(0, 1 - age), verdict.kind, null, clock);
+      paintPackage({ y: verdict.y, route: verdict.route, id: verdict.id, front: false },
+        Math.max(0, 1 - age), verdict.kind, null, clock);
     }
   }
 

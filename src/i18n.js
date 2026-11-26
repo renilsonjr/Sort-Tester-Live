@@ -567,6 +567,24 @@ const ES = {
   'This attempt does not count': 'Este intento no cuenta',
   'The server stopped while you were playing, so the attempt was cancelled. No score was applied and your points are exactly as they were.': 'El servidor se detuvo mientras jugabas, así que el intento se canceló. No se aplicó ninguna puntuación y tus puntos quedan exactamente como estaban.',
   'You can start again when you are ready.': 'Puedes empezar de nuevo cuando quieras.',
+  // Handler's own belt furniture. The service names repeat SERVICE_ES
+  // because the package label goes through t() like every other string.
+  'Two minutes on the belt': 'Dos minutos en la banda',
+  'Time left': 'Tiempo restante',
+  'Sorted / wrong / dropped': 'Correctos / errados / caídos',
+  'INBOUND / TOP': 'ENTRADA / ARRIBA',
+  'BASIC SORT': 'CLASIFICACIÓN BÁSICA',
+  'MEDIUM SORT': 'CLASIFICACIÓN INTERMEDIA',
+  'HARD SORT': 'CLASIFICACIÓN DIFÍCIL',
+  'LEFT BELT': 'BANDA IZQUIERDA',
+  'RIGHT BELT': 'BANDA DERECHA',
+  'END OF BELT / DON’T DROP IT': 'FIN DE LA BANDA / NO LO DEJES CAER',
+  'Restart round': 'Reiniciar ronda',
+  'Swipe the front box, tap a side belt, or use the arrow keys.': 'Desliza la caja de delante, toca una banda lateral o usa las flechas.',
+  'Ground': 'Terrestre',
+  'Next Day Air': 'Aéreo 1 día',
+  '2 Day Air': 'Aéreo 2 días',
+  '3 Day Select': 'Select 3 días',
   // Handler, the conveyor mini-game (#395). 'Score' and 'Hard' already have
   // entries above and mean the same thing here, so they are not repeated.
   // 'Handler' stays 'Handler': it is the job title, not a description.
