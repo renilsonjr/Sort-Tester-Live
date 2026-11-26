@@ -15,7 +15,12 @@ import { logout } from './auth.js';
 import { longDate, readSeasonNotice, seasonBubbleCopy, seasonBubbleMarkup, showSeasonBubble } from './seasonNotice.js';
 import { idleVerdict } from './idle.js';
 import { createAttemptClient } from './attemptClient.js';
-import { playCorrectSfx, playIncorrectSfx, isSoundEnabled, toggleSound, setMusicWanted } from './sound.js';
+import { playCorrectSfx, playIncorrectSfx, isSoundEnabled, toggleSound, setMusicWanted, getAudioContext } from './sound.js';
+import * as conveyorEngine from './conveyor/engine.js';
+import * as conveyorRoutes from './conveyor/routes.js';
+import { createHandlerScreen } from './conveyor/view.js';
+import { createHandlerAudio } from './conveyor/audio.js';
+import { createBestScores } from './conveyor/bestScores.js';
 
 const app = document.getElementById('app');
 const log = createShiftLog(typeof localStorage === 'undefined' ? null : localStorage);
@@ -166,7 +171,22 @@ function el(html) {
   return template.content.firstElementChild;
 }
 
+// Handler's screen owns an animation frame, a round clock, audio and
+// listeners on the document. Leaving it has to stop all of that, and the
+// screen may be left in more ways than one -- a dock tab, the Home stripe,
+// a sign-in, a language change that redraws the page. render() is where the
+// app already decides the music and the heartbeat on every screen change,
+// for the same reason, so it decides this too.
+let handlerScreen = null;
+function unmountHandler() {
+  if (!handlerScreen) return;
+  const leaving = handlerScreen;
+  handlerScreen = null;
+  leaving.unmount();
+}
+
 function render(node) {
+  if (!node.querySelector?.('[data-handler-root]')) unmountHandler();
   document.documentElement.lang = language.code;
   // #427: the dock goes while a scored attempt is live, the way it already
   // does in Practice (#382) -- a dock under a timed run is a way to lose it,
@@ -289,6 +309,9 @@ const ICONS = {
   practice: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.2"/></svg>',
   ranked: '<svg viewBox="0 0 24 24"><path d="M7 4h10v5a5 5 0 0 1-10 0z"/><path d="M7 6H4.5a2.5 2.5 0 0 0 2.6 3.6M17 6h2.5a2.5 2.5 0 0 1-2.6 3.6"/><path d="M12 14v4M8.5 20.5h7"/></svg>',
   profile: '<svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4.2"/><path d="M4.5 20.5a7.5 7.5 0 0 1 15 0"/></svg>',
+  // A box on a belt, drawn on the same 24x24 grid and stroke as the rest of
+  // the set so the dock reads as one family.
+  handler: '<svg viewBox="0 0 24 24"><rect x="7" y="4.5" width="10" height="8" rx="1.5"/><path d="M12 4.5v8"/><path d="M3 17h18"/><circle cx="6.5" cy="19.5" r="1.8"/><circle cx="12" cy="19.5" r="1.8"/><circle cx="17.5" cy="19.5" r="1.8"/></svg>',
   chart: '<svg viewBox="0 0 24 24"><rect x="3.5" y="4" width="17" height="16" rx="2.5"/><path d="M3.5 9.5h17M9.5 9.5V20M15 9.5V20"/></svg>',
   quiz: '<svg viewBox="0 0 24 24"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 2M9.5 2.5h5"/></svg>',
   board: '<svg viewBox="0 0 24 24"><path d="M5 20V11M12 20V5M19 20v-6"/></svg>',
@@ -355,6 +378,10 @@ function navTabs() {
   const tabs = [
     ['home', ICONS.home, t('Home')],
     ['practice', ICONS.practice, t('Practice')],
+    // Handler sits with Practice because it is practice: a guest can play
+    // it, and nothing about it is gated behind signing in. Only the stored
+    // best score needs an account (#396).
+    ['handler', ICONS.handler, t('Handler')],
   ];
   if (signedIn()) {
     tabs.push(['ranked', ICONS.ranked, t('Ranked')]);
@@ -384,7 +411,7 @@ function labPage(content, active = 'home', rerender = showStart) {
         </div>` : ''}
       </header>
       <main class="lab-main">${content}</main>
-      ${attemptLive ? '' : `<nav class="lab-nav" style="grid-template-columns: repeat(${navTabs().length}, 1fr)" aria-label="${esc(t('Main navigation'))}">
+      ${attemptLive ? '' : `<nav class="lab-nav${navTabs().length > 4 ? ' lab-nav-tight' : ''}" style="grid-template-columns: repeat(${navTabs().length}, 1fr)" aria-label="${esc(t('Main navigation'))}">
         ${navTabs().map(([id, icon, label]) => `
         <button type="button" data-nav="${id}" ${active === id ? 'aria-current="page"' : ''}><i aria-hidden="true">${icon}</i>${esc(label)}</button>`).join('')}
       </nav>`}
@@ -400,6 +427,7 @@ function labPage(content, active = 'home', rerender = showStart) {
     // invite, the leaderboard) carries its tab's mark, and pressing the tab
     // is how a player expects to get back to its first screen.
     if (button.dataset.nav === 'practice') showPractice();
+    else if (button.dataset.nav === 'handler') showHandler();
     else if (button.dataset.nav === 'ranked') showRanked();
     else if (button.dataset.nav === 'profile') showProfile();
     else showStart();
@@ -419,6 +447,38 @@ function beltChip(belt, className) {
 
 // Practice: the two ways of practising, together under one tab. Neither
 // changes Ranked points, and the screen says so.
+// Handler, the conveyor mini-game (#396). The page is a mount point and
+// nothing else: the game's screens, input, canvas and sound all live in
+// src/conveyor/, and this file only puts them on screen and takes them off.
+function showHandler() {
+  stopTick();
+  clock = null;
+  const best = createBestScores();
+  const view = labPage(`
+    <section class="lab-screen screen-handler">
+      <div data-handler-root></div>
+    </section>
+  `, 'handler', showHandler);
+  const root = view.querySelector('[data-handler-root]');
+  unmountHandler();
+  handlerScreen = createHandlerScreen({
+    root,
+    t: (source, values) => t(source, values),
+    engine: conveyorEngine,
+    routes: conveyorRoutes,
+    audio: createHandlerAudio({ getContext: getAudioContext, isEnabled: isSoundEnabled }),
+    soundPref: { isEnabled: isSoundEnabled, toggle: toggleSound },
+    bestScores: best,
+  });
+  // The stored bests arrive after the first paint, so the mode list is
+  // redrawn once they do. A guest's load() answers 401 and the screen says
+  // the score is not saved rather than showing a silent zero.
+  best.load().then(() => {
+    if (handlerScreen) handlerScreen.showModes();
+  });
+  return view;
+}
+
 function showPractice() {
   stopTick();
   clock = null;
@@ -3337,6 +3397,20 @@ function showStart() {
         </div>
       </section>
       ${signedIn() ? '<section class="home-stripe home-split-climb" id="home-climb" hidden></section>' : ''}
+      <!-- Handler, directly under the Ranked block and before Practice, which
+           is where the owner asked for it. It is not inside the Ranked stripe:
+           the mini-game is deliberately kept out of Ranked, and sharing that
+           stripe would say the opposite. -->
+      <section class="home-stripe home-split-handler">
+        <p class="lab-eyebrow">${esc(t('Handler'))}</p>
+        <div class="home-shortcuts">
+          <button id="home-handler" class="home-short" type="button">
+            <span class="home-short-ic" aria-hidden="true">${ICONS.handler}</span>
+            <strong>${esc(t('Sort packages against the clock'))}</strong>
+            <small>${esc(t('Two minutes on the belt. Each mode keeps its own best score.'))}</small>
+          </button>
+        </div>
+      </section>
       <section class="home-stripe home-split-actions">
         <p class="lab-eyebrow">${esc(t('Practice'))}</p>
         <div class="home-shortcuts">
@@ -3366,6 +3440,7 @@ function showStart() {
     </section>
   `, 'home');
   view.querySelector('#home-study').addEventListener('click', showStudy);
+  view.querySelector('#home-handler').addEventListener('click', showHandler);
   view.querySelector('#home-practice').addEventListener('click', showPractice);
   if (signedIn()) {
     view.querySelector('#home-ranked').addEventListener('click', showRanked);

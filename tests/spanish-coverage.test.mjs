@@ -29,7 +29,9 @@ function literalKeys() {
 // Words that are the same in both languages, on purpose.
 // 'Quiz Code' is the name of the login secret; the owner keeps it untranslated
 // so it reads as one identity in both languages (#265).
-const SAME = new Set(['Twilight', 'Ranked ID', 'Quiz Code']);
+// 'Handler' is the mini-game's name, taken from the job title, and it stays
+// 'Handler' in Spanish for the same reason (#396).
+const SAME = new Set(['Twilight', 'Ranked ID', 'Quiz Code', 'Handler']);
 
 test('every sentence app.js shows has a Spanish entry', () => {
   const es = createLanguage(null);
