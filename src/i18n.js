@@ -584,7 +584,6 @@ const ES = {
   'Scores are kept only while you are signed in. This one is not saved.': 'Las puntuaciones se guardan solo con la sesión iniciada. Esta no se guarda.',
   'Sort packages against the clock': 'Clasifica paquetes contra el reloj',
   'Two minutes on the belt. Each mode keeps its own best score.': 'Dos minutos en la banda. Cada modo guarda su propia mejor puntuación.',
-  'Play Handler': 'Jugar Handler',
   'Swipe the front box, tap a side belt, or use the arrow keys.': 'Desliza la caja de delante, toca una banda lateral o usa las flechas.',
   'Ground': 'Terrestre',
   'Next Day Air': 'Aéreo 1 día',
