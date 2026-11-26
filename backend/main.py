@@ -9,6 +9,7 @@ from fastapi import FastAPI, Request, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
+import psycopg
 from psycopg_pool import PoolTimeout
 
 from backend import http_hardening, origin_guard
@@ -158,6 +159,16 @@ def create_app() -> FastAPI:
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
             content={"detail": "busy; try again in a moment"},
             headers={"Retry-After": "5"},
+        )
+
+    @application.exception_handler(psycopg.DataError)
+    def _bad_data(_request: Request, _exc: Exception) -> JSONResponse:
+        # A value the database cannot store (a character it has no room
+        # for, a number out of range) is the request's fault, not the
+        # server's. Nothing from the exception is echoed back.
+        return JSONResponse(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            content={"detail": "Invalid input."},
         )
 
     @application.get("/health")
