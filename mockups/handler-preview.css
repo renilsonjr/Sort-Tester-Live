@@ -2,6 +2,18 @@
    Do not hand-edit: the Handler preview must be styled by the same
    stylesheet the app ships, or the preview stops being evidence. */
 
+  /* The opening mark: drawn by this page alone, before any script runs,
+     so the screen is never bare while the modules load. The app's first
+     render replaces the whole of #app, which removes it; nothing has to
+     remember to. The owner asked for the RJ mark spinning (2026-11-26).
+     The spin runs 45 turns, not forever: the page bans looping animation
+     (the celebration tests hold it to that), and a load still going after
+     a minute has bigger problems than a mark at rest. */
+  .boot { min-height: 100vh; min-height: 100dvh; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; }
+  .boot-mark { width: 56px; height: 56px; border-radius: 16px; background: linear-gradient(135deg, #f7c948, #e0a82e); color: #3b2a12; font-weight: 900; font-size: 22px; display: grid; place-items: center; animation: boot-spin 1.6s cubic-bezier(.45,.1,.35,.9) 45; }
+  .boot-name { color: var(--muted, #b9a88f); font-weight: 800; letter-spacing: .04em; }
+  @keyframes boot-spin { 0% { transform: rotate(0); } 55% { transform: rotate(360deg); } 100% { transform: rotate(360deg); } }
+  @media (prefers-reduced-motion: reduce) { .boot-mark { animation: none; } }
   @font-face {
     font-family: Nunito;
     src: url("../assets/nunito-variable.ttf") format("truetype");

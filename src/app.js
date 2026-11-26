@@ -8,7 +8,7 @@ import { createClock } from './clock.js';
 import { createShiftLog, practiceCountLabel } from './shiftLog.js';
 import { saveWorkbook } from './exportFile.js';
 import { CHART, searchChart } from './study.js?v=chart-destination-20261108-r2';
-import { selectLevelCards } from './levels.js?v=chart-destination-20261108-r2';
+import { selectLevelCards } from './levels.js?v=sort-change-20261116-r1';
 import { createLanguage } from './i18n.js?v=chart-destination-20261108-r2';
 import * as support from './support.js';
 import { logout } from './auth.js';

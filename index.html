@@ -7,6 +7,37 @@
 <meta name="description" content="Learn the sort chart, play Ranked quizzes and climb the leaderboard.">
 <!-- Tab and home-screen icons: the yellow RJ mark (#266). The PNGs and the
      preview picture are drawn by tools/make_site_images.py. -->
+<!-- The app is 27 ES modules which the browser otherwise discovers
+     one import at a time, each discovery costing a round trip; on a phone
+     that chain is most of the dark pause before the first screen. This
+     list names every module up front so they are all fetched at once. It
+     is the real import graph, tokens included: tests/boot-preload.test.mjs
+     recomputes it and fails if the two ever disagree. -->
+<link rel="modulepreload" href="src/attemptClient.js">
+<link rel="modulepreload" href="src/auth.js">
+<link rel="modulepreload" href="src/avatars.js">
+<link rel="modulepreload" href="src/belts.js">
+<link rel="modulepreload" href="src/chart.js?v=chart-destination-20261108-r2">
+<link rel="modulepreload" href="src/clock.js">
+<link rel="modulepreload" href="src/conveyor/audio.js">
+<link rel="modulepreload" href="src/conveyor/bestScores.js">
+<link rel="modulepreload" href="src/conveyor/board.js">
+<link rel="modulepreload" href="src/conveyor/engine.js">
+<link rel="modulepreload" href="src/conveyor/routes.js">
+<link rel="modulepreload" href="src/conveyor/view.js">
+<link rel="modulepreload" href="src/decks.js?v=chart-destination-20261108-r2">
+<link rel="modulepreload" href="src/destination.js?v=chart-destination-20261108-r2">
+<link rel="modulepreload" href="src/exportFile.js">
+<link rel="modulepreload" href="src/i18n.js?v=chart-destination-20261108-r2">
+<link rel="modulepreload" href="src/idle.js">
+<link rel="modulepreload" href="src/levels.js?v=sort-change-20261116-r1">
+<link rel="modulepreload" href="src/questions.js?v=chart-destination-20261108-r2">
+<link rel="modulepreload" href="src/quiz.js?v=chart-destination-20261108-r2">
+<link rel="modulepreload" href="src/seasonNotice.js">
+<link rel="modulepreload" href="src/shiftLog.js">
+<link rel="modulepreload" href="src/sound.js">
+<link rel="modulepreload" href="src/study.js?v=chart-destination-20261108-r2">
+<link rel="modulepreload" href="src/support.js">
 <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
 <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32.png">
 <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
@@ -21,6 +52,18 @@
 <meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
 <style>
+  /* The opening mark: drawn by this page alone, before any script runs,
+     so the screen is never bare while the modules load. The app's first
+     render replaces the whole of #app, which removes it; nothing has to
+     remember to. The owner asked for the RJ mark spinning (2026-11-26).
+     The spin runs 45 turns, not forever: the page bans looping animation
+     (the celebration tests hold it to that), and a load still going after
+     a minute has bigger problems than a mark at rest. */
+  .boot { min-height: 100vh; min-height: 100dvh; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; }
+  .boot-mark { width: 56px; height: 56px; border-radius: 16px; background: linear-gradient(135deg, #f7c948, #e0a82e); color: #3b2a12; font-weight: 900; font-size: 22px; display: grid; place-items: center; animation: boot-spin 1.6s cubic-bezier(.45,.1,.35,.9) 45; }
+  .boot-name { color: var(--muted, #b9a88f); font-weight: 800; letter-spacing: .04em; }
+  @keyframes boot-spin { 0% { transform: rotate(0); } 55% { transform: rotate(360deg); } 100% { transform: rotate(360deg); } }
+  @media (prefers-reduced-motion: reduce) { .boot-mark { animation: none; } }
   @font-face {
     font-family: Nunito;
     src: url("assets/nunito-variable.ttf") format("truetype");
@@ -2279,7 +2322,7 @@
   <div class="orb orb-blue"></div>
 </div>
 <div id="auth-panel" hidden></div>
-<main id="app"></main>
+<main id="app"><div class="boot" aria-label="Sort Quiz"><span class="boot-mark">RJ</span><span class="boot-name">Sort Quiz</span></div></main>
 <script type="module" src="src/app.js?v=readcache-20261121"></script>
 <script type="module" src="src/auth.js?v=lazyxlsx-20261121"></script>
 </body>

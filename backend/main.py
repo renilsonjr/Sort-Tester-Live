@@ -7,6 +7,7 @@ from urllib.parse import urlsplit
 
 from fastapi import FastAPI, Request, status
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 import psycopg
@@ -134,6 +135,13 @@ def create_app() -> FastAPI:
     # Added after the guard and CORS so it is outermost: its headers and the
     # body cap apply to every answer, refusals and preflight included.
     http_hardening.install(application)
+
+    # Outermost of all, so it compresses whatever the others answer. The
+    # app serves its own frontend, and until 2026-11-26 every byte of it
+    # went out raw: opening the site cost 904 KB, most of it text that
+    # compresses to about a quarter. ETags are untouched, so the
+    # ask-before-reusing rule from #462 still answers 304 with no body.
+    application.add_middleware(GZipMiddleware, minimum_size=1024)
 
     application.include_router(auth.router)
     application.include_router(recovery_messages_router.router)
