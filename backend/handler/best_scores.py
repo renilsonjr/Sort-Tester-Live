@@ -3,7 +3,7 @@
 The whole server side of the mini-game's first release. It stores one
 number per account per mode and nothing else: no round history, no
 timestamps, no telemetry. Scores from different modes are never compared or
-summed, because a two-minute round in Easy is not a two-minute round in
+summed, because a round in Easy is not a round in
 Hard, so they are separate rows and separate answers.
 
 Since #417 that number belongs to a season (owner decision, 2026-11-26):
@@ -23,7 +23,7 @@ from backend.ranked import seasons
 # refused before it reaches the database.
 MODES = ("easy", "medium", "hard", "expert")
 
-# A two-minute round cannot plausibly pass this. It is a guard against a
+# A round cannot plausibly pass this. It is a guard against a
 # nonsense or tampered value reaching the table, not a game rule: the engine
 # is what decides a score, and #397 may change its constants.
 SCORE_CEILING = 100_000

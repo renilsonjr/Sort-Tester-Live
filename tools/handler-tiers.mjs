@@ -2,7 +2,7 @@
 //
 // The combo step, the ceiling and the per-mode speeds are assistant guesses
 // that the owner tunes after playing. This does not decide them. It plays a
-// full two-minute round in every mode at several miss rates, with the
+// full round in every mode at several miss rates, with the
 // engine's real clock and the real decks, and prints what each setting costs
 // -- so a change to a constant can be judged by its effect, not by feel
 // alone. Run it again after changing any of them:

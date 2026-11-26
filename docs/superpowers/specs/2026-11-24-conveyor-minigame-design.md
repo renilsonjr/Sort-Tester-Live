@@ -38,7 +38,7 @@ Settled on November 26, 2026 (rule 22 below): the label shows **one concrete cod
 
 **Round and scoring**
 
-12. A round lasts **two minutes**. It ends when the clock reaches zero, not when packages run out.
+12. A round lasts **one minute**. It ends when the clock reaches zero, not when packages run out. It was two minutes until the owner played the published game on November 26, 2026 and found it too long; `ROUND_MS` in `src/conveyor/engine.js` is the one number that changed. Where this document says "two-minute" further down, it describes what was measured at the time.
 13. A sort scores **1 point multiplied by the current combo multiplier**.
 14. A missort **subtracts 1 point** and resets the combo to zero.
 15. A drop **subtracts 1 point** and resets the combo to zero.
@@ -168,6 +168,19 @@ The prototype in `mockups/handler-prototype.html` still shows ranges. It was not
 ## Stage 5 findings, before the owner plays
 
 Measured on November 26, 2026. None of this replaces the owner playing on an iPhone, which is what #397 is for; it is what could be established without one, so that session starts from numbers rather than from a blank page.
+
+**After the round became one minute (November 26, 2026).** Halving the round halves the packages, and the combo steps did not move, so the table above no longer describes the game. Run `node tools/handler-tiers.mjs` for the current one. What changed that matters:
+
+| Mode | Packages in a round | Perfect play reaches | Perfect score |
+|---|---|---|---|
+| Easy | 13 | x3 | 24 |
+| Medium | 18 | x4 | 42 |
+| Hard | 26 | x4 | 74 |
+| Expert | 34 | x4 | 106 |
+
+**x4 cannot be reached in Easy at all.** It needs 15 straight and an Easy round now holds 13 packages. The owner had accepted x4 being hardest in Easy when the round was two minutes; this is a different fact and was put to him the day the round changed.
+
+Scores stored before the change were made in two-minute rounds. They were the owner's own test rounds in the Pre-Season.
 
 **The round reconciles.** `tests/conveyor-reconcile.test.mjs` plays a full two-minute round in every mode with a deterministic player, records every sort, missort and drop, and recomputes the score, the streak and the three counters independently from rules 13 to 17. The engine and the recomputation agree at every event in all four modes, including a round driven to zero and held there.
 

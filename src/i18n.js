@@ -569,7 +569,7 @@ const ES = {
   'You can start again when you are ready.': 'Puedes empezar de nuevo cuando quieras.',
   // Handler's own belt furniture. The service names repeat SERVICE_ES
   // because the package label goes through t() like every other string.
-  'Two minutes on the belt': 'Dos minutos en la banda',
+  'One minute on the belt': 'Un minuto en la banda',
   'Time left': 'Tiempo restante',
   'Sorted / wrong / dropped': 'Correctos / errados / caídos',
   'INBOUND / TOP': 'ENTRADA / ARRIBA',
@@ -589,7 +589,7 @@ const ES = {
   'Sign in to see the Handler leaderboard.': 'Inicia sesión para ver la clasificación de Handler.',
   'The leaderboard could not be loaded. Try again in a moment.': 'No se pudo cargar la clasificación. Inténtalo de nuevo en un momento.',
   'Nobody has scored in {mode} this season yet.': 'Nadie ha puntuado en {mode} esta temporada todavía.',
-  'Best two-minute score in {mode} this season.': 'Mejor puntuación de dos minutos en {mode} esta temporada.',
+  'Best one-minute score in {mode} this season.': 'Mejor puntuación de un minuto en {mode} esta temporada.',
   'The season is over. This is how {mode} finished.': 'La temporada terminó. Así quedó {mode}.',
   'Your place: {place} of {players}, with {score}.': 'Tu puesto: {place} de {players}, con {score}.',
   'The season is over, so this score is not saved. Scores count again when the next season starts.': 'La temporada terminó, así que esta puntuación no se guarda. Las puntuaciones vuelven a contar cuando empiece la próxima temporada.',
@@ -607,7 +607,7 @@ const ES = {
   'Expert': 'Experto',
   'Your best': 'Tu mejor',
   'How it scores': 'Cómo se puntúa',
-  'A round lasts two minutes. It ends on the clock, not when packages run out.': 'Una ronda dura dos minutos. Termina con el reloj, no cuando se acaban los paquetes.',
+  'A round lasts one minute. It ends on the clock, not when packages run out.': 'Una ronda dura un minuto. Termina con el reloj, no cuando se acaban los paquetes.',
   'Right belt: one point, times your streak multiplier.': 'Banda correcta: un punto, por tu multiplicador de racha.',
   'Wrong belt, or a package that runs off the end: one point off, and the streak resets.': 'Banda equivocada, o un paquete que se sale por el final: un punto menos y la racha se reinicia.',
   'The multiplier rises every {step} in a row and stops at x{cap}. Your score never goes below zero.': 'El multiplicador sube cada {step} seguidos y se detiene en x{cap}. Tu puntuación nunca baja de cero.',

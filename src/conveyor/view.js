@@ -217,7 +217,7 @@ export function createHandlerScreen({
     audio?.stop();
     root.innerHTML = `
       <section class="hd hd-modes" aria-labelledby="hd-modes-title">
-        <p class="hd-eyebrow">${esc(t('Two minutes on the belt'))}</p>
+        <p class="hd-eyebrow">${esc(t('One minute on the belt'))}</p>
         <h2 id="hd-modes-title" class="hd-title">${esc(t('Handler'))}</h2>
         <ul class="hd-mode-list">
           ${MODE_ORDER.map(key => `
@@ -230,7 +230,7 @@ export function createHandlerScreen({
         <div class="hd-rules">
           <h3>${esc(t('How it scores'))}</h3>
           <ul>
-            <li>${esc(t('A round lasts two minutes. It ends on the clock, not when packages run out.'))}</li>
+            <li>${esc(t('A round lasts one minute. It ends on the clock, not when packages run out.'))}</li>
             <li>${esc(t('Right belt: one point, times your streak multiplier.'))}</li>
             <li>${esc(t('Wrong belt, or a package that runs off the end: one point off, and the streak resets.'))}</li>
             <li>${esc(t('The multiplier rises every {step} in a row and stops at x{cap}. Your score never goes below zero.', { step: COMBO_STEP, cap: COMBO_CAP }))}</li>
@@ -305,7 +305,7 @@ export function createHandlerScreen({
     note.textContent = answer.rows.length === 0
       ? t('Nobody has scored in {mode} this season yet.', { mode: modeName })
       : answer.open
-        ? t('Best two-minute score in {mode} this season.', { mode: modeName })
+        ? t('Best one-minute score in {mode} this season.', { mode: modeName })
         : t('The season is over. This is how {mode} finished.', { mode: modeName });
     list.innerHTML = answer.rows.map(row => {
       const icon = avatarOf(row.avatar);
@@ -352,14 +352,14 @@ export function createHandlerScreen({
   function showPlaying() {
     root.innerHTML = `
       <section class="hd hd-play" aria-labelledby="hd-play-title">
-        <p class="hd-eyebrow">${esc(t(MODE_COPY[mode][0]))} · ${esc(t('Two minutes on the belt'))}</p>
+        <p class="hd-eyebrow">${esc(t(MODE_COPY[mode][0]))} · ${esc(t('One minute on the belt'))}</p>
         <div class="hd-play-head">
           <h2 id="hd-play-title" class="hd-title">${esc(t('Handler'))}</h2>
           <button type="button" class="hd-leave" data-hd-leave><span aria-hidden="true">←</span> ${esc(t('Change mode'))}</button>
         </div>
         <div class="hd-strip">
           <div><dt>${esc(t('Score'))}</dt><dd data-hd-score>0</dd></div>
-          <div><dt>${esc(t('Time left'))}</dt><dd data-hd-clock>2:00</dd></div>
+          <div><dt>${esc(t('Time left'))}</dt><dd data-hd-clock>1:00</dd></div>
           <div><dt>${esc(t('Sorted / wrong / dropped'))}</dt><dd data-hd-tally>0 / 0 / 0</dd></div>
         </div>
         <div class="hd-stage">
@@ -423,7 +423,7 @@ export function createHandlerScreen({
     const percent = Math.round(summary.accuracy * 100);
     root.innerHTML = `
       <section class="hd hd-summary" aria-labelledby="hd-summary-title">
-        <p class="hd-eyebrow">${esc(t(MODE_COPY[mode][0]))} · ${esc(t('Two minutes on the belt'))}</p>
+        <p class="hd-eyebrow">${esc(t(MODE_COPY[mode][0]))} · ${esc(t('One minute on the belt'))}</p>
         <h2 id="hd-summary-title" class="hd-title">${esc(t('Round over'))}</h2>
         <p class="hd-final"><span>${esc(t('Score'))}</span><strong>${summary.score}</strong></p>
         ${bestScores.saved === false

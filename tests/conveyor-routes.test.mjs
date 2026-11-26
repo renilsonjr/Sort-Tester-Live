@@ -195,7 +195,7 @@ test('each mode draws from an existing deck and offers real variety', () => {
     }
     counts.set(mode, labels.size);
   }
-  // A two-minute round must not run out of distinct packages.
+  // A round must not run out of distinct packages.
   assert.ok(counts.get('easy') > 200, `easy offers only ${counts.get('easy')} labels`);
   assert.ok(counts.get('hard') > 3000, `hard offers only ${counts.get('hard')} labels`);
   assert.ok(counts.get('hard') > counts.get('medium'));
