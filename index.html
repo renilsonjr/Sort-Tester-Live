@@ -1825,16 +1825,17 @@
     color: var(--hd-ink);
   }
   .hd-eyebrow { margin: 0; color: var(--hd-ink-faint); font-size: 10px; font-weight: 800; letter-spacing: .18em; text-transform: uppercase; }
-  .hd-title { margin: 0; font-size: clamp(30px, 8vw, 40px); line-height: 1.05; letter-spacing: -.03em; color: var(--hd-ink); }
-  .hd-lede { margin: 0; color: var(--hd-ink-soft); }
+  .hd-title { margin: 0; font-size: clamp(30px, 8vw, 40px); line-height: 1.05; letter-spacing: -.03em; color: var(--hd-ink); text-wrap: balance; }
+  .hd-lede { margin: 0; color: var(--hd-ink-soft); text-wrap: pretty; }
 
   .hd-strip {
-    display: grid; grid-template-columns: repeat(3, 1fr); margin: 0;
+    display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1.5fr); margin: 0;
     background: var(--hd-800); border: 1px solid var(--hd-700); border-radius: 14px; overflow: hidden;
   }
-  .hd-strip > div { padding: 9px 11px; border-left: 1px solid var(--hd-700); }
+  /* The label may wrap in Spanish; the numbers still share one baseline. */
+  .hd-strip > div { padding: 9px 11px; border-left: 1px solid var(--hd-700); display: flex; flex-direction: column; justify-content: space-between; }
   .hd-strip > div:first-child { border-left: 0; }
-  .hd-strip dt { margin: 0 0 2px; color: var(--hd-ink-faint); font-size: 8.5px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; }
+  .hd-strip dt { margin: 0 0 2px; color: var(--hd-ink-faint); font-size: 10px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; text-wrap: balance; }
   .hd-strip dd { margin: 0; font-size: 20px; font-weight: 800; font-variant-numeric: tabular-nums; }
   .hd-strip > div:first-child dd { color: var(--hd-gold); }
 
@@ -1848,11 +1849,15 @@
   .hd-mode-blurb, .hd-mode-best { color: var(--hd-ink-soft); font-size: 0.84rem; }
   .hd-mode-best strong { color: var(--hd-gold); }
   .hd-rules { background: var(--hd-800); border: 1px solid var(--hd-700); border-radius: 14px; padding: 12px 14px; }
-  .hd-rules h3 { margin: 0 0 6px; font-size: 0.95rem; }
+  .hd-rules h3 { margin: 0 0 6px; font-size: 0.95rem; text-wrap: balance; }
+  .hd-rules li, .hd-mode-blurb { text-wrap: pretty; }
   .hd-rules ul { margin: 0; padding-left: 18px; color: var(--hd-ink-soft); font-size: 0.84rem; display: grid; gap: 4px; }
 
   .hd-count { align-items: center; justify-content: center; min-height: 46vh; }
   .hd-count-number { margin: 0; font-size: 5rem; font-weight: 800; color: var(--hd-gold); font-variant-numeric: tabular-nums; }
+  /* Each number arrives rather than swapping: scale, fade and blur together. */
+  .hd-count-number.pop { animation: hd-pop .28s cubic-bezier(.2,0,0,1); }
+  @keyframes hd-pop { from { opacity: 0; scale: .25; filter: blur(4px); } }
 
   .hd-stage {
     position: relative; height: min(58vh, 560px); min-height: 340px;
@@ -1882,11 +1887,11 @@
   }
   .hd-dest.left { left: 2%; }
   .hd-dest.right { right: 2%; }
-  .hd-dest:active { filter: brightness(.9); scale: .98; }
+  .hd-dest:active { filter: brightness(.9); }
   .hd-dest:disabled { opacity: .45; cursor: default; }
   .hd-dest-arrow { font-size: 26px; line-height: 1; font-weight: 600; opacity: .85; }
   .hd-dest-name { font-size: clamp(12px, 3.2vw, 18px); font-weight: 800; letter-spacing: .04em; }
-  .hd-dest-sub { font-size: 8px; letter-spacing: .12em; opacity: .75; font-weight: 700; }
+  .hd-dest-sub { font-size: 9.5px; letter-spacing: .08em; opacity: .75; font-weight: 700; }
 
   /* The cartoon combo badge: top right, above the destinations, clear of
      the belt by the gutter stageLayout() reserves. Scale and blur on the way
@@ -1909,7 +1914,7 @@
                 background-color .18s ease-out, box-shadow .18s ease-out;
   }
   .hd-combo b { font-size: 21px; line-height: 1; font-weight: 800; font-variant-numeric: tabular-nums; letter-spacing: -.02em; }
-  .hd-combo small { font-size: 7px; line-height: 1.15; letter-spacing: .04em; color: #2b5468; text-transform: uppercase; font-weight: 700; }
+  .hd-combo small { font-size: 8px; line-height: 1.15; letter-spacing: .04em; color: #2b5468; text-transform: uppercase; font-weight: 700; }
   /* A sparkle sits on the corner, the way a cartoon shine does. */
   .hd-combo::after {
     content: ""; position: absolute; right: -7px; top: -9px; width: 16px; height: 16px;
@@ -1939,6 +1944,7 @@
   .hd-icon-btn {
     min-height: 44px; padding: 0 10px; border-radius: 12px; cursor: pointer;
     background: var(--hd-700); color: var(--hd-ink); border: 1px solid var(--hd-600); font-weight: 700;
+    font-size: 14px; line-height: 1.15; text-wrap: balance;
   }
   .hd-icon-btn[aria-pressed="false"] { opacity: .72; }
   .hd-hint { margin: 0; color: var(--hd-ink-faint); font-size: 11px; }
@@ -1958,172 +1964,26 @@
   .hd-again { background: var(--hd-orange); color: #2b1c10; border: 1px solid #b4632a; }
   .hd-back { background: var(--hd-700); color: var(--hd-ink); border: 1px solid var(--hd-600); }
 
-  /* Reduced motion stills the twinkle, the bump, the lift and the running
-     slats. It changes no game rule: the tier is still carried by the badge's
-     colour and by the written multiplier, and the verdict keeps its glyph. */
-  @media (prefers-reduced-motion: reduce) {
-    .hd-combo, .hd-combo::after { transition: none; animation: none !important; rotate: 0deg; }
-    .hd-combo.off, .hd-combo.lost { scale: 1; translate: 0 0; filter: blur(0); }
-    .hd-dest:active { scale: 1; }
+  /* Every Handler button answers the press the same way, and the answer can
+     be interrupted: a transition, not a keyframe. */
+  .hd-mode, .hd-icon-btn, .hd-again, .hd-back, .hd-dest {
+    transition: scale .12s ease-out, filter .12s ease-out, background-color .15s ease-out;
+    -webkit-tap-highlight-color: transparent;
   }
-
-  /* ---------------------------------------------------------------------
-     Handler, the conveyor mini-game (#395).
-
-     Handler has a SKIN OF ITS OWN and stays dark in both app themes (owner
-     decision, 2026-11-26). It is a game inside the app, not another app
-     screen, and this is the look the owner approved on the prototype. That is
-     why this block declares its own tokens on .hd instead of using the app's:
-     nothing here should follow html[data-theme="day"].
-
-     Two rules in this block are owner corrections, not taste:
-       * .hd-combo is pinned to the RIGHT and sits ABOVE the destinations. It
-         must never cover the code on the package coming down, and reading
-         that code early is the whole skill the game trains.
-       * The combo effect is a sparkle. An earlier version set the package and
-         the belt on fire and the owner rejected it. Do not add a glow to the
-         belt, the frame or the stage.
-     --------------------------------------------------------------------- */
-  .hd {
-    --hd-ink: #f6e8d2; --hd-ink-soft: #c7a988; --hd-ink-faint: #9b7f61;
-    --hd-900: #1d1310; --hd-800: #2a1b15; --hd-700: #3a271d; --hd-600: #4d3425;
-    --hd-orange: #dc8542; --hd-gold: #ffca6a; --hd-spark: #9fe8ff; --hd-dark: #0b2230;
-    display: flex; flex-direction: column; gap: 12px;
-    color: var(--hd-ink);
+  .hd-mode:active, .hd-icon-btn:active, .hd-again:active, .hd-back:active, .hd-dest:active { scale: .96; }
+  @media (hover: hover) {
+    .hd-mode:hover, .hd-icon-btn:hover, .hd-back:hover { background: var(--hd-600); }
+    .hd-again:hover { filter: brightness(1.06); }
   }
-  .hd-eyebrow { margin: 0; color: var(--hd-ink-faint); font-size: 10px; font-weight: 800; letter-spacing: .18em; text-transform: uppercase; }
-  .hd-title { margin: 0; font-size: clamp(30px, 8vw, 40px); line-height: 1.05; letter-spacing: -.03em; color: var(--hd-ink); }
-  .hd-lede { margin: 0; color: var(--hd-ink-soft); }
-
-  .hd-strip {
-    display: grid; grid-template-columns: repeat(3, 1fr); margin: 0;
-    background: var(--hd-800); border: 1px solid var(--hd-700); border-radius: 14px; overflow: hidden;
-  }
-  .hd-strip > div { padding: 9px 11px; border-left: 1px solid var(--hd-700); }
-  .hd-strip > div:first-child { border-left: 0; }
-  .hd-strip dt { margin: 0 0 2px; color: var(--hd-ink-faint); font-size: 8.5px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; }
-  .hd-strip dd { margin: 0; font-size: 20px; font-weight: 800; font-variant-numeric: tabular-nums; }
-  .hd-strip > div:first-child dd { color: var(--hd-gold); }
-
-  .hd-mode-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 9px; }
-  .hd-mode {
-    width: 100%; min-height: 64px; display: grid; gap: 2px; text-align: left;
-    padding: 12px 14px; border-radius: 14px; cursor: pointer;
-    background: var(--hd-800); border: 1px solid var(--hd-700); color: var(--hd-ink);
-  }
-  .hd-mode-name { font-weight: 800; letter-spacing: -.01em; }
-  .hd-mode-blurb, .hd-mode-best { color: var(--hd-ink-soft); font-size: 0.84rem; }
-  .hd-mode-best strong { color: var(--hd-gold); }
-  .hd-rules { background: var(--hd-800); border: 1px solid var(--hd-700); border-radius: 14px; padding: 12px 14px; }
-  .hd-rules h3 { margin: 0 0 6px; font-size: 0.95rem; }
-  .hd-rules ul { margin: 0; padding-left: 18px; color: var(--hd-ink-soft); font-size: 0.84rem; display: grid; gap: 4px; }
-
-  .hd-count { align-items: center; justify-content: center; min-height: 46vh; }
-  .hd-count-number { margin: 0; font-size: 5rem; font-weight: 800; color: var(--hd-gold); font-variant-numeric: tabular-nums; }
-
-  .hd-stage {
-    position: relative; height: min(58vh, 560px); min-height: 340px;
-    border-radius: 16px; overflow: hidden; background: var(--hd-800);
-    border: 1px solid var(--hd-700);
-  }
-  .hd-canvas { display: block; width: 100%; height: 100%; touch-action: none; cursor: grab; }
-  .hd-canvas:active { cursor: grabbing; }
-  .hd-edges {
-    position: absolute; top: 14px; left: 16px; right: 16px; margin: 0;
-    display: flex; justify-content: space-between; pointer-events: none;
-  }
-  .hd-edges span { font-size: 8.5px; letter-spacing: .14em; color: var(--hd-ink-faint); font-weight: 700; }
-  .hd-paused {
-    position: absolute; inset: 0; margin: 0; display: grid; place-items: center;
-    background: #1d1310c4; color: var(--hd-ink); font-weight: 800; font-size: 1.2rem;
-  }
-
-  /* The destinations: tabs on the belt's own edges, where the thumbs are. */
-  .hd-dest {
-    position: absolute; top: 57%; transform: translateY(-50%);
-    width: 22%; max-width: 150px; min-height: 108px;
-    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px;
-    padding: 10px 4px; border-radius: 14px; cursor: pointer;
-    border: 1px solid #ffffff38; border-bottom: 5px solid #0006;
-    box-shadow: 0 14px 28px #0004; user-select: none;
-  }
-  .hd-dest.left { left: 2%; }
-  .hd-dest.right { right: 2%; }
-  .hd-dest:active { filter: brightness(.9); scale: .98; }
-  .hd-dest:disabled { opacity: .45; cursor: default; }
-  .hd-dest-arrow { font-size: 26px; line-height: 1; font-weight: 600; opacity: .85; }
-  .hd-dest-name { font-size: clamp(12px, 3.2vw, 18px); font-weight: 800; letter-spacing: .04em; }
-  .hd-dest-sub { font-size: 8px; letter-spacing: .12em; opacity: .75; font-weight: 700; }
-
-  /* The cartoon combo badge: top right, above the destinations, clear of
-     the belt by the gutter stageLayout() reserves. Scale and blur on the way
-     in and out, so it pops rather than merely appearing. */
-  .hd-combo {
-    --spark: #9fe8ff;
-    position: absolute; right: 12px; top: 36px; margin: 0; z-index: 2; pointer-events: none;
-    /* Stacked, not side by side. The prototype sets the two parts in a row,
-       which makes the badge wide enough to sit over the belt again -- the one
-       thing the owner said it must never do. Stacking keeps his badge and his
-       rule at the same time, inside the column stageLayout() reserves. */
-    display: flex; flex-direction: column; align-items: center; gap: 1px;
-    width: 58px; padding: 5px 2px; border-radius: 14px; text-align: center;
-    color: var(--hd-dark); background: var(--spark);
-    border: 3px solid var(--hd-dark);
-    box-shadow: 0 4px 0 var(--hd-dark), 0 0 22px -2px var(--spark);
-    translate: 0 0; rotate: -3deg; scale: 1; opacity: 1; filter: blur(0);
-    transition: opacity .2s cubic-bezier(.2,0,0,1), scale .2s cubic-bezier(.2,0,0,1),
-                filter .2s cubic-bezier(.2,0,0,1), translate .2s ease-out,
-                background-color .18s ease-out, box-shadow .18s ease-out;
-  }
-  .hd-combo b { font-size: 21px; line-height: 1; font-weight: 800; font-variant-numeric: tabular-nums; letter-spacing: -.02em; }
-  .hd-combo small { font-size: 7px; line-height: 1.15; letter-spacing: .04em; color: #2b5468; text-transform: uppercase; font-weight: 700; }
-  /* A sparkle sits on the corner, the way a cartoon shine does. */
-  .hd-combo::after {
-    content: ""; position: absolute; right: -7px; top: -9px; width: 16px; height: 16px;
-    background: #fff;
-    clip-path: polygon(50% 0, 58% 42%, 100% 50%, 58% 58%, 50% 100%, 42% 58%, 0 50%, 42% 42%);
-    filter: drop-shadow(0 0 5px var(--spark));
-  }
-  .hd-combo.t3 { --spark: #6dd8ff; box-shadow: 0 4px 0 var(--hd-dark), 0 0 32px 0 var(--spark); }
-  .hd-combo.t4 { --spark: #c6f3ff; padding: 6px 2px; box-shadow: 0 4px 0 var(--hd-dark), 0 0 44px 4px #7fe0ff; }
-  .hd-combo.t4 b { font-size: 24px; }
-  /* Only the top tier twinkles, and it twinkles three times rather than for
-     ever. The prototype loops this one; the app does not allow an infinite
-     animation anywhere in this stylesheet (tests/promotion-celebration.test.mjs
-     asserts it for the whole page), so Handler follows the app here. Three
-     passes reads almost the same and then rests. */
-  .hd-combo.t4::after { animation: hd-twinkle 1.1s ease-in-out 3; }
-  @keyframes hd-twinkle { 50% { scale: 1.45; rotate: 40deg; } }
-  .hd-combo.off { opacity: 0; scale: .25; filter: blur(4px); translate: 0 -6px; }
-  .hd-combo.lost {
-    opacity: 0; scale: 1; filter: blur(2px); translate: 0 -14px;
-    transition: opacity .16s ease-out, filter .16s ease-out, translate .16s ease-out;
-  }
-  .hd-combo.bump { animation: hd-bump .3s cubic-bezier(.2,0,0,1); }
-  @keyframes hd-bump { 40% { scale: 1.16; rotate: -6deg; } }
-
-  .hd-bar { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
-  .hd-icon-btn {
-    min-height: 44px; padding: 0 10px; border-radius: 12px; cursor: pointer;
-    background: var(--hd-700); color: var(--hd-ink); border: 1px solid var(--hd-600); font-weight: 700;
-  }
-  .hd-icon-btn[aria-pressed="false"] { opacity: .72; }
-  .hd-hint { margin: 0; color: var(--hd-ink-faint); font-size: 11px; }
-  .hd-icon-btn:focus-visible, .hd-mode:focus-visible, .hd-dest:focus-visible,
-  .hd-again:focus-visible, .hd-back:focus-visible { outline: 3px solid var(--hd-gold); outline-offset: 3px; }
-
-  .hd-final { display: flex; align-items: baseline; justify-content: space-between; margin: 0; }
-  .hd-final strong { font-size: 2.4rem; color: var(--hd-gold); font-variant-numeric: tabular-nums; }
-  .hd-best-new { margin: 0; color: var(--hd-gold); font-weight: 800; }
-  .hd-best-old { margin: 0; color: var(--hd-ink-soft); }
-  .hd-stats { margin: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-  .hd-stats > div { background: var(--hd-800); border: 1px solid var(--hd-700); border-radius: 12px; padding: 8px 10px; }
-  .hd-stats dt { color: var(--hd-ink-faint); font-size: 0.76rem; }
-  .hd-stats dd { margin: 0; font-weight: 800; font-variant-numeric: tabular-nums; }
-  .hd-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-  .hd-again, .hd-back { min-height: 48px; border-radius: 14px; cursor: pointer; font-weight: 800; }
-  .hd-again { background: var(--hd-orange); color: #2b1c10; border: 1px solid #b4632a; }
-  .hd-back { background: var(--hd-700); color: var(--hd-ink); border: 1px solid var(--hd-600); }
+  /* The mode list and the summary are arrived at, a few times a session, so
+     their parts come in one after another. The playing screen does not: it
+     is re-entered on every round and has to be there at once. */
+  .hd-modes > *, .hd-summary > * { animation: hd-rise .32s cubic-bezier(.2,0,0,1) both; }
+  .hd-modes > :nth-child(2), .hd-summary > :nth-child(2) { animation-delay: .05s; }
+  .hd-modes > :nth-child(3), .hd-summary > :nth-child(3) { animation-delay: .1s; }
+  .hd-modes > :nth-child(4), .hd-summary > :nth-child(4) { animation-delay: .15s; }
+  .hd-modes > :nth-child(n+5), .hd-summary > :nth-child(n+5) { animation-delay: .2s; }
+  @keyframes hd-rise { from { opacity: 0; translate: 0 8px; } }
 
   /* Reduced motion stills the twinkle, the bump, the lift and the running
      slats. It changes no game rule: the tier is still carried by the badge's
@@ -2131,7 +1991,8 @@
   @media (prefers-reduced-motion: reduce) {
     .hd-combo, .hd-combo::after { transition: none; animation: none !important; rotate: 0deg; }
     .hd-combo.off, .hd-combo.lost { scale: 1; translate: 0 0; filter: blur(0); }
-    .hd-dest:active { scale: 1; }
+    .hd-mode:active, .hd-icon-btn:active, .hd-again:active, .hd-back:active, .hd-dest:active { scale: 1; }
+    .hd-modes > *, .hd-summary > *, .hd-count-number.pop { animation: none; }
   }
 
   /* ---------------------------------------------------------------------

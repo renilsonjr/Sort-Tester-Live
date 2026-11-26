@@ -26,10 +26,20 @@ export const VERDICT = {
   missort: { rgb: '248,113,113', glyph: '✗' },
   dropped: { rgb: '248,113,113', glyph: '✗' },
 };
-// The departing package holds for a beat where it was, long enough to read
-// the green or the red, then shoots off the belt. k*k on the sideways travel
-// is what makes it hold first and leave fast.
+// A dropped package takes this long to fall past the end of the belt.
 export const DEPART_S = 0.55;
+// A sorted or missorted package does NOT hold: it leaves in one motion, at
+// the speed the finger was already moving, wearing its verdict as it goes
+// (owner correction after playing on an iPhone, 2026-11-26: the old hold read
+// as the box sticking under the thumb). FLING_MIN is the speed a tap on a
+// destination or an arrow key leaves at; FLING_MAX stops a wild flick from
+// taking the box away before the colour can be seen.
+export const FLING_S = 0.3;
+export const FLING_MIN = 900;
+export const FLING_MAX = 2400;
+export const FLING_ACCEL = 3000;
+// The box leans this much per pixel dragged, and keeps that lean as it leaves.
+export const LEAN = 0.0012;
 // Losing the streak scatters the stars outward and they wink out. Under half
 // a second, and no screen-wide flash.
 export const BURST_S = 0.42;
@@ -238,14 +248,14 @@ export function createHandlerScreen({
     root.innerHTML = `
       <section class="hd hd-count" aria-labelledby="hd-count-title">
         <h2 id="hd-count-title" class="hd-title">${esc(t(MODE_COPY[mode][0]))}</h2>
-        <p class="hd-count-number" data-hd-count aria-hidden="true">3</p>
+        <p class="hd-count-number pop" data-hd-count aria-hidden="true">3</p>
         <p class="sr-only" data-hd-live role="status" aria-live="polite">${esc(t('Starting in 3'))}</p>
       </section>`;
     const node = root.querySelector('[data-hd-count]');
     const step = () => {
       countdown -= 1;
       if (countdown <= 0) { showPlaying(); return; }
-      if (node) node.textContent = String(countdown);
+      if (node) { node.textContent = String(countdown); node.classList.remove('pop'); void node.offsetWidth; node.classList.add('pop'); }
       say(t('Starting in {n}', { n: countdown }));
       countdownTimer = setTimeout(step, 700);
     };
@@ -398,11 +408,17 @@ export function createHandlerScreen({
       // Capture keeps the drag alive if the finger leaves the canvas. A
       // browser that refuses the id must not lose the gesture over it.
       try { canvas.setPointerCapture?.(event.pointerId); } catch { /* keep dragging */ }
-      drag = { id: front.id, startX: point.x, dx: 0, pointer: event.pointerId };
+      drag = { id: front.id, startX: point.x, dx: 0, pointer: event.pointerId, vx: 0, at: event.timeStamp };
     });
     on(canvas, 'pointermove', event => {
       if (drag?.pointer !== event.pointerId) return;
-      drag.dx = localPoint(event).x - drag.startX;
+      const dx = localPoint(event).x - drag.startX;
+      // The finger's speed, smoothed over the last few moves, so the box can
+      // leave at the speed it was already travelling.
+      const elapsed = (event.timeStamp - drag.at) / 1000;
+      if (elapsed > 0) drag.vx = drag.vx * 0.4 + ((dx - drag.dx) / elapsed) * 0.6;
+      drag.dx = dx;
+      drag.at = event.timeStamp;
     });
     on(canvas, 'pointerup', event => {
       if (drag?.pointer !== event.pointerId) return;
@@ -426,11 +442,12 @@ export function createHandlerScreen({
     const target = packageId ?? shot.activePackageId;
     const front = shot.packages.find(item => item.id === target);
     const held = drag && drag.id === target ? drag.dx : 0;
+    const speed = drag && drag.id === target ? drag.vx : 0;
     const hadCombo = shot.combo;
     drag = null;
     const result = game.choose(side, target);
     if (!result.resolved) return;
-    mark(front, result.outcome === 'sorted' ? 'sorted' : 'missort', side, held);
+    mark(front, result.outcome === 'sorted' ? 'sorted' : 'missort', side, held, speed);
     if (result.outcome !== 'sorted') scatter(front, hadCombo);
     if (result.outcome === 'sorted') {
       audio?.sorted();
@@ -451,10 +468,14 @@ export function createHandlerScreen({
   }
 
   // Rule 20: the verdict is said on the package, where the player is looking,
-  // and it holds for a beat before the package leaves the belt.
-  function mark(item, kind, side, dx = 0) {
+  // and it travels with the package as it leaves.
+  function mark(item, kind, side, dx = 0, vx = 0) {
     if (!item) return;
-    departing.push({ y: item.y, route: item.route, id: item.id, kind, side, dx, t: 0 });
+    const dir = side === LEFT ? -1 : side === RIGHT ? 1 : 0;
+    // Only speed in the direction it was sent counts; a box pulled back the
+    // other way at the last instant still leaves at the floor speed.
+    const v0 = Math.min(FLING_MAX, Math.max(FLING_MIN, vx * dir));
+    departing.push({ y: item.y, route: item.route, id: item.id, kind, side, dx, v0, t: 0 });
   }
 
   // ------------------------------------------------------------------- paint
@@ -799,27 +820,34 @@ export function createHandlerScreen({
     }
   }
 
-  // Rule 20: the resolved package holds where it was, wearing its verdict,
-  // then leaves the belt -- sideways towards the belt it was sent to, or
-  // straight down when it ran off the end.
+  // Rule 20: a sorted or missorted package leaves sideways in one motion,
+  // towards the belt it was sent to and at the speed the finger gave it. A
+  // dropped one falls straight past the end instead.
   function paintDeparting(dt, clock) {
-    const { w } = packageBox();
     for (const effect of departing) effect.t += dt;
-    departing = departing.filter(effect => effect.t < DEPART_S);
+    departing = departing.filter(effect => effect.t < (effect.side == null ? DEPART_S : FLING_S));
     for (const effect of departing) {
-      const k = effect.t / DEPART_S;
-      const dir = effect.side === 0 ? -1 : effect.side === 1 ? 1 : 0;
-      const fell = effect.side === null || effect.side === undefined;
+      const fell = effect.side == null;
+      if (fell) {
+        const k = effect.t / DEPART_S;
+        paintPackage({ y: effect.y + k * k * 220, route: effect.route, id: effect.id, front: true },
+          Math.max(0, 1 - k * k), effect.kind, null, clock, 0, k * 0.4);
+        continue;
+      }
+      const dir = effect.side === LEFT ? -1 : 1;
+      const k = effect.t / FLING_S;
+      const travel = effect.v0 * effect.t + 0.5 * FLING_ACCEL * effect.t * effect.t;
       paintPackage(
-        // A dropped package keeps falling past the end of the belt; a sorted
-        // or missorted one leaves sideways, towards the belt it was sent to.
-        { y: effect.y + (fell ? k * k * 220 : 0), route: effect.route, id: effect.id, front: true },
-        Math.max(0, 1 - k * k),
+        { y: effect.y, route: effect.route, id: effect.id, front: true },
+        // Fully visible for most of the way, so the colour and the glyph are
+        // read in flight, then gone.
+        Math.max(0, 1 - k * k * k),
         effect.kind,
         null,
         clock,
-        effect.dx + dir * k * k * w * 0.85,
-        dir * k * k * 0.5 + (fell ? k * 0.4 : 0),
+        effect.dx + dir * travel,
+        // It starts from the lean it already had under the finger.
+        effect.dx * LEAN + dir * k * 0.3,
       );
     }
   }
@@ -836,7 +864,7 @@ export function createHandlerScreen({
       // The front package follows the finger, and leans the way it is going.
       const dx = drag && drag.id === item.id ? drag.dx : 0;
       paintPackage(item, item.front ? 1 : 0.69, null, item.front ? sparkle : null, clock,
-        dx, dx * 0.0012);
+        dx, dx * LEAN);
     }
     paintDeparting(dt, clock);
     paintBursts(dt);
