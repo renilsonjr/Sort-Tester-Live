@@ -137,6 +137,40 @@ test('a guest plays and is told the score is not saved', async () => {
   assert.match(i18n, /'Scores are kept only while you are signed in\. This one is not saved\.'/);
 });
 
+test('between seasons a signed-in player is told the score is not saved, and why', async () => {
+  const { fetchFn } = fakeFetch([
+    answer(200, { best: { easy: 0, medium: 0, hard: 0, expert: 0 }, in_season: false }),
+  ]);
+  const best = createBestScores({ fetchFn });
+  await best.load();
+  assert.equal(best.saved, false);
+  assert.equal(best.betweenSeasons, true);
+  const view = await read('src/conveyor/view.js');
+  assert.match(view, /bestScores\.betweenSeasons/);
+  assert.match(i18n, /'The season is over, so this score is not saved\./);
+});
+
+test('a season that ends while the page is open is noticed on the next save', async () => {
+  const { fetchFn } = fakeFetch([
+    answer(200, { best: { easy: 0, medium: 0, hard: 0, expert: 0 }, in_season: true }),
+    answer(200, { mode: 'easy', best: 0, saved: false }),
+  ]);
+  const best = createBestScores({ fetchFn });
+  await best.load();
+  assert.equal(best.saved, true);
+  best.set('easy', 7);
+  await new Promise(resolve => setTimeout(resolve, 5));
+  assert.equal(best.saved, false);
+  assert.equal(best.betweenSeasons, true);
+});
+
+test('a guest is never described as between seasons', async () => {
+  const { fetchFn } = fakeFetch([answer(401, null)]);
+  const best = createBestScores({ fetchFn });
+  await best.load();
+  assert.equal(best.betweenSeasons, false);
+});
+
 test('a server that is down costs the player nothing on screen', async () => {
   const { fetchFn } = fakeFetch([new Error('offline')]);
   const best = createBestScores({ fetchFn });

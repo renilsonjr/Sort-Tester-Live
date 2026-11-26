@@ -15,6 +15,7 @@ from datetime import datetime, timezone
 from backend.auth import deletion_list
 from backend.auth.credentials import normalize_login_id, verify_login_id
 from backend.db import migrate
+from backend.handler import best_scores as handler_best_scores
 
 
 class DeletionError(Exception):
@@ -113,6 +114,8 @@ def _apply(conn, account_id, now) -> None:
             "DELETE FROM attempts WHERE account_id = %s AND state <> 'finalized'",
             (account_id,),
         )
+        # Handler scores go with the account, in every season (#417)
+        handler_best_scores.forget_account(conn, account_id)
         link = migrate.fetch_one(
             conn,
             "SELECT roster_reference FROM participant_links WHERE account_id = %s",

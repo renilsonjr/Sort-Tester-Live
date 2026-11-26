@@ -14,9 +14,12 @@ from fastapi import APIRouter, Depends, HTTPException, Request, status
 from pydantic import BaseModel, Field
 
 from backend.handler import best_scores
+from backend.ranked.clock import system_clock
 from backend.routers.ranked import _current_account, get_db
 
 router = APIRouter(prefix="/api/handler", tags=["handler"])
+
+_CLOCK = system_clock()
 
 
 class BestScoreRequest(BaseModel):
@@ -28,9 +31,15 @@ class BestScoreRequest(BaseModel):
 
 @router.get("/best")
 def read_best(account: dict = Depends(_current_account), conn=Depends(get_db)):
-    """Every mode's best for this account. Private to the account: it names
-    nobody else and reveals nothing about anyone else's play."""
-    return {"best": best_scores.best_scores(conn, account["id"])}
+    """Every mode's best for this account in the current season. Private to
+    the account: it names nobody else and reveals nothing about anyone
+    else's play. ``in_season`` is false between seasons, when every best is
+    zero and a new score would not be stored."""
+    season_id = best_scores.current_season(conn, _CLOCK.now())
+    return {
+        "best": best_scores.best_scores(conn, account["id"], season_id),
+        "in_season": season_id is not None,
+    }
 
 
 @router.put("/best")
@@ -43,11 +52,16 @@ def raise_best(
     after. A score never goes down, and the comparison happens in the
     database rather than here, so two tabs cannot interleave a read and a
     write and lose the higher one."""
+    season_id = best_scores.current_season(conn, _CLOCK.now())
     try:
-        best = best_scores.record(conn, account["id"], payload.mode, payload.score)
+        best = best_scores.record(conn, account["id"], season_id, payload.mode, payload.score)
     except best_scores.ScoreRefused as error:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(error)) from None
     # get_db does not commit: the routes that write do it themselves, and a
     # refused score above leaves nothing to commit.
     conn.commit()
-    return {"mode": payload.mode, "best": best}
+    # Between seasons nothing was stored. That is an answer, not an error:
+    # the round was real, and the screen says the score was not saved.
+    if best is None:
+        return {"mode": payload.mode, "best": 0, "saved": False}
+    return {"mode": payload.mode, "best": best, "saved": True}

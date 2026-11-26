@@ -337,8 +337,11 @@ export function createHandlerScreen({
         <h2 id="hd-summary-title" class="hd-title">${esc(t('Round over'))}</h2>
         <p class="hd-final"><span>${esc(t('Score'))}</span><strong>${summary.score}</strong></p>
         ${bestScores.saved === false
-          // A guest is told plainly rather than shown a silent zero.
-          ? `<p class="hd-best-old">${esc(t('Scores are kept only while you are signed in. This one is not saved.'))}</p>`
+          // A guest, or a round played between seasons, is told plainly
+          // rather than shown a silent zero.
+          ? `<p class="hd-best-old">${esc(bestScores.betweenSeasons
+            ? t('The season is over, so this score is not saved. Scores count again when the next season starts.')
+            : t('Scores are kept only while you are signed in. This one is not saved.'))}</p>`
           : beaten
             ? `<p class="hd-best-new">${esc(t('A new best for {mode}.', { mode: t(MODE_COPY[mode][0]) }))}</p>`
             : `<p class="hd-best-old">${esc(t('Your best for {mode} is {score}.', { mode: t(MODE_COPY[mode][0]), score: previous }))}</p>`}

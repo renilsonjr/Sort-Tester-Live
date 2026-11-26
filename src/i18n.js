@@ -582,6 +582,7 @@ const ES = {
   'Restart round': 'Reiniciar ronda',
   '{n} in a row': '{n} seguidos',
   'Scores are kept only while you are signed in. This one is not saved.': 'Las puntuaciones se guardan solo con la sesión iniciada. Esta no se guarda.',
+  'The season is over, so this score is not saved. Scores count again when the next season starts.': 'La temporada terminó, así que esta puntuación no se guarda. Las puntuaciones vuelven a contar cuando empiece la próxima temporada.',
   'Sort packages against the clock': 'Clasifica paquetes contra el reloj',
   'Two minutes on the belt. Each mode keeps its own best score.': 'Dos minutos en la banda. Cada modo guarda su propia mejor puntuación.',
   'Swipe the front box, tap a side belt, or use the arrow keys.': 'Desliza la caja de delante, toca una banda lateral o usa las flechas.',
