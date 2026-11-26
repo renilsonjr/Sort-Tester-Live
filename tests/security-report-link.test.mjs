@@ -10,7 +10,7 @@ const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
 const auth = readFileSync(new URL('../src/auth.js', import.meta.url), 'utf8');
 
 test('the badge links to the public ImmuniWeb result for this site', () => {
-  assert.match(app, /const SECURITY_REPORT_URL = 'https:\/\/www\.immuniweb\.com\/websec\/sortquiz\.app\/[A-Z0-9]+\/';/);
+  assert.match(app, /const SECURITY_REPORT_URL = 'https:\/\/www\.immuniweb\.com\/websec\/sortquiz\.app\/[A-Za-z0-9]+\/';/);
 });
 
 const LINK = /<a class="security-badge-link" href="\$\{SECURITY_REPORT_URL\}" target="_blank" rel="noopener noreferrer"><img class="security-badge" src="assets\/immuniweb-badge\.png" width="150" height="50" alt="/;

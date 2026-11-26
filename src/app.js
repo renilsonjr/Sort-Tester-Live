@@ -282,7 +282,7 @@ function signedIn() {
 // badge ImmuniWeb issues for it (assets/immuniweb-badge.png, their own image,
 // served from here as their badge code expects). A link and a local image,
 // not a badge script: nothing from another site runs or loads on these pages.
-const SECURITY_REPORT_URL = 'https://www.immuniweb.com/websec/sortquiz.app/8SXNOVH5/';
+const SECURITY_REPORT_URL = 'https://www.immuniweb.com/websec/sortquiz.app/Df6GfdiI/';
 
 const ICONS = {
   home: '<svg viewBox="0 0 24 24"><path d="M3 10.5 12 3l9 7.5V20a1.5 1.5 0 0 1-1.5 1.5H15V15H9v6.5H4.5A1.5 1.5 0 0 1 3 20z"/></svg>',
