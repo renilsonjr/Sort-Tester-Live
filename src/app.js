@@ -2707,13 +2707,29 @@ async function startRankedAttempt(mode) {
   playRankedAttempt(attempt, mode, { correctCount: 0 });
 }
 
+// Which ranked screen the page means to be showing. A read that was in
+// flight when another screen took over belongs to a screen nobody is
+// looking at any more, and drawing its answer would undo what replaced it.
+let rankedScreen = 0;
+
 async function playRankedAttempt(attempt, mode, tally) {
   stopTick();
   clock = null;
+  const mine = ++rankedScreen;
   const current = await attempt.current();
-  if (current.status === 410 || current.status === 204 || !current.data) {
-    attempt.stop();
+  if (mine !== rankedScreen) return;
+  // Anything that is not a question means the attempt is over: 410 and 204
+  // say so plainly, and so does any refusal -- a 403 once rendered its own
+  // error body as a question, and the screen read "Question undefined of
+  // 15" with NaN on the clock and no belts, a dead end with only Cancel.
+  // Seen on 2026-11-26 when the last question ran out of time: two paths
+  // reached here at once, and the second asked after the first had already
+  // put the capability away.
+  if (!current.ok || !current.data || current.data.seq === undefined) {
+    // The result is read while the capability still works; stopping first
+    // takes away the very thing that request needs.
     const result = await attempt.result();
+    attempt.stop();
     showRankedResult(mode, result.data, tally, { attemptId: attempt.attemptId });
     return;
   }
@@ -2816,6 +2832,21 @@ async function playRankedAttempt(attempt, mode, tally) {
 
   async function submit(choice, button) {
     stopTimer();
+    // Owner report, 2026-11-26: the review of the fifteenth question showed
+    // and was gone again in an instant, replaced by the result.
+    //
+    // The last answer ends the attempt, so the heartbeat's very next beat is
+    // refused with 410 -- and the handler armed above reads that as "the
+    // attempt died under a question" and goes to fetch the result. It checks
+    // that this screen is still up, and it is: the feedback is 250 ms away.
+    // Then the feedback draws, the read finishes, and the result lands on
+    // top of it. On this machine the read came back first and the feedback
+    // won; over a real network it loses, which is why it was never seen here
+    // and always there.
+    //
+    // Disarmed here, before the answer goes: from this moment the attempt
+    // ending is this function's business, and the two paths cannot race.
+    attempt.onGone(() => {});
     const result = await attempt.answer(q.seq, choice);
     if (!result.ok) { playRankedAttempt(attempt, mode, tally); return; }
     const isRight = Boolean(result.data.correct);
@@ -2842,6 +2873,7 @@ async function playRankedAttempt(attempt, mode, tally) {
 function showRankedFeedback(attempt, mode, q, chosen, response, tally) {
   stopTick();
   clock = null;
+  rankedScreen += 1;  // this screen is the one showing now
   const right = response.outcome === 'correct';
   const where = destinationLine(q);
   const promoCorrect = mode === 'promotion' && right;
@@ -2881,7 +2913,7 @@ function showRankedFeedback(attempt, mode, q, chosen, response, tally) {
           t('This promotion ends here'),
           t('Promotion needs all fifteen right, so it stops at the first miss. This mistake takes its points off your balance. Reach the cap again to try next time.'),
         ) : ''}
-      <button id="rq-next" class="primary" type="button">${esc(t(promoLost ? 'See the result' : 'Next'))}</button>
+      <button id="rq-next" class="primary" type="button">${esc(t(promoLost ? 'See the result' : (response.finished ? 'Finish quiz' : 'Next')))}</button>
     </section>
   `, 'ranked', () => showRankedFeedback(attempt, mode, q, chosen, response, tally));
   view.querySelector('#rq-next').addEventListener('click', async () => {

@@ -492,6 +492,7 @@ const ES = {
   'A right answer in promotion adds no points': 'Una respuesta correcta en el ascenso no suma puntos',
   'It keeps the attempt alive. Only passing all fifteen changes your balance, and it sets you to the next cap.': 'Mantiene vivo el intento. Solo acertar las quince cambia tu saldo, y te lleva al siguiente tope.',
   'This promotion ends here': 'Este ascenso termina aquí',
+  'Finish quiz': 'Terminar el cuestionario',
   'See the result': 'Ver el resultado',
   'Promotion needs all fifteen right, so it stops at the first miss. This mistake takes its points off your balance. Reach the cap again to try next time.': 'El ascenso necesita las quince correctas, así que se detiene en el primer error. Este error resta sus puntos de tu saldo. Vuelve a llegar al tope para intentarlo la próxima vez.',
   'Next': 'Siguiente',
