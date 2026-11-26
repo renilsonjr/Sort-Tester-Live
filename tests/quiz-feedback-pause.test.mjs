@@ -13,8 +13,10 @@ test('the feedback pause is 250 ms', () => {
 test('Ranked and Practice both wait the shared pause, and nothing else', () => {
   const uses = app.match(/\}, FEEDBACK_PAUSE_MS\);/g) || [];
   assert.equal(uses.length, 2);
+  // the whole function, not a fixed slice of it: a comment added inside
+  // pushed the pause past 900 characters once and failed this for nothing
   const ranked = app.slice(app.indexOf('async function submit(choice, button)'));
-  assert.match(ranked.slice(0, 900), /showRankedFeedback\([^)]*\);\s*\}, FEEDBACK_PAUSE_MS\);/);
+  assert.match(ranked.slice(0, ranked.indexOf('\n  }\n')), /showRankedFeedback\([^)]*\);\s*\}, FEEDBACK_PAUSE_MS\);/);
   const practice = app.slice(app.indexOf("button.classList.add('belt-incorrect');\n        playIncorrectSfx();\n      }\n      setTimeout"));
   assert.match(practice.slice(0, 400), /showFeedback\([\s\S]*?\}, FEEDBACK_PAUSE_MS\);/);
 });
