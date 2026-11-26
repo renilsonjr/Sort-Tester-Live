@@ -11,7 +11,8 @@ const [viewSource, audioSource, indexHtml, previewCss, previewHtml, i18nSource] 
 ]);
 const { modules: [view], cleanup } = await loadAppModules(['src/conveyor/view.js']);
 after(cleanup);
-const { BADGE_GUTTER, FRAME_PAD, SKIN, SPARK_RGB, VERDICT, formatClock, sparkleSpec, stageLayout } = view;
+const { BADGE_GUTTER, BURST_S, DEPART_S, FRAME_PAD, SKIN, SPARK_RGB, SWIPE_MIN, VERDICT,
+  formatClock, sparkleSpec, stageLayout } = view;
 
 // ---------------------------------------------------------------------------
 // Rule 19, the owner's correction: the badge never sits over the lane.
@@ -212,4 +213,48 @@ test('the preview says plainly that it is not the app', () => {
   assert.match(previewHtml, /stage 4/, 'it must say where the real wiring happens');
   // It loads the shipping modules rather than a copy of them.
   assert.match(previewHtml, /from '\.\.\/src\/conveyor\/view\.js'/);
+});
+
+// ---------------------------------------------------------------------------
+// The feel: the prototype's gesture and its two effects.
+// ---------------------------------------------------------------------------
+
+test('the front package follows the finger, and only the front package', () => {
+  // #395: "The front package follows the finger immediately." The drag offset
+  // reaches the painter, so the box moves under the thumb instead of waiting
+  // for the gesture to end.
+  assert.match(viewSource, /const dx = drag && drag\.id === item\.id \? drag\.dx : 0;/);
+  assert.match(viewSource, /paintPackage\(item, item\.front \? 1 : 0\.69[\s\S]{0,120}dx, dx \* 0\.0012\)/);
+  // A drag starts only when the finger lands on that box: anywhere else on
+  // the stage is a scroll.
+  assert.match(viewSource, /Math\.abs\(point\.x - centre\) > w \* 0\.65/);
+  assert.match(viewSource, /Math\.abs\(point\.y - \(front\.y - h \/ 2\)\) > w \* 0\.5/);
+  // A short drag is a change of mind and resolves nothing.
+  assert.ok(SWIPE_MIN >= 32 && SWIPE_MIN <= 80, `a ${SWIPE_MIN}px swipe threshold is not a swipe`);
+  assert.match(viewSource, /Math\.abs\(travel\) < Math\.min\(SWIPE_MIN, size\.w \* 0\.12\)/);
+});
+
+test('a gesture cannot survive a pause or the package it started on', () => {
+  assert.match(viewSource, /if \(drag && lost && drag\.id === lost\.id\) drag = null;/);
+  assert.match(viewSource, /drag = null;\n\s+if \(shot\.running\) \{ game\.pause\(\)/);
+  assert.match(viewSource, /for \(const type of \['pointercancel', 'pointerleave'\]\)/);
+});
+
+test('a resolved package leaves the belt the way it was sent', () => {
+  // k*k on the sideways travel: it holds where it was, long enough to read
+  // the verdict, then shoots off.
+  assert.match(viewSource, /dir \* k \* k \* w \* 0\.85/);
+  // A drop falls past the end of the belt instead of leaving sideways.
+  assert.match(viewSource, /fell \? k \* k \* 220 : 0/);
+  assert.match(viewSource, /mark\(\{ \.\.\.lost, y: laneFor\(\) \}, 'dropped', null\)/);
+  assert.ok(DEPART_S > 0.3 && DEPART_S < 1, 'the departure must hold a beat without stalling the belt');
+});
+
+test('losing a real streak scatters the ring instead of switching it off', () => {
+  assert.match(viewSource, /function scatter\(item, hadCombo\) \{/);
+  // Nothing scatters when there was no tier to lose: the effect has to mean
+  // something, exactly as the ring itself does.
+  assert.match(viewSource, /if \(!item \|\| hadCombo < COMBO_STEP\) return;/);
+  assert.ok(BURST_S < 0.5, 'the scatter must be over quickly and never flash the screen');
+  assert.ok(viewSource.includes("ctx.globalCompositeOperation = 'lighter'"), 'the stars add light rather than painting dots');
 });

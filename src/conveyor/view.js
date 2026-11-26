@@ -26,7 +26,15 @@ export const VERDICT = {
   missort: { rgb: '248,113,113', glyph: '✗' },
   dropped: { rgb: '248,113,113', glyph: '✗' },
 };
-export const VERDICT_HOLD_MS = 260;
+// The departing package holds for a beat where it was, long enough to read
+// the green or the red, then shoots off the belt. k*k on the sideways travel
+// is what makes it hold first and leave fast.
+export const DEPART_S = 0.55;
+// Losing the streak scatters the stars outward and they wink out. Under half
+// a second, and no screen-wide flash.
+export const BURST_S = 0.42;
+// A gesture counts as a swipe past this much travel, in pixels.
+export const SWIPE_MIN = 52;
 // Handler has a skin of its own and stays dark in both app themes (owner
 // decision, 2026-11-26). It is a game inside the app, not another app screen,
 // and the look is the one the owner approved on the prototype. These are the
@@ -160,7 +168,9 @@ export function createHandlerScreen({
   let last = null;
   let countdown = null;
   let countdownTimer = null;
-  let verdicts = [];
+  let departing = [];
+  let bursts = [];
+  let drag = null;
   let shownTier = 1;
   let observer = null;
   let canvas = null;
@@ -293,7 +303,9 @@ export function createHandlerScreen({
       laneLength: laneFor(),
       questionSource: deck => drawRoute(poolFor(deck), random),
     });
-    verdicts = [];
+    departing = [];
+    bursts = [];
+    drag = null;
     shownTier = 1;
     bindPlaying();
     say(t('Round started.'));
@@ -341,6 +353,7 @@ export function createHandlerScreen({
     const sound = root.querySelector('[data-hd-sound]');
     on(pause, 'click', () => {
       const shot = game.snapshot();
+      drag = null;
       if (shot.running) { game.pause(); audio?.stop(); } else { game.resume(); audio?.start(); last = null; }
       const paused = !game.snapshot().running;
       pause.setAttribute('aria-pressed', String(paused));
@@ -360,30 +373,44 @@ export function createHandlerScreen({
     for (const button of root.querySelectorAll('[data-hd-side]')) {
       on(button, 'click', () => resolve(Number(button.dataset.hdSide)));
     }
-    // Rule 7 and #395: a swipe must not be able to resolve a package other
-    // than the one the finger started on, and a cancelled or scrolled gesture
-    // must resolve nothing at all.
-    let gesture = null;
+    // #395: the front package follows the finger immediately, and only the
+    // front package. A drag starts only when the finger lands ON that box --
+    // anywhere else on the stage is a scroll, not a sort. Rule 7: the gesture
+    // remembers which package it started on, so a package resolved under it
+    // cannot be answered for by its replacement.
+    const localPoint = event => {
+      const box = canvas.getBoundingClientRect();
+      return { x: event.clientX - box.left, y: event.clientY - box.top };
+    };
     on(canvas, 'pointerdown', event => {
       const shot = game.snapshot();
-      if (!shot.running || !shot.activePackageId) return;
-      gesture = { x: event.clientX, y: event.clientY, id: shot.activePackageId, pointer: event.pointerId };
-      canvas.setPointerCapture?.(event.pointerId);
+      if (!shot.running || drag) return;
+      const front = shot.packages.find(item => item.front);
+      if (!front) return;
+      const { w, h, centre } = packageBox();
+      const point = localPoint(event);
+      if (Math.abs(point.x - centre) > w * 0.65) return;
+      if (Math.abs(point.y - (front.y - h / 2)) > w * 0.5) return;
+      event.preventDefault?.();
+      // Capture keeps the drag alive if the finger leaves the canvas. A
+      // browser that refuses the id must not lose the gesture over it.
+      try { canvas.setPointerCapture?.(event.pointerId); } catch { /* keep dragging */ }
+      drag = { id: front.id, startX: point.x, dx: 0, pointer: event.pointerId };
     });
     on(canvas, 'pointermove', event => {
-      if (!gesture || event.pointerId !== gesture.pointer) return;
-      // A mostly vertical drag is a scroll, not a sort.
-      if (Math.abs(event.clientY - gesture.y) > Math.abs(event.clientX - gesture.x) * 1.6) gesture = null;
+      if (drag?.pointer !== event.pointerId) return;
+      drag.dx = localPoint(event).x - drag.startX;
     });
     on(canvas, 'pointerup', event => {
-      if (!gesture || event.pointerId !== gesture.pointer) return;
-      const travel = event.clientX - gesture.x;
-      const started = gesture.id;
-      gesture = null;
-      if (Math.abs(travel) < 24) return;
+      if (drag?.pointer !== event.pointerId) return;
+      const travel = drag.dx;
+      const started = drag.id;
+      // A short drag is a change of mind: the box springs back and nothing
+      // resolves.
+      if (Math.abs(travel) < Math.min(SWIPE_MIN, size.w * 0.12)) { drag = null; return; }
       resolve(travel < 0 ? LEFT : RIGHT, started);
     });
-    for (const type of ['pointercancel', 'pointerleave']) on(canvas, type, () => { gesture = null; });
+    for (const type of ['pointercancel', 'pointerleave']) on(canvas, type, () => { drag = null; });
     on(root.ownerDocument ?? root, 'keydown', event => {
       if (event.key === 'ArrowLeft') { event.preventDefault(); resolve(LEFT); }
       else if (event.key === 'ArrowRight') { event.preventDefault(); resolve(RIGHT); }
@@ -395,9 +422,13 @@ export function createHandlerScreen({
     const shot = game.snapshot();
     const target = packageId ?? shot.activePackageId;
     const front = shot.packages.find(item => item.id === target);
+    const held = drag && drag.id === target ? drag.dx : 0;
+    const hadCombo = shot.combo;
+    drag = null;
     const result = game.choose(side, target);
     if (!result.resolved) return;
-    mark(front, result.outcome === 'sorted' ? 'sorted' : 'missort');
+    mark(front, result.outcome === 'sorted' ? 'sorted' : 'missort', side, held);
+    if (result.outcome !== 'sorted') scatter(front, hadCombo);
     if (result.outcome === 'sorted') {
       audio?.sorted();
       say(t('Right belt. {belt}.', { belt: result.belt }));
@@ -408,11 +439,19 @@ export function createHandlerScreen({
     paintHud();
   }
 
+  // A streak worth seeing is a streak worth seeing lost: the ring scatters
+  // from where the package was, rather than simply switching off.
+  function scatter(item, hadCombo) {
+    if (!item || hadCombo < COMBO_STEP) return;
+    const { h, centre } = packageBox();
+    bursts.push({ x: centre, y: item.y - h / 2, t: 0 });
+  }
+
   // Rule 20: the verdict is said on the package, where the player is looking,
   // and it holds for a beat before the package leaves the belt.
-  function mark(item, kind) {
+  function mark(item, kind, side, dx = 0) {
     if (!item) return;
-    verdicts.push({ y: item.y, route: item.route, id: item.id, kind, at: 0 });
+    departing.push({ y: item.y, route: item.route, id: item.id, kind, side, dx, t: 0 });
   }
 
   // ------------------------------------------------------------------- paint
@@ -538,10 +577,11 @@ export function createHandlerScreen({
   // caps, the routing code large, the state under it and a barcode along the
   // bottom. The code is the one thing the player has to read at speed, so it
   // is the largest thing on the box and it shrinks only when it is long.
-  function paintPackage(item, alpha, verdict, sparkle, clock) {
+  function paintPackage(item, alpha, verdict, sparkle, clock, dx = 0, rot = 0) {
     const { w, h, centre } = packageBox();
     ctx.save();
-    ctx.translate(centre, item.y - h / 2);
+    ctx.translate(centre + dx, item.y - h / 2);
+    if (rot) ctx.rotate(rot);
     ctx.globalAlpha = alpha;
 
     if (sparkle) paintSparkles(w, h, sparkle, clock, alpha);
@@ -718,7 +758,68 @@ export function createHandlerScreen({
     }
   }
 
-  function paint(clock) {
+  // Rule 19 again: losing the streak scatters the stars outward rather than
+  // fading them, so it is seen even by an eye that was on the belt and not on
+  // the badge.
+  function paintBursts(dt) {
+    for (const burst of bursts) burst.t += dt;
+    bursts = bursts.filter(burst => burst.t < BURST_S);
+    const base = packageBox().w * 0.6;
+    for (const burst of bursts) {
+      const k = Math.min(1, burst.t / BURST_S);
+      ctx.save();
+      ctx.globalCompositeOperation = 'lighter';
+      for (let i = 0; i < 10; i += 1) {
+        const angle = i * 2.399;
+        const distance = base * (0.8 + 1.4 * k);
+        const sx = burst.x + Math.cos(angle) * distance * 1.05;
+        const sy = burst.y + Math.sin(angle) * distance * 0.8;
+        const size = 3.2 * (1 - k);
+        if (size < 0.5) continue;
+        ctx.globalAlpha = (1 - k) * 0.9;
+        const glow = ctx.createRadialGradient(sx, sy, 0, sx, sy, size * 2);
+        glow.addColorStop(0, 'rgba(255,255,255,1)');
+        glow.addColorStop(0.4, `rgba(${SPARK_RGB},.8)`);
+        glow.addColorStop(1, `rgba(${SPARK_RGB},0)`);
+        ctx.fillStyle = glow;
+        ctx.beginPath(); ctx.arc(sx, sy, size * 2, 0, Math.PI * 2); ctx.fill();
+        ctx.strokeStyle = 'rgba(255,255,255,.85)';
+        ctx.lineWidth = Math.max(0.8, size * 0.3);
+        ctx.beginPath();
+        ctx.moveTo(sx - size * 1.6, sy); ctx.lineTo(sx + size * 1.6, sy);
+        ctx.moveTo(sx, sy - size * 1.6); ctx.lineTo(sx, sy + size * 1.6);
+        ctx.stroke();
+      }
+      ctx.restore();
+    }
+  }
+
+  // Rule 20: the resolved package holds where it was, wearing its verdict,
+  // then leaves the belt -- sideways towards the belt it was sent to, or
+  // straight down when it ran off the end.
+  function paintDeparting(dt, clock) {
+    const { w } = packageBox();
+    for (const effect of departing) effect.t += dt;
+    departing = departing.filter(effect => effect.t < DEPART_S);
+    for (const effect of departing) {
+      const k = effect.t / DEPART_S;
+      const dir = effect.side === 0 ? -1 : effect.side === 1 ? 1 : 0;
+      const fell = effect.side === null || effect.side === undefined;
+      paintPackage(
+        // A dropped package keeps falling past the end of the belt; a sorted
+        // or missorted one leaves sideways, towards the belt it was sent to.
+        { y: effect.y + (fell ? k * k * 220 : 0), route: effect.route, id: effect.id, front: true },
+        Math.max(0, 1 - k * k),
+        effect.kind,
+        null,
+        clock,
+        effect.dx + dir * k * k * w * 0.85,
+        dir * k * k * 0.5 + (fell ? k * 0.4 : 0),
+      );
+    }
+  }
+
+  function paint(clock, dt) {
     if (!ctx) return;
     const shot = game.snapshot();
     ctx.clearRect(0, 0, size.w, size.h);
@@ -727,13 +828,13 @@ export function createHandlerScreen({
     const sparkle = sparkleSpec(shot.combo, COMBO_STEP, COMBO_CAP);
     for (let i = shot.packages.length - 1; i >= 0; i -= 1) {
       const item = shot.packages[i];
-      paintPackage(item, item.front ? 1 : 0.69, null, item.front ? sparkle : null, clock);
+      // The front package follows the finger, and leans the way it is going.
+      const dx = drag && drag.id === item.id ? drag.dx : 0;
+      paintPackage(item, item.front ? 1 : 0.69, null, item.front ? sparkle : null, clock,
+        dx, dx * 0.0012);
     }
-    for (const verdict of verdicts) {
-      const age = verdict.at / VERDICT_HOLD_MS;
-      paintPackage({ y: verdict.y, route: verdict.route, id: verdict.id, front: false },
-        Math.max(0, 1 - age), verdict.kind, null, clock);
-    }
+    paintDeparting(dt, clock);
+    paintBursts(dt);
   }
 
   function step(stamp) {
@@ -745,23 +846,26 @@ export function createHandlerScreen({
     if (last === null) { last = stamp; return; }
     const delta = stamp - last;
     last = stamp;
+    const seconds = Math.min(delta, 50) / 1000;
     const before = game.snapshot();
     if (before.running) {
       const drops = before.drops;
+      const hadCombo = before.combo;
       const after = game.tick(delta);
       if (after.drops > drops) {
         const lost = before.packages[0];
-        if (lost) mark({ ...lost, y: laneFor() }, 'dropped');
+        // side null: a dropped package falls past the end of the belt rather
+        // than leaving towards either side.
+        if (lost) { mark({ ...lost, y: laneFor() }, 'dropped', null); scatter({ y: laneFor() }, hadCombo); }
+        if (drag && lost && drag.id === lost.id) drag = null;
         audio?.dropped();
         say(t('A package ran off the end.'));
       }
       audio?.belt(after.speed);
-      for (const verdict of verdicts) verdict.at += delta;
-      verdicts = verdicts.filter(verdict => verdict.at < VERDICT_HOLD_MS);
       paintHud();
       if (after.ended) { showSummary(); return; }
     }
-    paint(stamp);
+    paint(stamp, seconds);
   }
 
   function startLoop() {
