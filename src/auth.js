@@ -62,7 +62,7 @@ export async function leaveRecoveryMessage(message) {
 // page where the Quiz Code is typed. The same address is in app.js
 // (Settings); this file imports nothing, so it is written in both, and a
 // test keeps the two the same.
-const SECURITY_REPORT_URL = 'https://www.immuniweb.com/websec/sortquiz.app/8SXNOVH5/';
+const SECURITY_REPORT_URL = 'https://www.immuniweb.com/websec/sortquiz.app/Df6GfdiI/';
 
 const FORGOT_ES = {
   'Forgot my Quiz Code?':
