@@ -1938,6 +1938,31 @@
     }
     .screen-profile > #profile-panel > #pf-history { grid-column: 1 / -1; }
 
+    /* Everything in the panel that is not one of the choices crosses both
+       columns, so the choices pair from the first row down.
+
+       Without this the panel laid out whatever it was given, in order, two
+       per row. Back is prepended to the panel, so it took the first cell:
+       the first choice was pushed into the right column and every row below
+       it was offset by one, which is the stagger in the owner's screenshots
+       of 2026-11-26. The tail (the version line, the security badge and the
+       privacy link) was dealt into cells the same way, which is why the
+       badge and the link sat under different columns on the owner and
+       non-owner screens.
+
+       Back also read 10px right of the title, because its 44px hit area is
+       made of padding and the padding pushed the arrow in. The negative
+       margin puts the arrow on the title's line and leaves the hit area
+       alone. */
+    .screen-profile > #profile-panel > .lab-back {
+      grid-column: 1 / -1;
+      justify-self: start;
+      margin-left: -10px;
+    }
+    .screen-profile > #profile-panel > #profile-version,
+    .screen-profile > #profile-panel > .profile-security,
+    .screen-profile > #profile-panel > .auth-footer { grid-column: 1 / -1; }
+
     /* ---- Owner tools: the actions in two columns ------------------------ */
     .screen-owner {
       display: grid;
