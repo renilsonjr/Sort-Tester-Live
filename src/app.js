@@ -2707,10 +2707,17 @@ async function startRankedAttempt(mode) {
   playRankedAttempt(attempt, mode, { correctCount: 0 });
 }
 
+// Which ranked screen the page means to be showing. A read that was in
+// flight when another screen took over belongs to a screen nobody is
+// looking at any more, and drawing its answer would undo what replaced it.
+let rankedScreen = 0;
+
 async function playRankedAttempt(attempt, mode, tally) {
   stopTick();
   clock = null;
+  const mine = ++rankedScreen;
   const current = await attempt.current();
+  if (mine !== rankedScreen) return;
   // Anything that is not a question means the attempt is over: 410 and 204
   // say so plainly, and so does any refusal -- a 403 once rendered its own
   // error body as a question, and the screen read "Question undefined of
@@ -2825,17 +2832,24 @@ async function playRankedAttempt(attempt, mode, tally) {
 
   async function submit(choice, button) {
     stopTimer();
+    // Owner report, 2026-11-26: the review of the fifteenth question showed
+    // and was gone again in an instant, replaced by the result.
+    //
+    // The last answer ends the attempt, so the heartbeat's very next beat is
+    // refused with 410 -- and the handler armed above reads that as "the
+    // attempt died under a question" and goes to fetch the result. It checks
+    // that this screen is still up, and it is: the feedback is 250 ms away.
+    // Then the feedback draws, the read finishes, and the result lands on
+    // top of it. On this machine the read came back first and the feedback
+    // won; over a real network it loses, which is why it was never seen here
+    // and always there.
+    //
+    // Disarmed here, before the answer goes: from this moment the attempt
+    // ending is this function's business, and the two paths cannot race.
+    attempt.onGone(() => {});
     const result = await attempt.answer(q.seq, choice);
     if (!result.ok) { playRankedAttempt(attempt, mode, tally); return; }
     const isRight = Boolean(result.data.correct);
-    if (result.data.finished) {
-      // The last answer ends the attempt, so the heartbeat's next 410 is
-      // expected news, not a reason to leave. Without this it can land in
-      // the pause below and send the player to the result with the last
-      // question never shown (#459 is a different screen; this is the one
-      // the owner reported on 2026-11-26).
-      attempt.onGone(() => {});
-    }
     if (button) {
       button.classList.add(isRight ? 'belt-correct' : 'belt-incorrect');
     }
@@ -2859,6 +2873,7 @@ async function playRankedAttempt(attempt, mode, tally) {
 function showRankedFeedback(attempt, mode, q, chosen, response, tally) {
   stopTick();
   clock = null;
+  rankedScreen += 1;  // this screen is the one showing now
   const right = response.outcome === 'correct';
   const where = destinationLine(q);
   const promoCorrect = mode === 'promotion' && right;
