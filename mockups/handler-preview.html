@@ -1,0 +1,99 @@
+<!doctype html>
+<!-- Handler -- a phone-sized playable preview of stage 3 (#395).
+     This page is NOT the app. It loads the real modules from ../src so what
+     you play here is the code that would ship, but it has no account, no
+     backend and no bottom dock: wiring Handler into the app is stage 4
+     (#396). Best scores here live in this page's memory and are gone when
+     you reload, because the stored best score is stage 4 as well.
+     It needs a server, because browsers refuse ES modules over file://:
+       python3 -m http.server 8000
+     then open http://localhost:8000/mockups/handler-preview.html -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Handler — preview</title>
+<link rel="stylesheet" href="./handler-preview.css">
+<style>
+  /* The preview's own bar, which the app does not have. Kept here rather than
+     in the app's stylesheet: nothing about this page ships. */
+  .prev-bar {
+    display: flex; align-items: center; justify-content: space-between; gap: 10px;
+    padding: 10px 22px; border-bottom: 1px solid var(--line);
+    background: var(--sunk); color: var(--muted); font-size: 12px;
+  }
+  .prev-actions { display: flex; gap: 6px; }
+  .prev-bar button {
+    min-height: 32px; padding: 0 10px; border-radius: 8px; cursor: pointer;
+    background: var(--accent); color: var(--accent-ink); border: 1px solid var(--line);
+  }
+  /* The app's shell is a card inside a page; on this preview there is no
+     page around it, so stretch it or the body shows through under short
+     screens. */
+  html, body { height: 100%; margin: 0; }
+  #app { min-height: 100%; display: flex; flex-direction: column; }
+  .lab-main { flex: 1; padding: 18px 20px 28px; }
+</style>
+</head>
+<body>
+  <!-- The app's own shell, so the preview is laid out and padded exactly as
+       the real screen would be: #app is the card, .lab-main is its padding,
+       .lab-screen is the column every page uses. -->
+  <div id="app">
+    <header class="prev-bar">
+      <span><strong>Handler</strong> — stage 3 preview, not the app</span>
+      <span class="prev-actions">
+        <button type="button" id="theme">Light</button>
+        <button type="button" id="lang">ES</button>
+      </span>
+    </header>
+    <main class="lab-main">
+      <div id="root" class="lab-screen"></div>
+    </main>
+  </div>
+<script type="module">
+  import * as engine from '../src/conveyor/engine.js';
+  import * as routes from '../src/conveyor/routes.js';
+  import { createHandlerScreen } from '../src/conveyor/view.js';
+  import { createHandlerAudio } from '../src/conveyor/audio.js';
+  import { createLanguage } from '../src/i18n.js';
+  import { getAudioContext, isSoundEnabled, toggleSound } from '../src/sound.js';
+
+  const root = document.getElementById('root');
+  const language = createLanguage(localStorage);
+  let screen = null;
+
+  function mount() {
+    screen?.unmount();
+    screen = createHandlerScreen({
+      root,
+      t: (source, values) => language.text(source, values),
+      engine,
+      routes,
+      audio: createHandlerAudio({ getContext: getAudioContext, isEnabled: isSoundEnabled }),
+      soundPref: { isEnabled: isSoundEnabled, toggle: toggleSound },
+    });
+    // A handle for driving the preview from the console or from a test, so a
+    // combo can be forced without playing for a minute. Preview only: the app
+    // never gets one.
+    globalThis.__handler = screen;
+  }
+
+  document.getElementById('theme').addEventListener('click', event => {
+    // The app's light theme is html[data-theme="day"]; its dark theme is the
+    // default with no attribute at all.
+    const day = document.documentElement.dataset.theme !== 'day';
+    if (day) document.documentElement.dataset.theme = 'day';
+    else delete document.documentElement.dataset.theme;
+    event.target.textContent = day ? 'Dark' : 'Light';
+  });
+  document.getElementById('lang').addEventListener('click', event => {
+    const next = language.code === 'es' ? 'en' : 'es';
+    language.set(next);
+    event.target.textContent = next === 'es' ? 'EN' : 'ES';
+    mount();
+  });
+  mount();
+</script>
+</body>
+</html>

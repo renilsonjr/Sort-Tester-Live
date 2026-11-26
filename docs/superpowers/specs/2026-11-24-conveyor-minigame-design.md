@@ -12,7 +12,7 @@ Parent tracker: issue #392. Sub-issues #393, #394, #395, #396, #397. This docume
 
 ## Game rules
 
-Rules 1–11 restate the concept agreed in #392. Rules 12–21 are the owner's November 24 decisions. Rule 22 is the label decision of November 26, 2026.
+Rules 1–11 restate the concept agreed in #392. Rules 12–21 are the owner's November 24 decisions. Rules 22 to 25 are his November 26 decisions: the label, the skin, the gesture and the sound.
 
 **The belt**
 
@@ -61,6 +61,21 @@ The sparkle is an icy cyan, chosen to sit far from the BLUE belt's navy so a glo
 
 A full five-digit ZIP was asked for and is **not possible from repository data**: neither the chart, the Ranked bank nor the player manual holds a ZIP list, and the chart routes by prefix. The owner declined adding an external ZIP dataset on November 26, 2026, so the label stops at the prefix, or at the prefix and fourth digit where the chart writes one. Do not reintroduce a generated five-digit ZIP as an improvement; rule 3 forbids it.
 
+23. **Handler has a skin of its own and stays dark in both app themes.** It is a game inside the app, not another app screen, and the look is the one the owner approved on the prototype: a conveyor with a frame, running slats, dashed guides and a toothed end bar; packages that are taped boxes carrying a shipping label with the service, the routing code, the state and a barcode; the two destinations as tabs on the belt's own edges rather than buttons under the stage; and a three-cell strip for score, time left and the sorted / wrong / dropped tally.
+
+The first build of the screen used the app's tokens instead, and the owner rejected it on November 26, 2026. The instruction in #395 that the prototype is "a reference for the feel, not code to copy" means do not paste its HTML. It does not mean discard the design, which the owner had already approved in these words: "o prototipo que vc fez esta otimo". The skin declares its own tokens on `.hd` and in `SKIN` in `src/conveyor/view.js`; nothing in that block follows `html[data-theme="day"]`.
+
+The belt is narrow and centred, which is what makes room for the side destinations and the combo badge at once. `stageLayout()` reserves the badge's column and lets the belt give up width first on a narrow phone, so rule 19 holds by geometry at every width rather than by eye.
+
+Two points where Handler deliberately departs from the prototype, both recorded so they are not "fixed" back:
+
+- The prototype sets the badge's multiplier and streak line **side by side**, which makes the badge wide enough to sit over the belt again. Handler stacks them, which keeps the badge and rule 19 at the same time.
+- The prototype twinkles the top tier **for ever**. This app allows no infinite animation anywhere in `index.html`, and `tests/promotion-celebration.test.mjs` asserts it for the whole page, so Handler twinkles three times and rests.
+
+24. **The front package follows the finger.** A drag starts only when the finger lands on that box; anywhere else on the stage is a scroll. The box moves and leans under the thumb rather than waiting for the gesture to end, and a drag shorter than the swipe threshold is a change of mind that resolves nothing. A resolved package holds where it was wearing its verdict, then leaves towards the belt it was sent to; a dropped one falls straight past the end instead, because that is a different mistake. Losing a streak scatters the sparkle ring outward rather than switching it off.
+
+25. **The sound levels are the owner's.** `src/conveyor/audio.js` is a port of the prototype's synthesiser, down to the master and music bus levels and the note choices for each cue. An earlier pass invented them and came out two to three times too quiet, so the game sounded as though it had no sound at all; the owner confirmed it audible on November 26, 2026. A test pins the numbers, so retuning has to be deliberate. #397 is where the owner tunes them after playing.
+
 The owner's reason for rules 14 and 15: a missort has a real cost in the hub, because the package goes to the wrong place and comes back. The x4 ceiling in rule 16 is an assistant proposal chosen without measurement; it is expected to be tuned in stage 5 after the owner plays, so it must live in a single named constant.
 
 ## Modes
@@ -102,9 +117,9 @@ The dependency order from #392 is unchanged: data, then logic, then screen, then
 
 **Stage 1 — #393 · routing data and modes. Built on November 26, 2026.** The four modes are wired to the existing level decks, the adapter draws a card and assembles the two-option pair, and the Expert acceleration and deck-change rules are decided: Expert opens at Hard's speed and climbs by half again over the round, with the deck hardening one third of the way in. Every tuning number sits in `MODES` in one place, for #397 to change after the owner plays. The stage touches no DOM, no canvas, no audio and no storage.
 
-**Stage 2 — #394 · game engine.** Adds the two-minute clock, the combo and multiplier, the zero floor and the Expert acceleration curve to the existing acceptance list. All of it is browser-independent logic, testable with a fake clock and an injected random source. Rules 1–22 become tests here. **Issue text needs the new rules added.**
+**Stage 2 — #394 · game engine.** Adds the two-minute clock, the combo and multiplier, the zero floor and the Expert acceleration curve to the existing acceptance list. All of it is browser-independent logic, testable with a fake clock and an injected random source. Rules 1–25 become tests here. **Issue text needs the new rules added.**
 
-**Stage 3 — #395 · screen and input.** Adds three screens the prototype does not have: mode selection, a visible countdown, and the end-of-round summary from rule 18. Build the rule 19 sparkle ring and cartoon combo badge, the rule 20 verdict on the package, and the rule 21 sound and its toggle here. Also build the Home stripe described above. **Issue text needs the new screens added.**
+**Stage 3 — #395 · screen and input. Built on November 26, 2026 (PR #483).** Adds three screens the prototype does not have: mode selection, a visible countdown, and the end-of-round summary from rule 18. Build the rule 19 sparkle ring and cartoon combo badge, the rule 20 verdict on the package, and the rule 21 sound and its toggle here. Also build the Home stripe described above. **Issue text needs the new screens added.**
 
 **Stage 4 — #396 · integration into Practice.** Its current text forbids new stored data, which now conflicts with the approved best-score rule. Replace the prohibition with the persistence boundary above, including the table and its GRANT. This stage also adds the fifth tab to `navTabs()` and wires it, with the dock measured at phone width. Mounting and unmounting must clear the animation frame, the round clock and the pointer and keyboard listeners, so re-entering the tab cannot leave two belts or two clocks running. **Issue text needs rewriting.**
 
