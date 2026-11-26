@@ -8,7 +8,7 @@ Parent tracker: issue #392. Sub-issues #393, #394, #395, #396, #397. This docume
 
 ## What changed on November 24, 2026
 
-#392 captured the game concept but left the product rules open, and its sub-issues were written for a Practice-only feature that saved nothing and touched no backend. The owner settled the open rules and, in doing so, changed that boundary: the first release now saves a best score per mode, which is new stored data. A mini-game leaderboard is wanted but is deliberately deferred to a sixth stage so the game can reach a phone before the privacy decision about showing real employee names is made.
+#392 captured the game concept but left the product rules open, and its sub-issues were written for a Practice-only feature that saved nothing and touched no backend. The owner settled the open rules and, in doing so, changed that boundary: the first release now saves a best score per mode, which is new stored data. A mini-game leaderboard is wanted but is deliberately deferred to a sixth stage so the game can reach a phone first. That privacy decision was made on November 26, 2026 and is recorded under stage 6.
 
 ## Game rules
 
@@ -125,7 +125,17 @@ The dependency order from #392 is unchanged: data, then logic, then screen, then
 
 **Stage 5 — #397 · iPhone validation and release.** Mostly unchanged. Add two checks: reconcile the clock, score, combo and the three counters against a controlled two-minute run, and confirm the Escalation curve stays playable on a phone. Tune the rule 16 ceiling here, after the owner plays.
 
-**Stage 6 — new · mini-game leaderboard.** Does not exist as an issue yet. A leaderboard of its own, separate from Ranked, split by mode. One owner decision comes before any code: **whether it shows the real employee name**, a chosen display name, or initials. Real accounts have been live at sortquiz.app since November 21, 2026, so this is a privacy decision and belongs in the issue text, not in the implementation.
+**Stage 6 — #417 · mini-game leaderboard.** A leaderboard of its own, separate from Ranked, split by mode. The owner decisions that had to come before any code were made on November 26, 2026:
+
+- **Handler is a mini-game, not practice.** Earlier text in #417 called it practice; that framing is withdrawn.
+- **Identity: the same as the Ranked leaderboard.** A row shows the account's username and tag and the icon the player chose, exactly what `backend/ranked/standings.py` exposes, and nothing more. No real-name field, no chosen alias of its own, no initials.
+- **No opt-out.** Every signed-in player with a best score in a mode is on that mode's board.
+- **Guests never appear.** A guest's score is still not stored anywhere.
+- **Lifetime and deletion follow Ranked.** A deleted account is not listed (`deleted_at IS NULL`, as on the Ranked board), and its stored scores go with the account. Like the Ranked board, it is visible only to signed-in players.
+
+Two things do not carry over from Ranked, because they are about the prize: there is no owner approval step (`participant_links`) and no minimum of one completed Ranked quiz. Scores are never compared across modes (rule 16), and nothing from this board feeds Ranked points, prizes, badges or the Shift log.
+
+**Still open:** Ranked standings belong to a season. Whether the Handler board is all-time or starts over with each season has not been asked yet.
 
 ## Prototype status
 
