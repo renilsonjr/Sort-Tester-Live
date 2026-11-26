@@ -11,7 +11,7 @@ const [viewSource, audioSource, indexHtml, previewCss, previewHtml, i18nSource] 
 ]);
 const { modules: [view], cleanup } = await loadAppModules(['src/conveyor/view.js']);
 after(cleanup);
-const { BADGE_GUTTER, BURST_S, DEPART_S, FRAME_PAD, SKIN, SPARK_RGB, SWIPE_MIN, VERDICT,
+const { BADGE_GUTTER, BURST_S, DEPART_S, FLING_MIN, FLING_S, FRAME_PAD, SKIN, SPARK_RGB, SWIPE_MIN, VERDICT,
   formatClock, sparkleSpec, stageLayout } = view;
 
 // ---------------------------------------------------------------------------
@@ -242,7 +242,7 @@ test('the front package follows the finger, and only the front package', () => {
   // reaches the painter, so the box moves under the thumb instead of waiting
   // for the gesture to end.
   assert.match(viewSource, /const dx = drag && drag\.id === item\.id \? drag\.dx : 0;/);
-  assert.match(viewSource, /paintPackage\(item, item\.front \? 1 : 0\.69[\s\S]{0,120}dx, dx \* 0\.0012\)/);
+  assert.match(viewSource, /paintPackage\(item, item\.front \? 1 : 0\.69[\s\S]{0,120}dx, dx \* LEAN\)/);
   // A drag starts only when the finger lands on that box: anywhere else on
   // the stage is a scroll.
   assert.match(viewSource, /Math\.abs\(point\.x - centre\) > w \* 0\.65/);
@@ -259,13 +259,17 @@ test('a gesture cannot survive a pause or the package it started on', () => {
 });
 
 test('a resolved package leaves the belt the way it was sent', () => {
-  // k*k on the sideways travel: it holds where it was, long enough to read
-  // the verdict, then shoots off.
-  assert.match(viewSource, /dir \* k \* k \* w \* 0\.85/);
+  // Owner correction, 2026-11-26: no hold. The box leaves at the speed the
+  // finger gave it, never slower than the floor, and from the lean it had.
+  assert.match(viewSource, /effect\.v0 \* effect\.t \+ 0\.5 \* FLING_ACCEL \* effect\.t \* effect\.t/);
+  assert.match(viewSource, /Math\.min\(FLING_MAX, Math\.max\(FLING_MIN, vx \* dir\)\)/);
+  assert.match(viewSource, /effect\.dx \* LEAN \+ dir \* k \* 0\.3/);
+  assert.ok(FLING_MIN * FLING_S > 200, 'even a tap must carry the box clear of the belt');
+  assert.ok(FLING_S <= 0.35, 'a sorted box must not linger on the belt');
   // A drop falls past the end of the belt instead of leaving sideways.
-  assert.match(viewSource, /fell \? k \* k \* 220 : 0/);
+  assert.match(viewSource, /effect\.y \+ k \* k \* 220/);
   assert.match(viewSource, /mark\(\{ \.\.\.lost, y: laneFor\(\) \}, 'dropped', null\)/);
-  assert.ok(DEPART_S > 0.3 && DEPART_S < 1, 'the departure must hold a beat without stalling the belt');
+  assert.ok(DEPART_S > 0.3 && DEPART_S < 1, 'a drop must be seen falling without stalling the belt');
 });
 
 test('losing a real streak scatters the ring instead of switching it off', () => {
