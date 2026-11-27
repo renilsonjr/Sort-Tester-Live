@@ -270,7 +270,7 @@ const ES = {
   'Export to Excel': 'Exportar a Excel',
   'Clear log': 'Borrar registro',
   'Tap again to erase every result': 'Toca otra vez para borrar todos los resultados',
-  'Preparing the sheet...': 'Preparando la hoja...',
+  'Preparing the sheet…': 'Preparando la hoja…',
   'Saved.': 'Guardado.',
   'Sent.': 'Enviado.',
   'Already asking. Try again in a moment.': 'Ya se está procesando. Inténtalo de nuevo en un momento.',
