@@ -6,7 +6,8 @@ from fastapi.testclient import TestClient
 
 from backend.db import migrate, settings
 from backend.main import create_app
-from backend.routers import ranked as ranked_router
+from backend import retention as retention_module
+from backend.ranked import season_close
 from backend.sweep_interval import RETENTION_INTERVAL_SECONDS, SweepInterval
 from backend.tests.browser import BROWSER
 
@@ -66,11 +67,11 @@ class RequestSweepTests(unittest.TestCase):
         self.client.post("/api/auth/login", json={"username": "sweep_player", "login_id": reg.json()["login_id"]})
 
     def _spies(self):
-        retention = mock.Mock(side_effect=ranked_router._sweep_retention)
-        game = mock.Mock(side_effect=ranked_router.season_close.finish_due_seasons)
+        retention = mock.Mock(side_effect=retention_module.sweep)
+        game = mock.Mock(side_effect=season_close.finish_due_seasons)
         for target, name, spy in (
-            (ranked_router, "_sweep_retention", retention),
-            (ranked_router.season_close, "finish_due_seasons", game),
+            (retention_module, "sweep", retention),
+            (season_close, "finish_due_seasons", game),
         ):
             patcher = mock.patch.object(target, name, spy)
             patcher.start()

@@ -15,13 +15,12 @@ from pydantic import BaseModel, Field
 
 from backend.auth import eligibility, reauth, recovery, recovery_messages
 from backend.auth import deletion as account_deletion
-from backend.auth.deletion import purge_deleted_accounts
 from backend.auth.deletion_list import DeletionListUnavailable
-from backend.auth import sessions as auth_sessions
+from backend import retention
 from backend.db import migrate
 from backend.routers import deps
 from backend.routers.deps import current_account, get_plain_db, reviewed_bank
-from backend.ranked import capability, engine, launch, season_close, seasons, settlement
+from backend.ranked import capability, due_work, engine, launch, seasons, settlement
 from backend.ranked import standings as ranked_standings
 from backend.ranked import tiebreaks as ranked_tiebreaks
 from backend.ranked import history as ranked_history
@@ -45,53 +44,18 @@ _CLOCK = system_clock()
 
 
 def get_db(request: Request):
-    with deps.db_connection() as conn:
-        # The season closes by the clock, with no background timer: every
-        # ranked request first finishes any season whose five-minute finishing
-        # window is over (end unfinished attempts, settle, freeze). When
-        # nothing is due this is a single read.
-        season_close.finish_due_seasons(conn, clock=_CLOCK)
-        # and a tie-break round closes at its own deadline the same way:
-        # score it, place its players, open the next round if one is due
-        ranked_tiebreaks.close_due_rounds(conn, clock=_CLOCK, bank=reviewed_bank())
-        # once rounds are closed, resolve the three hats: carry a freed hat
-        # down to the next player, open a replacement round if that creates
-        # a tie, and write the winners when nothing is left pending
-        launch = seasons.official_launch(conn)
-        if launch is not None:
-            ranked_tiebreaks.finalize_prizes(
-                conn, launch.season_id, clock=_CLOCK, bank=reviewed_bank()
-            )
-        # Everything above is the game's own clock and runs on every request.
-        # Retention below deletes what is days old, so it runs at most once a
-        # minute for the whole process (backend/sweep_interval.py).
-        if request.app.state.retention_interval.due():
-            _sweep_retention(conn)
-        yield conn
+    """A connection for a route behind an account, with the game up to date.
 
-
-def _sweep_retention(conn) -> None:
-    """Delete what has outlived its retention period, and keep that.
-
-    Committed here rather than left to the route: most routes that carry
-    this sweep only read and never commit, and a sweep that waits a minute
-    for its next turn must not be rolled back by whichever request drew it.
-    Nothing else is open on the connection yet, so this commits the sweep
-    and only the sweep.
+    Before the route runs, whatever has come due by the clock is done
+    (backend/ranked/due_work.py), on every request. Retention deletes what
+    is days old, so it takes its turn at most once a minute for the whole
+    process (backend/sweep_interval.py).
     """
-    # a closed ticket's description goes fifteen days after its own closure,
-    # and an attempt's shared connection log goes fifteen days after the last
-    # case on it closes (#26)
-    support_retention.purge_due_cases(conn, clock=_CLOCK)
-    # accepted account deletions (#47)
-    purge_deleted_accounts(conn)
-    # expired session rows authenticate nobody but still point at an account,
-    # so they go a day after they die
-    auth_sessions.purge_expired_sessions(conn)
-    # a recovery message is free text and may name a person: it goes thirty
-    # days after the owner marked it resolved
-    recovery_messages.purge_resolved(conn, clock=_CLOCK)
-    conn.commit()
+    with deps.db_connection() as conn:
+        due_work.run(conn, clock=_CLOCK, bank=reviewed_bank())
+        if request.app.state.retention_interval.due():
+            retention.sweep(conn, clock=_CLOCK)
+        yield conn
 
 
 def _require_own_attempt(conn, attempt_id: str, account_id) -> None:
