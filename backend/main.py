@@ -21,7 +21,11 @@ from backend.auth.rate_limit import AddressAttemptLimiter, RegistrationLimiter
 from backend.auth.verification_gate import VerificationBusy
 from backend.sweep_interval import SweepInterval
 from backend.ranked import engine as ranked_engine
-from backend.routers import auth, handler as handler_router, ranked, recovery_messages as recovery_messages_router, versus as versus_router
+from backend.routers import (
+    auth, handler as handler_router, ranked, ranked_owner, ranked_season,
+    ranked_support, recovery_messages as recovery_messages_router,
+    versus as versus_router,
+)
 
 # The repository root holds index.html, src/ and assets/.
 FRONTEND_ROOT = Path(__file__).resolve().parent.parent
@@ -146,6 +150,9 @@ def create_app() -> FastAPI:
     application.include_router(auth.router)
     application.include_router(recovery_messages_router.router)
     application.include_router(ranked.router)
+    application.include_router(ranked_season.router)
+    application.include_router(ranked_owner.router)
+    application.include_router(ranked_support.router)
     application.include_router(handler_router.router)
     application.include_router(versus_router.router)
 

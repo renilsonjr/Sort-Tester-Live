@@ -15,8 +15,7 @@ from pydantic import BaseModel, Field
 
 from backend.handler import best_scores, leaderboard
 from backend.ranked.clock import system_clock
-from backend.routers.deps import current_account
-from backend.routers.ranked import get_db
+from backend.routers.deps import current_account, get_db
 
 router = APIRouter(prefix="/api/handler", tags=["handler"])
 
