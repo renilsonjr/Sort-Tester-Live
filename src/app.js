@@ -2869,11 +2869,16 @@ async function playRankedAttempt(attempt, mode, tally) {
     <section class="lab-screen" id="rq-play" data-ranked-music data-attempt-live>
       <div class="tb-top">
         <span class="lab-eyebrow" id="rq-count">${esc(t('Question'))} ${q.seq} ${esc(t('of'))} 15</span>
-        <div class="rq-ring" id="rq-clock" role="timer" aria-label="${esc(t('seconds'))}"><span id="rq-ring-num"></span></div>
+        ${/* Quit sits up here, beside the clock and away from the four
+              answers. It used to be a full-width button directly under the
+              bottom two belts, where a thumb racing a ten-second clock lands. */ ''}
+        <div class="rq-top-end">
+          <button id="rq-cancel" class="ghost rq-quit" type="button">${esc(t('Quit'))}</button>
+          <div class="rq-ring" id="rq-clock" role="timer" aria-label="${esc(t('seconds'))}"><span id="rq-ring-num"></span></div>
+        </div>
       </div>
       <div class="tb-bar"><i id="rq-bar-fill"></i></div>
       <div id="rq-question"></div>
-      <button id="rq-cancel" class="ghost">${esc(t('Quit'))}</button>
     </section>
   `, 'ranked', () => playRankedAttempt(attempt, mode, tally));
   const where = destinationLine(q);
