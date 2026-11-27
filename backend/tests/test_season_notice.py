@@ -47,11 +47,11 @@ class SeasonNoticeTests(unittest.TestCase):
             raise Swept("a public request ran a sweep")
 
         for target in (
-            "backend.routers.ranked.season_close.finish_due_seasons",
-            "backend.routers.ranked.ranked_tiebreaks.close_due_rounds",
-            "backend.routers.ranked.ranked_tiebreaks.finalize_prizes",
-            "backend.routers.ranked.support_retention.purge_due_cases",
-            "backend.routers.ranked.purge_deleted_accounts",
+            "backend.ranked.season_close.finish_due_seasons",
+            "backend.ranked.tiebreaks.close_due_rounds",
+            "backend.ranked.tiebreaks.finalize_prizes",
+            "backend.support.retention.purge_due_cases",
+            "backend.auth.deletion.purge_deleted_accounts",
         ):
             patch = mock.patch(target, side_effect=boom)
             patch.start()
