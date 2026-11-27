@@ -32,7 +32,13 @@ test('every tappable control gives way when pressed', () => {
 test('the press is 0.96 everywhere, never smaller', () => {
   const presses = [...html.matchAll(/:active[^{]*\{[^}]*transform:\s*scale\(([.\d]+)\)/g)]
     .map(m => Number(m[1]));
-  assert.ok(presses.length >= 2, 'the press feedback rules are gone');
+  assert.ok(presses.length >= 1, 'the press feedback rules are gone');
+  // There used to be two rules saying scale(.96): a shared one and a copy for
+  // the Ranked belts. The belts are listed in the shared rule now, so one
+  // declaration covers every control and the two cannot drift apart.
+  const shared = html.match(/^  \.primary:active,[\s\S]*?\}/m)[0];
+  assert.match(shared, /\.belts \.belt:active/, 'the Ranked belts fell out of the shared press');
+  assert.match(shared, /\.lab-nav button:active/);
   for (const value of presses) {
     assert.ok(value >= 0.95, `scale(${value}) is below 0.95 and reads as exaggerated`);
     assert.equal(value, 0.96, `scale(${value}) should be the shared 0.96`);

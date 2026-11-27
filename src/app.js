@@ -279,6 +279,17 @@ function wireThemeButton(view) {
 }
 if (typeof document !== 'undefined') applyTheme(currentTheme());
 
+// The three countdown bars (tie-break, Ranked, Practice). The fill is always
+// the full width of its track and slides out to the left, so the browser
+// composites it instead of laying the page out again on every tick; the
+// track's `overflow: hidden` pill clips what leaves. `pct` is 0 to 100 and is
+// clamped here rather than at each call site.
+function setBarFill(fill, pct) {
+  if (!fill?.style) return;
+  const shown = Math.max(0, Math.min(100, Number(pct) || 0));
+  fill.style.transform = `translateX(${shown - 100}%)`;
+}
+
 // One switch for all sound: answer effects everywhere and the Ranked music.
 function soundIcon(on) { return on ? ICONS.soundOn : ICONS.soundOff; }
 function soundButton() {
@@ -1947,7 +1958,7 @@ async function playTiebreak(round) {
       view.querySelector('#tb-time').textContent =
         `${secondsLeft} ${t(secondsLeft === 1 ? 'second' : 'seconds')}`;
       const fill = view.querySelector('#tb-bar-fill');
-      if (fill) fill.style.width = `${Math.max(0, Math.min(100, (left / total) * 100))}%`;
+      setBarFill(fill, (left / total) * 100);
       if (left <= 0) { stopTimer(); render(); }
     };
     paint();
@@ -2873,7 +2884,7 @@ async function playRankedAttempt(attempt, mode, tally) {
       if (num) num.textContent = Math.max(0, Math.ceil(left / 1000));
       if (ring) { ring.style.setProperty('--pct', pct); ring.classList.toggle('low', left <= 3000); }
       const fill = view.querySelector('#rq-bar-fill');
-      if (fill) fill.style.width = `${pct}%`;
+      setBarFill(fill, pct);
       if (left <= 0) { stopTimer(); runOut(); }
     };
     paint();
@@ -4013,7 +4024,7 @@ function showCard() {
     ring.classList.toggle('urgent', remaining <= 5000);
     ringNum.textContent = Math.ceil(remaining / 1000);
     ring.setAttribute('aria-label', `${t('Time to choose')}: ${ringNum.textContent}`);
-    if (barFill?.style) barFill.style.width = `${Math.max(0, Math.min(100, (remaining / (run.seconds * 1000)) * 100))}%`;
+    setBarFill(barFill, (remaining / (run.seconds * 1000)) * 100);
 
     if (clock.expired()) {
       stopTick();
