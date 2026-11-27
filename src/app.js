@@ -244,10 +244,18 @@ function wireLanguageButtons(view, rerender) {
 function currentTheme() {
   try { return localStorage.getItem('sortlab-theme') === 'day' ? 'day' : 'night'; } catch { return 'night'; }
 }
+// The top edge of each theme's page background, which is what the phone's own
+// bar sits against. `color-scheme` in the stylesheet handles the scrollbars and
+// the field insides; this handles the strip above the page.
+const THEME_BAR = { night: '#2b1b11', day: '#fef8ee' };
 function applyTheme(theme) {
   const next = theme === 'day' ? 'day' : 'night';
   const root = (typeof document !== 'undefined') ? document.documentElement : null;
   if (root && typeof root.setAttribute === 'function') root.setAttribute('data-theme', next);
+  const bar = (typeof document !== 'undefined' && typeof document.querySelector === 'function')
+    ? document.querySelector('meta[name="theme-color"]')
+    : null;
+  if (bar && typeof bar.setAttribute === 'function') bar.setAttribute('content', THEME_BAR[next]);
   try { localStorage.setItem('sortlab-theme', next); } catch { /* private mode: live with the default */ }
 }
 // Drawn icons, not emoji: see ICONS below (#326). The button shows the theme
@@ -4176,7 +4184,7 @@ function showLog() {
 
       exportButton.addEventListener('click', async () => {
         exportButton.disabled = true;
-        note(t('Preparing the sheet...'));
+        note(t('Preparing the sheet…'));
         try {
           await loadXLSX();
           const workbook = buildWorkbook(log.all());
