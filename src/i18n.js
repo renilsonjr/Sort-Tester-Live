@@ -188,7 +188,7 @@ const ES = {
   'Switch between day and night': 'Cambiar entre día y noche',
   'Sound on or off': 'Activar o desactivar el sonido',
   'Know the chart': 'Conoce la tabla',
-  'Chart · Study': 'Tabla · Estudia',
+  'Chart': 'Tabla',
   'Take a quiz': 'Haz una prueba',
   'Shift log': 'Registro del turno',
   // The Shift log and the Ranked season line stood loose on the background
@@ -633,7 +633,6 @@ const ES = {
   'The season is over. This is how {mode} finished.': 'La temporada terminó. Así quedó {mode}.',
   'Your place: {place} of {players}, with {score}.': 'Tu puesto: {place} de {players}, con {score}.',
   'The season is over, so this score is not saved. Scores count again when the next season starts.': 'La temporada terminó, así que esta puntuación no se guarda. Las puntuaciones vuelven a contar cuando empiece la próxima temporada.',
-  'Handler · 60 s': 'Handler · 60 s',
   'Swipe the front box, tap a side belt, or use the arrow keys.': 'Desliza la caja de delante, toca una banda lateral o usa las flechas.',
   'Ground': 'Terrestre',
   'Next Day Air': 'Aéreo 1 día',

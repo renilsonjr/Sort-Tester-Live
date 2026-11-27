@@ -81,7 +81,7 @@ test('the display face is fetched with the page, not after the stylesheet', () =
 });
 
 test('the prize hat reserves its box before the drawing arrives', () => {
-  const rule = css.match(/\.home-obj-hat \{([^}]*)\}/)[1];
+  const rule = css.match(/\n  \.home-prize-hat \{([^}]*)\}/)[1];
   assert.match(rule, /aspect-ratio: *650 *\/ *450/);
   assert.doesNotMatch(rule, /height: *auto/);
 });

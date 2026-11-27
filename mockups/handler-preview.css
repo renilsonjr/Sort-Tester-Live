@@ -1584,24 +1584,16 @@
   .home-spot::before { content: ""; position: absolute; top: 0; left: 28px; right: 28px; height: 1px; background: linear-gradient(90deg, transparent, var(--glass-highlight), transparent); }
   .home-pill { display: inline-block; margin-bottom: 10px; padding: 4px 10px; border-radius: 999px; background: var(--gold); color: #2a1c10; font-size: 10.5px; font-weight: 900; letter-spacing: .08em; text-transform: uppercase; }
   .home-spot-title { margin: 0 0 4px; font-size: 24px; font-weight: 900; letter-spacing: -.04em; line-height: 1.12; text-transform: none; color: var(--ink); }
-  .home-spot-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--glass-border); }
   .home-standing { min-width: 0; }
   .home-standing small { display: block; color: var(--muted); font-size: 10px; font-weight: 900; letter-spacing: .1em; text-transform: uppercase; }
   .home-standing b { display: block; font-size: 15px; font-weight: 900; font-variant-numeric: tabular-nums; white-space: nowrap; }
   .home-standing b.home-standing-note { font-size: 12.5px; font-weight: 800; white-space: normal; line-height: 1.3; }
-  .home-spot-row .primary { flex: none; width: auto; padding: 11px 14px; font-size: 13.5px; white-space: nowrap; }
 
-  .home-climb { padding: 14px; border-radius: var(--r-md); background: var(--glass-surface-sub); border: 1px solid var(--glass-border); box-shadow: var(--glass-shadow); }
-  .home-tiles { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-  .home-tile { display: flex; flex-direction: column; align-items: center; padding: 12px 8px; border-radius: 16px; background: var(--glass-surface-sub); border: 1px solid var(--glass-border-subtle); text-align: center; perspective: 700px; }
-  .home-tile strong { margin-top: 6px; font-size: 14px; font-weight: 900; }
-  .home-tile small { color: var(--muted); font-size: 10px; font-weight: 900; letter-spacing: .1em; text-transform: uppercase; }
   .home-obj { position: relative; width: 104px; height: 92px; display: grid; place-items: center; }
   .home-obj-badge { width: 84px; height: 84px; object-fit: contain; transform: rotateY(-14deg) rotateX(8deg) rotateZ(-3deg); filter: drop-shadow(0 12px 16px rgba(0, 0, 0, 0.4)); }
   /* `aspect-ratio`, not `height: auto`: the drawing's own 650x450 box, so the
      104px-wide slot is 72px tall before the file arrives and the card below
      does not jump when it does. */
-  .home-obj-hat { width: 104px; aspect-ratio: 650 / 450; transform: rotate(-4deg); filter: drop-shadow(0 12px 14px rgba(0, 0, 0, 0.42)); }
   .home-shine { position: absolute; top: -4px; left: 16%; width: 68%; height: 34%; border-radius: 50%; background: linear-gradient(180deg, var(--glass-highlight), transparent); filter: blur(5px); pointer-events: none; z-index: 1; opacity: .7; }
   .home-meter { height: 6px; margin-top: 14px; border-radius: 99px; overflow: hidden; }
   .home-meter i { display: block; height: 100%; border-radius: 99px; }
@@ -1616,7 +1608,38 @@
 
   html[data-theme="day"] .home-spot { box-shadow: var(--glass-shadow), 0 0 28px -6px rgba(201, 138, 16, 0.22); }
   html[data-theme="day"] .home-obj-badge { filter: drop-shadow(0 12px 16px rgba(90, 60, 25, 0.3)); }
-  html[data-theme="day"] .home-obj-hat { filter: drop-shadow(0 12px 14px rgba(90, 60, 25, 0.32)); }
+
+  /* Home, regrouped. The Ranked card now carries what "Your climb" used to
+     say two stripes down: the balance as the number you read first, the
+     badge beside it, the meter, and the button across the full width. Sizes
+     come from the type scale (32 / 15 / 13 / 11). The card keeps its 32px
+     radius and 18px padding, so the button inside is still concentric. */
+  .home-hero { display: flex; flex-direction: column; align-items: stretch; }
+  .home-hero .home-pill { align-self: flex-start; }
+  .home-hero-bal { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 64px; }
+  .home-hero .home-standing small { font-size: 11px; }
+  .home-standing b.home-hero-num { font-size: 32px; letter-spacing: -.04em; line-height: 1.15; }
+  .home-hero-num i { font-style: normal; font-size: 15px; font-weight: 800; letter-spacing: 0; color: var(--muted); }
+  .home-hero-obj { width: 64px; height: 64px; flex: none; }
+  .home-hero-obj .home-obj-badge { width: 62px; height: 62px; }
+  .home-hero .home-meter { margin-top: 12px; }
+  .home-hero .home-climb-note { font-size: 13px; }
+  .home-hero .primary { width: 100%; margin-top: 16px; }
+  .home-hero b.home-standing-note { font-size: 15px; }
+  /* The prize, as one line under the card instead of a tile as tall as the
+     badge's. Still the cut-out cap, still "UPS hat" over "Top 3 prize". */
+  .home-prize { display: flex; align-items: center; gap: 12px; padding: 8px 16px 8px 12px; border-radius: 16px; background: var(--glass-surface-sub); border: 1px solid var(--glass-border-subtle); }
+  .home-prize-hat { width: 58px; flex: none; aspect-ratio: 650 / 450; transform: rotate(-4deg); filter: drop-shadow(0 6px 8px rgba(0, 0, 0, 0.42)); }
+  html[data-theme="day"] .home-prize-hat { filter: drop-shadow(0 6px 8px rgba(90, 60, 25, 0.32)); }
+  .home-prize strong { display: block; font-size: 15px; font-weight: 900; letter-spacing: -.02em; }
+  .home-prize small { display: block; color: var(--muted); font-size: 13px; font-weight: 600; }
+  /* Handler, Practice and Chart in one row of three. minmax(0, 1fr) so a
+     long Spanish label wraps inside its tile instead of widening the row. */
+  .home-trio { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .home-trio .home-short { min-width: 0; }
+  .home-trio .home-short strong { max-width: 100%; overflow-wrap: anywhere; }
+  .home-trio .home-short-ic.is-solid { width: 40px; height: 40px; margin-bottom: 7px; border-radius: 12px; }
+  .home-trio .home-short-ic.is-solid svg { width: 26px; height: 26px; }
 
   /* ============================================================
      Redesign v5 — Practice, Ranked, Leaderboard and Profile in the
@@ -2334,19 +2357,18 @@
     }
     .lab-nav i { margin: 0 !important; width: 22px; text-align: center; }
 
-    /* Home: the hero keeps the left, what you tap sits beside it, and the
-       climb spans both. `display: contents` above means the phone never
-       sees this wrapper at all. */
+    /* Home: the hero keeps the left and what you tap sits beside it.
+       `display: contents` above means the phone never sees this wrapper
+       at all. */
     .home-split {
       display: grid;
       grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
-      grid-template-areas: "hero actions" "climb climb";
+      grid-template-areas: "hero actions";
       gap: 18px;
       align-items: start;
     }
     .home-split-hero { grid-area: hero; }
     .home-split-actions { grid-area: actions; }
-    .home-split-climb { grid-area: climb; }
     .home-shortcuts { grid-template-columns: 1fr; }
 
     /* Leaderboard: the podium and the standings together, so a player sees
