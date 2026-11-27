@@ -129,7 +129,7 @@ def read(conn, room_id, account_id, *, now) -> dict:
     row = migrate.fetch_one(
         conn,
         """
-        SELECT r.id, r.code, r.game, r.state, r.expires_at,
+        SELECT r.id, r.code, r.game, r.state, r.expires_at, r.match_id,
                r.host_account_id, r.guest_account_id,
                h.username AS host_username, h.tag AS host_tag, h.avatar AS host_avatar,
                g.username AS guest_username, g.tag AS guest_tag, g.avatar AS guest_avatar
@@ -161,6 +161,7 @@ def read(conn, room_id, account_id, *, now) -> dict:
         "game": row["game"],
         "state": state,
         "you_are_host": you_are_host,
+        "match_id": str(row["match_id"]) if row.get("match_id") is not None else None,
         "seconds_left": 0 if state == "closed" else seconds_left,
         "host": _seat(row, "host"),
         "guest": _seat(row, "guest") if row["guest_account_id"] is not None else None,
