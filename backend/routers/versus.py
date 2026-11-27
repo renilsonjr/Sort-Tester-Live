@@ -14,8 +14,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel, Field
 
 from backend.ranked.clock import system_clock
-from backend.routers.deps import current_account, reviewed_bank
-from backend.routers.ranked import get_db
+from backend.routers.deps import current_account, get_db, reviewed_bank
 from backend.versus import rooms
 
 router = APIRouter(prefix="/api/versus", tags=["versus"])

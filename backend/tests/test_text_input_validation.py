@@ -78,7 +78,7 @@ class SignedInTextTests(unittest.TestCase):
 
     def test_bad_data_that_reaches_the_database_is_a_bad_request(self):
         error = psycopg.errors.CharacterNotInRepertoire("invalid byte sequence")
-        with mock.patch("backend.routers.ranked.support_tickets.open_ticket", side_effect=error):
+        with mock.patch("backend.support.tickets.open_ticket", side_effect=error):
             answer = self.client.post(
                 "/api/ranked/support/tickets",
                 json={"attempt_id": self.attempt, "description": "fine"},

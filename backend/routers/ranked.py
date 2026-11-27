@@ -1,61 +1,30 @@
-"""Thin HTTP layer over the ranked attempt engine.
+"""Playing Ranked over HTTP: the entry screen, an attempt, a tie-break attempt.
 
-Adapts HTTP requests to `backend.ranked.engine`. It resolves the current
-account from the session cookie, enforces that an attempt belongs to that
-account, and translates engine errors to status codes. It holds no game logic
-of its own. Not wired into the published static site; the backend is unhosted.
+Adapts HTTP requests to `backend.ranked.engine`. It enforces that an attempt
+belongs to the signed-in account and translates engine errors to status
+codes. It holds no game logic of its own.
+
+The season and its leaderboard are in ranked_season.py, the owner's screens
+in ranked_owner.py, support tickets in ranked_support.py. All four share
+the /api/ranked prefix.
 """
 from contextlib import contextmanager
-from datetime import datetime, timezone
 from typing import Literal
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 
-from backend.auth import eligibility, reauth, recovery, recovery_messages
-from backend.auth import deletion as account_deletion
-from backend.auth.deletion_list import DeletionListUnavailable
-from backend import retention
 from backend.db import migrate
 from backend.routers import deps
-from backend.routers.deps import current_account, get_plain_db, reviewed_bank
-from backend.ranked import capability, due_work, engine, launch, seasons, settlement
-from backend.ranked import standings as ranked_standings
+from backend.routers.deps import current_account, get_db, get_plain_db, reviewed_bank, utc
+from backend.ranked import capability, engine, settlement
 from backend.ranked import tiebreaks as ranked_tiebreaks
-from backend.ranked import history as ranked_history
-from backend.ranked import flags as ranked_flags
 from backend.ranked import profile_stats as ranked_profile_stats
-from backend.support import retention as support_retention
-from backend.support import tickets as support_tickets
-from backend.ranked.clock import system_clock
-from backend.text_input import PlainText
 
 router = APIRouter(prefix="/api/ranked", tags=["ranked"])
 
 CAPABILITY_HEADER = "X-Attempt-Capability"
-
-# How many leaderboard rows one response carries. A ceiling on the answer,
-# not pagination: there is no cursor, and the player's own place is worked
-# out before the cut so it survives it.
-STANDINGS_ROWS_SHOWN = 500
-
-_CLOCK = system_clock()
-
-
-def get_db(request: Request):
-    """A connection for a route behind an account, with the game up to date.
-
-    Before the route runs, whatever has come due by the clock is done
-    (backend/ranked/due_work.py), on every request. Retention deletes what
-    is days old, so it takes its turn at most once a minute for the whole
-    process (backend/sweep_interval.py).
-    """
-    with deps.db_connection() as conn:
-        due_work.run(conn, clock=_CLOCK, bank=reviewed_bank())
-        if request.app.state.retention_interval.due():
-            retention.sweep(conn, clock=_CLOCK)
-        yield conn
 
 
 def _require_own_attempt(conn, attempt_id: str, account_id) -> None:
@@ -113,7 +82,7 @@ def _settle(conn, attempt_id) -> dict:
         )
         conn.commit()
         return {"final_outcome": row["final_outcome"], "hidden_until_round_closes": True}
-    result = settlement.settle_attempt(conn, attempt_id, clock=_CLOCK)
+    result = settlement.settle_attempt(conn, attempt_id, clock=deps.CLOCK)
     row = migrate.fetch_one(
         conn, "SELECT final_outcome FROM attempts WHERE id = %s", (attempt_id,)
     )
@@ -180,11 +149,11 @@ def start(
     token = capability.new_token()
     # score at once: an attempt this account walked away from is closed and
     # settled first, so it does not block the new one
-    engine.expire_stale_attempts(conn, clock=_CLOCK, account_id=account["id"])
-    settlement.settle_pending(conn, clock=_CLOCK, account_id=account["id"])
+    engine.expire_stale_attempts(conn, clock=deps.CLOCK, account_id=account["id"])
+    settlement.settle_pending(conn, clock=deps.CLOCK, account_id=account["id"])
     try:
         attempt_id = engine.start_attempt(
-            conn, account["id"], clock=_CLOCK, bank=reviewed_bank(),
+            conn, account["id"], clock=deps.CLOCK, bank=reviewed_bank(),
             page_capability=token, mode=mode,
         )
     except engine.PromotionRequiredError:
@@ -217,7 +186,7 @@ def my_tiebreak(account: dict = Depends(current_account), conn=Depends(get_db)):
         round_ = {
             **round_,
             "id": str(round_["id"]),
-            "deadline_at": _utc(round_["deadline_at"]),
+            "deadline_at": utc(round_["deadline_at"]),
             "attempt_id": None if round_["attempt_id"] is None else str(round_["attempt_id"]),
         }
     return {"tie": {**mine, "round": round_}}
@@ -241,7 +210,7 @@ def start_tiebreak(
     token = capability.new_token()
     try:
         attempt_id = engine.start_tiebreak_attempt(
-            conn, account["id"], round_id, clock=_CLOCK, page_capability=token
+            conn, account["id"], round_id, clock=deps.CLOCK, page_capability=token
         )
     except engine.TiebreakEntryError as error:
         code = (
@@ -262,7 +231,7 @@ def current(request: Request, attempt_id: str, account: dict = Depends(current_a
     _require_owned_attempt(conn, attempt_id, account["id"], request)
     with _gone_when_ended(conn, attempt_id):
         view = engine.current_question(
-            conn, attempt_id, clock=_CLOCK, bank=reviewed_bank()
+            conn, attempt_id, clock=deps.CLOCK, bank=reviewed_bank()
         )
     if view is None:
         return Response(status_code=status.HTTP_204_NO_CONTENT)
@@ -293,7 +262,7 @@ def answer(
         with _gone_when_ended(conn, attempt_id):
             result = engine.submit_answer(
                 conn, attempt_id, payload.seq, payload.choice,
-                clock=_CLOCK, bank=reviewed_bank(),
+                clock=deps.CLOCK, bank=reviewed_bank(),
             )
     except engine.AnswerRejectedError as exc:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(exc)) from None
@@ -324,7 +293,7 @@ def advance(request: Request, attempt_id: str, account: dict = Depends(current_a
     _require_owned_attempt(conn, attempt_id, account["id"], request)
     try:
         with _gone_when_ended(conn, attempt_id):
-            result = engine.advance(conn, attempt_id, clock=_CLOCK)
+            result = engine.advance(conn, attempt_id, clock=deps.CLOCK)
     except engine.NotAnsweredError as exc:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(exc)) from None
     return {"next_seq": result.next_seq}
@@ -334,7 +303,7 @@ def advance(request: Request, attempt_id: str, account: dict = Depends(current_a
 def heartbeat(request: Request, attempt_id: str, account: dict = Depends(current_account), conn=Depends(get_db)):
     _require_owned_attempt(conn, attempt_id, account["id"], request)
     with _gone_when_ended(conn, attempt_id):
-        engine.heartbeat(conn, attempt_id, clock=_CLOCK)
+        engine.heartbeat(conn, attempt_id, clock=deps.CLOCK)
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
@@ -342,7 +311,7 @@ def heartbeat(request: Request, attempt_id: str, account: dict = Depends(current
 def quit_attempt(request: Request, attempt_id: str, account: dict = Depends(current_account), conn=Depends(get_db)):
     _require_owned_attempt(conn, attempt_id, account["id"], request)
     # never 410: a retried Quit must get the same answer as the first one
-    outcome = engine.quit_attempt(conn, attempt_id, clock=_CLOCK)
+    outcome = engine.quit_attempt(conn, attempt_id, clock=deps.CLOCK)
     return {"final_outcome": outcome, "result": _settle(conn, attempt_id)}
 
 
@@ -363,870 +332,10 @@ def result(attempt_id: str, account: dict = Depends(current_account), conn=Depen
             )
         return revealed
     # an attempt nobody is calling may have ended by the clock already
-    engine.expire_stale_attempts(conn, clock=_CLOCK, account_id=account["id"])
+    engine.expire_stale_attempts(conn, clock=deps.CLOCK, account_id=account["id"])
     try:
         return _settle(conn, attempt_id)
     except settlement.AttemptNotEndedError:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT, detail="Attempt still running"
         ) from None
-
-
-LAUNCH_CONFIRMATION = "LAUNCH"
-
-
-class LaunchRequest(BaseModel):
-    # every field is optional here so that the owner check runs before any
-    # complaint about the body; the endpoint validates them itself
-    label: PlainText = ""
-    confirm: PlainText = ""
-    closes_at: datetime | None = None
-
-
-def _unprocessable(detail: str) -> HTTPException:
-    return HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_CONTENT, detail=detail)
-
-
-@router.post("/season/launch", status_code=status.HTTP_201_CREATED)
-def launch_season(
-    request: Request,
-    payload: LaunchRequest,
-    account: dict = Depends(current_account),
-    conn=Depends(get_db),
-):
-    """Launch the official season. Irreversible: it voids unfinished
-    Pre-Season attempts and resets every balance. Owner only, and only with
-    the typed confirmation, so a stray or replayed request does nothing."""
-    if not account["is_owner"]:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden")
-    # the most destructive action there is -- it voids unfinished attempts
-    # and resets every balance -- and the only owner action that did not
-    # ask for the login ID again. A session left open was enough.
-    _require_recent_reauth(request, conn)
-    if payload.confirm != LAUNCH_CONFIRMATION:
-        raise _unprocessable("Type LAUNCH to confirm")
-    if payload.closes_at is not None and payload.closes_at.tzinfo is None:
-        raise _unprocessable("closes_at needs a time zone")
-    options = {} if payload.closes_at is None else {"closes_at": payload.closes_at}
-    try:
-        season_id = launch.launch_official_season(
-            conn, label=payload.label, clock=_CLOCK, **options
-        )
-    except launch.InvalidLaunchError as exc:
-        raise _unprocessable(str(exc)) from None
-    except launch.AlreadyLaunchedError:
-        raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT, detail="Already launched"
-        ) from None
-    except launch.NoPreSeasonError:
-        raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT, detail="No Pre-Season to launch from"
-        ) from None
-    row = migrate.fetch_one(
-        conn, "SELECT label, closes_at FROM seasons WHERE id = %s", (season_id,)
-    )
-    return {
-        "season_id": str(season_id),
-        "label": row["label"],
-        "closes_at": row["closes_at"].astimezone(timezone.utc).isoformat(),
-    }
-
-
-@router.get("/history")
-def history(
-    phase: Literal["pre_season", "official"] | None = None,
-    account: dict = Depends(current_account),
-    conn=Depends(get_db),
-):
-    """The signed-in account's own scored attempts, newest first. Private to
-    the account: the request cannot name another account, and the owner gets
-    no exception."""
-    entries = ranked_history.account_history(conn, account["id"], phase)
-    return [
-        {
-            "attempt_id": str(entry["attempt_id"]),
-            "phase": entry["phase"],
-            "label": entry["label"],
-            "mode": entry["mode"],
-            "final_outcome": entry["final_outcome"],
-            "raw_score": entry["raw_score"],
-            "adjustment": entry["adjustment"],
-            "points_before": entry["points_before"],
-            "points_after": entry["points_after"],
-            "badge_before": entry["badge_before"],
-            "badge_after": entry["badge_after"],
-            "settled_at": entry["settled_at"].astimezone(timezone.utc).isoformat(),
-        }
-        for entry in entries
-    ]
-
-
-@router.get("/season")
-def season(account: dict = Depends(current_account), conn=Depends(get_db)):
-    """Where the current season is in its life. Read-only. ``points_final``
-    is true once the season is frozen; prize standings stay provisional
-    after that until they are finalized elsewhere."""
-    current = seasons.current_season_status(conn, _CLOCK.now())
-    if current is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No season")
-    closes_at = current.closes_at
-    return {
-        "season_id": str(current.season_id),
-        "phase": current.phase,
-        "label": current.label,
-        "status": current.status,
-        "closes_at": None if closes_at is None
-        else closes_at.astimezone(timezone.utc).isoformat(),
-        "points_final": current.status == "frozen",
-        "approvals_open": current.approvals_open,
-        # the owner's announced start (#452), for the Pre-Season line
-        "announced_start": _utc(launch.ANNOUNCED_OFFICIAL_START),
-    }
-
-
-@router.get("/leaderboard")
-def leaderboard(account: dict = Depends(current_account), conn=Depends(get_db)):
-    """The leaderboard. Login is required to see it (settled Q5).
-
-    Read-only, and it carries only what the approved screen shows: place,
-    username, tag, points and badge. ``your_place`` is null for a player
-    the competition does not include, which is the "no position" state the
-    mockup draws; their own points and badge are unaffected and stay on
-    their profile.
-
-    Before the official launch this is the Pre-Season board (#247, owner
-    decision 2026-11-20): everyone with one completed Pre-Season Ranked
-    quiz, no owner approval, and never a hat or a final state. ``phase``
-    says which board it is. The launch resets every balance, so the
-    Pre-Season board ends there and the official one starts empty.
-    ``points_final`` repeats what /season says: once the season is frozen
-    the points no longer move, while prize places stay provisional until
-    the tie-breaks in #24 resolve them.
-    """
-    board = ranked_standings.current_board(conn)
-    if board is None:
-        return {
-            "phase": None,
-            "season_label": None,
-            "points_final": False,
-            "prizes_final": False,
-            "rows": [],
-            "your_place": None,
-            "eligible": False,
-        }
-    rows = board.rows
-    # Worked out over the whole leaderboard, before the cap below, so a
-    # player past the cut still learns where they stand.
-    place = ranked_standings.place_of(rows, account["id"])
-    # The cap lives here rather than in standings(), which the prize
-    # tie-break logic also calls: a LIMIT there would compute prizes from
-    # a truncated leaderboard -- harmless while there are fewer players
-    # than the cap, and invisible on the day there are not.
-    rows = rows[:STANDINGS_ROWS_SHOWN]
-    points_final = False
-    prizes_final = False
-    winners = set()
-    if board.phase == "official":
-        current = seasons.current_season_status(conn, _CLOCK.now())
-        points_final = current is not None and current.status == "frozen"
-        prizes_final, winners = _prize_state(conn, board.season_id)
-    return {
-        "phase": board.phase,
-        "season_label": board.season_label,
-        "points_final": points_final,
-        # prize places stay provisional until every tie-break and selection
-        # is resolved; only then does a row carry a hat
-        "prizes_final": prizes_final,
-        "rows": [
-            {
-                "place": row.place,
-                "username": row.username,
-                "tag": row.tag,
-                "points": row.points,
-                "badge": row.badge,
-                "avatar": row.avatar,
-                "tied": row.tied,
-                "you": row.account_id == account["id"],
-                "hat": row.account_id in winners,
-            }
-            for row in rows
-        ],
-        "your_place": place,
-        "eligible": place is not None,
-    }
-
-
-def _prize_state(conn, season_id):
-    """Whether the official season's prizes are final, and who holds a hat."""
-    season_row = migrate.fetch_one(
-        conn, "SELECT prizes_final_at FROM seasons WHERE id = %s", (season_id,)
-    )
-    prizes_final = season_row is not None and season_row["prizes_final_at"] is not None
-    winners = set()
-    if prizes_final:
-        winners = {
-            r["account_id"]
-            for r in migrate.fetch_all(
-                conn, "SELECT account_id FROM season_prizes WHERE season_id = %s",
-                (season_id,),
-            )
-        }
-    return prizes_final, winners
-
-
-# Recent login-ID reauthentication (#11 box 5). The owner's eligibility
-# and recovery actions need the login ID re-entered on this session within
-# five minutes. 428 rather than 401 or 403 on purpose: the session is
-# valid and the owner is allowed, a precondition is simply missing, and the
-# page answers 428 by asking for the login ID instead of signing out.
-REAUTH_DETAIL = (
-    "Re-enter your Quiz Code to continue. It stays confirmed on this device"
-    " for five minutes."
-)
-
-
-def _require_recent_reauth(request: Request, conn) -> None:
-    raw_token = request.cookies.get("sort_tester_session") or ""
-    try:
-        reauth.require_recent(conn, raw_token, clock=_CLOCK)
-    except reauth.ReauthRequired:
-        raise HTTPException(
-            status_code=status.HTTP_428_PRECONDITION_REQUIRED, detail=REAUTH_DETAIL
-        ) from None
-
-
-# Prize eligibility, the owner's own screen (#11). The rule lives in
-# backend/auth/eligibility.py; these three only carry it over HTTP. There
-# is no player list, no points endpoint and no history here, because the
-# owner was never granted those: what is missing is missing on purpose.
-class ApproveRequest(BaseModel):
-    tag: str
-    roster_reference: PlainText
-
-
-def _approval_json(approval) -> dict:
-    return {
-        "account_id": str(approval.account_id),
-        "username": approval.username,
-        "tag": approval.tag,
-        "roster_reference": approval.roster_reference,
-        "established_at": _utc(approval.established_at),
-    }
-
-
-@router.get("/owner/approvals")
-def list_approvals(account: dict = Depends(current_account), conn=Depends(get_db)):
-    try:
-        approvals = eligibility.approvals(conn, account["id"])
-    except eligibility.EligibilityError as error:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN, detail=error.reason
-        ) from None
-    return {
-        "approvals_open": seasons.approvals_open(conn, _CLOCK.now()),
-        "approvals": [_approval_json(approval) for approval in approvals],
-    }
-
-
-@router.post("/owner/approvals", status_code=status.HTTP_201_CREATED)
-def approve_sorter(
-    request: Request,
-    payload: ApproveRequest,
-    account: dict = Depends(current_account),
-    conn=Depends(get_db),
-):
-    _require_owner(account)
-    _require_recent_reauth(request, conn)
-    try:
-        target_id = eligibility.account_id_for_tag(conn, payload.tag)
-        approval = eligibility.approve(
-            conn,
-            account["id"],
-            target_id,
-            payload.roster_reference,
-            clock=_CLOCK,
-        )
-    except eligibility.EligibilityError as error:
-        # 403 only when the caller is not the owner; everything else is a
-        # refusal of this particular approval, not of the person asking.
-        code = (
-            status.HTTP_403_FORBIDDEN
-            if error.reason.startswith("Only the owner")
-            else status.HTTP_422_UNPROCESSABLE_CONTENT
-        )
-        raise HTTPException(status_code=code, detail=error.reason) from None
-    conn.commit()
-    return _approval_json(approval)
-
-
-@router.delete("/owner/approvals/{account_id}", status_code=status.HTTP_204_NO_CONTENT)
-def withdraw_approval(
-    request: Request,
-    account_id: str,
-    account: dict = Depends(current_account),
-    conn=Depends(get_db),
-):
-    _require_owner(account)
-    _require_recent_reauth(request, conn)
-    try:
-        eligibility.withdraw(conn, account["id"], UUID(account_id))
-    except ValueError:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Not found"
-        ) from None
-    except eligibility.EligibilityError as error:
-        code = (
-            status.HTTP_403_FORBIDDEN
-            if error.reason.startswith("Only the owner")
-            else status.HTTP_404_NOT_FOUND
-        )
-        raise HTTPException(status_code=code, detail=error.reason) from None
-    conn.commit()
-    return None
-
-
-# Deleting an account that should not exist (#271): tests, duplicates,
-# people who left. The rule lives in backend/auth/deletion.py. The list is
-# the one place the owner sees accounts at all, and it carries nothing of a
-# player's record.
-class OwnerDeleteRequest(BaseModel):
-    confirm_tag: str = ""
-
-
-@router.get("/owner/accounts")
-def list_accounts(account: dict = Depends(current_account), conn=Depends(get_db)):
-    try:
-        rows = account_deletion.accounts_for_owner(conn, account["id"])
-    except account_deletion.NotOwnerError:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden") from None
-    return {
-        "accounts": [
-            {
-                "account_id": str(row["account_id"]),
-                "username": row["username"],
-                "tag": row["tag"],
-                "created_at": _utc(row["created_at"]),
-                "is_owner": row["is_owner"],
-                "approved": row["approved"],
-                "has_played": row["has_played"],
-            }
-            for row in rows
-        ]
-    }
-
-
-@router.post("/owner/accounts/{account_id}/delete", status_code=status.HTTP_202_ACCEPTED)
-def delete_account_as_owner(
-    request: Request,
-    account_id: str,
-    payload: OwnerDeleteRequest,
-    account: dict = Depends(current_account),
-    conn=Depends(get_db),
-):
-    """Delete another account. Irreversible, so: owner only, the login ID
-    entered again recently, and that account's tag typed to confirm."""
-    _require_owner(account)
-    _require_recent_reauth(request, conn)
-    try:
-        target = UUID(account_id)
-    except ValueError:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Not found") from None
-    try:
-        deleted = account_deletion.delete_by_owner(
-            conn, account["id"], target, payload.confirm_tag, clock=_CLOCK
-        )
-    except account_deletion.NotOwnerError:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden") from None
-    except account_deletion.NoSuchAccountError:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Not found") from None
-    except account_deletion.OwnerAccountError:
-        raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT,
-            detail="The owner account cannot be deleted",
-        ) from None
-    except account_deletion.WrongTagError:
-        raise _unprocessable("That tag does not match this account. Nothing was changed.") from None
-    except DeletionListUnavailable:
-        raise HTTPException(
-            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail="Deletion is temporarily unavailable. Nothing was changed; try again shortly.",
-        ) from None
-    return {"status": "accepted", "username": deleted["username"], "tag": deleted["tag"]}
-
-
-# Access recovery (#11, box 2). The rule lives in backend/auth/recovery.py:
-# these only carry it over HTTP. Opening a recovery grants nothing, and
-# handing one over is refused unless a roster link older than the request
-# exists, so the two steps are separate calls rather than one.
-class RecoveryOpenRequest(BaseModel):
-    tag: str
-
-
-@router.get("/owner/recoveries")
-def list_recoveries(account: dict = Depends(current_account), conn=Depends(get_db)):
-    try:
-        rows = recovery.recent_requests(conn, account["id"])
-    except recovery.RecoveryError as error:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN, detail=error.reason
-        ) from None
-    return {
-        "recoveries": [
-            {
-                "id": str(row["id"]),
-                "username": row["username"],
-                "tag": row["tag"],
-                "opened_at": _utc(row["opened_at"]),
-                "completed_at": None if row["completed_at"] is None
-                else _utc(row["completed_at"]),
-            }
-            for row in rows
-        ]
-    }
-
-
-@router.post("/owner/recoveries", status_code=status.HTTP_201_CREATED)
-def open_recovery(
-    payload: RecoveryOpenRequest,
-    account: dict = Depends(current_account),
-    conn=Depends(get_db),
-):
-    try:
-        request = recovery.open_request(conn, account["id"], payload.tag, clock=_CLOCK)
-    except recovery.RecoveryError as error:
-        code = (
-            status.HTTP_403_FORBIDDEN
-            if error.reason.startswith("Only the owner")
-            else status.HTTP_422_UNPROCESSABLE_CONTENT
-        )
-        raise HTTPException(status_code=code, detail=error.reason) from None
-    conn.commit()
-    return {
-        "id": str(request.id),
-        "username": request.username,
-        "tag": request.tag,
-        "opened_at": _utc(request.opened_at),
-    }
-
-
-@router.post("/owner/recoveries/{request_id}/handover")
-def hand_over_recovery(
-    request: Request,
-    request_id: str,
-    account: dict = Depends(current_account),
-    conn=Depends(get_db),
-):
-    """Issue the new login ID. The response carries it once; the server
-    keeps only its hash, so nothing can read it back afterwards."""
-    _require_owner(account)
-    _require_recent_reauth(request, conn)
-    try:
-        handover = recovery.hand_over(
-            conn, account["id"], UUID(request_id), clock=_CLOCK
-        )
-    except ValueError:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Not found"
-        ) from None
-    except recovery.RecoveryError as error:
-        code = (
-            status.HTTP_403_FORBIDDEN
-            if error.reason.startswith("Only the owner")
-            else status.HTTP_422_UNPROCESSABLE_CONTENT
-        )
-        raise HTTPException(status_code=code, detail=error.reason) from None
-    conn.commit()
-    return {
-        "login_id": handover.login_id,
-        "username": handover.username,
-        "tag": handover.tag,
-    }
-
-
-# Recovery messages (#251): what a locked-out player typed on the sign-in
-# screen. The rule lives in backend/auth/recovery_messages.py. No recent
-# reauthentication here, unlike the recovery itself: reading a message and
-# marking it resolved reveal no secret and grant nobody access.
-@router.get("/owner/recovery-messages")
-def list_recovery_messages(
-    account: dict = Depends(current_account), conn=Depends(get_db)
-):
-    _require_owner(account)
-    try:
-        rows = recovery_messages.list_messages(conn, account["id"])
-    except recovery_messages.NotOwner:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden"
-        ) from None
-    return {
-        "open": sum(1 for row in rows if row["resolved_at"] is None),
-        "messages": [
-            {
-                "id": str(row["id"]),
-                "body": row["body"],
-                "created_at": _utc(row["created_at"]),
-                "resolved_at": None if row["resolved_at"] is None
-                else _utc(row["resolved_at"]),
-            }
-            for row in rows
-        ],
-    }
-
-
-@router.post(
-    "/owner/recovery-messages/{message_id}/resolve",
-    status_code=status.HTTP_204_NO_CONTENT,
-)
-def resolve_recovery_message(
-    message_id: str,
-    account: dict = Depends(current_account),
-    conn=Depends(get_db),
-):
-    _require_owner(account)
-    try:
-        found = recovery_messages.resolve(
-            conn, account["id"], UUID(message_id), clock=_CLOCK
-        )
-    except ValueError:
-        found = False
-    except recovery_messages.NotOwner:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden"
-        ) from None
-    if not found:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Not found")
-    conn.commit()
-    return None
-
-
-# Prize selection (#24, slice 6). Where every "wait for the owner" lands.
-# Recording a choice is a prize action, so it needs the login ID
-# re-entered on this device within five minutes, like approvals.
-class SelectionRequest(BaseModel):
-    account_ids: list[str]
-
-
-@router.get("/owner/selections")
-def list_selections(account: dict = Depends(current_account), conn=Depends(get_db)):
-    try:
-        cases = ranked_tiebreaks.selection_cases(conn, account["id"])
-    except ranked_tiebreaks.SelectionError as error:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=error.reason) from None
-    return {
-        "cases": [
-            {
-                "group_id": str(case["group_id"]),
-                "tied_points": case["tied_points"],
-                "hats": case["hats"],
-                "players": [
-                    {
-                        "account_id": str(p["id"]),
-                        "username": p["username"],
-                        "tag": p["tag"],
-                        "history": [
-                            {"round": h["round_number"], "outcome": h["outcome"], "score": h["score"]}
-                            for h in p["history"]
-                        ],
-                    }
-                    for p in case["players"]
-                ],
-            }
-            for case in cases
-        ]
-    }
-
-
-@router.post("/owner/selections/{group_id}")
-def record_selection(
-    request: Request,
-    group_id: str,
-    payload: SelectionRequest,
-    account: dict = Depends(current_account),
-    conn=Depends(get_db),
-):
-    _require_owner(account)
-    _require_recent_reauth(request, conn)
-    try:
-        chosen = [UUID(a) for a in payload.account_ids]
-        UUID(group_id)
-    except ValueError:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Not found") from None
-    try:
-        ranked_tiebreaks.record_selection(conn, account["id"], group_id, chosen, clock=_CLOCK)
-    except ranked_tiebreaks.SelectionError as error:
-        raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_CONTENT, detail=error.reason
-        ) from None
-    return {"group_id": group_id, "recorded": True}
-
-
-class CloseFlagRequest(BaseModel):
-    outcome: Literal["network_instability", "insufficient_evidence"]
-
-
-def _require_owner(account: dict) -> None:
-    if not account["is_owner"]:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden")
-
-
-def _utc(moment) -> str:
-    return moment.astimezone(timezone.utc).isoformat()
-
-
-@router.get("/season/notice")
-def season_notice(conn=Depends(get_plain_db)):
-    """The season-start notice, for anyone — signed in or not.
-
-    The approved home page shows a small callout once the official season
-    has started, carrying its start date, and **guests see it too**
-    (Decision 15, placement settled 2026-11-15). The authenticated
-    ``/season`` endpoint cannot serve that, so this one exists.
-
-    It carries nothing about any player and nothing that is not already
-    public once the season opens: whether it has started, its label, and
-    when it started and ends. Before the official launch it answers
-    ``started: false`` and no launch dates.
-
-    ``announced_start`` and ``announced_end`` are the dates the owner
-    announced on 2026-11-24 (#452): the season is scheduled to start
-    December 1, 2026 at midnight Eastern. They are an announcement, not a
-    launch: ``started`` stays false until the owner actually launches.
-    """
-    announced = {
-        "announced_start": _utc(launch.ANNOUNCED_OFFICIAL_START),
-        "announced_end": _utc(launch.DEFAULT_OFFICIAL_END),
-    }
-    fact = seasons.official_launch(conn)
-    if fact is None:
-        return {
-            "started": False, "label": None, "started_at": None, "closes_at": None,
-            **announced,
-        }
-    current = seasons.current_season_status(conn, _CLOCK.now())
-    closes_at = current.closes_at if current else None
-    return {
-        "started": True,
-        "label": fact.label,
-        "started_at": _utc(fact.launched_at),
-        "closes_at": None if closes_at is None else _utc(closes_at),
-        **announced,
-    }
-
-
-@router.get("/flags")
-def list_flags(account: dict = Depends(current_account), conn=Depends(get_db)):
-    """Open connection review flags, for the owner only. A flag is an
-    instability signal, not proof of cheating; no player sees flags,
-    including their own."""
-    _require_owner(account)
-    return [
-        {
-            "attempt_id": str(flag["attempt_id"]),
-            "username": flag["username"],
-            "tag": flag["tag"],
-            "first_loss_at": _utc(flag["first_loss_at"]),
-            "last_loss_at": _utc(flag["last_loss_at"]),
-            "flagged_at": _utc(flag["flagged_at"]),
-            "events": [
-                {"kind": event["kind"], "occurred_at": _utc(event["occurred_at"])}
-                for event in flag["events"]
-            ],
-        }
-        for flag in ranked_flags.open_flags(conn)
-    ]
-
-
-@router.post("/flags/{attempt_id}/close")
-def close_flag(
-    attempt_id: str,
-    payload: CloseFlagRequest,
-    account: dict = Depends(current_account),
-    conn=Depends(get_db),
-):
-    """Close a reviewed flag. Changes nothing about the player's points or
-    access."""
-    _require_owner(account)
-    try:
-        UUID(attempt_id)
-    except ValueError:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Not found") from None
-    try:
-        outcome = ranked_flags.close_flag(conn, attempt_id, payload.outcome, clock=_CLOCK)
-    except ranked_flags.FlagNotFoundError:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Not found") from None
-    return {"attempt_id": attempt_id, "outcome": outcome}
-
-
-# --- Support tickets (issue #26) -------------------------------------------
-#
-# Support holds Tickets and nothing else, and only a player request creates
-# one. Every player endpoint here reads and writes through the account in the
-# session, so there is no form of these calls that reaches another player's
-# case.
-
-
-class CreateTicketRequest(BaseModel):
-    attempt_id: str
-    # unbounded free text is storage whose size someone else chooses
-    description: PlainText | None = Field(default=None, max_length=2000)
-
-
-class CloseTicketRequest(BaseModel):
-    outcome: Literal["network_instability", "insufficient_evidence"]
-
-
-def _ticket_json(conn, ticket: dict) -> dict:
-    """One ticket as the Support screens need it.
-
-    A closed ticket carries either the date its description and the shared
-    connection log are deleted, or the fact that an open linked case is
-    holding that evidence. Those are the two states the approved screens
-    show, and the second one never says which case or whose.
-    """
-    due = support_retention.shared_log_deletion_date(conn, ticket["attempt_id"])
-    return {
-        "id": str(ticket["id"]),
-        "attempt_id": str(ticket["attempt_id"]),
-        "description": ticket["description"],
-        "opened_at": _utc(ticket["opened_at"]),
-        "closed_at": _utc(ticket["closed_at"]) if ticket["closed_at"] else None,
-        "outcome": ticket["closed_outcome"],
-        "evidence_deleted_at": _utc(due) if due else None,
-        "evidence_held_by_open_case": ticket["closed_at"] is not None and due is None,
-    }
-
-
-@router.get("/support/tickets")
-def list_tickets(account: dict = Depends(current_account), conn=Depends(get_db)):
-    """This player's own tickets, newest first. Never anybody else's."""
-    return [
-        _ticket_json(conn, ticket)
-        for ticket in support_tickets.tickets_for(conn, account["id"])
-    ]
-
-
-@router.post("/support/tickets", status_code=status.HTTP_201_CREATED)
-def create_ticket(
-    payload: CreateTicketRequest,
-    account: dict = Depends(current_account),
-    conn=Depends(get_db),
-):
-    """Open a ticket about one of this player's own attempts.
-
-    A description is optional. An attempt that is not this player's and an
-    attempt that does not exist are refused identically: whether an attempt
-    exists is not something one player learns about another.
-    """
-    try:
-        UUID(payload.attempt_id)
-    except ValueError:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Not found") from None
-    try:
-        ticket_id = support_tickets.open_ticket(
-            conn, account["id"], payload.attempt_id, description=payload.description
-        )
-    except support_tickets.AttemptNotYoursError:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Not found") from None
-    except support_tickets.TicketAlreadyOpenError:
-        raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT,
-            detail="A ticket about this attempt is already open",
-        ) from None
-    conn.commit()
-    ticket = support_tickets.ticket_for(conn, account["id"], ticket_id)
-    return _ticket_json(conn, ticket)
-
-
-@router.get("/support/tickets/{ticket_id}")
-def read_ticket(
-    ticket_id: str,
-    account: dict = Depends(current_account),
-    conn=Depends(get_db),
-):
-    """One of this player's own tickets.
-
-    Somebody else's ticket is Not found, the same answer as a ticket that
-    does not exist.
-    """
-    try:
-        UUID(ticket_id)
-    except ValueError:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Not found") from None
-    ticket = support_tickets.ticket_for(conn, account["id"], ticket_id)
-    if ticket is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Not found")
-    return _ticket_json(conn, ticket)
-
-
-@router.get("/support/review")
-def review_queue(account: dict = Depends(current_account), conn=Depends(get_db)):
-    """Open tickets for an authorized reviewer.
-
-    Returns the player's display identity, the attempt, what they wrote and
-    that attempt's connection events. Nothing else about them.
-    """
-    try:
-        rows = support_tickets.open_tickets_for_review(conn, account["id"])
-    except support_tickets.NotAuthorizedError:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden") from None
-    return [
-        {
-            "id": str(row["id"]),
-            "attempt_id": str(row["attempt_id"]),
-            "username": row["username"],
-            "tag": row["tag"],
-            "description": row["description"],
-            "opened_at": _utc(row["opened_at"]),
-            "events": [
-                {"kind": event["kind"], "occurred_at": _utc(event["occurred_at"])}
-                for event in row["events"]
-            ],
-        }
-        for row in rows
-    ]
-
-
-@router.post("/support/review/{ticket_id}/close")
-def close_ticket(
-    ticket_id: str,
-    payload: CloseTicketRequest,
-    account: dict = Depends(current_account),
-    conn=Depends(get_db),
-):
-    """Close a reviewed ticket. Changes no points and no access."""
-    try:
-        UUID(ticket_id)
-    except ValueError:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Not found") from None
-    try:
-        outcome = support_tickets.close_ticket(
-            conn, account["id"], ticket_id, payload.outcome, clock=_CLOCK
-        )
-    except support_tickets.NotAuthorizedError:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden") from None
-    except support_tickets.TicketNotFoundError:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Not found") from None
-    conn.commit()
-    return {"id": ticket_id, "outcome": outcome}
-
-
-@router.post("/support/review/{ticket_id}/reopen")
-def reopen_ticket(
-    ticket_id: str,
-    account: dict = Depends(current_account),
-    conn=Depends(get_db),
-):
-    """Reopen a closed ticket for follow-up, which also stops its retention
-    clock: evidence an open case needs must not be deleted underneath it."""
-    try:
-        UUID(ticket_id)
-    except ValueError:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Not found") from None
-    try:
-        support_tickets.reopen_ticket(conn, account["id"], ticket_id)
-    except support_tickets.NotAuthorizedError:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden") from None
-    except support_tickets.TicketNotFoundError:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Not found") from None
-    conn.commit()
-    return {"id": ticket_id, "reopened": True}
