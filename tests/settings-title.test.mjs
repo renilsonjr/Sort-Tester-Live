@@ -47,7 +47,7 @@ test('#389 the eyebrow still names the section', () => {
   // Eyebrow = where you are, title = what this screen is. Settings' own
   // children then use "Settings" as THEIR eyebrow, which is the ladder.
   assert.match(profile, /<p class="lab-eyebrow">\$\{esc\(t\('Profile'\)\)\}<\/p>/);
-  assert.match(app, /<p class="lab-eyebrow">\$\{esc\(t\('Settings'\)\)\}<\/p>\s*<h1 class="lab-title">\$\{esc\(t\('Sign out my other devices'\)\)\}<\/h1>/);
+  assert.match(app, /<p class="lab-eyebrow">\$\{esc\(t\('Settings'\)\)\}<\/p>\s*<h1 class="lab-title">\$\{esc\(t\('Sign out other devices'\)\)\}<\/h1>/);
 });
 
 test('#389 the overview keeps its identity card', () => {

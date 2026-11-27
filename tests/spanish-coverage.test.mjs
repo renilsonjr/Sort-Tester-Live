@@ -31,7 +31,9 @@ function literalKeys() {
 // so it reads as one identity in both languages (#265).
 // 'Handler' is the mini-game's name, taken from the job title, and it stays
 // 'Handler' in Spanish for the same reason (#396).
-const SAME = new Set(['Twilight', 'Ranked ID', 'Quiz Code', 'Handler']);
+// 'Handler · 60 s' is that same name plus the clock, and both halves read
+// the same in Spanish, so the tile keeps one label in both languages.
+const SAME = new Set(['Twilight', 'Ranked ID', 'Quiz Code', 'Handler', 'Handler · 60 s']);
 
 test('every sentence app.js shows has a Spanish entry', () => {
   const es = createLanguage(null);

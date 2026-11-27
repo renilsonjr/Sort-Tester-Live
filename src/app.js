@@ -507,7 +507,7 @@ function showPractice() {
   const view = labPage(`
     <section class="lab-screen screen-practice">
       <p class="lab-eyebrow">${esc(t('Practice'))}</p>
-      <h1 class="lab-title tab-title">${esc(t('Study and practice'))}</h1>
+      <h1 class="lab-title tab-title">${esc(t('The chart'))}</h1>
       <section class="home-stripe">
         <p class="lab-eyebrow">${esc(t('Learn'))}</p>
         <button id="study" class="lab-choice" type="button">
@@ -897,7 +897,7 @@ async function fillOverview(panel) {
     </section>
     ${entry.mode === 'promotion' ? `
     <div class="profile-promo">
-      <h2>${esc(t('Promotion available'))}</h2>
+      <h2>${esc(t('Promotion unlocked'))}</h2>
       <p>${esc(t('A perfect 15 out of 15 quiz moves you up. Start promotion is on the Ranked screen; nothing starts from here.'))}</p>
     </div>` : ''}
     <section class="home-stripe">
@@ -1026,7 +1026,7 @@ async function showCreateTicket() {
         </select>
       </label>
       <label class="field">
-        <span>${esc(t('What happened (optional)'))}</span>
+        <span>${esc(t('What happened'))}</span>
         <textarea id="ticket-note" rows="4" placeholder="${esc(t('Anything that helps. You can leave this empty.'))}"></textarea>
       </label>
       <aside class="lab-disclaimer">
@@ -1067,7 +1067,7 @@ function showTicketSent() {
       <h1 class="lab-title">${esc(t('Ticket sent'))}</h1>
       <p class="lab-intro">${esc(t('Someone will look at it. You can close the app; nothing is waiting on you.'))}</p>
       <aside class="lab-disclaimer">${esc(t('This does not change your points or your access, whatever the outcome is.'))}</aside>
-      <button id="ticket-back" class="ghost" type="button">${esc(t('Back to your tickets'))}</button>
+      <button id="ticket-back" class="ghost" type="button">${esc(t('Back'))}</button>
     </section>
   `, 'profile', showTicketSent);
   view.querySelector('#ticket-back').addEventListener('click', showSupport);
@@ -1154,12 +1154,12 @@ function showSignOutOthers() {
   const view = labPage(`
     <section class="lab-screen">
       <p class="lab-eyebrow">${esc(t('Settings'))}</p>
-      <h1 class="lab-title">${esc(t('Sign out my other devices'))}</h1>
+      <h1 class="lab-title">${esc(t('Sign out other devices'))}</h1>
       <p class="lab-intro">${esc(t('Ends every other phone or computer signed in to your account. This one stays.'))}</p>
       <p class="lab-intro">${esc(t('Your Quiz Code keeps working. Anyone using it elsewhere has to enter it again.'))}</p>
       <p class="lab-intro">${esc(t('If someone else knows your Quiz Code, change it in Settings.'))}</p>
       <p class="notice" id="signout-others-said" role="status" hidden></p>
-      <button id="signout-others-go" class="primary" type="button">${esc(t('Sign out my other devices'))}</button>
+      <button id="signout-others-go" class="primary" type="button">${esc(t('Sign out other devices'))}</button>
       <button id="signout-others-cancel" class="ghost" type="button">${esc(t('Cancel'))}</button>
     </section>
   `, 'profile', showSignOutOthers);
@@ -1198,11 +1198,11 @@ function showChangeCode() {
   const view = labPage(`
     <section class="lab-screen">
       <p class="lab-eyebrow">${esc(t('Settings'))}</p>
-      <h1 class="lab-title">${esc(t('Change my Quiz Code'))}</h1>
+      <h1 class="lab-title">${esc(t('Change Quiz Code'))}</h1>
       <p class="lab-intro">${esc(t('You get a new Quiz Code. The old one stops working at once.'))}</p>
       <p class="lab-intro">${esc(t('Every other phone or computer signed in to your account is signed out. This one stays.'))}</p>
       <p class="notice" id="change-code-said" role="status" hidden></p>
-      <button id="change-code-go" class="primary" type="button">${esc(t('Change my Quiz Code'))}</button>
+      <button id="change-code-go" class="primary" type="button">${esc(t('Change Quiz Code'))}</button>
       <button id="change-code-cancel" class="ghost" type="button">${esc(t('Cancel'))}</button>
       <div id="change-code-result"></div>
     </section>
@@ -1379,12 +1379,12 @@ async function fillSettings(panel) {
     </button>
     <button id="profile-change-code" class="lab-choice" type="button">
       <span class="lab-choice-icon" aria-hidden="true">${ICONS.accessRecovery}</span>
-      <span><strong>${esc(t('Change my Quiz Code'))}</strong></span>
+      <span><strong>${esc(t('Change Quiz Code'))}</strong></span>
       <span class="lab-arrow" aria-hidden="true">\u2192</span>
     </button>
     <button id="profile-signout-others" class="lab-choice" type="button">
       <span class="lab-choice-icon" aria-hidden="true">${ICONS.devices}</span>
-      <span><strong>${esc(t('Sign out my other devices'))}</strong></span>
+      <span><strong>${esc(t('Sign out other devices'))}</strong></span>
       <span class="lab-arrow" aria-hidden="true">\u2192</span>
     </button>
     <button id="profile-support" class="lab-choice" type="button">
@@ -1830,7 +1830,7 @@ function showLaunchDone(season) {
         <li><span class="approved-who"><b>${esc(t('Pre-Season history was kept'))}</b>
           <small>${esc(t('Check it yourself: Profile, then See history.'))}</small></span></li>
       </ul>
-      <button id="done-back" class="primary" type="button">${esc(t('Back to Owner tools'))}</button>
+      <button id="done-back" class="primary" type="button">${esc(t('Back'))}</button>
     </section>
   `, 'profile', () => showLaunchDone(season));
   view.querySelector('#done-back').addEventListener('click', showOwnerTools);
@@ -2378,7 +2378,7 @@ function showRecoveryCheck(request) {
         ${esc(t('Nothing on this screen proves who is standing in front of you. Their username and tag are public, so neither is evidence.'))}
       </aside>
       <p class="lab-intro">${esc(t('Handing over a Quiz Code signs them out everywhere and ends their old one. Their points, badge and history do not change, and this approves nothing for prizes.'))}</p>
-      <button id="rec-hand" class="primary">${esc(t('I have checked them in person · show the Quiz Code'))}</button>
+      <button id="rec-hand" class="primary">${esc(t('Checked in person · show code'))}</button>
       <button id="rec-cancel" class="ghost">${esc(t('Cancel'))}</button>
     </section>
   `, 'profile', () => showRecoveryCheck(request));
@@ -2676,13 +2676,13 @@ async function fillRanked(panel, title) {
       ${progress === null ? '' : `<div class="profile-bar home-meter"><i style="width:${progress}%"></i></div>`}
       <p class="home-climb-note">${esc(balanceLine(entry))}</p>
       ${open ? `
-      <button id="ranked-start" class="primary" type="button">${esc(atCap ? t('Start promotion') : t('Start Ranked quiz'))} <span aria-hidden="true">\u2192</span></button>
+      <button id="ranked-start" class="primary" type="button">${esc(atCap ? t('Start promotion') : t('Start quiz'))} <span aria-hidden="true">\u2192</span></button>
 ` : ''}
     </div>
     ${closes ? `<p class="lab-intro">${esc(t(open ? 'Closes' : 'Closed'))}: ${esc(closes)}</p>` : ''}
     ${atCap ? `
     <div class="profile-promo">
-      <h2>${esc(t('Promotion available'))}</h2>
+      <h2>${esc(t('Promotion unlocked'))}</h2>
       <p>${esc(t('You are at the cap, so promotion is the only Ranked quiz available. It needs a perfect 15 out of 15. Practice is available as usual and never changes these points.'))}</p>
     </div>` : ''}
     <div id="tiebreak-callout" hidden></div>
@@ -2747,7 +2747,7 @@ function showPreparingNextMatch(mode) {
       <h1 class="lab-title">${esc(t('Preparing your next match'))}</h1>
       <p class="lab-intro">${esc(t('Your last match is still closing. This takes a few seconds.'))}</p>
       <button id="rq-retry" class="primary" type="button">${esc(t('Try again'))}</button>
-      <button id="rq-retry-back" class="ghost" type="button">${esc(t('Back to Ranked'))}</button>
+      <button id="rq-retry-back" class="ghost" type="button">${esc(t('Back'))}</button>
     </section>
   `, 'ranked', () => showPreparingNextMatch(mode));
   const again = () => { if (view.isConnected) startRankedAttempt(mode); };
@@ -2781,7 +2781,7 @@ async function startRankedAttempt(mode) {
             ? t('That did not work. Nothing has started.')
             : t('Could not reach the server. Nothing has started.');
     comingSoon(t('Ranked'), t('Could not start'), reason, 'ranked',
-      { label: 'Back to Ranked', go: showRanked });
+      { label: 'Back', go: showRanked });
     return;
   }
   attempt.startHeartbeat();
@@ -2824,7 +2824,7 @@ async function playRankedAttempt(attempt, mode, tally) {
       </div>
       <div class="tb-bar"><i id="rq-bar-fill"></i></div>
       <div id="rq-question"></div>
-      <button id="rq-cancel" class="ghost">${esc(t('Cancel this attempt'))}</button>
+      <button id="rq-cancel" class="ghost">${esc(t('Quit'))}</button>
     </section>
   `, 'ranked', () => playRankedAttempt(attempt, mode, tally));
   const where = destinationLine(q);
@@ -2995,7 +2995,7 @@ function showRankedFeedback(attempt, mode, q, chosen, response, tally) {
           t('This promotion ends here'),
           t('Promotion needs all fifteen right, so it stops at the first miss. This mistake takes its points off your balance. Reach the cap again to try next time.'),
         ) : ''}
-      <button id="rq-next" class="primary" type="button">${esc(t(promoLost ? 'See the result' : (response.finished ? 'Finish quiz' : 'Next')))}</button>
+      <button id="rq-next" class="primary" type="button">${esc(t(promoLost ? 'Result' : (response.finished ? 'Finish' : 'Next')))}</button>
     </section>
   `, 'ranked', () => showRankedFeedback(attempt, mode, q, chosen, response, tally));
   view.querySelector('#rq-next').addEventListener('click', async () => {
@@ -3100,7 +3100,7 @@ function showRankedResult(mode, result, tally, { quit = false, attemptId = null 
           `${t('You are')} ${result.badge_after} ${t('again')}`,
           `${t('Getting')} ${result.badge_before} ${t('back takes reaching its cap, then passing a perfect promotion.')}`,
         ) : ''}
-      <button id="rq-done" class="ghost">${esc(t('Back to Ranked'))}</button>
+      <button id="rq-done" class="ghost">${esc(t('Back'))}</button>
     </section>
   `, 'ranked', () => showRankedResult(mode, result, tally, { quit, attemptId }));
   view.querySelector('#rq-done').addEventListener('click', showRanked);
@@ -3119,7 +3119,7 @@ function showEndedAtLaunch() {
       <h1 class="lab-title">${esc(t('The official season has started'))}</h1>
       <p class="lab-intro">${esc(t('This attempt ended when the season started. No score was applied.'))}</p>
       <p class="lab-intro">${esc(t('Everyone began again at 0 points and Iron.'))}</p>
-      <button id="rq-done" class="ghost">${esc(t('Back to Ranked'))}</button>
+      <button id="rq-done" class="ghost">${esc(t('Back'))}</button>
     </section>
   `, 'ranked', showEndedAtLaunch);
   view.querySelector('#rq-done').addEventListener('click', showRanked);
@@ -3135,7 +3135,7 @@ function showVoidedByOutage() {
       <h1 class="lab-title">${esc(t('This attempt does not count'))}</h1>
       <p class="lab-intro">${esc(t('The server stopped while you were playing, so the attempt was cancelled. No score was applied and your points are exactly as they were.'))}</p>
       <p class="lab-intro">${esc(t('You can start again when you are ready.'))}</p>
-      <button id="rq-done" class="ghost">${esc(t('Back to Ranked'))}</button>
+      <button id="rq-done" class="ghost">${esc(t('Back'))}</button>
     </section>
   `, 'ranked', showVoidedByOutage);
   view.querySelector('#rq-done').addEventListener('click', showRanked);
@@ -3195,7 +3195,7 @@ function showPromotionCelebration(result, tally, attemptId) {
       <p class="lab-intro">${esc(t('Fifteen out of fifteen. The new badge is yours.'))}</p>
       <p class="sr-only" role="status">${esc(t('Promoted to'))} ${esc(badge)}.</p>
       <button id="cheer-continue" class="primary" type="button">${esc(t('Continue'))}</button>
-      <button id="cheer-skip" class="ghost" type="button">${esc(t('Skip animation'))}</button>
+      <button id="cheer-skip" class="ghost" type="button">${esc(t('Skip'))}</button>
     </section>
   `, 'ranked', () => showPromotionCelebration(result, tally, attemptId));
   const skip = view.querySelector('#cheer-skip');
@@ -3230,7 +3230,7 @@ function showPromotionResult(result, tally, { quit = false, attemptId = null } =
           </div>
         </div>
         <p class="lab-intro">${esc(t('Passing sets the new badge’s first point total. Ordinary Ranked quizzes are available again until you reach the next cap.'))}</p>
-        <button id="rq-done" class="ghost">${esc(t('Back to Ranked'))}</button>
+        <button id="rq-done" class="ghost">${esc(t('Back'))}</button>
       </section>
     `, 'ranked', () => showPromotionResult(result, tally, { quit, attemptId }));
     view.querySelector('#rq-done').addEventListener('click', showRanked);
@@ -3255,7 +3255,7 @@ function showPromotionResult(result, tally, { quit = false, attemptId = null } =
           `${(BADGE_CAP[result.badge_before] ?? 0) - result.points_after} ${t('points to the cap again')}`,
           t('Earn them in ordinary Ranked quizzes. Promotion comes back when you reach the cap.'),
         )}
-      <button id="rq-done" class="ghost">${esc(t('Back to Ranked'))}</button>
+      <button id="rq-done" class="ghost">${esc(t('Back'))}</button>
     </section>
   `, 'ranked', () => showPromotionResult(result, tally, { quit, attemptId }));
   view.querySelector('#rq-done').addEventListener('click', showRanked);
@@ -3406,13 +3406,12 @@ function showStart() {
         <p class="lab-eyebrow">${esc(t('Ranked'))}</p>
         <div class="home-spot">
           <span class="home-pill" id="home-season" hidden></span>
-          <h2 class="home-spot-title">${esc(t('Play for the podium'))}</h2>
           <div class="home-spot-row">
             ${signedIn() ? `
             <div class="home-standing" id="home-ident"><small>${esc(t('Your balance'))}</small><b>…</b></div>
             <button id="home-ranked" class="primary" type="button">${esc(t('Play Ranked'))} <span aria-hidden="true">→</span></button>
             ` : `
-            <div class="home-standing"><small>${esc(t('Playing as guest'))}</small><b class="home-standing-note">${esc(t('Sign in to compete in Ranked'))}</b></div>
+            <div class="home-standing"><small>${esc(t('Playing as guest'))}</small><b class="home-standing-note">${esc(t('Sign in to compete'))}</b></div>
             <button id="home-signin" class="primary" type="button">${esc(t('Sign in'))} <span aria-hidden="true">→</span></button>
             `}
           </div>
@@ -3428,7 +3427,7 @@ function showStart() {
         <div class="home-shortcuts">
           <button id="home-handler" class="home-short" type="button">
             <span class="home-short-ic" aria-hidden="true">${ICONS.handler}</span>
-            <strong>${esc(t('Sort packages against the clock'))}</strong>
+            <strong>${esc(t('Handler · 60 s'))}</strong>
           </button>
         </div>
       </section>
@@ -3441,7 +3440,7 @@ function showStart() {
           </button>
           <button id="home-study" class="home-short" type="button">
             <span class="home-short-ic" aria-hidden="true">${ICONS.chart}</span>
-            <strong>${esc(t('Know the chart'))}</strong>
+            <strong>${esc(t('Chart · Study'))}</strong>
           </button>
         </div>
       </section>

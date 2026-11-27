@@ -23,14 +23,16 @@ test('Home states the prize in English and Spanish', () => {
   // says what the prize IS, in both languages, and Home still does: the
   // prize tile two stripes down carries the cap picture with "UPS hat"
   // over "Top 3 prize". The evidence moved; the guarantee did not.
-  assert.ok(home.includes("t('Play for the podium')"), 'Home should show: Play for the podium');
+  // The "Play for the podium" title went with the label cuts: the gold
+  // eyebrow one line above already says Ranked, so the title repeated the
+  // place and said no fact. The eyebrow is now the guard.
+  assert.ok(home.includes("t('Ranked')"), 'Home should name the Ranked block');
   for (const label of ['UPS hat', 'Top 3 prize']) {
     assert.ok(home.includes(`t('${label}')`), `the prize tile should show: ${label}`);
   }
   const language = createLanguage();
   assert.equal(language.text('UPS hat'), 'UPS hat');
   language.set('es');
-  assert.match(language.text('Play for the podium'), /podio/);
   assert.match(language.text('UPS hat'), /Gorra de UPS/);
   assert.match(language.text('Top 3 prize'), /top 3/);
 });
