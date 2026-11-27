@@ -33,7 +33,8 @@ function literalKeys() {
 // 'Handler' in Spanish for the same reason (#396).
 // 'Handler · 60 s' is that same name plus the clock, and both halves read
 // the same in Spanish, so the tile keeps one label in both languages.
-const SAME = new Set(['Twilight', 'Ranked ID', 'Quiz Code', 'Handler', 'Handler · 60 s']);
+// 'Versus' is the 1 vs 1 mode's name and reads the same in Spanish.
+const SAME = new Set(['Twilight', 'Ranked ID', 'Quiz Code', 'Handler', 'Handler · 60 s', 'Versus']);
 
 test('every sentence app.js shows has a Spanish entry', () => {
   const es = createLanguage(null);

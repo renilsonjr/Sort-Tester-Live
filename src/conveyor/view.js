@@ -154,6 +154,12 @@ export function createHandlerScreen({
   board = null,
   avatarOf = () => '',
   random = Math.random,
+  // A Versus duel (the app's 1 vs 1 frame) plays exactly one round of one
+  // mode and hands the score outward: onScore(score) as it changes,
+  // onEnd(summary) when the clock runs out. A duel has no mode list, no
+  // pause, no restart and no stored best -- both players' minute has to
+  // be the same minute, and the duel's score is not a Handler best.
+  duel = null,
   reducedMotion = () => typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches,
 } = {}) {
   if (!root) throw new Error('createHandlerScreen needs a root element');
@@ -188,6 +194,7 @@ export function createHandlerScreen({
   let bursts = [];
   let drag = null;
   let shownTier = 1;
+  let reportedScore = 0;
   let observer = null;
   let canvas = null;
   let ctx = null;
@@ -355,7 +362,7 @@ export function createHandlerScreen({
         <p class="hd-eyebrow">${esc(t(MODE_COPY[mode][0]))} · ${esc(t('One minute on the belt'))}</p>
         <div class="hd-play-head">
           <h2 id="hd-play-title" class="hd-title">${esc(t('Handler'))}</h2>
-          <button type="button" class="hd-leave" data-hd-leave><span aria-hidden="true">←</span> ${esc(t('Change mode'))}</button>
+          ${duel ? '' : `<button type="button" class="hd-leave" data-hd-leave><span aria-hidden="true">←</span> ${esc(t('Change mode'))}</button>`}
         </div>
         <div class="hd-strip">
           <div><dt>${esc(t('Score'))}</dt><dd data-hd-score>0</dd></div>
@@ -385,8 +392,8 @@ export function createHandlerScreen({
           <p class="hd-paused" data-hd-paused hidden>${esc(t('Paused'))}</p>
         </div>
         <div class="hd-bar">
-          <button type="button" class="hd-icon-btn" data-hd-pause aria-pressed="false">${esc(t('Pause'))}</button>
-          <button type="button" class="hd-icon-btn" data-hd-restart>${esc(t('Restart round'))}</button>
+          ${duel ? '' : `<button type="button" class="hd-icon-btn" data-hd-pause aria-pressed="false">${esc(t('Pause'))}</button>
+          <button type="button" class="hd-icon-btn" data-hd-restart>${esc(t('Restart round'))}</button>`}
           <button type="button" class="hd-icon-btn" data-hd-sound aria-pressed="true">${esc(t('Sound'))}</button>
         </div>
         <p class="hd-hint">${esc(t('Swipe the front box, tap a side belt, or use the arrow keys.'))}</p>
@@ -407,6 +414,7 @@ export function createHandlerScreen({
     bursts = [];
     drag = null;
     shownTier = 1;
+    reportedScore = 0;
     bindPlaying();
     say(t('Round started.'));
     last = null;
@@ -417,6 +425,8 @@ export function createHandlerScreen({
     stopLoop();
     audio?.stop();
     const summary = game.summary();
+    // A duel's round ends in the duel's own result, drawn by its frame.
+    if (duel) { duel.onEnd?.(summary); return; }
     const previous = bestScores.get(mode);
     const beaten = summary.score > previous;
     if (beaten) bestScores.set(mode, summary.score);
@@ -457,7 +467,7 @@ export function createHandlerScreen({
   function bindPlaying() {
     const pause = root.querySelector('[data-hd-pause]');
     const sound = root.querySelector('[data-hd-sound]');
-    on(pause, 'click', () => {
+    if (pause) on(pause, 'click', () => {
       const shot = game.snapshot();
       drag = null;
       if (shot.running) { game.pause(); audio?.stop(); } else { game.resume(); audio?.start(); last = null; }
@@ -475,10 +485,11 @@ export function createHandlerScreen({
       if (enabled) audio?.start(); else audio?.stop();
       say(enabled ? t('Sound on.') : t('Sound off.'));
     });
-    on(root.querySelector('[data-hd-restart]'), 'click', () => startCountdown(mode));
+    const restart = root.querySelector('[data-hd-restart]');
+    if (restart) on(restart, 'click', () => startCountdown(mode));
     // The way out of a round (owner, 2026-11-26: there was none). Leaving
     // abandons the round: nothing is scored and nothing is saved.
-    on(root.querySelector('[data-hd-leave]'), 'click', showModes);
+    if (!duel) on(root.querySelector('[data-hd-leave]'), 'click', showModes);
     for (const button of root.querySelectorAll('[data-hd-side]')) {
       on(button, 'click', () => resolve(Number(button.dataset.hdSide)));
     }
@@ -828,6 +839,10 @@ export function createHandlerScreen({
     const score = root.querySelector('[data-hd-score]');
     if (clock) clock.textContent = formatClock(shot.remainingMs);
     if (score) score.textContent = String(shot.score);
+    if (duel && shot.score !== reportedScore) {
+      reportedScore = shot.score;
+      duel.onScore?.(shot.score);
+    }
     const tally = root.querySelector('[data-hd-tally]');
     if (tally) tally.textContent = `${shot.sorts} / ${shot.missorts} / ${shot.drops}`;
     const deck = root.querySelector('[data-hd-deck]');
@@ -1022,6 +1037,6 @@ export function createHandlerScreen({
     root.innerHTML = '';
   }
 
-  showModes();
+  if (duel) startCountdown(duel.mode); else showModes();
   return { unmount, showModes, showBoard, get mode() { return mode; }, get game() { return game; } };
 }

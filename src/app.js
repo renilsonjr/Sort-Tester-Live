@@ -22,6 +22,9 @@ import { createHandlerScreen } from './conveyor/view.js';
 import { createHandlerAudio } from './conveyor/audio.js';
 import { createBestScores } from './conveyor/bestScores.js';
 import { createHandlerBoard } from './conveyor/board.js';
+import { createVersusClient } from './versus/client.js';
+import { createVersusScreens } from './versus/screens.js';
+import { HANDLER_DUEL_MODE, seededRandom } from './versus/logic.js';
 
 const app = document.getElementById('app');
 const log = createShiftLog(typeof localStorage === 'undefined' ? null : localStorage);
@@ -329,6 +332,9 @@ const ICONS = {
   practice: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.2"/></svg>',
   ranked: '<svg viewBox="0 0 24 24"><path d="M7 4h10v5a5 5 0 0 1-10 0z"/><path d="M7 6H4.5a2.5 2.5 0 0 0 2.6 3.6M17 6h2.5a2.5 2.5 0 0 1-2.6 3.6"/><path d="M12 14v4M8.5 20.5h7"/></svg>',
   profile: '<svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4.2"/><path d="M4.5 20.5a7.5 7.5 0 0 1 15 0"/></svg>',
+  // Versus: two marks facing each other across a gap. A pair of crossed
+  // lines was the first idea and reads as "close" at 19px.
+  versus: '<svg viewBox="0 0 24 24"><path d="M3.5 6.5 9 12l-5.5 5.5"/><path d="M20.5 6.5 15 12l5.5 5.5"/><path d="M12 9.5v5"/></svg>',
   // A box on a belt, drawn on the same 24x24 grid and stroke as the rest of
   // the set so the dock reads as one family.
   handler: '<svg viewBox="0 0 24 24"><rect x="7" y="4.5" width="10" height="8" rx="1.5"/><path d="M12 4.5v8"/><path d="M3 17h18"/><circle cx="6.5" cy="19.5" r="1.8"/><circle cx="12" cy="19.5" r="1.8"/><circle cx="17.5" cy="19.5" r="1.8"/></svg>',
@@ -413,6 +419,8 @@ function navTabs() {
   ];
   if (signedIn()) {
     tabs.push(['ranked', ICONS.ranked, t('Ranked')]);
+    // Versus needs two named accounts, so it is a signed-in tab like Ranked.
+    tabs.push(['versus', ICONS.versus, t('Versus')]);
     tabs.push(['profile', ICONS.profile, t('Profile')]);
   }
   return tabs;
@@ -457,6 +465,7 @@ function labPage(content, active = 'home', rerender = showStart) {
     if (button.dataset.nav === 'practice') showPractice();
     else if (button.dataset.nav === 'handler') showHandler();
     else if (button.dataset.nav === 'ranked') showRanked();
+    else if (button.dataset.nav === 'versus') showVersus();
     else if (button.dataset.nav === 'profile') showProfile();
     else showStart();
   }));
@@ -507,6 +516,48 @@ function showHandler() {
     if (handlerScreen) handlerScreen.showModes();
   });
   return view;
+}
+
+// Versus, the 1 vs 1 frame over the two mini-games. Its screens live in
+// src/versus/; this file hands them the page shell and the pieces the quiz
+// and the Handler already own, and mounts the Handler for a handler duel.
+let versusScreens = null;
+function versus() {
+  if (!versusScreens) {
+    versusScreens = createVersusScreens({
+      labPage, t, esc, ICONS, language, avatarEmoji,
+      client: createVersusClient(),
+      beltButton, destinationLine, rqChip, backLink,
+      playCorrectSfx, playIncorrectSfx,
+      mountHandlerDuel,
+    });
+  }
+  return versusScreens;
+}
+
+function showVersus() {
+  stopTick();
+  clock = null;
+  return versus().showVersus();
+}
+
+// A handler duel is the Handler's own screen, started straight into one
+// round of the duel's mode and dealt from the match's seed, so both players
+// sort the same packages. It is held in `handlerScreen` like any other
+// Handler mount, which is what makes render() take it down on the way out.
+function mountHandlerDuel(root, { seed, onScore, onEnd }) {
+  unmountHandler();
+  handlerScreen = createHandlerScreen({
+    root,
+    t: (source, values) => t(source, values),
+    engine: conveyorEngine,
+    routes: conveyorRoutes,
+    audio: createHandlerAudio({ getContext: getAudioContext, isEnabled: isSoundEnabled }),
+    soundPref: { isEnabled: isSoundEnabled, toggle: toggleSound },
+    random: seededRandom(seed),
+    duel: { mode: HANDLER_DUEL_MODE, onScore, onEnd },
+  });
+  return handlerScreen;
 }
 
 function showPractice() {
