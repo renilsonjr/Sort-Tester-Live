@@ -3,12 +3,13 @@
 // card's own corner was actually tighter than its icon tile, which is what
 // made it look pinched.
 //
-// Measured in the running app after the change: 26/12/14, 26/12/14 and
-// 32/14/18 on the three surfaces.
+// Measured in the running app: 28/12/16 on the Practice cards, 26/12/14 on
+// the Home shortcuts and 32/16/16 on the Ranked card.
 //
-// The --r-sm and --r-md tokens are deliberately NOT changed. Twenty-two other
-// rules use them and most hold nothing nested, so moving a token to fix three
-// surfaces would round off the whole app.
+// 2026-11-27: the owner approved a radius scale (6 / 12 / 16 / 22) and chose
+// that it applies to the piece INSIDE (a button is 16, an icon tile is 12)
+// while the card around it stays computed: inner + padding. So --r-sm moved
+// from 14 to 16, and the cards that hold a button were re-padded to match.
 
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -34,8 +35,9 @@ function radiusOf(selector) {
 }
 
 test('the Practice cards are concentric with their icon tile', () => {
-  // icon tile 12px, padding 14px
-  assert.equal(radiusOf('.lab-choice'), 26);
+  // icon tile 12px, padding 16px
+  assert.equal(radiusOf('.lab-choice'), 28);
+  assert.match(html, /\n  \.lab-choice \{ border-radius: 28px; padding: 16px;/);
 });
 
 test('the Home shortcuts are concentric with their icon square', () => {
@@ -44,11 +46,25 @@ test('the Home shortcuts are concentric with their icon square', () => {
 });
 
 test('the Ranked card is concentric with the button inside it', () => {
-  // Play Ranked carries --r-sm (14px), padding 18px
+  // Play Ranked carries --r-sm (16px), padding 16px on every side
   assert.equal(radiusOf('.home-spot'), 32);
+  assert.match(html, /\n  \.home-spot \{[^}]*padding: 16px;/);
 });
 
-test('the shared radius tokens are left alone', () => {
+test('the shared radius tokens sit on the approved scale', () => {
   assert.match(html, /--r-md:\s*22px/);
-  assert.match(html, /--r-sm:\s*14px/);
+  assert.match(html, /--r-sm:\s*16px/);
+});
+
+test('a disabled button sits back into the surface, in either theme', () => {
+  // The first skin's rule painted it cream (#ebe2d4) and nothing in the
+  // current skin overrode it, so on the dark page a button that could not be
+  // pressed was the brightest thing on the screen. The newer rule has the
+  // same specificity and comes later, so it is the one that renders.
+  const rules = [...html.matchAll(/\n\s*\.primary:disabled, \.ghost:disabled[^{]*\{([^}]*)\}/g)].map(r => r[1]);
+  assert.ok(rules.length >= 2, 'the override should come after the old rule');
+  const last = rules[rules.length - 1];
+  assert.match(last, /background: var\(--glass-surface-sub\)/);
+  assert.match(last, /color: var\(--muted\)/);
+  assert.doesNotMatch(last, /#ebe2d4/);
 });
