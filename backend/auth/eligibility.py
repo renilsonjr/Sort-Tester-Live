@@ -30,6 +30,7 @@ and changes nothing else about it.
 from dataclasses import dataclass
 from uuid import UUID
 
+from backend.auth.owner import is_active_owner
 from backend.db import migrate
 from backend.ranked import seasons
 # The same two kinds of attempt the standings count: a tie-break alone
@@ -57,13 +58,7 @@ class Approval:
 
 
 def _require_owner(conn, owner_account_id: UUID) -> None:
-    row = migrate.fetch_one(
-        conn,
-        "SELECT id FROM accounts"
-        " WHERE id = %s AND is_owner = true AND deleted_at IS NULL",
-        (owner_account_id,),
-    )
-    if row is None:
+    if not is_active_owner(conn, owner_account_id):
         raise EligibilityError("Only the owner may approve prize eligibility.")
 
 

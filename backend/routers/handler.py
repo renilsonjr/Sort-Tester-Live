@@ -15,7 +15,8 @@ from pydantic import BaseModel, Field
 
 from backend.handler import best_scores, leaderboard
 from backend.ranked.clock import system_clock
-from backend.routers.ranked import _current_account, get_db
+from backend.routers.deps import current_account
+from backend.routers.ranked import get_db
 
 router = APIRouter(prefix="/api/handler", tags=["handler"])
 
@@ -34,7 +35,7 @@ class BestScoreRequest(BaseModel):
 
 
 @router.get("/best")
-def read_best(account: dict = Depends(_current_account), conn=Depends(get_db)):
+def read_best(account: dict = Depends(current_account), conn=Depends(get_db)):
     """Every mode's best for this account in the current season. Private to
     the account: it names nobody else and reveals nothing about anyone
     else's play. ``in_season`` is false between seasons, when every best is
@@ -49,7 +50,7 @@ def read_best(account: dict = Depends(_current_account), conn=Depends(get_db)):
 @router.put("/best")
 def raise_best(
     payload: BestScoreRequest,
-    account: dict = Depends(_current_account),
+    account: dict = Depends(current_account),
     conn=Depends(get_db),
 ):
     """Keep the score if it beats what is stored, and answer with the best
@@ -74,7 +75,7 @@ def raise_best(
 @router.get("/leaderboard")
 def read_leaderboard(
     mode: str,
-    account: dict = Depends(_current_account),
+    account: dict = Depends(current_account),
     conn=Depends(get_db),
 ):
     """One mode's Handler board for the newest season (#417). Login is

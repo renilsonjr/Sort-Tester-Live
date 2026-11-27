@@ -34,6 +34,7 @@ from dataclasses import dataclass
 from datetime import datetime
 from uuid import UUID
 
+from backend.auth.owner import is_active_owner
 from backend.auth.service import issue_new_login_id
 from backend.db import migrate
 
@@ -65,13 +66,7 @@ class Handover:
 
 
 def _require_owner(conn, owner_account_id: UUID) -> None:
-    row = migrate.fetch_one(
-        conn,
-        "SELECT id FROM accounts"
-        " WHERE id = %s AND is_owner = true AND deleted_at IS NULL",
-        (owner_account_id,),
-    )
-    if row is None:
+    if not is_active_owner(conn, owner_account_id):
         raise RecoveryError("Only the owner may approve a recovery.")
 
 

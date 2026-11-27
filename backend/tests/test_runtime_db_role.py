@@ -90,7 +90,7 @@ class RuntimeRoleTests(unittest.TestCase):
             conn.execute(sql.SQL("SET ROLE {}").format(sql.Identifier(self.role)))
             conn.commit()
             return conn
-        with patch("backend.routers.auth._db_connection", side_effect=limited_connection):
+        with patch("backend.routers.deps.db_connection", side_effect=limited_connection):
             with TestClient(create_app(), headers=BROWSER) as client:
                 registered = client.post("/api/auth/register", json={"username": "runtime_login"})
                 self.assertEqual(registered.status_code, 200)

@@ -30,7 +30,7 @@ class HasNulTests(unittest.TestCase):
 class AnonymousRecoveryMessageTests(unittest.TestCase):
     def test_a_nul_in_a_recovery_message_is_refused_without_touching_the_database(self):
         client = TestClient(create_app(), headers=BROWSER, raise_server_exceptions=False)
-        with mock.patch("backend.routers.recovery_messages.pool.checkout") as checkout:
+        with mock.patch("backend.db.pool.checkout") as checkout:
             answer = client.post("/api/auth/recovery-messages", json={"message": "lost\x00code"})
         self.assertEqual(answer.status_code, 422)
         checkout.assert_not_called()

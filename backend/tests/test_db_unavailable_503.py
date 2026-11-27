@@ -14,14 +14,14 @@ class DbUnavailable503Tests(unittest.TestCase):
         return TestClient(create_app(), raise_server_exceptions=False)
 
     def test_pool_timeout_becomes_503(self):
-        with mock.patch("backend.routers.ranked.pool.checkout", side_effect=PoolTimeout("no conn")):
+        with mock.patch("backend.db.pool.checkout", side_effect=PoolTimeout("no conn")):
             response = self._client().get("/api/ranked/season/notice")
         self.assertEqual(response.status_code, 503)
         self.assertEqual(response.json()["detail"], "database temporarily unavailable")
 
     def test_token_unavailable_becomes_503_without_secret(self):
         err = entra_token.TokenUnavailable("could not obtain an Entra token for the database")
-        with mock.patch("backend.routers.ranked.pool.checkout", side_effect=err):
+        with mock.patch("backend.db.pool.checkout", side_effect=err):
             response = self._client().get("/api/ranked/season/notice")
         self.assertEqual(response.status_code, 503)
         self.assertNotIn("token", response.text.lower())

@@ -16,6 +16,7 @@ from backend.auth.verification_gate import VerificationBusy, VerificationGate
 from backend.db import migrate, settings
 from backend.main import create_app
 from backend.routers import auth as auth_router
+from backend.routers import deps
 from backend.tests.browser import BROWSER
 
 
@@ -343,7 +344,7 @@ class SignInLimitsTests(unittest.TestCase):
 
     def test_no_connection_is_held_while_the_code_is_checked(self):
         held = {"now": 0, "during_check": None}
-        real_connection = auth_router._db_connection
+        real_connection = deps.db_connection
         real_check = auth_router.check_login_candidates
 
         @contextmanager
@@ -360,7 +361,7 @@ class SignInLimitsTests(unittest.TestCase):
             return real_check(normalized, candidates)
 
         login_id = self._register("limits_conn")
-        with mock.patch.object(auth_router, "_db_connection", counting_connection), \
+        with mock.patch.object(deps, "db_connection", counting_connection), \
                 mock.patch.object(auth_router, "check_login_candidates", check):
             self.assertEqual(self._login(login_id, "192.168.40.9").status_code, 200)
         self.assertEqual(held["during_check"], 0)

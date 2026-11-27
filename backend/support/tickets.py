@@ -13,6 +13,7 @@ Players see only their own tickets. Every read in this module takes the
 account whose tickets are wanted, so a missing check is a missing argument
 rather than a silently wider query.
 """
+from backend.auth.owner import is_active_owner
 from backend.db import migrate
 
 CLOSING_OUTCOMES = ("network_instability", "insufficient_evidence")
@@ -113,15 +114,7 @@ def _require_reviewer(conn, admin_account_id):
     owner is the only such role (`accounts.is_owner`, migration 0012); when
     more exist, this is the one place that changes.
     """
-    row = migrate.fetch_one(
-        conn,
-        # deletion is a timestamp, not a DELETE, so the row of a deleted
-        # owner still answers is_owner = true
-        "SELECT 1 AS ok FROM accounts"
-        " WHERE id = %s AND is_owner = true AND deleted_at IS NULL",
-        (admin_account_id,),
-    )
-    if row is None:
+    if not is_active_owner(conn, admin_account_id):
         raise NotAuthorizedError(admin_account_id)
 
 

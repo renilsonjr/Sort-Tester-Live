@@ -17,9 +17,10 @@ from backend.auth import eligibility, reauth, recovery, recovery_messages
 from backend.auth import deletion as account_deletion
 from backend.auth.deletion import purge_deleted_accounts
 from backend.auth.deletion_list import DeletionListUnavailable
-from backend.auth.service import get_account_by_session
 from backend.auth import sessions as auth_sessions
-from backend.db import migrate, pool, settings
+from backend.db import migrate
+from backend.routers import deps
+from backend.routers.deps import current_account, get_plain_db, reviewed_bank
 from backend.ranked import capability, engine, launch, season_close, seasons, settlement
 from backend.ranked import standings as ranked_standings
 from backend.ranked import tiebreaks as ranked_tiebreaks
@@ -30,7 +31,6 @@ from backend.support import retention as support_retention
 from backend.support import tickets as support_tickets
 from backend.ranked.clock import system_clock
 from backend.text_input import PlainText
-from backend.ranked_bank.catalog import load_reviewed_bank
 
 router = APIRouter(prefix="/api/ranked", tags=["ranked"])
 
@@ -42,33 +42,10 @@ CAPABILITY_HEADER = "X-Attempt-Capability"
 STANDINGS_ROWS_SHOWN = 500
 
 _CLOCK = system_clock()
-_bank = None
-
-
-def _reviewed_bank():
-    # the pinned bank is immutable; load it once and reuse
-    global _bank
-    if _bank is None:
-        _bank = load_reviewed_bank()
-    return _bank
-
-
-@contextmanager
-def _db_connection():
-    """One pooled connection for this request (audit M-5).
-
-    Opening a connection per request cost a connect to Postgres each time
-    and had no ceiling; the pool reuses a capped set and makes a burst
-    wait. Commits are still the caller's own: see backend/db/pool.py for
-    why that was kept rather than folded into the checkout.
-    """
-    pool.init_pool(settings.app_database_url(), auth_mode=settings.db_auth_mode())
-    with pool.checkout() as conn:
-        yield conn
 
 
 def get_db(request: Request):
-    with _db_connection() as conn:
+    with deps.db_connection() as conn:
         # The season closes by the clock, with no background timer: every
         # ranked request first finishes any season whose five-minute finishing
         # window is over (end unfinished attempts, settle, freeze). When
@@ -76,14 +53,14 @@ def get_db(request: Request):
         season_close.finish_due_seasons(conn, clock=_CLOCK)
         # and a tie-break round closes at its own deadline the same way:
         # score it, place its players, open the next round if one is due
-        ranked_tiebreaks.close_due_rounds(conn, clock=_CLOCK, bank=_reviewed_bank())
+        ranked_tiebreaks.close_due_rounds(conn, clock=_CLOCK, bank=reviewed_bank())
         # once rounds are closed, resolve the three hats: carry a freed hat
         # down to the next player, open a replacement round if that creates
         # a tie, and write the winners when nothing is left pending
         launch = seasons.official_launch(conn)
         if launch is not None:
             ranked_tiebreaks.finalize_prizes(
-                conn, launch.season_id, clock=_CLOCK, bank=_reviewed_bank()
+                conn, launch.season_id, clock=_CLOCK, bank=reviewed_bank()
             )
         # Everything above is the game's own clock and runs on every request.
         # Retention below deletes what is days old, so it runs at most once a
@@ -115,32 +92,6 @@ def _sweep_retention(conn) -> None:
     # days after the owner marked it resolved
     recovery_messages.purge_resolved(conn, clock=_CLOCK)
     conn.commit()
-
-
-def get_readonly_db():
-    """A connection with no sweeps, for a route anyone can call.
-
-    ``get_db`` runs the whole sweep chain on every request, taking the
-    database locks a season close and a tie-break round need. That is the
-    right trade behind an account, where the traffic is a player's own
-    quiz. In front of one it means anonymous requests drive those locks,
-    and enough of them stall the ranked path for people who are playing
-    (audit M-1). A public read only reads.
-    """
-    with _db_connection() as conn:
-        yield conn
-
-
-def _current_account(request: Request):
-    raw_token = request.cookies.get("sort_tester_session")
-    if not raw_token:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized")
-    with _db_connection() as conn:
-        account = get_account_by_session(conn, raw_token)
-        conn.commit()  # same write as auth._current_account (audit H-1)
-    if account is None:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized")
-    return account
 
 
 def _require_own_attempt(conn, attempt_id: str, account_id) -> None:
@@ -228,7 +179,7 @@ class StartRequest(BaseModel):
 
 
 @router.get("/entry")
-def entry(account: dict = Depends(_current_account), conn=Depends(get_db)):
+def entry(account: dict = Depends(current_account), conn=Depends(get_db)):
     """Which kind of attempt the account may start now. Read-only: opening
     this information starts no attempt and no timer."""
     entry_status = engine.entry_status(conn, account["id"])
@@ -240,7 +191,7 @@ def entry(account: dict = Depends(_current_account), conn=Depends(get_db)):
 
 
 @router.get("/profile/stats")
-def profile_stats(account: dict = Depends(_current_account), conn=Depends(get_readonly_db)):
+def profile_stats(account: dict = Depends(current_account), conn=Depends(get_plain_db)):
     """The signed-in account's Profile stats: best Ranked correct-count and
     current leaderboard place. Read-only and private to the account; opening
     it starts no attempt and reveals nothing about anyone else."""
@@ -256,7 +207,7 @@ def profile_stats(account: dict = Depends(_current_account), conn=Depends(get_re
 @router.post("/attempts", status_code=status.HTTP_201_CREATED)
 def start(
     payload: StartRequest | None = None,
-    account: dict = Depends(_current_account),
+    account: dict = Depends(current_account),
     conn=Depends(get_db),
 ):
     mode = payload.mode if payload is not None else "normal"
@@ -269,7 +220,7 @@ def start(
     settlement.settle_pending(conn, clock=_CLOCK, account_id=account["id"])
     try:
         attempt_id = engine.start_attempt(
-            conn, account["id"], clock=_CLOCK, bank=_reviewed_bank(),
+            conn, account["id"], clock=_CLOCK, bank=reviewed_bank(),
             page_capability=token, mode=mode,
         )
     except engine.PromotionRequiredError:
@@ -290,7 +241,7 @@ def start(
 
 
 @router.get("/tiebreak/mine")
-def my_tiebreak(account: dict = Depends(_current_account), conn=Depends(get_db)):
+def my_tiebreak(account: dict = Depends(current_account), conn=Depends(get_db)):
     """This player's own tie-break state, or ``{"tie": null}``. Their own
     round, whether they played it, and once a round has closed their own
     score and standing -- never anybody else's."""
@@ -311,7 +262,7 @@ def my_tiebreak(account: dict = Depends(_current_account), conn=Depends(get_db))
 @router.post("/tiebreak/rounds/{round_id}/attempts", status_code=status.HTTP_201_CREATED)
 def start_tiebreak(
     round_id: str,
-    account: dict = Depends(_current_account),
+    account: dict = Depends(current_account),
     conn=Depends(get_db),
 ):
     """Start this player's one attempt in a prize tie-break round.
@@ -343,11 +294,11 @@ def start_tiebreak(
 
 
 @router.get("/attempts/{attempt_id}/current")
-def current(request: Request, attempt_id: str, account: dict = Depends(_current_account), conn=Depends(get_db)):
+def current(request: Request, attempt_id: str, account: dict = Depends(current_account), conn=Depends(get_db)):
     _require_owned_attempt(conn, attempt_id, account["id"], request)
     with _gone_when_ended(conn, attempt_id):
         view = engine.current_question(
-            conn, attempt_id, clock=_CLOCK, bank=_reviewed_bank()
+            conn, attempt_id, clock=_CLOCK, bank=reviewed_bank()
         )
     if view is None:
         return Response(status_code=status.HTTP_204_NO_CONTENT)
@@ -370,7 +321,7 @@ def answer(
     request: Request,
     attempt_id: str,
     payload: AnswerRequest,
-    account: dict = Depends(_current_account),
+    account: dict = Depends(current_account),
     conn=Depends(get_db),
 ):
     _require_owned_attempt(conn, attempt_id, account["id"], request)
@@ -378,7 +329,7 @@ def answer(
         with _gone_when_ended(conn, attempt_id):
             result = engine.submit_answer(
                 conn, attempt_id, payload.seq, payload.choice,
-                clock=_CLOCK, bank=_reviewed_bank(),
+                clock=_CLOCK, bank=reviewed_bank(),
             )
     except engine.AnswerRejectedError as exc:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(exc)) from None
@@ -405,7 +356,7 @@ def answer(
 
 
 @router.post("/attempts/{attempt_id}/advance")
-def advance(request: Request, attempt_id: str, account: dict = Depends(_current_account), conn=Depends(get_db)):
+def advance(request: Request, attempt_id: str, account: dict = Depends(current_account), conn=Depends(get_db)):
     _require_owned_attempt(conn, attempt_id, account["id"], request)
     try:
         with _gone_when_ended(conn, attempt_id):
@@ -416,7 +367,7 @@ def advance(request: Request, attempt_id: str, account: dict = Depends(_current_
 
 
 @router.post("/attempts/{attempt_id}/heartbeat", status_code=status.HTTP_204_NO_CONTENT)
-def heartbeat(request: Request, attempt_id: str, account: dict = Depends(_current_account), conn=Depends(get_db)):
+def heartbeat(request: Request, attempt_id: str, account: dict = Depends(current_account), conn=Depends(get_db)):
     _require_owned_attempt(conn, attempt_id, account["id"], request)
     with _gone_when_ended(conn, attempt_id):
         engine.heartbeat(conn, attempt_id, clock=_CLOCK)
@@ -424,7 +375,7 @@ def heartbeat(request: Request, attempt_id: str, account: dict = Depends(_curren
 
 
 @router.post("/attempts/{attempt_id}/quit")
-def quit_attempt(request: Request, attempt_id: str, account: dict = Depends(_current_account), conn=Depends(get_db)):
+def quit_attempt(request: Request, attempt_id: str, account: dict = Depends(current_account), conn=Depends(get_db)):
     _require_owned_attempt(conn, attempt_id, account["id"], request)
     # never 410: a retried Quit must get the same answer as the first one
     outcome = engine.quit_attempt(conn, attempt_id, clock=_CLOCK)
@@ -432,7 +383,7 @@ def quit_attempt(request: Request, attempt_id: str, account: dict = Depends(_cur
 
 
 @router.get("/attempts/{attempt_id}/result")
-def result(attempt_id: str, account: dict = Depends(_current_account), conn=Depends(get_db)):
+def result(attempt_id: str, account: dict = Depends(current_account), conn=Depends(get_db)):
     """The result of an ended attempt. History: it needs the session and
     ownership but not the page capability, and it changes nothing a later
     settlement would not."""
@@ -476,7 +427,7 @@ def _unprocessable(detail: str) -> HTTPException:
 def launch_season(
     request: Request,
     payload: LaunchRequest,
-    account: dict = Depends(_current_account),
+    account: dict = Depends(current_account),
     conn=Depends(get_db),
 ):
     """Launch the official season. Irreversible: it voids unfinished
@@ -520,7 +471,7 @@ def launch_season(
 @router.get("/history")
 def history(
     phase: Literal["pre_season", "official"] | None = None,
-    account: dict = Depends(_current_account),
+    account: dict = Depends(current_account),
     conn=Depends(get_db),
 ):
     """The signed-in account's own scored attempts, newest first. Private to
@@ -547,7 +498,7 @@ def history(
 
 
 @router.get("/season")
-def season(account: dict = Depends(_current_account), conn=Depends(get_db)):
+def season(account: dict = Depends(current_account), conn=Depends(get_db)):
     """Where the current season is in its life. Read-only. ``points_final``
     is true once the season is frozen; prize standings stay provisional
     after that until they are finalized elsewhere."""
@@ -570,7 +521,7 @@ def season(account: dict = Depends(_current_account), conn=Depends(get_db)):
 
 
 @router.get("/leaderboard")
-def leaderboard(account: dict = Depends(_current_account), conn=Depends(get_db)):
+def leaderboard(account: dict = Depends(current_account), conn=Depends(get_db)):
     """The leaderboard. Login is required to see it (settled Q5).
 
     Read-only, and it carries only what the approved screen shows: place,
@@ -700,7 +651,7 @@ def _approval_json(approval) -> dict:
 
 
 @router.get("/owner/approvals")
-def list_approvals(account: dict = Depends(_current_account), conn=Depends(get_db)):
+def list_approvals(account: dict = Depends(current_account), conn=Depends(get_db)):
     try:
         approvals = eligibility.approvals(conn, account["id"])
     except eligibility.EligibilityError as error:
@@ -717,7 +668,7 @@ def list_approvals(account: dict = Depends(_current_account), conn=Depends(get_d
 def approve_sorter(
     request: Request,
     payload: ApproveRequest,
-    account: dict = Depends(_current_account),
+    account: dict = Depends(current_account),
     conn=Depends(get_db),
 ):
     _require_owner(account)
@@ -748,7 +699,7 @@ def approve_sorter(
 def withdraw_approval(
     request: Request,
     account_id: str,
-    account: dict = Depends(_current_account),
+    account: dict = Depends(current_account),
     conn=Depends(get_db),
 ):
     _require_owner(account)
@@ -779,7 +730,7 @@ class OwnerDeleteRequest(BaseModel):
 
 
 @router.get("/owner/accounts")
-def list_accounts(account: dict = Depends(_current_account), conn=Depends(get_db)):
+def list_accounts(account: dict = Depends(current_account), conn=Depends(get_db)):
     try:
         rows = account_deletion.accounts_for_owner(conn, account["id"])
     except account_deletion.NotOwnerError:
@@ -805,7 +756,7 @@ def delete_account_as_owner(
     request: Request,
     account_id: str,
     payload: OwnerDeleteRequest,
-    account: dict = Depends(_current_account),
+    account: dict = Depends(current_account),
     conn=Depends(get_db),
 ):
     """Delete another account. Irreversible, so: owner only, the login ID
@@ -848,7 +799,7 @@ class RecoveryOpenRequest(BaseModel):
 
 
 @router.get("/owner/recoveries")
-def list_recoveries(account: dict = Depends(_current_account), conn=Depends(get_db)):
+def list_recoveries(account: dict = Depends(current_account), conn=Depends(get_db)):
     try:
         rows = recovery.recent_requests(conn, account["id"])
     except recovery.RecoveryError as error:
@@ -873,7 +824,7 @@ def list_recoveries(account: dict = Depends(_current_account), conn=Depends(get_
 @router.post("/owner/recoveries", status_code=status.HTTP_201_CREATED)
 def open_recovery(
     payload: RecoveryOpenRequest,
-    account: dict = Depends(_current_account),
+    account: dict = Depends(current_account),
     conn=Depends(get_db),
 ):
     try:
@@ -898,7 +849,7 @@ def open_recovery(
 def hand_over_recovery(
     request: Request,
     request_id: str,
-    account: dict = Depends(_current_account),
+    account: dict = Depends(current_account),
     conn=Depends(get_db),
 ):
     """Issue the new login ID. The response carries it once; the server
@@ -934,7 +885,7 @@ def hand_over_recovery(
 # marking it resolved reveal no secret and grant nobody access.
 @router.get("/owner/recovery-messages")
 def list_recovery_messages(
-    account: dict = Depends(_current_account), conn=Depends(get_db)
+    account: dict = Depends(current_account), conn=Depends(get_db)
 ):
     _require_owner(account)
     try:
@@ -964,7 +915,7 @@ def list_recovery_messages(
 )
 def resolve_recovery_message(
     message_id: str,
-    account: dict = Depends(_current_account),
+    account: dict = Depends(current_account),
     conn=Depends(get_db),
 ):
     _require_owner(account)
@@ -992,7 +943,7 @@ class SelectionRequest(BaseModel):
 
 
 @router.get("/owner/selections")
-def list_selections(account: dict = Depends(_current_account), conn=Depends(get_db)):
+def list_selections(account: dict = Depends(current_account), conn=Depends(get_db)):
     try:
         cases = ranked_tiebreaks.selection_cases(conn, account["id"])
     except ranked_tiebreaks.SelectionError as error:
@@ -1026,7 +977,7 @@ def record_selection(
     request: Request,
     group_id: str,
     payload: SelectionRequest,
-    account: dict = Depends(_current_account),
+    account: dict = Depends(current_account),
     conn=Depends(get_db),
 ):
     _require_owner(account)
@@ -1059,7 +1010,7 @@ def _utc(moment) -> str:
 
 
 @router.get("/season/notice")
-def season_notice(conn=Depends(get_readonly_db)):
+def season_notice(conn=Depends(get_plain_db)):
     """The season-start notice, for anyone — signed in or not.
 
     The approved home page shows a small callout once the official season
@@ -1099,7 +1050,7 @@ def season_notice(conn=Depends(get_readonly_db)):
 
 
 @router.get("/flags")
-def list_flags(account: dict = Depends(_current_account), conn=Depends(get_db)):
+def list_flags(account: dict = Depends(current_account), conn=Depends(get_db)):
     """Open connection review flags, for the owner only. A flag is an
     instability signal, not proof of cheating; no player sees flags,
     including their own."""
@@ -1125,7 +1076,7 @@ def list_flags(account: dict = Depends(_current_account), conn=Depends(get_db)):
 def close_flag(
     attempt_id: str,
     payload: CloseFlagRequest,
-    account: dict = Depends(_current_account),
+    account: dict = Depends(current_account),
     conn=Depends(get_db),
 ):
     """Close a reviewed flag. Changes nothing about the player's points or
@@ -1182,7 +1133,7 @@ def _ticket_json(conn, ticket: dict) -> dict:
 
 
 @router.get("/support/tickets")
-def list_tickets(account: dict = Depends(_current_account), conn=Depends(get_db)):
+def list_tickets(account: dict = Depends(current_account), conn=Depends(get_db)):
     """This player's own tickets, newest first. Never anybody else's."""
     return [
         _ticket_json(conn, ticket)
@@ -1193,7 +1144,7 @@ def list_tickets(account: dict = Depends(_current_account), conn=Depends(get_db)
 @router.post("/support/tickets", status_code=status.HTTP_201_CREATED)
 def create_ticket(
     payload: CreateTicketRequest,
-    account: dict = Depends(_current_account),
+    account: dict = Depends(current_account),
     conn=Depends(get_db),
 ):
     """Open a ticket about one of this player's own attempts.
@@ -1225,7 +1176,7 @@ def create_ticket(
 @router.get("/support/tickets/{ticket_id}")
 def read_ticket(
     ticket_id: str,
-    account: dict = Depends(_current_account),
+    account: dict = Depends(current_account),
     conn=Depends(get_db),
 ):
     """One of this player's own tickets.
@@ -1244,7 +1195,7 @@ def read_ticket(
 
 
 @router.get("/support/review")
-def review_queue(account: dict = Depends(_current_account), conn=Depends(get_db)):
+def review_queue(account: dict = Depends(current_account), conn=Depends(get_db)):
     """Open tickets for an authorized reviewer.
 
     Returns the player's display identity, the attempt, what they wrote and
@@ -1275,7 +1226,7 @@ def review_queue(account: dict = Depends(_current_account), conn=Depends(get_db)
 def close_ticket(
     ticket_id: str,
     payload: CloseTicketRequest,
-    account: dict = Depends(_current_account),
+    account: dict = Depends(current_account),
     conn=Depends(get_db),
 ):
     """Close a reviewed ticket. Changes no points and no access."""
@@ -1298,7 +1249,7 @@ def close_ticket(
 @router.post("/support/review/{ticket_id}/reopen")
 def reopen_ticket(
     ticket_id: str,
-    account: dict = Depends(_current_account),
+    account: dict = Depends(current_account),
     conn=Depends(get_db),
 ):
     """Reopen a closed ticket for follow-up, which also stops its retention
