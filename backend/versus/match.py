@@ -6,7 +6,7 @@ walks the same sequence at their own pace against a five-second question
 clock. Faster correct answers score more; a wrong or late answer scores
 nothing but still advances. The handler duel stores no questions at all:
 both clients deal the same belt order from the match's shared seed, play
-their own conveyor, and report the score as it grows.
+their own conveyor, and report the score as it stands.
 
 The match ends when both players have finished or its hard deadline
 passes, whichever is first -- and the deadline is judged lazily, at read
@@ -18,8 +18,9 @@ from datetime import timedelta
 from random import SystemRandom
 
 from backend.db import migrate
-from backend.ranked import belt_options
+from backend.ranked import belt_options, seasons
 from backend.ranked.versions import materialize_question_version
+from backend.ranked_bank.display import routing_code_for
 from backend.ranked_bank.identity import question_content_digest
 from backend.ranked_bank.selection import select_assignment
 
@@ -79,8 +80,9 @@ def start(conn, room, bank, *, now) -> str:
         conn,
         """
         INSERT INTO versus_matches
-            (game, host_account_id, guest_account_id, seed, question_count, started_at, ends_at)
-        VALUES (%s, %s, %s, %s, %s, %s, %s)
+            (game, host_account_id, guest_account_id, seed, question_count,
+             started_at, ends_at, season_id)
+        VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
         RETURNING id
         """,
         (
@@ -91,15 +93,17 @@ def start(conn, room, bank, *, now) -> str:
             QUIZ_QUESTIONS if game == "quiz" else 0,
             now,
             now + timedelta(seconds=seconds),
+            # The season admitting Ranked play right now, or none between
+            # seasons -- and a duel with none counts on no board.
+            seasons.admitting_season(conn, now),
         ),
     )
     match_id = match["id"]
     for account_id in (claimed["host_account_id"], claimed["guest_account_id"]):
         migrate.execute(
             conn,
-            "INSERT INTO versus_match_players (match_id, account_id, question_sent_at)"
-            " VALUES (%s, %s, %s)",
-            (match_id, account_id, now if game == "quiz" else None),
+            "INSERT INTO versus_match_players (match_id, account_id) VALUES (%s, %s)",
+            (match_id, account_id),
         )
     if game == "quiz":
         _store_draw(conn, match_id, bank)
@@ -237,18 +241,25 @@ def _finish_if_due(conn, row, now):
 
 def current_question(conn, match_id, account_id, bank, *, now) -> dict | None:
     """This player's live question, or ``None`` when they are done or the
-    match is not theirs. Reading restarts nothing: the question clock
-    started when the previous answer advanced them (or at the start)."""
+    match is not theirs.
+
+    The question clock starts here, the first time the question is served
+    to this player, and never again: a reload shows the same deadline.
+    Starting it any earlier -- at the match start, or when the previous
+    answer went in -- charged the player for time they could not have
+    spent on it: the guest's poll, and the review of the answer before."""
     state = read(conn, match_id, account_id, now=now)
     if state is None or state["game"] != "quiz" or state["state"] != "playing":
         return None
     player = migrate.fetch_one(
         conn,
-        "SELECT seq, question_sent_at, finished_at FROM versus_match_players"
-        " WHERE match_id = %s AND account_id = %s",
-        (match_id, account_id),
+        "UPDATE versus_match_players"
+        " SET question_sent_at = COALESCE(question_sent_at, %s)"
+        " WHERE match_id = %s AND account_id = %s AND finished_at IS NULL"
+        " RETURNING seq, question_sent_at",
+        (now, match_id, account_id),
     )
-    if player["finished_at"] is not None:
+    if player is None:
         return None
     stored = migrate.fetch_one(
         conn,
@@ -268,6 +279,8 @@ def current_question(conn, match_id, account_id, bank, *, now) -> dict | None:
         "prompt_es": question.text.es.prompt,
         "service": question.context.service,
         "mode": question.context.mode,
+        # Seeded by the match, not the player: both see the same code.
+        "routing_code": routing_code_for(question, attempt_id=match_id, seq=stored["seq"]),
         "region_label": question.presentation.region_label,
         "named_destination": question.presentation.named_destination,
         "options": list(stored["options"]),
@@ -293,6 +306,10 @@ def submit_answer(conn, match_id, account_id, seq: int, choice: str, bank, *, no
     )
     if player["finished_at"] is not None or player["seq"] != seq:
         raise MatchRefused("That question is not the live one.")
+    if player["question_sent_at"] is None:
+        # Never served: there is no clock to judge the answer against, and
+        # nobody can have read a question they did not ask for.
+        raise MatchRefused("That question has not been shown yet.")
     stored = migrate.fetch_one(
         conn,
         "SELECT question_version_id, options FROM versus_match_questions"
@@ -318,7 +335,8 @@ def submit_answer(conn, match_id, account_id, seq: int, choice: str, bank, *, no
             gained,
             1 if correct else 0,
             seq + (0 if finished else 1),
-            None if finished else now,
+            # The next question's clock starts when it is served, not now.
+            None,
             now if finished else None,
             match_id,
             account_id,
@@ -337,9 +355,11 @@ def submit_answer(conn, match_id, account_id, seq: int, choice: str, bank, *, no
 
 
 def report_progress(conn, match_id, account_id, score: int, *, now, final: bool = False) -> dict:
-    """Take the handler duel's growing score. The stored score only ever
-    goes up, in the database, so a late or repeated report cannot lower
-    it -- the Handler best-score rule, applied to a live duel."""
+    """Take the handler duel's score as it stands. Unlike a Handler best,
+    this number follows the round down as well as up: a wrong belt costs a
+    point, and a duel is decided by the score the round ended on, not by
+    the highest it touched on the way. ``final`` closes this player's
+    round, and nothing is taken from them after it."""
     if not isinstance(score, int) or isinstance(score, bool) or score < 0 or score > SCORE_CEILING:
         raise MatchRefused("A score is a whole number between 0 and the ceiling.")
     state = read(conn, match_id, account_id, now=now)
@@ -349,13 +369,15 @@ def report_progress(conn, match_id, account_id, score: int, *, now, final: bool 
         raise MatchRefused("This duel's score comes from its answers.")
     if state["state"] != "playing":
         raise MatchRefused("The duel is over.")
-    migrate.execute(
+    taken = migrate.fetch_one(
         conn,
-        "UPDATE versus_match_players SET score = GREATEST(score, %s),"
-        " finished_at = COALESCE(finished_at, %s)"
-        " WHERE match_id = %s AND account_id = %s",
+        "UPDATE versus_match_players SET score = %s, finished_at = %s"
+        " WHERE match_id = %s AND account_id = %s AND finished_at IS NULL"
+        " RETURNING score",
         (score, now if final else None, match_id, account_id),
     )
+    if taken is None:
+        raise MatchRefused("Your round is already over.")
     return read(conn, match_id, account_id, now=now)
 
 

@@ -201,8 +201,9 @@ def report_match_progress(
     account: dict = Depends(_current_account),
     conn=Depends(get_db),
 ):
-    """The handler duel's growing score, reported as it is earned. The
-    stored number only goes up; ``final`` marks this player done."""
+    """The handler duel's score as it stands, reported as it changes. It
+    follows the round down as well as up; ``final`` closes this player's
+    round, and nothing is taken from them after it."""
     try:
         state = versus_match.report_progress(
             conn, _room_uuid(match_id), account["id"], payload.score,
@@ -226,3 +227,51 @@ def forfeit_match(
     versus_match.forfeit(conn, _room_uuid(match_id), account["id"], now=_CLOCK.now())
     conn.commit()
     return {"ok": True}
+
+
+# -- the leaderboard -------------------------------------------------------
+
+from backend.ranked import seasons as ranked_seasons  # noqa: E402
+from backend.versus import leaderboard as versus_board  # noqa: E402
+
+# How many rows one answer carries. A ceiling, not pagination: the reader's
+# own place is worked out before the cut, so it survives it.
+BOARD_ROWS_SHOWN = 100
+
+
+@router.get("/leaderboard")
+def read_leaderboard(account: dict = Depends(_current_account), conn=Depends(get_db)):
+    """The Versus board for the newest season: duels won, then points.
+    Login is required to see it, as on the other boards.
+
+    It carries only what the screen shows. No account id leaves the
+    server; ``you`` marks the reader's own row instead. ``open`` is false
+    once the season has ended, when the board is shown as it finished.
+    """
+    season = versus_board.newest_season(conn)
+    if season is None:
+        return {"season_label": None, "open": False, "rows": [], "players": 0, "you": None}
+    rows = versus_board.board(conn, season["id"])
+    mine = next((row for row in rows if row.account_id == account["id"]), None)
+    return {
+        "season_label": season["label"],
+        "open": ranked_seasons.admitting_season(conn, _CLOCK.now()) == season["id"],
+        "rows": [
+            {
+                "place": row.place,
+                "username": row.username,
+                "tag": row.tag,
+                "avatar": row.avatar,
+                "wins": row.wins,
+                "played": row.played,
+                "points": row.points,
+                "tied": row.tied,
+                "you": row.account_id == account["id"],
+            }
+            for row in rows[:BOARD_ROWS_SHOWN]
+        ],
+        "players": len(rows),
+        "you": None if mine is None else {
+            "place": mine.place, "wins": mine.wins, "points": mine.points, "tied": mine.tied,
+        },
+    }
