@@ -102,7 +102,7 @@ test('a quit or a failed promotion never celebrates', () => {
 });
 
 test('its copy exists in Spanish', () => {
-  for (const key of ['Skip animation', 'Promoted to', 'Fifteen out of fifteen. The new badge is yours.']) {
+  for (const key of ['Skip', 'Promoted to', 'Fifteen out of fifteen. The new badge is yours.']) {
     assert.ok(es.includes(`'${key}'`), `${key} is missing from the Spanish copy`);
   }
 });

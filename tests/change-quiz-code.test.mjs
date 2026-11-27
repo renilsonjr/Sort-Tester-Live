@@ -30,7 +30,7 @@ test('the new code is shown once with the username in one form a browser can sav
 
 test('every new line has Spanish', () => {
   for (const line of [
-    'Change my Quiz Code',
+    'Change Quiz Code',
     'You get a new Quiz Code. The old one stops working at once.',
     'Every other phone or computer signed in to your account is signed out. This one stays.',
     'Your new Quiz Code',

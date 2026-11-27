@@ -44,7 +44,7 @@ test('#385 the Back on a Ranked RESULT screen is left alone', () => {
   // after a quiz, so it is that screen's primary action and a full-width
   // button is right. #385 is about a way OUT of a screen you opened to
   // look at something.
-  assert.match(js, /<button id="rq-done" class="ghost">\$\{esc\(t\('Back to Ranked'\)\)\}<\/button>/);
+  assert.match(js, /<button id="rq-done" class="ghost">\$\{esc\(t\('Back'\)\)\}<\/button>/);
 });
 
 test('#386 a notice heading is a title, not an enlarged eyebrow', () => {

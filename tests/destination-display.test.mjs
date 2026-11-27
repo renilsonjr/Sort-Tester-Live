@@ -158,11 +158,11 @@ test('Home (guest) shows the sign-in invite and practice actions in both languag
   // The redesign dropped the "Recent sort changes" and "Where to start" blocks;
   // a guest now sees an invite to sign in for Ranked plus the practice actions.
   assert.match(app.markup, /Playing as guest/);
-  assert.match(app.markup, /Sign in to compete in Ranked/);
-  assert.match(app.markup, /Know the chart/);
+  assert.match(app.markup, /Sign in to compete/);
+  assert.match(app.markup, /Chart · Study/);
   app.view.languages[1].click();
   assert.match(app.markup, /Jugando como invitado/);
-  assert.match(app.markup, /Conoce la tabla/);
+  assert.match(app.markup, /Tabla · Estudia/);
 });
 
 test('ordinary picker shows selected run sizes without changing deck grouping', () => {

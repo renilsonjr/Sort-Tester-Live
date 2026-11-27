@@ -19,8 +19,8 @@ function fn(name) {
 
 test('the last answer says so on the button', () => {
   const feedback = fn('function showRankedFeedback');
-  assert.match(feedback, /response\.finished \? 'Finish quiz' : 'Next'/);
-  assert.ok(i18n.includes("'Finish quiz': '"), 'no Spanish for Finish quiz');
+  assert.match(feedback, /response\.finished \? 'Finish' : 'Next'/);
+  assert.ok(i18n.includes("'Finish': '"), 'no Spanish for Finish');
 });
 
 test('the feedback still carries the route, the verdict, the points and the right belt', () => {

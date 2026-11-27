@@ -20,7 +20,7 @@ function fn(name) {
 test('Profile offers it', () => {
   const settings = fn('async function fillSettings');
   assert.match(settings, /id="profile-signout-others"/);
-  assert.match(settings, /t\('Sign out my other devices'\)/);
+  assert.match(settings, /t\('Sign out other devices'\)/);
   // The sentence used to be repeated on the row as well. It was removed
   // there with the other sub-labels, and it is NOT lost: the screen the
   // row opens carries the same words before anything happens, which is
@@ -75,7 +75,7 @@ test('a refusal is reported, never passed off as success', () => {
 
 test('every sentence has Spanish', () => {
   for (const key of [
-    'Sign out my other devices',
+    'Sign out other devices',
     'Ends every other phone or computer signed in to your account. This one stays.',
     'Your Quiz Code keeps working. Anyone using it elsewhere has to enter it again.',
     'If someone else knows your Quiz Code, change it in Settings.',

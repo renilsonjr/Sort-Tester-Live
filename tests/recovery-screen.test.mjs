@@ -40,7 +40,7 @@ test('the second step says what the screen cannot prove', () => {
 
 test('the button says what pressing it asserts', () => {
   const check = fn('function showRecoveryCheck');
-  assert.match(check, /I have checked them in person/);
+  assert.match(check, /Checked in person/);
   // not a bare Confirm, which would ask for agreement rather than a claim
   assert.doesNotMatch(check, />\$\{esc\(t\('Confirm'\)\)\}</);
 });

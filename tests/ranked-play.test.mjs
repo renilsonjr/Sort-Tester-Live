@@ -82,7 +82,7 @@ test('a wrong promotion answer ends the promotion there and then', () => {
   assert.match(feedback, /Reach the cap again to try next time/);
   // the label is now three ways: a lost promotion, the last answer of an
   // ordinary quiz ('Finish quiz', owner report 2026-11-26), and the rest
-  assert.match(feedback, /promoLost \? 'See the result' :/);
+  assert.match(feedback, /promoLost \? 'Result' :/);
   // the page never decides the ending by itself: it follows the server
   assert.match(feedback, /if \(response\.finished\) \{\s*attempt\.stop\(\);\s*showRankedResult/);
   assert.doesNotMatch(app, /plays out|still takes points off your balance/);
