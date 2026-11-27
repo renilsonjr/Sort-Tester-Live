@@ -332,6 +332,14 @@ const ICONS = {
   // A box on a belt, drawn on the same 24x24 grid and stroke as the rest of
   // the set so the dock reads as one family.
   handler: '<svg viewBox="0 0 24 24"><rect x="7" y="4.5" width="10" height="8" rx="1.5"/><path d="M12 4.5v8"/><path d="M3 17h18"/><circle cx="6.5" cy="19.5" r="1.8"/><circle cx="12" cy="19.5" r="1.8"/><circle cx="17.5" cy="19.5" r="1.8"/></svg>',
+  // The two mini-games, and only them, are drawn in volume: isometric art
+  // with its own light, not a line glyph. The box IS the Handler's game --
+  // the thing you grab and send down a route -- and the lifted card over a
+  // thinner one IS the quiz: many questions, and you are on this one. They
+  // are used on each game's own entry point and nowhere else (see the CSS
+  // note in index.html); the dock keeps the line glyphs above.
+  handlerSolid: '<svg viewBox="0 0 48 48"><defs><linearGradient id="g-hb-t" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffd978"/><stop offset="1" stop-color="#f4bd38"/></linearGradient><linearGradient id="g-hb-l" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#b8801c"/><stop offset="1" stop-color="#8d5d12"/></linearGradient><linearGradient id="g-hb-r" x1="1" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#e0a52c"/><stop offset="1" stop-color="#a8761a"/></linearGradient></defs><ellipse cx="24" cy="42.5" rx="14" ry="3.2" fill="#000" opacity=".28"/><path d="M24 6 42 16 24 26 6 16Z" fill="url(#g-hb-t)"/><path d="M6 16 24 26v14L6 30Z" fill="url(#g-hb-l)"/><path d="M42 16 24 26v14l18-10Z" fill="url(#g-hb-r)"/><path d="M24 6 33 11l-18 10-9-5Z" fill="#fff" opacity=".28"/><path d="M33 30.5 42 25.5V21l-9 5Z" fill="#fff" opacity=".16"/><path d="M24 6 42 16" stroke="#fff" stroke-opacity=".45" stroke-width="1.1" fill="none"/><path d="M24 6 6 16" stroke="#fff" stroke-opacity=".3" stroke-width="1.1" fill="none"/></svg>',
+  quizSolid: '<svg viewBox="0 0 48 48"><defs><linearGradient id="g-qc-t" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffe59a"/><stop offset="1" stop-color="#f1b62c"/></linearGradient></defs><ellipse cx="24" cy="44" rx="12" ry="2.6" fill="#000" opacity=".28"/><path d="M24 28 38 36 24 44 10 36Z" fill="#8d6013"/><path d="M10 36v-2.6l14 8V44Z" fill="#6a460c"/><path d="M38 36v-2.6l-14 8V44Z" fill="#a3700f"/><path d="M24 6 44 17 24 28 4 17Z" fill="url(#g-qc-t)"/><path d="M4 17v3.4l20 11V28Z" fill="#c88f20"/><path d="M44 17v3.4l-20 11V28Z" fill="#e0a52c"/><path d="M24 6 44 17" stroke="#fff" stroke-opacity=".55" stroke-width="1.1" fill="none"/><path d="M15 17.5 22 21.5 34 14" stroke="#4a2f05" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>',
   chart: '<svg viewBox="0 0 24 24"><rect x="3.5" y="4" width="17" height="16" rx="2.5"/><path d="M3.5 9.5h17M9.5 9.5V20M15 9.5V20"/></svg>',
   quiz: '<svg viewBox="0 0 24 24"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 2M9.5 2.5h5"/></svg>',
   board: '<svg viewBox="0 0 24 24"><path d="M5 20V11M12 20V5M19 20v-6"/></svg>',
@@ -519,7 +527,7 @@ function showPractice() {
       <section class="home-stripe">
         <p class="lab-eyebrow">${esc(t('Test yourself'))}</p>
         <button id="quiz" class="lab-choice lab-choice-quiz" type="button">
-          <span class="lab-choice-icon" aria-hidden="true">${ICONS.quiz}</span>
+          <span class="lab-choice-icon is-solid" aria-hidden="true">${ICONS.quizSolid}</span>
           <span><strong>${esc(t('Take a quiz'))}</strong></span>
           <span class="lab-arrow" aria-hidden="true">→</span>
         </button>
@@ -3426,7 +3434,7 @@ function showStart() {
         <p class="lab-eyebrow">${esc(t('Handler'))}</p>
         <div class="home-shortcuts">
           <button id="home-handler" class="home-short" type="button">
-            <span class="home-short-ic" aria-hidden="true">${ICONS.handler}</span>
+            <span class="home-short-ic is-solid" aria-hidden="true">${ICONS.handlerSolid}</span>
             <strong>${esc(t('Handler · 60 s'))}</strong>
           </button>
         </div>
