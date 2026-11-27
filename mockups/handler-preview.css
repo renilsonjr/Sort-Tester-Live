@@ -1084,7 +1084,19 @@
 
   /* Language toggle as glass */
   .lab-language button { background: var(--glass-surface-sub); border: 1px solid var(--glass-border); color: var(--ink); backdrop-filter: var(--blur-md); -webkit-backdrop-filter: var(--blur-md); }
-  .lab-language button[aria-pressed="true"] { border-color: var(--gold); color: var(--ink); }
+  /* The selected language was the hardest thing in the header to read:
+     near-white ink on the cream fill two layers up, 1.18:1 measured at
+     375x812 in both themes -- the chip that says which language you are IN
+     was less legible than the one you are not. This layer restyled the
+     unpressed chips as glass and changed the pressed one's ink, but left
+     that older `background: #f7eac7` standing underneath.
+
+     Selected now reads the way the rest of the app marks selection: the
+     gold tint, the gold border and gold ink, which composites to 7.94:1
+     over the header. */
+  .lab-language button[aria-pressed="true"] {
+    border-color: var(--gold); background: var(--soft); color: var(--gold);
+  }
 
 
 
