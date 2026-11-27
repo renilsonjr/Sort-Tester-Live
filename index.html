@@ -1785,7 +1785,21 @@
      looking like the prompt it was. The belts dim themselves: `.belts
      .belt:disabled` is already half opacity. */
   .rq-cue.over { color: var(--bad); }
-  #rq-question .belts .belt { min-height: clamp(70px, 12.5dvh, 104px); }
+  #rq-question .belts .belt { min-height: clamp(70px, 15.6dvh, 132px); }
+  /* The answers sit at the bottom of the screen, where the thumb is, and the
+     route card takes whatever height is left. On an 844px phone the page
+     used to end at 648px with the belts in the middle; on a short phone
+     nothing is left over and the card is its own height, as before. */
+  /* `.attempt-live` rather than `:has(> #rq-play)`: an older phone browser
+     that does not know :has would drop the whole layout. The other live
+     screens are a single column already, so a flex column changes nothing
+     for them. */
+  #app.attempt-live .lab-main { display: flex; flex-direction: column; }
+  #rq-play, #rq-question { flex: 1 0 auto; }
+  #rq-question .rq-prompt { flex: 1 0 auto; display: flex; flex-direction: column; align-items: center; justify-content: center; margin: 0; }
+  .rq-top-end { display: flex; align-items: center; gap: 12px; }
+  /* 44px tall: small beside the clock, still a full touch target. */
+  #rq-play .rq-quit { width: auto; min-height: 44px; padding: 0 16px; border-radius: 999px; font-size: 13px; }
 
   /* Ranked feedback */
   .rq-head { display: flex; align-items: center; gap: 12px; }
@@ -2546,6 +2560,10 @@
 
     /* Narrow on purpose. */
     #rq-play { max-width: 560px; margin-inline: auto; }
+    /* A desktop has no thumb to reach for: the question keeps its own
+       height and the belts follow it, as they did. */
+    #rq-play, #rq-question, #rq-question .rq-prompt { flex: 0 0 auto; }
+    #rq-question .belts .belt { min-height: clamp(70px, 12.5dvh, 104px); }
     .lab-screen > .lab-choice, .auth-screen { max-width: 560px; margin-inline: auto; }
     .lab-screen .field, .lab-screen .glass-input { max-width: 560px; }
 
