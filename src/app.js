@@ -3461,45 +3461,49 @@ function showStart() {
       ${seasonBubbleMarkup('launch-callout')}
       <div id="home-tiebreak" hidden></div>
       <div class="home-split">
+      <!-- One card says where the player stands and how to play: the balance
+           as the big number, the badge beside it, how far the badge has to
+           go, and the button. The climb used to be a block of its own two
+           stripes down, repeating the badge at twice the height. -->
       <section class="home-stripe home-split-hero">
         <p class="lab-eyebrow">${esc(t('Ranked'))}</p>
-        <div class="home-spot">
+        <div class="home-spot home-hero">
           <span class="home-pill" id="home-season" hidden></span>
-          <div class="home-spot-row">
-            ${signedIn() ? `
-            <div class="home-standing" id="home-ident"><small>${esc(t('Your balance'))}</small><b>…</b></div>
-            <button id="home-ranked" class="primary" type="button">${esc(t('Play Ranked'))} <span aria-hidden="true">→</span></button>
-            ` : `
-            <div class="home-standing"><small>${esc(t('Playing as guest'))}</small><b class="home-standing-note">${esc(t('Sign in to compete'))}</b></div>
-            <button id="home-signin" class="primary" type="button">${esc(t('Sign in'))} <span aria-hidden="true">→</span></button>
-            `}
+          ${signedIn() ? `
+          <div class="home-hero-bal">
+            <div class="home-standing" id="home-ident"><small>${esc(t('Your balance'))}</small><b class="home-hero-num">…</b></div>
+            <div class="home-obj home-hero-obj" id="home-badge" aria-hidden="true"></div>
           </div>
+          <div id="home-progress" hidden></div>
+          <button id="home-ranked" class="primary" type="button">${esc(t('Play Ranked'))} <span aria-hidden="true">→</span></button>
+          ` : `
+          <div class="home-standing"><small>${esc(t('Playing as guest'))}</small><b class="home-standing-note">${esc(t('Sign in to compete'))}</b></div>
+          <button id="home-signin" class="primary" type="button">${esc(t('Sign in'))} <span aria-hidden="true">→</span></button>
+          `}
+        </div>
+        <div class="home-prize">
+          <img class="home-prize-hat" src="assets/prize-hat.svg" alt="">
+          <div><strong>${esc(t('UPS hat'))}</strong><small>${esc(t('Top 3 prize'))}</small></div>
         </div>
       </section>
-      ${signedIn() ? '<section class="home-stripe home-split-climb" id="home-climb" hidden></section>' : ''}
-      <!-- Handler, directly under the Ranked block and before Practice, which
-           is where the owner asked for it. It is not inside the Ranked stripe:
-           the mini-game is deliberately kept out of Ranked, and sharing that
-           stripe would say the opposite. -->
-      <section class="home-stripe home-split-handler">
-        <p class="lab-eyebrow">${esc(t('Handler'))}</p>
-        <div class="home-shortcuts">
-          <button id="home-handler" class="home-short" type="button">
-            <span class="home-short-ic is-solid" aria-hidden="true">${ICONS.handlerSolid}</span>
-            <strong>${esc(t('Handler · 60 s'))}</strong>
-          </button>
-        </div>
-      </section>
+      <!-- Handler leads the row and stays outside the Ranked stripe: the
+           mini-game is deliberately kept out of Ranked, and sharing that
+           stripe would say the opposite. It is practice, so it sits with the
+           other two ways to practise instead of alone beside an empty half. -->
       <section class="home-stripe home-split-actions">
         <p class="lab-eyebrow">${esc(t('Practice'))}</p>
-        <div class="home-shortcuts">
+        <div class="home-shortcuts home-trio">
+          <button id="home-handler" class="home-short" type="button">
+            <span class="home-short-ic is-solid" aria-hidden="true">${ICONS.handlerSolid}</span>
+            <strong>${esc(t('Handler'))}</strong>
+          </button>
           <button id="home-practice" class="home-short" type="button">
             <span class="home-short-ic" aria-hidden="true">${ICONS.practice}</span>
             <strong>${esc(t('Practice'))}</strong>
           </button>
           <button id="home-study" class="home-short" type="button">
             <span class="home-short-ic" aria-hidden="true">${ICONS.chart}</span>
-            <strong>${esc(t('Chart · Study'))}</strong>
+            <strong>${esc(t('Chart'))}</strong>
           </button>
         </div>
       </section>
@@ -3561,29 +3565,19 @@ async function fillHomeIdentity(view) {
   }
   const box = view.querySelector('#home-ident');
   if (!box || !entry) return;
-  const points = `${language.number(entry.points)} ${t('points')}`;
   const placed = stats && stats.place != null;
-  box.innerHTML = `<small>${esc(t(placed ? 'Your standing' : 'Your balance'))}</small><b>${placed ? `#${esc(stats.place)} · ` : ''}${esc(points)}</b>`;
+  const label = placed ? `${t('Your standing')} · #${stats.place}` : t('Your balance');
+  box.innerHTML = `<small>${esc(label)}</small><b class="home-hero-num">${esc(language.number(entry.points))} <i>${esc(t('points'))}</i></b>`;
 
-  const climb = view.querySelector('#home-climb');
+  const badge = view.querySelector('#home-badge');
+  if (badge) badge.innerHTML = `<span class="home-shine" aria-hidden="true"></span><img class="home-obj-badge" src="${badgeArt(entry.badge)}" alt="">`;
+
+  const climb = view.querySelector('#home-progress');
   if (!climb) return;
   const progress = badgeProgress(entry);
   climb.innerHTML = `
-    <p class="lab-eyebrow">${esc(t('Your climb'))}</p>
-    <div class="home-climb">
-      <div class="home-tiles">
-        <div class="home-tile">
-          <div class="home-obj"><span class="home-shine" aria-hidden="true"></span><img class="home-obj-badge" src="${badgeArt(entry.badge)}" alt=""></div>
-          <strong>${esc(entry.badge)}</strong><small>${esc(t('Your badge'))}</small>
-        </div>
-        <div class="home-tile">
-          <div class="home-obj"><img class="home-obj-hat" src="assets/prize-hat.svg" alt=""></div>
-          <strong>${esc(t('UPS hat'))}</strong><small>${esc(t('Top 3 prize'))}</small>
-        </div>
-      </div>
-      ${progress === null ? '' : `<div class="profile-bar home-meter"><i style="width:${progress}%"></i></div>`}
-      <p class="home-climb-note">${esc(balanceLine(entry))}</p>
-    </div>`;
+    ${progress === null ? '' : `<div class="profile-bar home-meter"><i style="width:${progress}%"></i></div>`}
+    <p class="home-climb-note">${esc(balanceLine(entry))}</p>`;
   climb.hidden = false;
 }
 

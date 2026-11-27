@@ -24,16 +24,19 @@ test('Handler is a fifth tab, and a guest gets it too', () => {
   assert.match(app, /handler: '<svg viewBox="0 0 24 24"/, 'the tab needs an icon from the same set');
 });
 
-test('the Home stripe sits under Ranked and before Practice, not inside Ranked', () => {
-  const home = app.slice(app.indexOf('home-split-hero'), app.indexOf('home-split-actions'));
-  assert.match(home, /home-split-handler/);
+test('Handler leads the Practice row on Home, and is not inside Ranked', () => {
   // Inside the Ranked stripe would say the mini-game is part of Ranked, and
-  // the persistence boundary says the opposite.
-  const hero = app.slice(app.indexOf('home-split-hero'), app.indexOf('home-split-climb'));
+  // the persistence boundary says the opposite. It used to have a stripe of
+  // its own between the two; the owner approved folding it into the Practice
+  // row (2026-11-27), where it is still the first thing after Ranked.
+  const hero = app.slice(app.indexOf('home-split-hero'), app.indexOf('home-split-actions'));
+  assert.ok(hero.length > 0, 'the Ranked stripe comes before the Practice stripe');
   assert.ok(!hero.includes('home-handler'), 'Handler must not be inside the Ranked hero');
   assert.match(app, /view\.querySelector\('#home-handler'\)\.addEventListener\('click', showHandler\)/);
-  // Before the Practice shortcuts.
-  assert.ok(app.indexOf('home-split-handler') < app.indexOf('id="home-practice"'));
+  // First in the row, before the Practice shortcut.
+  const row = app.slice(app.indexOf('home-split-actions'));
+  assert.ok(row.indexOf('id="home-handler"') > 0);
+  assert.ok(row.indexOf('id="home-handler"') < row.indexOf('id="home-practice"'));
 });
 
 // ---------------------------------------------------------------------------

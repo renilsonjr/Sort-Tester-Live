@@ -159,10 +159,10 @@ test('Home (guest) shows the sign-in invite and practice actions in both languag
   // a guest now sees an invite to sign in for Ranked plus the practice actions.
   assert.match(app.markup, /Playing as guest/);
   assert.match(app.markup, /Sign in to compete/);
-  assert.match(app.markup, /Chart · Study/);
+  assert.match(app.markup, /<strong>Chart<\/strong>/);
   app.view.languages[1].click();
   assert.match(app.markup, /Jugando como invitado/);
-  assert.match(app.markup, /Tabla · Estudia/);
+  assert.match(app.markup, /<strong>Tabla<\/strong>/);
 });
 
 test('ordinary picker shows selected run sizes without changing deck grouping', () => {
