@@ -29,23 +29,11 @@ from backend.auth.deletion import (
 )
 from backend.auth.sessions import revoke_session
 from backend.auth.settings import AuthSettings, get_auth_settings
-from backend.db import migrate, pool, settings
+from backend.db import migrate
+from backend.routers import deps
+from backend.routers.deps import current_account
 
 router = APIRouter(prefix="/api/auth", tags=["auth"])
-
-
-@contextmanager
-def _db_connection():
-    """One pooled connection for this request (audit M-5).
-
-    Opening a connection per request cost a connect to Postgres each time
-    and had no ceiling; the pool reuses a capped set and makes a burst
-    wait. Commits are still the caller's own: see backend/db/pool.py for
-    why that was kept rather than folded into the checkout.
-    """
-    pool.init_pool(settings.app_database_url(), auth_mode=settings.db_auth_mode())
-    with pool.checkout() as conn:
-        yield conn
 
 
 class _CountedCheck:
@@ -105,11 +93,6 @@ def _record_successful_attempt(keys: tuple[str, str]) -> None:
     get_account_login_limiter().record_success(keys[1])
 
 
-def get_db():
-    with _db_connection() as conn:
-        yield conn
-
-
 class RegisterRequest(BaseModel):
     # the accounts table's own rule: 3-24 letters, digits or underscores
     username: str = Field(pattern=r"^[A-Za-z0-9_]{3,24}$")
@@ -161,27 +144,12 @@ class AvatarRequest(BaseModel):
 def _purge_pending_deletions():
     # accepted deletions are purged before any auth request is handled, the
     # same per-request pattern as the season close; one statement when idle
-    with _db_connection() as conn:
+    with deps.db_connection() as conn:
         purge_deleted_accounts(conn)
 
 
 # runs before every auth route below
 router.dependencies.append(Depends(_purge_pending_deletions))
-
-
-def _current_account(request: Request):
-    raw_token = request.cookies.get("sort_tester_session")
-    if not raw_token:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized")
-    with _db_connection() as conn:
-        account = get_account_by_session(conn, raw_token)
-        # the idle refresh and the idle revocation are writes: without this
-        # the close rolls both back, so last_seen_at never leaves the login
-        # time and every session dies one idle window later (audit H-1)
-        conn.commit()
-    if account is None:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized")
-    return account
 
 
 @router.post("/register", response_model=RegisterResponse)
@@ -193,7 +161,7 @@ def register(request: Request, payload: RegisterRequest):
             status_code=status.HTTP_429_TOO_MANY_REQUESTS,
             detail="Too many sign-ups; try again later",
         )
-    with _db_connection() as conn:
+    with deps.db_connection() as conn:
         try:
             account_id, login_id = register_account(conn, payload.username)
         except migrate.IntegrityError:
@@ -217,7 +185,7 @@ def login(request: Request, response: Response, payload: LoginRequest):
         # Three steps, and no connection held during the middle one: the
         # verification is the slow part, and a connection kept through it
         # is one that nobody else can use.
-        with _db_connection() as conn:
+        with deps.db_connection() as conn:
             normalized, candidates = find_login_candidates(
                 conn, payload.username, payload.login_id
             )
@@ -226,7 +194,7 @@ def login(request: Request, response: Response, payload: LoginRequest):
             check.mark_failed()
             _record_failed_attempt(keys)
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized")
-        with _db_connection() as conn:
+        with deps.db_connection() as conn:
             result = open_login_session(
                 conn,
                 candidate,
@@ -268,7 +236,7 @@ def login(request: Request, response: Response, payload: LoginRequest):
 def logout(response: Response, request: Request):
     raw_token = request.cookies.get("sort_tester_session")
     if raw_token:
-        with _db_connection() as conn:
+        with deps.db_connection() as conn:
             from backend.auth.sessions import authenticate_session
 
             session = authenticate_session(conn, raw_token)
@@ -280,7 +248,7 @@ def logout(response: Response, request: Request):
 
 
 @router.get("/me", response_model=AccountResponse)
-def me(account: dict = Depends(_current_account)):
+def me(account: dict = Depends(current_account)):
     return {
         "account_id": str(account["id"]),
         "username": account["username"],
@@ -293,7 +261,7 @@ def me(account: dict = Depends(_current_account)):
 @router.put("/avatar", status_code=status.HTTP_204_NO_CONTENT)
 def set_avatar(
     payload: AvatarRequest,
-    account: dict = Depends(_current_account),
+    account: dict = Depends(current_account),
 ):
     """Choose the icon shown on this player's profile and the leaderboard.
 
@@ -309,7 +277,7 @@ def set_avatar(
             status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
             detail="That is not one of the icons.",
         )
-    with _db_connection() as conn:
+    with deps.db_connection() as conn:
         migrate.execute(
             conn,
             "UPDATE accounts SET avatar = %s WHERE id = %s AND deleted_at IS NULL",
@@ -322,7 +290,7 @@ def set_avatar(
 @router.post("/admin/regenerate", response_model=AdminRegenerateResponse)
 def admin_regenerate(
     payload: AdminRegenerateRequest,
-    account: dict = Depends(_current_account),
+    account: dict = Depends(current_account),
 ):
     """Withdrawn: this route reset a login ID on the owner's say-so alone.
 
@@ -356,7 +324,7 @@ class ReauthenticateRequest(BaseModel):
 def reauthenticate_session(
     request: Request,
     payload: ReauthenticateRequest,
-    account: dict = Depends(_current_account),
+    account: dict = Depends(current_account),
 ):
     """Re-enter the login ID on this session (#11 box 5).
 
@@ -370,7 +338,7 @@ def reauthenticate_session(
     from backend.ranked.clock import system_clock
 
     keys = _check_attempt_limits(request, account["username"])
-    with _counted_check(request) as check, _db_connection() as conn:
+    with _counted_check(request) as check, deps.db_connection() as conn:
         try:
             reauth.reauthenticate(
                 conn,
@@ -397,7 +365,7 @@ class DeleteAccountRequest(BaseModel):
 @router.post("/sessions/revoke-others")
 def revoke_other_sessions(
     request: Request,
-    account: dict = Depends(_current_account),
+    account: dict = Depends(current_account),
 ):
     """End every other device signed in to this account, keeping this one.
 
@@ -410,7 +378,7 @@ def revoke_other_sessions(
     from backend.ranked.clock import system_clock
 
     raw_token = request.cookies.get("sort_tester_session") or ""
-    with _db_connection() as conn:
+    with deps.db_connection() as conn:
         try:
             reauth.require_recent(conn, raw_token, clock=system_clock())
         except reauth.ReauthRequired:
@@ -435,7 +403,7 @@ class ChangeLoginIdResponse(BaseModel):
 def change_login_id(
     request: Request,
     response: Response,
-    account: dict = Depends(_current_account),
+    account: dict = Depends(current_account),
 ):
     """Replace the signed-in player's Quiz Code with a new one (2026-11-25).
 
@@ -451,7 +419,7 @@ def change_login_id(
 
     auth_settings = get_auth_settings()
     raw_token = request.cookies.get("sort_tester_session") or ""
-    with _db_connection() as conn:
+    with deps.db_connection() as conn:
         try:
             reauth.require_recent(conn, raw_token, clock=system_clock())
         except reauth.ReauthRequired:
@@ -488,7 +456,7 @@ def delete_account(
     request: Request,
     response: Response,
     payload: DeleteAccountRequest,
-    account: dict = Depends(_current_account),
+    account: dict = Depends(current_account),
 ):
     """Delete the signed-in account. Irreversible once accepted: the account
     is locked out at once and its data is purged. Re-entering the login ID
@@ -499,7 +467,7 @@ def delete_account(
             detail="Acknowledge that deletion cannot be undone",
         )
     keys = _check_attempt_limits(request, account["username"])
-    with _counted_check(request) as check, _db_connection() as conn:
+    with _counted_check(request) as check, deps.db_connection() as conn:
         try:
             request_deletion(conn, account["id"], payload.login_id)
         except WrongLoginIdError:

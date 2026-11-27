@@ -12,6 +12,7 @@ backups and outside providers, which do not exist yet (#13, #41).
 """
 from datetime import datetime, timezone
 
+from backend.auth.owner import is_active_owner
 from backend.auth import deletion_list
 from backend.auth.credentials import normalize_login_id, verify_login_id
 from backend.db import migrate
@@ -140,13 +141,7 @@ def _apply(conn, account_id, now) -> None:
 
 
 def _require_owner(conn, acting_account_id) -> None:
-    row = migrate.fetch_one(
-        conn,
-        "SELECT 1 AS ok FROM accounts"
-        " WHERE id = %s AND is_owner = true AND deleted_at IS NULL",
-        (acting_account_id,),
-    )
-    if row is None:
+    if not is_active_owner(conn, acting_account_id):
         raise NotOwnerError("Only the owner may delete another account.")
 
 

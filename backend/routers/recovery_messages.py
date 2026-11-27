@@ -10,7 +10,7 @@ from pydantic import BaseModel, Field
 from backend.auth import recovery_messages
 from backend.auth.rate_limit import _client_key
 from backend.text_input import PlainText
-from backend.db import pool, settings
+from backend.routers import deps
 from backend.ranked.clock import system_clock
 
 router = APIRouter(prefix="/api/auth", tags=["auth"])
@@ -32,8 +32,7 @@ def leave_recovery_message(request: Request, payload: RecoveryMessageRequest):
     client = _client_key(request)
     if not limiter.is_allowed(client):
         raise HTTPException(status_code=status.HTTP_429_TOO_MANY_REQUESTS, detail=TOO_MANY)
-    pool.init_pool(settings.app_database_url(), auth_mode=settings.db_auth_mode())
-    with pool.checkout() as conn:
+    with deps.db_connection() as conn:
         try:
             recovery_messages.leave_message(conn, payload.message, clock=_CLOCK)
         except recovery_messages.MessageRefused as error:

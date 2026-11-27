@@ -9,6 +9,7 @@ Deciding that an outage really happened needs trusted evidence (#13); this
 module applies the consequences once it is confirmed. It lives apart from
 :mod:`backend.ranked.flags` because it uses settlement, which uses flags.
 """
+from backend.auth.owner import is_active_owner
 from backend.db import migrate
 from backend.ranked import engine, flags, settlement, tiebreaks
 
@@ -18,13 +19,7 @@ class NotOwnerError(PermissionError):
 
 
 def _require_owner(conn, acting_account_id) -> None:
-    row = migrate.fetch_one(
-        conn,
-        "SELECT 1 AS ok FROM accounts"
-        " WHERE id = %s AND is_owner = true AND deleted_at IS NULL",
-        (acting_account_id,),
-    )
-    if row is None:
+    if not is_active_owner(conn, acting_account_id):
         raise NotOwnerError(acting_account_id)
 
 

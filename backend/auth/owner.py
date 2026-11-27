@@ -29,6 +29,24 @@ class AccountNotFoundError(OwnerError):
     """No active account has that tag."""
 
 
+def is_active_owner(conn, account_id) -> bool:
+    """Whether this account is the owner right now.
+
+    The one place this question is put to the database. An owner action
+    asks it again inside its own transaction instead of trusting what a
+    session said earlier. Deletion is a timestamp, not a DELETE, so the
+    row of a deleted owner still says is_owner = true: it must not count. Each
+    caller raises its own error; this only answers.
+    """
+    row = migrate.fetch_one(
+        conn,
+        "SELECT 1 AS ok FROM accounts"
+        " WHERE id = %s AND is_owner = true AND deleted_at IS NULL",
+        (account_id,),
+    )
+    return row is not None
+
+
 def designate_owner(conn, tag: str) -> dict:
     """Make the active account with ``tag`` the owner; return its id,
     username and tag. Refuses, changing nothing, when an owner exists or no

@@ -14,7 +14,8 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel, Field
 
 from backend.ranked.clock import system_clock
-from backend.routers.ranked import _current_account, get_db
+from backend.routers.deps import current_account, reviewed_bank
+from backend.routers.ranked import get_db
 from backend.versus import rooms
 
 router = APIRouter(prefix="/api/versus", tags=["versus"])
@@ -33,7 +34,7 @@ class JoinRoomRequest(BaseModel):
 @router.post("/rooms")
 def create_room(
     payload: CreateRoomRequest,
-    account: dict = Depends(_current_account),
+    account: dict = Depends(current_account),
     conn=Depends(get_db),
 ):
     """Open a room and answer it, code included. Opening another closes
@@ -49,7 +50,7 @@ def create_room(
 @router.post("/rooms/join")
 def join_room(
     payload: JoinRoomRequest,
-    account: dict = Depends(_current_account),
+    account: dict = Depends(current_account),
     conn=Depends(get_db),
 ):
     """Take the empty seat in the room with this code. One answer covers
@@ -66,7 +67,7 @@ def join_room(
 @router.get("/rooms/{room_id}")
 def read_room(
     room_id: str,
-    account: dict = Depends(_current_account),
+    account: dict = Depends(current_account),
     conn=Depends(get_db),
 ):
     """The room as this account sees it. The waiting screen polls this;
@@ -83,7 +84,7 @@ def read_room(
 @router.post("/rooms/{room_id}/leave")
 def leave_room(
     room_id: str,
-    account: dict = Depends(_current_account),
+    account: dict = Depends(current_account),
     conn=Depends(get_db),
 ):
     """Walk out. Host gone closes the room; guest gone reopens the seat.
@@ -103,7 +104,6 @@ def _room_uuid(room_id: str):
 
 # -- the duel itself -------------------------------------------------------
 
-from backend.routers.ranked import _reviewed_bank  # noqa: E402  (shares the pinned bank)
 from backend.versus import match as versus_match  # noqa: E402
 
 
@@ -120,7 +120,7 @@ class ProgressRequest(BaseModel):
 @router.post("/rooms/{room_id}/start")
 def start_match(
     room_id: str,
-    account: dict = Depends(_current_account),
+    account: dict = Depends(current_account),
     conn=Depends(get_db),
 ):
     """The host turns a full room into a playing duel. Both players'
@@ -133,7 +133,7 @@ def start_match(
         conn.commit()
         return versus_match.read(conn, room["match_id"], account["id"], now=now)
     try:
-        match_id = versus_match.start(conn, room, _reviewed_bank(), now=now)
+        match_id = versus_match.start(conn, room, reviewed_bank(), now=now)
     except versus_match.MatchRefused as error:
         conn.rollback()
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(error)) from None
@@ -144,7 +144,7 @@ def start_match(
 @router.get("/matches/{match_id}")
 def read_match(
     match_id: str,
-    account: dict = Depends(_current_account),
+    account: dict = Depends(current_account),
     conn=Depends(get_db),
 ):
     """The once-a-second poll behind the tug bar. It is also the lazy
@@ -159,13 +159,13 @@ def read_match(
 @router.get("/matches/{match_id}/question")
 def read_match_question(
     match_id: str,
-    account: dict = Depends(_current_account),
+    account: dict = Depends(current_account),
     conn=Depends(get_db),
 ):
     """This player's live quiz question. ``None``-shaped 404 when they
     are done, the duel is over, or it is not theirs to see."""
     view = versus_match.current_question(
-        conn, _room_uuid(match_id), account["id"], _reviewed_bank(), now=_CLOCK.now()
+        conn, _room_uuid(match_id), account["id"], reviewed_bank(), now=_CLOCK.now()
     )
     conn.commit()
     if view is None:
@@ -177,7 +177,7 @@ def read_match_question(
 def answer_match_question(
     match_id: str,
     payload: AnswerRequest,
-    account: dict = Depends(_current_account),
+    account: dict = Depends(current_account),
     conn=Depends(get_db),
 ):
     """Judge one answer and advance. The result carries the right belt,
@@ -185,7 +185,7 @@ def answer_match_question(
     try:
         result = versus_match.submit_answer(
             conn, _room_uuid(match_id), account["id"], payload.seq, payload.choice,
-            _reviewed_bank(), now=_CLOCK.now(),
+            reviewed_bank(), now=_CLOCK.now(),
         )
     except versus_match.MatchRefused as error:
         conn.rollback()
@@ -198,7 +198,7 @@ def answer_match_question(
 def report_match_progress(
     match_id: str,
     payload: ProgressRequest,
-    account: dict = Depends(_current_account),
+    account: dict = Depends(current_account),
     conn=Depends(get_db),
 ):
     """The handler duel's score as it stands, reported as it changes. It
@@ -219,7 +219,7 @@ def report_match_progress(
 @router.post("/matches/{match_id}/forfeit")
 def forfeit_match(
     match_id: str,
-    account: dict = Depends(_current_account),
+    account: dict = Depends(current_account),
     conn=Depends(get_db),
 ):
     """Walk out where you stand. Not an error when the duel is already
@@ -240,7 +240,7 @@ BOARD_ROWS_SHOWN = 100
 
 
 @router.get("/leaderboard")
-def read_leaderboard(account: dict = Depends(_current_account), conn=Depends(get_db)):
+def read_leaderboard(account: dict = Depends(current_account), conn=Depends(get_db)):
     """The Versus board for the newest season: duels won, then points.
     Login is required to see it, as on the other boards.
 
