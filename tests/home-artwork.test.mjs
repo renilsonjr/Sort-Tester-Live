@@ -57,3 +57,29 @@ test('the meter fills through the current badge, and Challenger has none', () =>
   assert.equal(badgeProgress({ badge: 'Gold', points: 4000 }), 100);
   assert.equal(badgeProgress({ badge: 'Challenger', points: 5200 }), null);
 });
+
+test('the Ranked card carries the balance, the badge, the meter and the button', () => {
+  // "Your climb" used to be a block of its own two stripes down. The card
+  // now says all of it, so a regression that splits them again shows here.
+  const hero = home.slice(home.indexOf('home-split-hero'), home.indexOf('home-split-actions'));
+  for (const hook of ['id="home-ident"', 'id="home-badge"', 'id="home-progress"', 'id="home-ranked"', 'class="home-prize"']) {
+    assert.ok(hero.includes(hook), `the Ranked stripe should hold ${hook}`);
+  }
+  assert.ok(hero.indexOf('id="home-progress"') < hero.indexOf('id="home-ranked"'), 'the meter sits above the button');
+  assert.ok(hero.indexOf('id="home-ranked"') < hero.indexOf('class="home-prize"'), 'the prize line sits under the card');
+  assert.doesNotMatch(home, /home-split-climb|Your climb/);
+  const fill = app.slice(app.indexOf('async function fillHomeIdentity'), app.indexOf('// The season bubble (#452;'));
+  for (const hook of ['#home-ident', '#home-badge', '#home-progress']) assert.ok(fill.includes(hook));
+});
+
+test('Home offers the three ways to practise in one row, in both languages', () => {
+  const row = home.slice(home.indexOf('home-trio'), home.indexOf("t('Your sessions')"));
+  const order = ['id="home-handler"', 'id="home-practice"', 'id="home-study"'].map((id) => row.indexOf(id));
+  assert.ok(order.every((at) => at > 0) && order[0] < order[1] && order[1] < order[2]);
+  for (const label of ['Handler', 'Practice', 'Chart']) assert.ok(row.includes(`t('${label}')`));
+  const css = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
+  assert.match(css, /\.home-trio \{ grid-template-columns: repeat\(3, minmax\(0, 1fr\)\); \}/);
+  const language = createLanguage();
+  language.set('es');
+  assert.equal(language.text('Chart'), 'Tabla');
+});
