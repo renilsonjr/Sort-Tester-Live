@@ -73,11 +73,12 @@ test('the sign-in screen lost its two lines too', () => {
 });
 
 test('the sign-in screen keeps the two links that are the way forward', () => {
-  // "Continue as guest" no longer explains that a guest gets Practice
-  // only. The two links under it are the only route for somebody without
-  // a code, so they must not be swept next.
+  // The guest button no longer explains that a guest gets Practice only.
+  // Creating an account and recovering a code are the only routes for
+  // somebody without a code, so they must not be swept next. Since
+  // 2026-11-27 the first is a button beside the guest one.
   const auth = readFileSync(join(root, 'src/auth.js'), 'utf8');
-  assert.match(auth, /Need a Quiz Code\? Create an account/);
+  assert.match(auth, /id="auth-register-btn" class="ghost" type="button">Create account</);
   assert.match(auth, /Forgot my Quiz Code\?/);
 });
 

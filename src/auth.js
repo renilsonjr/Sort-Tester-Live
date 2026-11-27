@@ -98,6 +98,7 @@ const FORGOT_ES = {
     'Cómo jugar',
   'Sign up, play, and how to win a hat.':
     'Crear cuenta, jugar y cómo ganar una gorra.',
+  'Made by RJ': 'Hecho por RJ',
   'Made by RJ. Meet the person behind the app':
     'Hecho por RJ. Conoce a quien está detrás de la app',
   'Security tested: grade A by ImmuniWeb': 'Seguridad probada: calificación A de ImmuniWeb',
@@ -191,8 +192,11 @@ export function createAuthPanel(container, onContinueAsGuest, onLoggedIn) {
         <div class="season-bubble-body"><h2 data-bubble-title></h2><p data-bubble-text></p></div>
         <button type="button" class="season-bubble-close" data-bubble-close aria-label="Close">×</button>
       </section>
-      <div class="brandmark" aria-hidden="true">RJ</div>
-      <div class="auth-head">
+      ${/* The mark and the name on one line. Stacked, they took 130px
+            before the first field and pushed the foot of the screen under
+            the fold on an 844px phone. */ ''}
+      <div class="auth-brand">
+        <div class="brandmark" aria-hidden="true">RJ</div>
         <h1 class="auth-title">Sort Quiz</h1>
       </div>
       <form id="auth-choices" class="auth-card" autocomplete="on">
@@ -205,21 +209,25 @@ export function createAuthPanel(container, onContinueAsGuest, onLoggedIn) {
           <button id="auth-show-code-btn" class="code-eye" type="button" aria-pressed="false" aria-label="${forgotText('Show Quiz Code')}">${forgotText('Show')}</button>
         </div>
         <button id="auth-login-btn" class="primary" type="submit">Log in with Quiz Code</button>
-        <button id="auth-guest-btn" class="ghost" type="button">Continue as guest</button>
-        <button id="auth-register-btn" class="auth-link" type="button">Need a Quiz Code? Create an account</button>
+        ${/* Creating an account is the way into Ranked, and it used to be a
+              line of text under a full-width guest button. The two now
+              stand side by side as equals; Create account comes first. */ ''}
+        <div class="auth-pair">
+          <button id="auth-register-btn" class="ghost" type="button">Create account</button>
+          <button id="auth-guest-btn" class="ghost" type="button">Play as guest</button>
+        </div>
         <button id="auth-forgot-btn" class="auth-link" type="button">${forgotText('Forgot my Quiz Code?')}</button>
       </form>
+      <div id="auth-form" class="auth-card" hidden></div>
       ${/* #451: the manual is for people who have no account yet, so it
             sits on this screen, outside the login card. */ ''}
       <a id="auth-howto" class="auth-howto" href="${manualHref()}" target="_blank" rel="noopener">
         <span aria-hidden="true">?</span>
         <span><strong>${forgotText('How to play')}</strong><small>${forgotText('Sign up, play, and how to win a hat.')}</small></span>
       </a>
-      <div id="auth-form" class="auth-card" hidden></div>
       <p id="auth-message" class="warn"></p>
-      <p class="auth-footer"><a class="auth-footer-link" href="https://renilsonjr.pages.dev" target="_blank" rel="noopener noreferrer">${forgotText('Made by RJ. Meet the person behind the app')}</a></p>
+      <p class="auth-footer auth-footer-links"><a class="auth-footer-link" href="https://renilsonjr.pages.dev" target="_blank" rel="noopener noreferrer" aria-label="${forgotText('Made by RJ. Meet the person behind the app')}">${forgotText('Made by RJ')}</a><a id="auth-privacy" class="auth-footer-link" href="${privacyHref()}" target="_blank" rel="noopener">${forgotText('Privacy')}</a></p>
       <p class="auth-footer auth-footer-security"><a class="security-badge-link" href="${SECURITY_REPORT_URL}" target="_blank" rel="noopener noreferrer"><img class="security-badge" src="assets/immuniweb-badge.png" width="150" height="50" alt="${forgotText('Security tested: grade A by ImmuniWeb')}"></a></p>
-      <p class="auth-footer"><a id="auth-privacy" class="auth-footer-link" href="${privacyHref()}" target="_blank" rel="noopener">${forgotText('Privacy')}</a></p>
     </div>
   `;
 
