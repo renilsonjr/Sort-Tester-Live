@@ -51,7 +51,7 @@ class TiebreakPlayTests(unittest.TestCase):
         self.conn = migrate.connect(self.conninfo)
         self.addCleanup(self.conn.close)
         self.clock = FrozenClock(datetime.now(timezone.utc).replace(microsecond=0))
-        patcher = mock.patch("backend.routers.ranked._CLOCK", self.clock)
+        patcher = mock.patch("backend.routers.deps.CLOCK", self.clock)
         patcher.start()
         self.addCleanup(patcher.stop)
 

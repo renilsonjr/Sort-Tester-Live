@@ -156,7 +156,7 @@ class AnswerFeedbackTests(unittest.TestCase):
 
     def test_a_timed_out_answer_still_names_the_correct_belt(self):
         clock = FrozenClock(datetime.now(timezone.utc))
-        with mock.patch("backend.routers.ranked._CLOCK", clock):
+        with mock.patch("backend.routers.deps.CLOCK", clock):
             attempt_id = self._start()
             correct = self._correct_belt(self._bank_key_for(attempt_id, 1))
             clock.advance(11)  # past the ordinary ten-second deadline
