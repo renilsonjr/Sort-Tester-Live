@@ -1951,6 +1951,37 @@
   .lab-nav-tight button { font-size: 10px; }
 
   /* ---------------------------------------------------------------------
+     Gold as a word, in the day theme (owner report 2026-11-27).
+
+     Measured on the cream page, the day gold #c98a10 is 2.70:1. That is under
+     4.5:1 for a word and under even the 3:1 a meaningful graphic needs, and
+     it is what every gold eyebrow, step, cue and link was painted with --
+     RANKED, HANDLER, PRACTICE, the quiz step, the sign-in link, the podium
+     points. The deeper --gold-ring (#8a5a12, 5.05:1) already exists for
+     exactly this reason and is reused here rather than inventing a colour.
+
+     Only gold used AS TEXT moves. Gold on a tinted chip -- the tab icons, the
+     choice icons, the theme and sound buttons -- is a graphic on its own
+     background and keeps the brighter gold, so the app still reads gold.
+     Night is untouched: there the gold is 10:1 on the dark page.
+     --------------------------------------------------------------------- */
+  html[data-theme="day"] .lab-eyebrow,
+  html[data-theme="day"] .lab-arrow,
+  html[data-theme="day"] .quiz-step,
+  html[data-theme="day"] .quiz-cue,
+  html[data-theme="day"] .ppts,
+  html[data-theme="day"] .pcrown,
+  html[data-theme="day"] .rq-ring,
+  html[data-theme="day"] .auth-link,
+  html[data-theme="day"] #auth-panel .auth-card .auth-eyebrow,
+  html[data-theme="day"] .board li.board-hat .board-place,
+  html[data-theme="day"] .lab-log-link span:last-child,
+  html[data-theme="day"] .lab-settings-btn span,
+  html[data-theme="day"] .sum .total b,
+  html[data-theme="day"] .score-line ~ .deckname,
+  html[data-theme="day"] .score-line ~ h2 { color: var(--gold-ring); }
+
+  /* ---------------------------------------------------------------------
      The two mini-games, in volume (owner ask 2026-11-27, mock approved).
 
      Every other icon in the app is a 19px line glyph on the 24x24 grid, and
