@@ -53,7 +53,10 @@ test('with the motion switched off what is left is the finished state', () => {
   assert.match(page, /\.cheer-glow \{[^}]*opacity: 0;/);
   assert.match(page, /\.cheer-spark \{[^}]*opacity: 0;/);
   assert.match(page, /@keyframes cheer-badge-in \{ from \{ opacity: 0;[^}]*\} to \{ opacity: 1;/);
-  assert.match(page, /@media \(prefers-reduced-motion: reduce\) \{\s*\* \{ animation: none !important/);
+  // This used to assert the blanket `* { animation: none !important }`, which
+  // also switched off every transition in the app -- colour included. The
+  // block now names the celebration specifically, which is what stills it.
+  assert.match(page, /@media \(prefers-reduced-motion: reduce\) \{[\s\S]*?\.promo-cheer \.cheer-badge,\s*\n\s*\.promo-cheer \.cheer-glow,\s*\n\s*\.promo-cheer \.cheer-spark \{ animation: none; \}/);
   assert.match(page, /\.promo-cheer\.skipped \.cheer-badge,[\s\S]*?animation: none;/);
 });
 

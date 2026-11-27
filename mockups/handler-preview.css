@@ -587,12 +587,26 @@
      ordinary Ranked one: service and code, then four belt buttons. */
   .tb-top { display: flex; justify-content: space-between; align-items: baseline; }
   .tb-bar { height: 8px; border-radius: 99px; background: #ede3d2; overflow: hidden; margin: 8px 0 14px; }
-  .tb-bar i { display: block; height: 100%; width: 100%; background: var(--danger); border-radius: 99px; transition: width .2s linear; }
+  /* The fill stays the full width of the track and slides out to the left;
+     the track's own `overflow: hidden` pill clips what leaves. It used to
+     animate `width`, which makes the browser lay the page out, repaint and
+     composite on every tick -- and this bar ticks all the way through a
+     timed question, so it was the busiest animation in the app. `translateX`
+     is composited on its own. Sliding rather than scaling on purpose:
+     `scaleX` would squash the rounded end into an ellipse as the bar
+     emptied, while a slide keeps the end the same pill it is now. */
+  .tb-bar i { display: block; height: 100%; width: 100%; background: var(--danger); border-radius: 99px; will-change: transform; transition: transform .2s linear; }
   .rq-prompt { text-align: center; margin: 6px 0; }
   .rq-service { color: var(--muted); font-size: 12px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; }
   .rq-code { font: 900 clamp(34px, 7dvh, 52px)/1 Nunito, "Trebuchet MS", sans-serif; letter-spacing: -.02em; margin-top: 4px; }
   .belts { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 10px 0; }
-  .belts .belt { min-height: clamp(76px, 12dvh, 104px); border-radius: 14px; font-weight: 900; font-size: clamp(18px, 2.6dvh, 24px); border: 0; transition: transform 0.15s ease, box-shadow 0.2s ease, filter 0.15s ease; }
+  /* The timings match the shared control rule further down (.12s ease-out).
+     They used to be 0.15s and 0.2s on the browser's own `ease`, so the same
+     belt answered a finger at one speed in Ranked and another in Practice --
+     the thing the shared rule was added to fix, undone here by being the more
+     specific selector. `ease` also starts slow, which on a press is the
+     moment the player is watching. */
+  .belts .belt { min-height: clamp(76px, 12dvh, 104px); border-radius: 14px; font-weight: 900; font-size: clamp(18px, 2.6dvh, 24px); border: 0; transition: transform .12s ease-out, box-shadow .12s ease-out, filter .12s ease-out; }
   .belts .belt:disabled { opacity: .5; }
   .belts .belt.picked { opacity: 1; outline: 3px solid var(--ink); outline-offset: 2px; }
 
@@ -893,8 +907,16 @@
     .lab-main { padding-inline: 15px; }
     .lab-site, .lab-tag { margin-left: 0; }
   }
-  @media (prefers-reduced-motion: no-preference) {
-    .lab-choice { transition: transform .18s, box-shadow .18s; }
+  /* The lift belongs to a cursor, so it is gated on one. A phone has no
+     hover: tapping a card fires a single synthetic `:hover` that the browser
+     holds until you touch something else, so on a touch screen this rule used
+     to leave the tapped card standing 2px proud of its neighbours until the
+     next tap. `pointer: fine` keeps it to the mouse.
+     `.18s` with no timing function fell back to `ease`, which starts slow at
+     exactly the moment the eye follows the card; `ease-out` leads with the
+     movement. */
+  @media (prefers-reduced-motion: no-preference) and (hover: hover) and (pointer: fine) {
+    .lab-choice { transition: transform .18s ease-out, box-shadow .18s ease-out; }
     .lab-choice:hover { transform: translateY(-2px); box-shadow: 0 12px 30px #38261b12; }
   }
 
@@ -913,7 +935,13 @@
   .promo-cheer.skipped .cheer-badge,
   .promo-cheer.skipped .cheer-glow,
   .promo-cheer.skipped .cheer-spark { animation: none; }
-  @keyframes cheer-badge-in { from { opacity: 0; transform: scale(.42); } to { opacity: 1; transform: none; } }
+  /* From .9, not the .42 it used to start at. Nothing in the world arrives
+     from almost nothing, and a badge that grows to more than twice its size
+     reads as a sticker being applied rather than a rank being reached. The
+     overshoot curve is kept, so the badge still lands with a small kick --
+     it is a promotion, and a promotion is allowed to be pleased with itself.
+     One number: put .9 back to .42 for the old pop. */
+  @keyframes cheer-badge-in { from { opacity: 0; transform: scale(.9); } to { opacity: 1; transform: none; } }
   @keyframes cheer-glow { 0% { opacity: 0; transform: scale(.55); } 45% { opacity: 1; } 100% { opacity: 0; transform: scale(1.3); } }
   @keyframes cheer-spark {
     0% { opacity: 0; transform: rotate(var(--a)) translateY(0); }
@@ -921,8 +949,33 @@
     100% { opacity: 0; transform: rotate(var(--a)) translateY(calc(var(--d) * -1)); }
   }
 
+  /* Fewer and gentler, not none. This used to be `* { animation: none
+     !important; transition: none !important }`, which switched off the whole
+     app: the colour a button takes when it is pressed, the fade on a panel,
+     the 120ms that carries a control from one state to the next. A player
+     who asks for less motion is asking not to be moved, not to be handed an
+     app that stops answering the finger. What goes is movement -- the spin,
+     the celebration, the lift under a cursor, the press scale. What stays is
+     colour and opacity, which carry meaning and move nothing across the
+     screen. The Handler's own block further down has always worked this way;
+     this one now agrees with it. */
   @media (prefers-reduced-motion: reduce) {
-    * { animation: none !important; transition: none !important; }
+    /* The opening mark stops turning (it also has its own rule up top, which
+       runs before this stylesheet's tokens are even read). */
+    .boot-mark { animation: none; }
+    /* The promotion lands on its finished state: the badge visible, the glow
+       and the sparks resting at the opacity: 0 they start from. */
+    .promo-cheer .cheer-badge,
+    .promo-cheer .cheer-glow,
+    .promo-cheer .cheer-spark { animation: none; }
+    /* No control travels under a press or a cursor. The colour part of the
+       same transition is left alone. */
+    .primary:active, .ghost:active, .lab-choice:active,
+    .home-short:active, .lab-nav button:active, .belt:active,
+    .belts .belt:active { transform: none; }
+    .lab-choice:hover { transform: none; }
+    /* The tie-break bar jumps between lengths instead of sliding. */
+    .tb-bar i { transition: none; }
   }
 
   /* Glassmorphism twilight tokens & surfaces (dark glass over the twilight
@@ -1020,28 +1073,33 @@
 
      Neither animation was the only signal, and still is not: right and wrong
      also carry the ring colour, the sound, and the feedback screen. The
-     movement was the part that added nothing. (#346, #347) */
-  .belt.belt-correct {
-    opacity: 1 !important;
-    animation: correctGlow 0.35s ease-out forwards;
-    z-index: 2;
+     movement was the part that added nothing.
+
+     The ring itself used to be the animated thing: `box-shadow` grew from 0
+     to 4px across the keyframes, and a shadow is painted, not composited, so
+     the browser repainted the belt on every frame of every answer. The ring
+     is drawn once now, at its final size, on a pseudo-element that only
+     fades in -- `opacity` is the one property besides `transform` the
+     compositor can carry on its own. The look is the same; the work is
+     not. (#346, #347) */
+  .belt.belt-correct, .belt.belt-incorrect { opacity: 1 !important; z-index: 2; position: relative; }
+  .belt.belt-correct::after, .belt.belt-incorrect::after {
+    content: ""; position: absolute; inset: 0; border-radius: inherit;
+    pointer-events: none; opacity: 0;
   }
-  .belt.belt-incorrect {
-    opacity: 1 !important;
-    animation: incorrectSettle 0.2s ease-out forwards;
-    z-index: 2;
+  .belt.belt-correct::after {
+    box-shadow: 0 0 0 4px rgba(34, 100, 66, 0.7), 0 0 16px 3px var(--good);
+    animation: verdict-ring 0.35s ease-out forwards;
+  }
+  /* Shorter than the right answer on purpose: a wrong belt should settle and
+     get out of the way. Renamed from incorrectShake, which is what it used
+     to do -- it slid the belt sideways during a timed question. */
+  .belt.belt-incorrect::after {
+    box-shadow: 0 0 0 4px rgba(161, 45, 45, 0.7), 0 0 16px 3px var(--bad);
+    animation: verdict-ring 0.2s ease-out forwards;
   }
 
-  @keyframes correctGlow {
-    from { box-shadow: 0 0 0 0 rgba(34, 100, 66, 0.9); }
-    to { box-shadow: 0 0 0 4px rgba(34, 100, 66, 0.7), 0 0 16px 3px var(--good); }
-  }
-
-  /* Renamed from incorrectShake, which is what it used to do. */
-  @keyframes incorrectSettle {
-    from { box-shadow: 0 0 0 0 rgba(161, 45, 45, 0.8); }
-    to { box-shadow: 0 0 0 4px rgba(161, 45, 45, 0.7), 0 0 16px 3px var(--bad); }
-  }
+  @keyframes verdict-ring { to { opacity: 1; } }
 
   /* ============================================================
      Twilight glass — component port to match the approved mock
@@ -1306,9 +1364,9 @@
   #rq-question .lab-study-meta { margin: 0; text-align: center; letter-spacing: .14em; font-weight: 800; }
   .belts { gap: 10px; margin: 10px 0; }
   .belts .belt { min-height: clamp(66px, 10.5dvh, 100px); border-radius: 16px; letter-spacing: .06em; box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.22), 0 10px 20px -12px rgba(0, 0, 0, 0.6); }
-  /* 0.96 like every other control. It was the one thing in the app that gave
-     press feedback, and it used a value of its own. */
-  .belts .belt:active { transform: scale(.96); }
+  /* The press itself now comes from the shared control rule further down,
+     which lists `.belts .belt:active` by name; the duplicate that sat here
+     said the same thing twice. */
 
   /* Press feedback (#345). Nothing but the belts responded to a finger:
      Continue, Start Ranked quiz, Log in, the Practice cards and the dock all
@@ -1319,22 +1377,29 @@
      names its properties rather than `all`, so nothing else starts animating
      by accident, and it is short enough not to lag behind the finger.
 
-     The reduced-motion block above already turns every transition off, so
-     this needs no guard of its own.
+     The reduced-motion block above cancels the travel but leaves the colour
+     alone, so this needs no guard of its own.
 
      `.belt` is in the list on its own account. The Ranked quiz draws its
      belts inside `.belts`, which already had both a transition and a press,
      but the Practice quiz draws them inside `.options`, so that pair never
      reached them -- the two quizzes felt different under the same finger.
-     `.belts .belt` is the more specific rule and keeps its own 0.15s
-     transform transition; this one only reaches the Practice belts. */
+     `.belts .belt` is the more specific rule and now carries these same
+     timings, so the two match. */
   .primary, .ghost, .lab-choice, .home-short, .lab-nav button, .belt {
     transition-property: transform, background-color, color, box-shadow;
     transition-duration: .12s;
     transition-timing-function: ease-out;
   }
+  /* Deliberately the same timing down and up. Asymmetric timing belongs to a
+     press the player HOLDS -- a hold-to-delete, a confirm they can back out
+     of -- where the slow part is the decision. A tap on an answer is over
+     before either half is felt separately, and 120ms each way is the press
+     spec itself. `.belts .belt:active` is listed here so the Ranked belts
+     take this rule too rather than a value of their own. */
   .primary:active, .ghost:active, .lab-choice:active,
-  .home-short:active, .lab-nav button:active, .belt:active { transform: scale(.96); }
+  .home-short:active, .lab-nav button:active, .belt:active,
+  .belts .belt:active { transform: scale(.96); }
   .primary:disabled:active, .ghost:disabled:active { transform: none; }
 
   /* Ranked feedback: a verdict mark where the avatar used to be */
