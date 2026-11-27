@@ -869,12 +869,12 @@
   .lab-service-tabs button[aria-pressed="true"] {
     background: var(--gold); border-color: var(--gold-line); color: #38261b;
   }
-  .lab-chart-search, .lab-main input { border-radius: 14px; background: var(--panel); }
+  .lab-chart-search, .lab-main input { border-radius: var(--r-sm); background: var(--panel); }
   .lab-chart-heading { border-color: var(--accent); }
   .lab-chart-row { margin: 0 0 8px; padding: 13px 14px; border: 1px solid var(--line); border-radius: 17px; background: var(--panel); }
   .lab-chart-row strong { font-size: 20px; font-weight: 900; letter-spacing: -.03em; }
   .lab-chart-row .lab-belt-chip { min-width: 84px; min-height: 38px; border-radius: 11px; padding: 7px 10px; font-size: 12px; }
-  .lab-main .primary, .lab-main .ghost, .primary, .ghost { border-radius: 14px; font-weight: 900; }
+  .lab-main .primary, .lab-main .ghost, .primary, .ghost { border-radius: var(--r-sm); font-weight: 900; }
   /* The library's primary action: gold with dark text, not a brown fill.
      The gradient and the light edge come from the mockup's `.btn-primary`.
      It stays opaque on purpose while the panels around it are frosted: an
@@ -899,7 +899,7 @@
   .quiz-card .primary, .quiz-feedback .primary, .bail .primary {
     background: var(--accent); color: var(--accent-ink); border-color: var(--accent);
   }
-  .quiz-feedback .primary { border-radius: 14px; }
+  .quiz-feedback .primary { border-radius: var(--r-sm); }
   .logl li { border-radius: 17px; }
   .bail { background: var(--bg); }
   @media (max-width: 345px) {
@@ -1107,7 +1107,7 @@
      the styles in force. Visual only; behaviour unchanged. Belt
      colours (src/belts.js) are never restyled here.
      ============================================================ */
-  :root { --r-md: 22px; --r-sm: 14px; }
+  :root { --r-md: 22px; --r-sm: 16px; }
 
   /* Crisper glass cards with a soft top highlight */
   .lab-choice, .auth-card, .rq-cmp, .sum,
@@ -1130,7 +1130,7 @@
      card's own corner was tighter than the tile it holds, which is what made
      it look pinched. The token itself is untouched -- nine other rules use
      it, and most of them hold nothing nested. */
-  .lab-choice { border-radius: 26px; padding: 14px; gap: 12px; box-shadow: 0 10px 26px -12px rgba(0,0,0,0.6); }
+  .lab-choice { border-radius: 28px; padding: 16px; gap: 12px; box-shadow: 0 10px 26px -12px rgba(0,0,0,0.6); }
   .lab-choice-icon, .lab-choice-quiz .lab-choice-icon {
     background: rgba(244, 189, 56, 0.14); border: 1px solid rgba(244, 189, 56, 0.32);
     color: var(--gold); border-radius: 12px; width: 44px; height: 44px; font-size: 16px; font-weight: 800;
@@ -1138,7 +1138,7 @@
   .lab-choice small { color: var(--muted); }
   .lab-arrow { color: var(--gold); font-weight: 900; }
 
-  /* Buttons matched to the mock (.btn / .btn.ghost): radius 14, padding 14 */
+  /* Buttons: radius 16 (--r-sm, the scale's step for a control), padding 14 */
   .primary {
     background: linear-gradient(135deg, var(--gold) 0%, #d89115 100%);
     color: #2a1c10; border: 1px solid rgba(255, 255, 255, 0.45);
@@ -1147,6 +1147,14 @@
   }
   .ghost { border-radius: var(--r-sm); padding: 14px; font-weight: 800; background: var(--glass-surface-sub); border: 1px solid var(--glass-border); }
   input, .glass-input { border-radius: var(--r-sm); }
+  /* A button that cannot be pressed. The rule this replaces came from the
+     first, light skin and painted the button cream in both themes, so on the
+     dark page a disabled button was the brightest thing on the screen. It
+     now sits back into the surface it is on, in either theme. */
+  .primary:disabled, .ghost:disabled, .delete-danger:disabled {
+    background: var(--glass-surface-sub); color: var(--muted);
+    border-color: var(--glass-border); box-shadow: none; cursor: not-allowed;
+  }
 
   /* Brand mark in gold (mock brandmark) */
   .lab-mark {
@@ -1448,7 +1456,7 @@
      and a gold heading would announce it above the Practice shortcuts that
      are the point of the screen. It takes the subdued surface, not the one
      the cards use. */
-  .lab-disclaimer { background: var(--glass-surface-sub); backdrop-filter: var(--blur-md); -webkit-backdrop-filter: var(--blur-md); border: 1px solid var(--glass-border-subtle); border-radius: var(--r-sm); color: var(--muted); font-size: 11.5px; }
+  .lab-disclaimer { background: var(--glass-surface-sub); backdrop-filter: var(--blur-md); -webkit-backdrop-filter: var(--blur-md); border: 1px solid var(--glass-border-subtle); border-radius: var(--r-sm); color: var(--muted); font-size: 13px; }
 
   /* The season line on Ranked, which stood on the bare background under the
      Standings card (#328). Same surface as the disclaimer: it is a status
@@ -1577,12 +1585,11 @@
   .home-screen { gap: 16px; }
   .home-stripe { display: flex; flex-direction: column; gap: 8px; }
   .home-stripe[hidden] { display: none; }
-  /* 32px: the Play Ranked button inside carries the 14px --r-sm radius, and
-     the card pads it by 18px. (The bottom padding is 16px, so the two lower
-     corners run 2px over-round -- not worth a second radius to chase.) */
-  .home-spot { position: relative; overflow: hidden; padding: 18px 18px 16px; border-radius: 32px; border: 1px solid var(--soft-line); background: linear-gradient(135deg, var(--soft) 0%, var(--glass-surface-sub) 62%); box-shadow: var(--glass-shadow), 0 0 28px -6px rgba(244, 189, 56, 0.32); }
+  /* 32px: the Play Ranked button inside carries the 16px --r-sm radius, and
+     the card pads it by 16px on every side. */
+  .home-spot { position: relative; overflow: hidden; padding: 16px; border-radius: 32px; border: 1px solid var(--soft-line); background: linear-gradient(135deg, var(--soft) 0%, var(--glass-surface-sub) 62%); box-shadow: var(--glass-shadow), 0 0 28px -6px rgba(244, 189, 56, 0.32); }
   .home-spot::before { content: ""; position: absolute; top: 0; left: 28px; right: 28px; height: 1px; background: linear-gradient(90deg, transparent, var(--glass-highlight), transparent); }
-  .home-pill { display: inline-block; margin-bottom: 10px; padding: 4px 10px; border-radius: 999px; background: var(--gold); color: #2a1c10; font-size: 10.5px; font-weight: 900; letter-spacing: .08em; text-transform: uppercase; }
+  .home-pill { display: inline-block; margin-bottom: 10px; padding: 4px 10px; border-radius: 999px; background: var(--gold); color: #2a1c10; font-size: 11px; font-weight: 900; letter-spacing: .08em; text-transform: uppercase; }
   .home-spot-title { margin: 0 0 4px; font-size: 24px; font-weight: 900; letter-spacing: -.04em; line-height: 1.12; text-transform: none; color: var(--ink); }
   .home-standing { min-width: 0; }
   .home-standing small { display: block; color: var(--muted); font-size: 10px; font-weight: 900; letter-spacing: .1em; text-transform: uppercase; }
@@ -1597,7 +1604,7 @@
   .home-shine { position: absolute; top: -4px; left: 16%; width: 68%; height: 34%; border-radius: 50%; background: linear-gradient(180deg, var(--glass-highlight), transparent); filter: blur(5px); pointer-events: none; z-index: 1; opacity: .7; }
   .home-meter { height: 6px; margin-top: 14px; border-radius: 99px; overflow: hidden; }
   .home-meter i { display: block; height: 100%; border-radius: 99px; }
-  .home-climb-note { margin: 7px 0 0; color: var(--muted); font-size: 12px; font-weight: 700; }
+  .home-climb-note { margin: 7px 0 0; color: var(--muted); font-size: 13px; font-weight: 700; }
 
   .home-shortcuts { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
   /* 26px: the icon square below is 12px, with 14px of padding around it. */
@@ -1612,8 +1619,7 @@
   /* Home, regrouped. The Ranked card now carries what "Your climb" used to
      say two stripes down: the balance as the number you read first, the
      badge beside it, the meter, and the button across the full width. Sizes
-     come from the type scale (32 / 15 / 13 / 11). The card keeps its 32px
-     radius and 18px padding, so the button inside is still concentric. */
+     come from the type scale (32 / 15 / 13 / 11). */
   .home-hero { display: flex; flex-direction: column; align-items: stretch; }
   .home-hero .home-pill { align-self: flex-start; }
   .home-hero-bal { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 64px; }
@@ -1623,7 +1629,6 @@
   .home-hero-obj { width: 64px; height: 64px; flex: none; }
   .home-hero-obj .home-obj-badge { width: 62px; height: 62px; }
   .home-hero .home-meter { margin-top: 12px; }
-  .home-hero .home-climb-note { font-size: 13px; }
   .home-hero .primary { width: 100%; margin-top: 16px; }
   .home-hero b.home-standing-note { font-size: 15px; }
   /* The prize, as one line under the card instead of a tile as tall as the
@@ -1657,8 +1662,8 @@
   .rk-spot .profile-points i { font-style: normal; font-size: 15px; font-weight: 800; letter-spacing: 0; color: var(--muted); }
   .rk-obj, .pf-ident-obj { width: 76px; height: 76px; flex: none; }
   .rk-obj .home-obj-badge, .pf-ident-obj .home-obj-badge { width: 72px; height: 72px; }
-  .rk-spot .primary { width: 100%; margin-top: 14px; padding: 13px 16px; font-size: 14.5px; }
-  .rk-note { margin: 0; color: var(--muted); font-size: 12px; font-weight: 700; line-height: 1.5; }
+  .rk-spot .primary { width: 100%; margin-top: 16px; }
+  .rk-note { margin: 0; color: var(--muted); font-size: 13px; font-weight: 700; line-height: 1.5; }
   #ranked-panel { display: flex; flex-direction: column; gap: 14px; }
   #ranked-panel > .lab-intro { margin: 0; }
 
