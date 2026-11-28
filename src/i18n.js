@@ -362,6 +362,7 @@ const ES = {
   'created': 'creada el',
   'Approved for prizes': 'Aprobada para premios',
   'Has played': 'Ya jugó',
+  'Name not allowed': 'Nombre no permitido',
   'Could not load the accounts': 'No se pudieron cargar las cuentas',
   'Every account, newest first. This list shows a name, a tag and a date, and nothing of anybody’s points or history.': 'Todas las cuentas, de la más nueva a la más antigua. Esta lista muestra un nombre, una etiqueta y una fecha, y nada de los puntos ni del historial de nadie.',
   'Find by name or tag': 'Buscar por nombre o etiqueta',
