@@ -82,7 +82,9 @@ class OwnerAccountListTests(OwnerDeletionTestCase):
         self.assertEqual(set(rows), {owner_id, played_id, fresh_id})
         self.assertEqual(
             set(rows[played_id]),
-            {"account_id", "username", "tag", "created_at", "is_owner", "approved", "has_played"},
+            {"account_id", "username", "tag", "created_at", "is_owner", "approved", "has_played",
+         # derived from the name alone (#515), not from the player's record
+         "name_not_allowed"},
         )
         self.assertTrue(rows[owner_id]["is_owner"])
         self.assertEqual((rows[played_id]["approved"], rows[played_id]["has_played"]), (True, True))

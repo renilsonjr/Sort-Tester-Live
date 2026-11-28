@@ -214,20 +214,31 @@ export function createVersusScreens(deps) {
     });
   }
 
-  function leaveButton() {
-    return `<button id="vs-forfeit" class="ghost" type="button">${esc(t('Leave duel'))}</button>`;
+  // Two shapes of the same control. The quiz duel carries it as a pill
+  // beside the clock, because a full-width button under the belts is where
+  // a racing thumb lands -- the same trap #504 took off the Ranked
+  // question. The Handler duel has no belts under it and keeps the wide
+  // button it had.
+  function leaveButton({ compact = false } = {}) {
+    return compact
+      ? `<button id="vs-forfeit" class="ghost rq-quit" type="button">${esc(t('Leave'))}</button>`
+      : `<button id="vs-forfeit" class="ghost" type="button">${esc(t('Leave duel'))}</button>`;
   }
 
-  // Leaving costs the duel, so it takes two presses: the first says what
-  // it will cost, in the button itself, and the second does it.
+  // Leaving costs the duel, so it takes two presses. The first says what it
+  // will cost: in the warning line when the screen has one, so the pill
+  // beside the clock keeps its size, and in the button itself otherwise.
   function wireLeave(view, matchId) {
     const button = view.querySelector('#vs-forfeit');
     if (!button) return;
+    const warn = view.querySelector('[data-vs-warn]');
     let armed = false;
     button.addEventListener('click', async () => {
       if (!armed) {
         armed = true;
-        button.textContent = t('Press again to leave. Leaving counts as a loss.');
+        const said = t('Press again to leave. Leaving counts as a loss.');
+        if (warn) { warn.textContent = said; warn.hidden = false; }
+        else button.textContent = said;
         button.classList.add('vs-armed');
         return;
       }
@@ -270,8 +281,12 @@ export function createVersusScreens(deps) {
         ${tugMarkup(state)}
         <div class="tb-top">
           <span class="lab-eyebrow">${esc(t('Question'))} ${q.seq} ${esc(t('of'))} ${q.of}</span>
-          <div class="rq-ring" id="vs-clock" role="timer" aria-label="${esc(t('seconds'))}"><span id="vs-ring-num"></span></div>
+          <div class="rq-top-end">
+            ${leaveButton({ compact: true })}
+            <div class="rq-ring" id="vs-clock" role="timer" aria-label="${esc(t('seconds'))}"><span id="vs-ring-num"></span></div>
+          </div>
         </div>
+        <p class="notice vs-leave-warn" data-vs-warn role="alert" hidden></p>
         <div id="vs-question">
           <div class="rq-prompt rq-route home-spot">
             <span class="home-pill">${esc(t('Quiz duel'))}</span>
@@ -284,7 +299,6 @@ export function createVersusScreens(deps) {
           </div>
         </div>
         <div id="vs-review" hidden></div>
-        ${leaveButton()}
       </section>
     `, 'versus', () => playQuiz(state));
     paintTug(view, state);
@@ -428,8 +442,16 @@ export function createVersusScreens(deps) {
 
   function showResult(state) {
     const title = state.outcome === 'you' ? 'You won' : state.outcome === 'opponent' ? 'You lost' : 'A tie';
+    // Both tiles used to look the same, so only the title said who won.
+    // A tie marks neither.
+    const won = state.outcome === 'you' ? state.you : state.outcome === 'opponent' ? state.opponent : null;
     const line = player => `
-      <div class="vs-final${player === state.you ? ' vs-final-you' : ''}">
+      <div class="vs-final${player === state.you ? ' vs-final-you' : ''}${player === won ? ' vs-final-won' : ''}">
+        ${/* The other tile keeps the chip's room, so the two names and the
+              two scores stay level. A tie leaves both blank. */ ''}
+        ${player === won
+          ? `<span class="vs-final-crown">${esc(t('Winner'))}</span>`
+          : '<span class="vs-final-crown is-blank" aria-hidden="true"></span>'}
         ${face(player)}
         <span class="vs-final-name">${esc(player.username)}</span>
         <b class="vs-final-score">${language.number(player.score)}</b>
@@ -494,10 +516,28 @@ export function createVersusScreens(deps) {
     const intro = board.open
       ? t('Duels won this season. Points separate players level on wins.')
       : t('The season is over. This is how Versus finished.');
-    const youBeyond = board.you && !board.rows.some(row => row.you)
+    // The player's place leads the screen, as it does on the Ranked board.
+    // Their wins and duels come from their own row when the server sent
+    // one; a player ranked past those rows gets the place alone.
+    const mine = board.rows.find(row => row.you) ?? board.you ?? null;
+    const place = mine?.place ?? board.you?.place ?? null;
+    const counted = board.rows.find(row => row.you);
+    const placeCard = place === null ? '' : `
+      <div class="board-mine" id="vs-mine">
+        <div>
+          <p class="lab-study-meta">${esc(t('Your place'))}</p>
+          <p class="board-mine-place">#${esc(place)}</p>
+        </div>
+        ${counted ? `<div class="board-mine-pts">
+          <b>${counted.wins} ${esc(t(counted.wins === 1 ? 'win' : 'wins'))}</b>
+          <small>${counted.played} ${esc(t(counted.played === 1 ? 'duel' : 'duels'))} · ${language.number(counted.points)} ${esc(t('points'))}</small>
+        </div>` : ''}
+      </div>`;
+    const youBeyond = board.you && !counted
       ? `<p class="board-your-place">${esc(t('Your place'))}: <b>${board.you.place}</b></p>`
       : '';
-    panel.innerHTML = `<p class="lab-intro">${esc(intro)}</p><ol class="board">${rows}</ol>${youBeyond}`;
+    // The note about how the standings are kept is a footnote to them.
+    panel.innerHTML = `${placeCard}<section class="home-stripe"><p class="lab-eyebrow">${esc(t('Standings'))}</p><ol class="board">${rows}</ol></section>${youBeyond}<p class="lab-intro tab-intro">${esc(intro)}</p>`;
   }
 
   return { showVersus, showRoom, showMatch, showResult, showBoard };
