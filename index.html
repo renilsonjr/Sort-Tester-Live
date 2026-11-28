@@ -2316,6 +2316,17 @@
     background: var(--hd-700); color: var(--hd-ink); border: 1px solid var(--hd-600);
     font-weight: 700; font-size: 13px; white-space: nowrap;
   }
+  /* A round is a timed minute: the dock goes, as it does under a Ranked
+     attempt and a Versus duel. Before the change the control bar ended 19px
+     behind the dock and the hint line was fully behind it, on a 390x844
+     phone, with the page 905px tall. The belt keeps its own height.
+     The dock is taken out of the page rather than hidden, the way #427
+     does it for a live attempt: not in the tab order, not read out, and
+     no CSS to beat. This rule only gives back the room it left. */
+  #app.hd-live .lab-main { padding-bottom: calc(14px + env(safe-area-inset-bottom)); }
+  /* Small beside the title, still a full touch target -- the shape Quit
+     takes on the Ranked question and Leave in a duel. */
+  #app.hd-live .hd-leave { padding: 0 16px; border-radius: 999px; font-size: 13px; font-weight: 900; }
   .hd-eyebrow { margin: 0; color: var(--hd-ink-faint); font-size: 10px; font-weight: 800; letter-spacing: .18em; text-transform: uppercase; }
   .hd-title { margin: 0; font-size: clamp(30px, 8vw, 40px); line-height: 1.05; letter-spacing: -.03em; color: var(--hd-ink); text-wrap: balance; }
 
@@ -2332,17 +2343,24 @@
 
   .hd-mode-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 9px; }
   .hd-mode {
-    width: 100%; min-height: 64px; display: grid; gap: 2px; text-align: left;
+    width: 100%; min-height: 58px; display: flex; align-items: center; justify-content: space-between; gap: 12px; text-align: left;
     padding: 12px 14px; border-radius: 14px; cursor: pointer;
     background: var(--hd-800); border: 1px solid var(--hd-700); color: var(--hd-ink);
   }
   .hd-mode-name { font-weight: 800; letter-spacing: -.01em; }
-  .hd-mode-best { color: var(--hd-ink-soft); font-size: 0.84rem; }
-  .hd-mode-best strong { color: var(--hd-gold); }
-  .hd-rules { background: var(--hd-800); border: 1px solid var(--hd-700); border-radius: 14px; padding: 12px 14px; }
-  .hd-rules h3 { margin: 0 0 6px; font-size: 0.95rem; text-wrap: balance; }
+  .hd-mode-best { flex: none; color: var(--hd-ink-soft); font-size: 0.84rem; white-space: nowrap; }
+  .hd-mode-best strong { margin-left: 4px; font-size: 1.05rem; color: var(--hd-gold); }
+  .hd-rules { background: var(--hd-800); border: 1px solid var(--hd-700); border-radius: 14px; }
+  .hd-rules summary { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 58px; padding: 0 14px; cursor: pointer; font-size: 1rem; font-weight: 800; list-style: none; }
+  .hd-rules summary::-webkit-details-marker { display: none; }
+  .hd-rules summary::after { content: "+"; color: var(--hd-gold); font-size: 20px; font-weight: 900; line-height: 1; }
+  .hd-rules[open] summary::after { content: "\2212"; }
+  .hd-rules summary:focus-visible { outline: 3px solid var(--hd-gold); outline-offset: 3px; border-radius: 14px; }
   .hd-rules li { text-wrap: pretty; }
-  .hd-rules ul { margin: 0; padding-left: 18px; color: var(--hd-ink-soft); font-size: 0.84rem; display: grid; gap: 4px; }
+  .hd-rules ul { margin: 0; padding: 0 14px 14px 32px; color: var(--hd-ink-soft); font-size: 0.84rem; display: grid; gap: 4px; }
+  /* The leaderboard is a row like the modes above it, not a wide gold button. */
+  .hd-board-open { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 58px; padding: 0 14px; text-align: left; }
+  .hd-board-open::after { content: "\2192"; color: var(--hd-gold); font-size: 18px; }
 
   .hd-count { align-items: center; justify-content: center; min-height: 46vh; }
   .hd-count-number { margin: 0; font-size: 5rem; font-weight: 800; color: var(--hd-gold); font-variant-numeric: tabular-nums; }
@@ -2460,7 +2478,7 @@
      says Handler and the season in its title so it is never read as Ranked. */
   .hd-board-open {
     min-height: 48px; border-radius: 14px; cursor: pointer; font-weight: 800;
-    background: var(--hd-700); color: var(--hd-gold); border: 1px solid var(--hd-600);
+    background: var(--hd-800); color: var(--hd-ink); border: 1px solid var(--hd-700);
   }
   .hd-board-tabs { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
   .hd-board-tab {

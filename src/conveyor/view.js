@@ -159,6 +159,11 @@ export function createHandlerScreen({
   // pause, no restart and no stored best -- both players' minute has to
   // be the same minute, and the duel's score is not a Handler best.
   duel = null,
+  // A round is a timed minute, so the page takes the dock away for it, the
+  // way the Ranked attempt and the Versus duel do. The Handler is mounted
+  // after the page shell is built, so it cannot carry the shell's own
+  // marker: it says so here instead, and the app hides the dock.
+  onRound = () => {},
   reducedMotion = () => typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches,
 } = {}) {
   if (!root) throw new Error('createHandlerScreen needs a root element');
@@ -221,6 +226,7 @@ export function createHandlerScreen({
   function showModes() {
     stopLoop();
     audio?.stop();
+    onRound(false);
     root.innerHTML = `
       <section class="hd hd-modes" aria-labelledby="hd-modes-title">
         <p class="hd-eyebrow">${esc(t('One minute on the belt'))}</p>
@@ -229,12 +235,15 @@ export function createHandlerScreen({
           ${MODE_ORDER.map(key => `
             <li><button type="button" class="hd-mode" data-hd-mode="${esc(key)}">
               <span class="hd-mode-name">${esc(t(MODE_COPY[key][0]))}</span>
-              <span class="hd-mode-best">${esc(t('Your best'))}: <strong>${bestScores.get(key)}</strong></span>
+              <span class="hd-mode-best">${esc(t('Your best'))} <strong>${bestScores.get(key)}</strong></span>
             </button></li>`).join('')}
         </ul>
         ${board ? `<button type="button" class="hd-board-open" data-hd-board-open>${esc(t('Handler leaderboard'))}</button>` : ''}
-        <div class="hd-rules">
-          <h3>${esc(t('How it scores'))}</h3>
+        ${/* The five rules were a block as tall as the mode list itself, and
+              on a 390px phone they pushed the last one behind the dock. They
+              are all still here, behind their own heading. */ ''}
+        <details class="hd-rules">
+          <summary>${esc(t('How it scores'))}</summary>
           <ul>
             <li>${esc(t('A round lasts one minute. It ends on the clock, not when packages run out.'))}</li>
             <li>${esc(t('Right belt: one point, times your streak multiplier.'))}</li>
@@ -242,7 +251,7 @@ export function createHandlerScreen({
             <li>${esc(t('The multiplier rises every {step} in a row and stops at x{cap}. Your score never goes below zero.', { step: COMBO_STEP, cap: COMBO_CAP }))}</li>
             <li>${esc(t('Each mode keeps its own best score. Scores from different modes are not compared.'))}</li>
           </ul>
-        </div>
+        </details>
         <p class="sr-only" data-hd-live role="status" aria-live="polite"></p>
       </section>`;
     for (const button of root.querySelectorAll('[data-hd-mode]')) {
@@ -258,6 +267,7 @@ export function createHandlerScreen({
   // it, so changing mode never blanks the screen.
   let boardRequest = 0;
   function showBoard(which) {
+    onRound(false);
     stopLoop();
     audio?.stop();
     root.innerHTML = `
@@ -334,6 +344,7 @@ export function createHandlerScreen({
 
   function startCountdown(next) {
     mode = next;
+    onRound(true);
     // Rule 21: audio opens here, inside the gesture that starts the round --
     // never on page load.
     audio?.start();
@@ -423,6 +434,7 @@ export function createHandlerScreen({
   function showSummary() {
     stopLoop();
     audio?.stop();
+    onRound(false);
     const summary = game.summary();
     // A duel's round ends in the duel's own result, drawn by its frame.
     if (duel) { duel.onEnd?.(summary); return; }
@@ -1029,6 +1041,7 @@ export function createHandlerScreen({
   function unmount() {
     stopLoop();
     audio?.stop();
+    onRound(false);
     for (const off of listeners.splice(0)) off();
     game = null;
     ctx = null;
