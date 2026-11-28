@@ -7,9 +7,9 @@ import { createLanguage } from '../src/i18n.js';
 // entry is shown in English to a Spanish reader, silently. On 2026-11-22
 // that was 216 sentences: nearly all of Ranked, the tie-break and the owner
 // tools. This reads every literal key out of app.js, and out of the owner's
-// screens since they moved to a file of their own, and asks the real
-// dictionary for it.
-const source = ['../src/app.js', '../src/ownerScreens.js']
+// and the player's screens since they moved to files of their own, and asks
+// the real dictionary for it.
+const source = ['../src/app.js', '../src/ownerScreens.js', '../src/profileScreens.js']
   .map((path) => readFileSync(new URL(path, import.meta.url), 'utf8'))
   .join('\n');
 
@@ -37,7 +37,7 @@ function literalKeys() {
 // 'Versus' is the 1 vs 1 mode's name and reads the same in Spanish.
 const SAME = new Set(['Twilight', 'Ranked ID', 'Quiz Code', 'Handler', 'Versus']);
 
-test('every sentence app.js and the owner screens show has a Spanish entry', () => {
+test('every sentence the screens show has a Spanish entry', () => {
   const es = createLanguage(null);
   es.set('es');
   const keys = literalKeys();

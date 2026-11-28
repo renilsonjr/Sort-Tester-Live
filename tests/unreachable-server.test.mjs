@@ -86,7 +86,7 @@ test('logging out clears this device even when the server cannot be reached', ()
 });
 
 test('the Settings tab offers a way out', () => {
-  const source = readFileSync(new URL('../src/app.js', import.meta.url), 'utf8');
+  const source = readFileSync(new URL('../src/profileScreens.js', import.meta.url), 'utf8');
   assert.match(source, /id="profile-logout"/);
   assert.match(source, /Log out/);
   assert.match(source, /#profile-logout'\)\.addEventListener\('click', \(\) => signOut\(\)\)/);

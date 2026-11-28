@@ -4,8 +4,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
+import { screensSource } from './helpers/screens-source.mjs';
 
-const app = readFileSync(new URL('../src/app.js', import.meta.url), 'utf8');
+const app = screensSource();
 const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
 
 const show = app.slice(app.indexOf('function showProfile('), app.indexOf('\n// The name and tag come from'));

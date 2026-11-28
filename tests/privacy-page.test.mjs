@@ -3,9 +3,10 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
+import { screensSource } from './helpers/screens-source.mjs';
 
 const read = (path) => readFileSync(new URL(`../${path}`, import.meta.url), 'utf8');
-const app = read('src/app.js');
+const app = screensSource();
 const auth = read('src/auth.js');
 const i18n = read('src/i18n.js');
 const pages = { en: read('assets/privacy/privacy-en.html'), es: read('assets/privacy/privacy-es.html') };
