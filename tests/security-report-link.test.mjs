@@ -3,8 +3,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
+import { screensSource } from './helpers/screens-source.mjs';
 
-const app = readFileSync(new URL('../src/app.js', import.meta.url), 'utf8');
+const app = screensSource();
 const i18n = readFileSync(new URL('../src/i18n.js', import.meta.url), 'utf8');
 const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
 const auth = readFileSync(new URL('../src/auth.js', import.meta.url), 'utf8');

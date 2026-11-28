@@ -6,6 +6,7 @@ import { runInNewContext } from 'node:vm';
 // The kept reads (balance and season) are cut out of app.js and run against
 // a counting fake server and a clock the test moves by hand.
 const source = readFileSync(new URL('../src/app.js', import.meta.url), 'utf8');
+const profile = readFileSync(new URL('../src/profileScreens.js', import.meta.url), 'utf8');
 const start = source.indexOf('const CACHED_READS');
 const end = source.indexOf('// Recent reauthentication');
 assert.ok(start > 0 && end > start, 'the read cache and apiSend are where the test expects');
@@ -79,15 +80,21 @@ test('other reads are never kept', async () => {
 test('an attempt and a change of session empty the kept answers', () => {
   assert.match(source, /createAttemptClient\(\{ fetchFn: attemptFetch \}\)/);
   assert.doesNotMatch(source, /createAttemptClient\(\)/);
-  for (const name of ['function setSession', 'async function signOut', 'function showDeletionAccepted', 'async function attemptFetch']) {
+  for (const name of ['function setSession', 'async function signOut', 'async function attemptFetch']) {
     const fn = source.slice(source.indexOf(name));
     assert.match(fn.slice(0, fn.indexOf('\n}\n')), /clearReadCache\(\)/, name);
   }
+  // A deleted account is dropped from the profile screens' own file, through
+  // the one function app.js hands them, and that function empties the cache.
+  const deleted = profile.slice(profile.indexOf('function showDeletionAccepted'));
+  assert.match(deleted.slice(0, deleted.indexOf('\n  }\n')), /forgetAccount\(\)/);
+  assert.match(source, /forgetAccount: \(\) => \{ session = null; clearReadCache\(\); \}/);
 });
 
 test('the profile shows the name from the session without asking the server first', () => {
-  const fn = source.slice(source.indexOf('async function fillProfile'));
-  const body = fn.slice(0, fn.indexOf('\n}\n'));
+  const fn = profile.slice(profile.indexOf('async function fillProfile'));
+  const body = fn.slice(0, fn.indexOf('\n  }\n'));
   assert.doesNotMatch(body, /await api\('\/auth\/me'\)/);
-  assert.match(source, /id="profile-name">\$\{esc\(session\?\.username/);
+  assert.match(profile, /id="profile-name">\$\{esc\(account\(\)\?\.username/);
+  assert.match(source, /account: \(\) => session,/);
 });

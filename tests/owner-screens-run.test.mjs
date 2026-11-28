@@ -14,6 +14,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { loadAppModules } from './helpers/load-app-modules.mjs';
+import { standInPage } from './helpers/stand-in-page.mjs';
 
 const { modules: [ownerScreens], cleanup } = await loadAppModules(['src/ownerScreens.js']);
 test.after(cleanup);
@@ -42,26 +43,12 @@ const ANSWERS = {
   '/ranked/support/review': [ROW],
 };
 
-// Just enough of an element for the screens to wire themselves to: every
-// lookup finds something, and every listener is kept so it can be pressed.
-function page() {
-  const handlers = [];
-  const element = () => ({
-    value: 'K7Q2MX', hidden: false, disabled: false, textContent: '', innerHTML: '', className: '',
-    // every data-* attribute reads as the one row's id, except the label a
-    // case button carries, which becomes that screen's title
-    dataset: new Proxy({}, { get: (_all, key) => (key === 'label' ? 'Close · network instability' : 'a1') }),
-    querySelector: () => element(),
-    querySelectorAll: () => [element()],
-    addEventListener: (_type, handler) => handlers.push(handler),
-    setAttribute() {},
-    after() {},
-  });
-  return { element, handlers };
-}
-
 async function walk(serverAnswers) {
-  const { element, handlers } = page();
+  // every data-* attribute reads as the one row's id, except the label a
+  // case button carries, which becomes that screen's title
+  const { element, pressEverything } = standInPage({
+    data: (key) => (key === 'label' ? 'Close · network instability' : 'a1'),
+  });
   const titles = new Set();
   const send = async () => (serverAnswers ? { ok: true, data: ROW } : { ok: false, reason: '' });
   const screens = ownerScreens.createOwnerScreens({
@@ -82,13 +69,7 @@ async function walk(serverAnswers) {
     showSettings() {},
   });
   screens.showOwnerTools();
-  // Each press may draw a screen that wires more buttons; the screens lead
-  // back to one another, so stop once a full round adds nothing new.
-  for (let pressed = 0; pressed < handlers.length && pressed < 600; pressed += 1) {
-    await handlers[pressed]();
-  }
-  // the lists each screen loads finish after the screen is drawn
-  await new Promise((resolve) => setImmediate(resolve));
+  await pressEverything();
   return [...titles];
 }
 

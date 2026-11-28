@@ -2,8 +2,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
+import { screensSource } from './helpers/screens-source.mjs';
 
-const app = readFileSync(new URL('../src/app.js', import.meta.url), 'utf8');
+const app = screensSource();
 const i18n = readFileSync(new URL('../src/i18n.js', import.meta.url), 'utf8');
 const avatars = readFileSync(new URL('../src/avatars.js', import.meta.url), 'utf8');
 const python = readFileSync(new URL('../backend/auth/avatars.py', import.meta.url), 'utf8');
@@ -81,7 +82,7 @@ test('the Profile header shows the player their own icon', () => {
 
 test('the header draws it from the session, with no extra request', () => {
   const profile = fn('async function fillProfile');
-  assert.match(profile, /paintProfileAvatar\(view, session\?\.avatar\)/);
+  assert.match(profile, /paintProfileAvatar\(view, account\(\)\?\.avatar\)/);
   // the one /auth/me call is the pre-existing one, for a session without a name
   assert.equal((profile.match(/api\('\/auth\/me'\)/g) || []).length, 1);
 });
