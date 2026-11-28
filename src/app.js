@@ -3139,11 +3139,23 @@ function showRankedResult(mode, result, tally, { quit = false, attemptId = null 
   }
   const droppedBadge = result.badge_after !== result.badge_before
     && result.points_after < result.points_before;
+  // What the match did to the balance, after the quit penalty and the cap:
+  // the same difference the breakdown below adds up to, said once, large.
+  const gain = result.points_after - result.points_before;
+  const gainSign = gain > 0 ? '+' : gain < 0 ? '−' : '';
+  const gainTone = gain > 0 ? 'good' : gain < 0 ? 'lost' : 'flat';
+  // Where the balance now stands on the way to the next badge. The card on
+  // this screen used to measure only the hits out of fifteen.
+  const now = { badge: result.badge_after, points: result.points_after };
+  const climb = badgeProgress(now);
   const view = labPage(`
     <section class="lab-screen">
       <p class="lab-eyebrow">${esc(t('Ranked'))} · ${esc(t(quit ? 'attempt ended' : 'attempt finished'))}</p>
       <div class="home-spot rq-score">
-        <h1 class="lab-title rq-score-line"><b>${esc(tally.correctCount)}</b> ${esc(t('of'))} 15 ${esc(t('correct'))}</h1>
+        <div class="rq-score-top">
+          <h1 class="lab-title rq-score-line"><b>${esc(tally.correctCount)}</b> ${esc(t('of'))} 15 ${esc(t('correct'))}</h1>
+          <span class="rq-gain ${gainTone}" id="rq-gain">${gainSign}${language.number(Math.abs(gain))} ${esc(t('points'))}</span>
+        </div>
         <div class="profile-bar home-meter"><i style="width:${Math.round((tally.correctCount / 15) * 100)}%"></i></div>
       </div>
       ${result.final_outcome === 'season_close' ? `<p class="lab-intro" id="rq-season-close">${esc(t('The season closed before you finished. What you had scored counts, with no penalty.'))}</p>` : ''}
@@ -3154,11 +3166,50 @@ function showRankedResult(mode, result, tally, { quit = false, attemptId = null 
           `${t('You are')} ${result.badge_after} ${t('again')}`,
           `${t('Getting')} ${result.badge_before} ${t('back takes reaching its cap, then passing a perfect promotion.')}`,
         ) : ''}
-      <button id="rq-done" class="ghost">${esc(t('Back'))}</button>
+      <p class="lab-eyebrow">${esc(t('Your climb'))}</p>
+      <div class="rq-climb" id="rq-climb">
+        <img class="rq-climb-badge" src="${badgeArt(now.badge)}" alt="">
+        <div class="rq-climb-body">
+          <p class="rq-climb-line">${esc(balanceLine(now))}</p>
+          ${climb === null ? '' : `<div class="profile-bar home-meter"><i style="width:${climb}%"></i></div>`}
+        </div>
+      </div>
+      ${/* The room for "Play again" is kept from the first paint, so the two
+            buttons under it never move under a thumb while the season is read. */ ''}
+      <div class="rq-next" id="rq-next-step"></div>
+      <div class="rq-pair">
+        <button id="rq-board" class="ghost" type="button">${esc(t('Leaderboard'))}</button>
+        <button id="rq-done" class="ghost">${esc(t('Back'))}</button>
+      </div>
     </section>
   `, 'ranked', () => showRankedResult(mode, result, tally, { quit, attemptId }));
   view.querySelector('#rq-done').addEventListener('click', showRanked);
+  view.querySelector('#rq-board').addEventListener('click', showLeaderboard);
+  fillRankedNextStep(view);
   return view;
+}
+
+// "Play again" is offered only when the server would start one: the season
+// is open and the player is not at the cap, where the next Ranked quiz is a
+// promotion with its own offer screen. The result does not say either, so
+// they are read the way the Ranked tab reads them. When another quiz cannot
+// start -- or the reads fail -- the kept room closes and Back becomes the
+// screen's main button, as it was before.
+async function fillRankedNextStep(view) {
+  const slot = view.querySelector('#rq-next-step');
+  const [season, entry] = await Promise.all([api('/ranked/season'), api('/ranked/entry')]);
+  if (!view.isConnected) return;
+  const again = Boolean(season && entry) && season.status === 'open' && entry.mode !== 'promotion';
+  if (!again) {
+    slot.remove();
+    view.querySelector('#rq-done').className = 'primary';
+    return;
+  }
+  slot.innerHTML = `<button id="rq-again" class="primary" type="button">${esc(t('Play again'))} <span aria-hidden="true">→</span></button>`;
+  slot.querySelector('#rq-again').addEventListener('click', (event) => {
+    event.currentTarget.disabled = true;
+    startRankedAttempt('normal');
+  });
 }
 
 // An attempt that was in progress when the official season launched. It
