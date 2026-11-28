@@ -42,7 +42,16 @@ def generate_login_id(settings: AuthSettings | None = None) -> str:
     not be unique: sign-in names the account by username first.
     """
     word = secrets.choice(WORDS)
-    return f"{word}-{secrets.randbelow(100):02d}"
+    return f"{word}-{secrets.choice(CODE_ENDINGS)}"
+
+
+# Two-digit endings a new Quiz Code may draw (#516): every one from 00 to 99
+# except the hate-symbol numbers and the one juvenile one, so no code reads
+# as either. Codes already issued keep whatever ending they have.
+_EXCLUDED_ENDINGS = frozenset({"14", "88", "69"})
+CODE_ENDINGS: tuple[str, ...] = tuple(
+    f"{n:02d}" for n in range(100) if f"{n:02d}" not in _EXCLUDED_ENDINGS
+)
 
 
 def new_lookup_key() -> str:

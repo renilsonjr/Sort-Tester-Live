@@ -49,6 +49,8 @@ const ES = {
   'The official season is live': 'La temporada oficial está en marcha',
   'It ends {date}.': 'Termina el {date}.',
   'Close': 'Cerrar',
+  "You're approved for the UPS hat!": '¡Tu cuenta está aprobada para competir por la gorra de UPS!',
+  'Play Ranked in the official season (Dec 1-31, 2026) and finish in the top 3.': 'Juega el Clasificatorio en la temporada oficial (1-31 de diciembre de 2026) y termina entre los 3 primeros.',
   'Pre-Season is finishing.': 'La Pretemporada está terminando.',
   'Pre-Season is closed.': 'La Pretemporada está cerrada.',
   'Pre-Season is over.': 'La Pretemporada terminó.',

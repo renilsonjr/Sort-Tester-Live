@@ -2,6 +2,7 @@ import re
 import unittest
 
 from backend.auth.credentials import (
+    CODE_ENDINGS,
     generate_login_id,
     hash_login_id,
     new_lookup_key,
@@ -24,10 +25,11 @@ class CredentialsTests(unittest.TestCase):
         codes = [generate_login_id() for _ in range(2000)]
         words = {c.split("-")[0] for c in codes}
         endings = {c.split("-")[1] for c in codes}
-        # 2,000 draws from 2,000 words x 100 endings: anything bunched up
+        # 2,000 draws from 2,000 words x 97 endings (#516 drops three):
+        # anything bunched up
         # here means the draw is not using the whole list.
         self.assertGreater(len(words), 1000)
-        self.assertEqual(len(endings), 100)
+        self.assertEqual(len(endings), len(CODE_ENDINGS))
 
     def test_generate_and_verify_a_word_code(self):
         login_id = generate_login_id()
