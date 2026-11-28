@@ -53,6 +53,20 @@ test('no module is imported under two different URLs', () => {
   assert.deepEqual(doubled, []);
 });
 
+test('a script the page starts is not also imported under another URL', () => {
+  // auth.js was: the page started it as auth.js?v=..., app.js imported it
+  // as auth.js, and the browser ran it twice. It starts the sign-in gate
+  // when it loads, so every visit asked /health and /api/auth/me twice.
+  const { edges } = importGraph();
+  const started = [...html.matchAll(/<script type="module" src="([^"]+)"/g)].map((m) => m[1]);
+  assert.ok(started.length > 0, 'the page starts no module');
+  const doubled = started.filter((src) => {
+    const [file, query = ''] = src.split('?');
+    return edges.has(file) && edges.get(file) !== (query ? '?' + query : '');
+  });
+  assert.deepEqual(doubled, []);
+});
+
 test('the page draws the opening mark itself, inside the app mount', () => {
   assert.match(html, /<main id="app"><div class="boot"[^>]*>/);
   assert.match(html, /class="boot-mark">RJ</);
