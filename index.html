@@ -2093,7 +2093,47 @@
      can put them in a column beside the list, and the group dissolves below
      the breakpoint so the phone still sees them as plain children of
      .lab-screen with its own 16px gap between them. */
-  .chart-aside { display: contents; }
+  /* Know the chart, regrouped (2026-11-28). The service chips and the
+     search used to scroll away with the page: on a 390x844 phone the list
+     is 8,844px, so changing service three thousand pixels down meant
+     scrolling back to the top. They are a bar that stays under the app's
+     own header instead.
+
+     The header is sticky and measures 67px here; 68 keeps the chips off
+     its edge. The desktop column has the same idea and its own top. */
+  .chart-aside {
+    display: block; position: sticky; top: 68px; z-index: 6;
+    margin: 0 -20px; padding: 10px 20px;
+    background: var(--bg); border-bottom: 1px solid var(--glass-border);
+  }
+  .screen-chart > .lab-title { font-size: 24px; }
+  /* One line that scrolls sideways: four services over two lines cost 95px
+     of a bar that is now on the screen the whole time. */
+  .chart-aside .lab-service-tabs { display: flex; flex-wrap: nowrap; overflow-x: auto; gap: 7px; margin: 0 0 8px; scrollbar-width: none; }
+  .chart-aside .lab-service-tabs::-webkit-scrollbar { display: none; }
+  .chart-aside .lab-service-tabs button { flex: none; }
+  .chart-aside .lab-chart-search { margin: 0; }
+  .chart-aside .lab-chart-count { margin: 6px 0 0; text-align: right; }
+  /* The placeholder shows what the field takes, so the label is for a
+     screen reader only. */
+  .chart-aside .lab-search-label {
+    position: absolute; width: 1px; height: 1px; margin: -1px;
+    overflow: hidden; clip-path: inset(50%); white-space: nowrap;
+  }
+  /* The routes are one card of rows, like the two leaderboards: 46px a
+     route instead of 84, which takes the page from 8,844 to 5,426 and puts
+     eight routes on the screen where four fitted. */
+  #chart-rows { display: flex; flex-direction: column; gap: 2px; padding: 6px; border-radius: var(--r-md); background: var(--glass-surface-sub); border: 1px solid var(--glass-border); box-shadow: var(--glass-shadow); }
+  #chart-rows .lab-chart-block { margin: 14px 0 4px; padding: 0 10px; }
+  #chart-rows .lab-chart-block:first-child { margin-top: 4px; }
+  #chart-rows .lab-chart-row { margin: 0; padding: 8px 10px; gap: 10px; align-items: center; border: 0; border-radius: 14px; background: none; }
+  /* The code first, because that is what a reader scans for, and the state
+     beside it. A route with a note keeps the note on its own line. */
+  #chart-rows .lab-chart-row > div { display: flex; align-items: baseline; flex-wrap: wrap; gap: 8px; min-width: 0; }
+  #chart-rows .lab-chart-row strong { order: 1; margin: 0; font-size: 17px; }
+  #chart-rows .lab-chart-state { order: 2; margin: 0; font-size: 12px; }
+  #chart-rows .lab-chart-row small { order: 3; flex-basis: 100%; margin: 0; }
+  #chart-rows .lab-chart-row .lab-belt-chip { min-width: 72px; min-height: 30px; padding: 4px 10px; border-radius: 999px; font-size: 11px; }
 
   /* Five tabs and a long label (#396).
 
@@ -2645,6 +2685,12 @@
       display: flex;
       flex-direction: column;
       gap: 12px;
+      /* The phone's bar reaches into the page's padding and draws an edge;
+         in a column of its own it needs neither. */
+      margin: 0;
+      padding: 0;
+      background: none;
+      border-bottom: 0;
       position: sticky;
       /* Clears the sticky header, whose bottom edge measures 61px here.
          At 18px the service tabs slid underneath it while scrolling. */

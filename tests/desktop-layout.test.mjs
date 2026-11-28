@@ -159,9 +159,10 @@ test('Practice puts its two shelves side by side', () => {
 test('the chart keeps its controls beside the list', () => {
   assert.match(app, /class="lab-screen screen-chart"/);
   assert.match(app, /class="chart-aside"/);
-  // Same trick as .home-split: the group has to dissolve on a phone, or the
-  // controls become one flex item and lose .lab-screen's 16px gap.
-  assert.match(html, /\.chart-aside \{ display: contents; \}/);
+  // It used to dissolve on a phone (display: contents), so the controls
+  // kept .lab-screen's own gap. Since 2026-11-28 it is a bar that stays
+  // under the app header there instead, which needs it to be a box.
+  assert.match(html, /\n  \.chart-aside \{\n    display: block; position: sticky; top: 68px;/);
   const desk = desktopBlock();
   assert.match(desk, /\.screen-chart\s*\{[^}]*grid-template-columns/);
   // The list is over 8000px tall; the filters are only useful if they stay.
