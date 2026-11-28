@@ -5,14 +5,16 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 
-const app = readFileSync(new URL('../src/app.js', import.meta.url), 'utf8');
+// The owner's screens are in src/ownerScreens.js, inside a factory, so
+// each function ends two spaces in.
+const app = readFileSync(new URL('../src/ownerScreens.js', import.meta.url), 'utf8');
 const page = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
 
 function fn(name) {
   const start = app.indexOf(name);
   assert.notEqual(start, -1, `${name} is missing`);
   const body = app.slice(start);
-  return body.slice(0, body.indexOf('\n}\n'));
+  return body.slice(0, body.indexOf('\n  }\n'));
 }
 
 const screen = () => fn('function showCases') + fn('async function fillCases')
@@ -36,7 +38,7 @@ test('only the two approved outcomes exist, and leaving it open is said', () => 
   const list = outcomes.slice(0, outcomes.indexOf('];'));
   assert.match(list, /network_instability/);
   assert.match(list, /insufficient_evidence/);
-  assert.equal((list.match(/\n  \['/g) || []).length, 2, 'exactly two outcomes');
+  assert.equal((list.match(/\n    \['/g) || []).length, 2, 'exactly two outcomes');
   assert.match(fn('function outcomeButtons'), /leave it open\. Nothing happens until you choose/);
 });
 

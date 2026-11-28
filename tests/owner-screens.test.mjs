@@ -23,6 +23,7 @@ import { dirname, join } from 'node:path';
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const html = readFileSync(join(root, 'index.html'), 'utf8');
 const app = readFileSync(join(root, 'src/app.js'), 'utf8');
+const owner = readFileSync(join(root, 'src/ownerScreens.js'), 'utf8');
 const css = html.replace(/\/\*[\s\S]*?\*\//g, '');
 
 const BACKS = ['owner-back', 'elig-back', 'acct-back', 'sel-back', 'case-back', 'rec-back', 'msg-back'];
@@ -50,13 +51,13 @@ test('#431 the owner sentences are in the prose style', () => {
     'The tag is on their profile. It is how you find the account, not proof of who they are',
     'A tie comes here only when the rules say so',
   ]) {
-    const at = app.indexOf(sentence);
+    const at = owner.indexOf(sentence);
     assert.notEqual(at, -1, `${sentence.slice(0, 30)}... is gone`);
-    const opener = app.lastIndexOf('<p class=', at);
-    assert.match(app.slice(opener, opener + 22), /<p class="lab-intro"/, `${sentence.slice(0, 30)}... is still a label`);
+    const opener = owner.lastIndexOf('<p class=', at);
+    assert.match(owner.slice(opener, opener + 22), /<p class="lab-intro"/, `${sentence.slice(0, 30)}... is still a label`);
   }
   // the Case review pair, which is a ternary rather than one string
-  assert.match(app, /<p class="lab-intro">\$\{esc\(kind === 'flags'/);
+  assert.match(owner, /<p class="lab-intro">\$\{esc\(kind === 'flags'/);
 });
 
 test('#431 the label style is left to labels', () => {
@@ -67,9 +68,9 @@ test('#431 the label style is left to labels', () => {
 });
 
 test('#432 the owner headings wear the eyebrow', () => {
-  assert.equal((app.match(/<h2 class="lab-eyebrow owner-count">/g) ?? []).length, 3);
+  assert.equal((owner.match(/<h2 class="lab-eyebrow owner-count">/g) ?? []).length, 3);
   for (const heading of ['Approve a sorter', 'Nothing waiting', 'Who is in front of you?']) {
-    assert.match(app, new RegExp(`<h2 class="lab-eyebrow">\\$\\{esc\\(t\\('${heading.replace('?', '\\?')}'\\)\\)\\}</h2>`),
+    assert.match(owner, new RegExp(`<h2 class="lab-eyebrow">\\$\\{esc\\(t\\('${heading.replace('?', '\\?')}'\\)\\)\\}</h2>`),
       `${heading} is not an eyebrow`);
   }
 });
@@ -84,13 +85,13 @@ test('#432 the old heading sizes are gone, not merely overridden', () => {
 
 test('#433 every owner screen has the compact Back, first', () => {
   for (const id of BACKS) {
-    assert.match(app, new RegExp(`\\$\\{backLink\\('${id}'\\)\\}`), `${id} is not a backLink`);
-    assert.doesNotMatch(app, new RegExp(`<button id="${id}" class="ghost"`), `${id} is still a full-width ghost`);
+    assert.match(owner, new RegExp(`\\$\\{backLink\\('${id}'\\)\\}`), `${id} is not a backLink`);
+    assert.doesNotMatch(owner, new RegExp(`<button id="${id}" class="ghost"`), `${id} is still a full-width ghost`);
   }
 });
 
 test('#433 the menu\'s Back is inside its screen', () => {
   // Placed before the section first time round, where it rendered outside
   // the screen it belongs to.
-  assert.match(app, /<section class="lab-screen screen-owner">\s*\n\s*\$\{backLink\('owner-back'\)\}/);
+  assert.match(owner, /<section class="lab-screen screen-owner">\s*\n\s*\$\{backLink\('owner-back'\)\}/);
 });
