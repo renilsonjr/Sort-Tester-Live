@@ -45,7 +45,7 @@ test('nothing from the tester is loaded into the page', () => {
 });
 
 test('the sign-in screen shows it in its footer, under the maker line', () => {
-  const makerAt = auth.indexOf('Made by RJ. Meet the person behind the app\')}</a></p>');
+  const makerAt = auth.indexOf("forgotText('Privacy')}</a></p>");
   const linkAt = auth.indexOf('<p class="auth-footer auth-footer-security"><a class="security-badge-link"');
   assert.ok(makerAt > 0 && linkAt > makerAt && linkAt - makerAt < 80);
   assert.match(auth, /alt="\$\{forgotText\('Security tested: grade A by ImmuniWeb'\)\}"/);

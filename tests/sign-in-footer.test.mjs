@@ -10,7 +10,7 @@ const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
 const panel = auth.slice(auth.indexOf('container.innerHTML = `'), auth.indexOf('`;', auth.indexOf('container.innerHTML = `')));
 
 test('the link sits at the foot of the sign-in screen, after everything else', () => {
-  const footer = panel.indexOf('class="auth-footer"');
+  const footer = panel.indexOf('class="auth-footer ');
   assert.notEqual(footer, -1, 'the sign-in screen has no footer');
   assert.ok(footer > panel.indexOf('id="auth-message"'), 'the footer comes last');
 });
@@ -24,7 +24,10 @@ test('it goes to the author site in a new tab, without handing the opener over',
 });
 
 test('the words are in both languages', () => {
-  assert.match(panel, /forgotText\('Made by RJ\. Meet the person behind the app'\)/);
+  // The visible words are short so Privacy fits on the same line; the full
+  // sentence is what a screen reader hears.
+  assert.match(panel, /aria-label="\$\{forgotText\('Made by RJ\. Meet the person behind the app'\)\}">\$\{forgotText\('Made by RJ'\)\}</);
+  assert.match(auth, /'Made by RJ': 'Hecho por RJ',/);
   assert.match(auth, /'Made by RJ\. Meet the person behind the app':\s*'[^']*RJ[^']+'/);
 });
 

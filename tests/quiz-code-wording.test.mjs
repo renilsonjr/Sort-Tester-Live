@@ -22,7 +22,8 @@ const OLD_WORDING = /login ID|Login ID|Log in with ID|Need an ID\?|Forgot my log
 test('the sign-in panel says Quiz Code', () => {
   assert.match(auth, />Log in with Quiz Code</);
   assert.match(auth, /placeholder="Your Quiz Code"/);
-  assert.match(auth, />Need a Quiz Code\? Create an account</);
+  // The way in for somebody without a code is a button now, not a line of text.
+  assert.match(auth, /<button id="auth-register-btn" class="ghost" type="button">Create account</);
   assert.match(auth, /forgotText\('Forgot my Quiz Code\?'\)/);
   assert.match(auth, /Save this Quiz Code\. It will not be shown again\./);
   assert.match(auth, /I saved my Quiz Code/);

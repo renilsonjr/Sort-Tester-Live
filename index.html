@@ -1323,6 +1323,22 @@
   .auth-footer-link:hover { color: var(--gold); }
   .auth-footer-link:focus-visible { outline: 3px solid var(--gold); outline-offset: 3px; border-radius: 6px; }
 
+  /* Login, regrouped (2026-11-27). The mark and the name share a line. The
+     card is concentric: 16px fields and buttons (--r-sm), 16px padding, 32px
+     corner. The same card holds the create, recover and save-your-code
+     forms, so they follow. */
+  .auth-brand { display: flex; align-items: center; justify-content: center; gap: 12px; padding: 4px 0; }
+  .auth-screen .auth-brand .brandmark { width: 44px; height: 44px; border-radius: 14px; font-size: 18px; }
+  .auth-brand .auth-title { font-size: 24px; }
+  #auth-panel .auth-card { border-radius: 32px; padding: 16px; gap: 12px; }
+  /* Side by side while each has room for its words (128px); on a 320px
+     phone the two stack instead of breaking "Create account" in half. */
+  .auth-pair { display: grid; grid-template-columns: repeat(auto-fit, minmax(128px, 1fr)); gap: 8px; }
+  .auth-pair .ghost { padding-inline: 8px; }
+  .auth-footer-links { display: flex; justify-content: center; gap: 12px; }
+  /* --gold is 2.7:1 on the cream field; a word takes --gold-ring. */
+  html[data-theme="day"] .code-eye { color: var(--gold-ring); }
+
   /* The app screen is an opaque dark panel (like the mock's phone screen), so
      the UI reads crisp and dark; the ambient orbs stay behind it and only peek
      at the edges on wide screens. */
