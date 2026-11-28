@@ -13,6 +13,7 @@ from pydantic import BaseModel
 from backend.auth import eligibility, recovery, recovery_messages
 from backend.auth import deletion as account_deletion
 from backend.auth.deletion_list import DeletionListUnavailable
+from backend.auth.username_filter import is_blocked
 from backend.routers import deps
 from backend.routers.deps import current_account, get_db, require_owner, require_recent_reauth, unprocessable, utc
 from backend.ranked import seasons
@@ -137,6 +138,9 @@ def list_accounts(account: dict = Depends(current_account), conn=Depends(get_db)
                 "is_owner": row["is_owner"],
                 "approved": row["approved"],
                 "has_played": row["has_played"],
+                # issue #515: an account made before the filter whose name
+                # it would now refuse; the owner decides what to do
+                "name_not_allowed": is_blocked(row["username"]),
             }
             for row in rows
         ]
