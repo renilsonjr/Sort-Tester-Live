@@ -161,6 +161,15 @@ def register(request: Request, payload: RegisterRequest):
             status_code=status.HTTP_429_TOO_MANY_REQUESTS,
             detail="Too many sign-ups; try again later",
         )
+    # Issue #515: a name that says something racist, hateful or profane is
+    # refused like any other invalid name (422), before anything is written.
+    from backend.auth.username_filter import is_blocked
+
+    if is_blocked(payload.username):
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
+            detail="That username isn't allowed. Please choose another.",
+        )
     with deps.db_connection() as conn:
         try:
             account_id, login_id = register_account(conn, payload.username)

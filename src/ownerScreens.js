@@ -228,6 +228,7 @@ export function createOwnerScreens(deps) {
     const parts = [`#${row.tag}`, `${t('created')} ${language.date(row.created_at)}`];
     if (row.approved) parts.push(t('Approved for prizes'));
     if (row.has_played) parts.push(t('Has played'));
+    if (row.name_not_allowed) parts.push(t('Name not allowed'));
     return parts.join(' \u00b7 ');
   }
 
