@@ -551,33 +551,16 @@ function mountHandlerDuel(root, { seed, onScore, onEnd }) {
   return handlerScreen;
 }
 
+// The name a player gave for the Shift log, kept for as long as the page is
+// open. It used to be asked for on a screen of its own before every list of
+// tests; now it is offered from the list, and remembered between tests.
+let practiceName = '';
+
+// The Practice tab is the list of tests. It was a screen with two buttons,
+// then a screen for an optional name, then the list: three taps to reach
+// what the tab is for.
 function showPractice() {
-  stopTick();
-  clock = null;
-  const view = labPage(`
-    <section class="lab-screen screen-practice">
-      <p class="lab-eyebrow">${esc(t('Practice'))}</p>
-      <h1 class="lab-title tab-title">${esc(t('The chart'))}</h1>
-      <section class="home-stripe">
-        <p class="lab-eyebrow">${esc(t('Learn'))}</p>
-        <button id="study" class="lab-choice" type="button">
-          <span class="lab-choice-icon" aria-hidden="true">${ICONS.chart}</span>
-          <span><strong>${esc(t('Know the chart'))}</strong></span>
-          <span class="lab-arrow" aria-hidden="true">→</span>
-        </button>
-      </section>
-      <section class="home-stripe">
-        <p class="lab-eyebrow">${esc(t('Test yourself'))}</p>
-        <button id="quiz" class="lab-choice lab-choice-quiz" type="button">
-          <span class="lab-choice-icon is-solid" aria-hidden="true">${ICONS.quizSolid}</span>
-          <span><strong>${esc(t('Take a quiz'))}</strong></span>
-          <span class="lab-arrow" aria-hidden="true">→</span>
-        </button>
-      </section>
-    </section>
-  `, 'practice', showPractice);
-  view.querySelector('#study').addEventListener('click', showStudy);
-  view.querySelector('#quiz').addEventListener('click', () => showNameEntry());
+  showDeckPicker(practiceName);
 }
 
 // Ranked and Profile exist as tabs for signed-in players from this slice on;
@@ -3001,13 +2984,15 @@ function stopIdleWatch() {
 function showNameEntry(previousName = '') {
   const view = labPage(`
     <section class="lab-screen">
+      ${backLink('name-back')}
       <p class="lab-eyebrow">${esc(t('Practice'))}</p>
       <h1 class="lab-title">${esc(t('Quiz yourself'))}</h1>
       <!-- The field and its button were the only ones in the app standing
            straight on the background, with no card and no eyebrow (#332).
            This is the card the sign-in screen uses, which is where a player
            last saw a field and a button together. The way out stays outside
-           it: Back is not part of the task the card holds. -->
+           it, before the title like every other sub-screen: Back is not part
+           of the task the card holds. -->
       <div class="auth-card">
         <label class="field">
           <span>${esc(t('Name or ID (optional)'))}</span>
@@ -3015,7 +3000,6 @@ function showNameEntry(previousName = '') {
         </label>
         <button id="begin" class="primary">${esc(t('Pick a test'))}</button>
       </div>
-      <button id="back" class="ghost">${esc(t('Back to home'))}</button>
     </section>
   `, 'practice', () => showNameEntry(view.querySelector('#name').value));
 
@@ -3023,15 +3007,16 @@ function showNameEntry(previousName = '') {
   nameInput.focus();
 
   function begin() {
-    const name = nameInput.value.trim();
-    showDeckPicker(name);
+    practiceName = nameInput.value.trim();
+    showDeckPicker(practiceName);
   }
 
   view.querySelector('#begin').addEventListener('click', begin);
   nameInput.addEventListener('keydown', (event) => {
     if (event.key === 'Enter') begin();
   });
-  view.querySelector('#back').addEventListener('click', showStart);
+  // Back leaves the name as it was.
+  view.querySelector('#name-back').addEventListener('click', showPractice);
 }
 
 function chartRow([state, code, belt, detail]) {
@@ -3095,10 +3080,15 @@ function showStudy() {
 // quiz mark for a service deck), and the arrow is the one every other
 // tappable row in the app has. The "TWILIGHT" chip that repeated on all ten
 // cards is gone -- the section eyebrow above the list already says it once.
-function deckRow(deck, { index = null, meta, locked = false }) {
+function deckRow(deck, { index = null, meta, count = null, locked = false }) {
   const icon = index === null ? ICONS.quiz : `0${index + 1}`;
+  // The row shows how many questions as a figure at its end. The full
+  // sentence ("15 questions, 15s each") stays for a screen reader; sighted,
+  // the seconds are said once above the lists instead of on all ten rows.
+  // A deck that cannot be played has no figure, so its reason is shown.
   const body = `<span class="lab-choice-icon" aria-hidden="true">${icon}</span>
-      <span><strong>${esc(language.deckName(deck))}</strong><small>${esc(language.deckBlurb(deck))}</small><small class="lab-choice-meta">${esc(meta)}</small></span>`;
+      <span><strong>${esc(language.deckName(deck))}</strong><small>${esc(language.deckBlurb(deck))}</small><small class="lab-choice-meta${count === null ? '' : ' sr-only'}">${esc(meta)}</small></span>${
+        count === null ? '' : `<span class="deck-count" aria-hidden="true">${esc(count)}</span>`}`;
   // A deck not yet checked against the chart is not playable, so it must not
   // be a button and must not show the arrow that promises it opens.
   if (locked) return `<div class="lab-choice locked">${body}</div>`;
@@ -3121,53 +3111,66 @@ function backLink(id) {
 function showDeckPicker(name) {
   stopTick();
   clock = null;
+  practiceName = name ?? '';
   const entries = log.all();
 
   const view = labPage(`
-    <section class="lab-screen">
-      ${backLink('picker-back')}
+    <section class="lab-screen screen-practice">
       <p class="lab-eyebrow">${esc(t('Practice'))}</p>
-      <h1 class="lab-title">${esc(t('Pick a test'))}</h1>
+      <h1 class="lab-title tab-title">${esc(t('Pick a test'))}</h1>
+      <p class="lab-intro tab-intro">${esc(t('{seconds} seconds for each card.', { seconds: CARD_SECONDS }))}</p>
+      <section class="home-stripe practice-learn">
+        <p class="lab-eyebrow">${esc(t('Learn'))}</p>
+        <button id="study" class="lab-choice" type="button">
+          <span class="lab-choice-icon" aria-hidden="true">${ICONS.chart}</span>
+          <span><strong>${esc(t('Know the chart'))}</strong></span>
+          <span class="lab-arrow" aria-hidden="true">→</span>
+        </button>
+      </section>
       <section class="home-stripe">
         <p class="lab-eyebrow">${esc(t('Levels · Twilight'))}</p>
-        <div class="decks">
+        <div class="decks decks-card">
           ${DECKS.filter((deck) => deck.questionCount).map((deck, index) => deckRow(deck, {
             index,
+            count: deck.questionCount,
             meta: t('{count} questions · {seconds}s each', { count: deck.questionCount, seconds: CARD_SECONDS }),
           })).join('')}
         </div>
       </section>
       <section class="home-stripe">
         <p class="lab-eyebrow">${esc(t('Current quizzes · Twilight'))}</p>
-        <div class="decks">
+        <div class="decks decks-card">
           ${DECKS.filter((deck) => !deck.questionCount).map((deck) => deckRow(deck, {
             locked: !deck.verified,
+            count: deck.verified ? (deck.practiceRunSize ?? deck.cards.length) : null,
             meta: deck.verified
               ? t('{count} cards · {seconds}s each', { count: deck.practiceRunSize ?? deck.cards.length, seconds: CARD_SECONDS })
               : t('Not checked against the chart yet'),
           })).join('')}
         </div>
       </section>
-      <button id="back" class="ghost">${esc(t('Edit name (optional)'))}</button>
-      <button id="main-page" class="ghost">${esc(t('Main page'))}</button>
-      ${entries.length ? `<button id="viewlog" class="ghost">${esc(t('Shift log'))} (${entries.length})</button>` : ''}
+      ${/* Who the Shift log will name, and the two things that were ghost
+            buttons under the list. "Main page" is gone: the dock is on this
+            screen now, and Home is its first tab. */ ''}
+      <p class="practice-who">
+        <span>${esc(t('Playing as'))} <b>${esc(displayName(practiceName))}</b></span>
+        <button id="practice-name" class="practice-link" type="button">${esc(t(practiceName ? 'Change name' : 'Add a name'))}</button>
+        ${entries.length ? `<button id="viewlog" class="practice-link" type="button">${esc(t('Shift log'))} (${entries.length})</button>` : ''}
+      </p>
     </section>
-  `, 'practice', () => showDeckPicker(name));
+  `, 'practice', () => showDeckPicker(practiceName));
 
   view.querySelectorAll('.lab-choice[data-deck]').forEach((button) => {
     button.addEventListener('click', () => {
       const deck = deckById(button.dataset.deck);
       if (!deck) return;
       activeDeck = deck;
-      run = createRun({ name, cards: selectLevelCards(deck) });
+      run = createRun({ name: practiceName, cards: selectLevelCards(deck) });
       showCard();
     });
   });
-  // The controls below sit under the whole list, out of sight on a phone, so
-  // the way back to Practice is also offered before it (#262).
-  view.querySelector('#picker-back').addEventListener('click', showPractice);
-  view.querySelector('#back').addEventListener('click', () => showNameEntry(name));
-  view.querySelector('#main-page').addEventListener('click', showStart);
+  view.querySelector('#study').addEventListener('click', showStudy);
+  view.querySelector('#practice-name').addEventListener('click', () => showNameEntry(practiceName));
   view.querySelector('#viewlog')?.addEventListener('click', showLog);
 }
 
