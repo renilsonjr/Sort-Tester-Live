@@ -6,13 +6,19 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 
 const app = readFileSync(new URL('../src/app.js', import.meta.url), 'utf8');
+const owner = readFileSync(new URL('../src/ownerScreens.js', import.meta.url), 'utf8');
 const i18n = readFileSync(new URL('../src/i18n.js', import.meta.url), 'utf8');
 
+// The owner's screens are in src/ownerScreens.js, inside a factory, so a
+// function there ends two spaces in; one in app.js ends at the margin.
 function fn(name) {
-  const start = app.indexOf(name);
-  assert.notEqual(start, -1, `${name} is missing`);
-  const body = app.slice(start);
-  return body.slice(0, body.indexOf('\n}\n'));
+  for (const [source, end] of [[owner, '\n  }\n'], [app, '\n}\n']]) {
+    const start = source.indexOf(name);
+    if (start === -1) continue;
+    const body = source.slice(start);
+    return body.slice(0, body.indexOf(end));
+  }
+  return assert.fail(`${name} is missing`);
 }
 
 test('a question on screen leaves by itself when the attempt is gone', () => {

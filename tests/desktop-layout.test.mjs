@@ -9,6 +9,7 @@ import { readFileSync } from 'node:fs';
 
 const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
 const app = readFileSync(new URL('../src/app.js', import.meta.url), 'utf8');
+const owner = readFileSync(new URL('../src/ownerScreens.js', import.meta.url), 'utf8');
 const i18n = readFileSync(new URL('../src/i18n.js', import.meta.url), 'utf8');
 
 const DESKTOP = '@media (min-width: 900px)';
@@ -172,7 +173,7 @@ test('Profile puts the numbers beside the climb', () => {
 });
 
 test('Owner tools lists its actions in two columns', () => {
-  assert.match(app, /class="lab-screen screen-owner"/);
+  assert.match(owner, /class="lab-screen screen-owner"/);
   assert.match(desktopBlock(), /\.screen-owner\s*\{[^}]*grid-template-columns/);
 });
 
