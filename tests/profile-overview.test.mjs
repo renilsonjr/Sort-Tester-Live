@@ -5,8 +5,9 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { practiceCountLabel } from '../src/shiftLog.js';
+import { screensSource } from './helpers/screens-source.mjs';
 
-const app = readFileSync(new URL('../src/app.js', import.meta.url), 'utf8');
+const app = screensSource();
 const i18n = readFileSync(new URL('../src/i18n.js', import.meta.url), 'utf8');
 
 function overview() {
