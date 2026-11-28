@@ -2377,10 +2377,13 @@ function showStudy() {
         <div class="lab-service-tabs" role="group" aria-label="${esc(t('Choose service'))}">
           ${Object.keys(CHART).map((service) => `<button type="button" data-service="${esc(service)}" aria-pressed="${service === studyService}">${esc(language.service(service))}</button>`).join('')}
         </div>
-        <div class="lab-chart-heading"><strong id="service-title"></strong><span>${esc(t('Twilight chart'))}</span></div>
-        <p id="chart-count" class="lab-chart-count"></p>
+        ${/* The heading said the service that the pressed chip above already
+              names, and "Twilight chart" what the eyebrow already says. The
+              label stays for a screen reader; the placeholder shows the
+              sighted reader what the field takes. */ ''}
         <label class="lab-search-label" for="chart-search">${esc(t('Find a state or number'))}</label>
         <input id="chart-search" class="lab-chart-search" type="search" placeholder="${esc(t('New Jersey, 079-9, California, 155'))}" value="${esc(studyQuery)}" autocomplete="off">
+        <p id="chart-count" class="lab-chart-count" role="status"></p>
       </div>
       <div id="chart-rows"></div>
       <aside class="lab-disclaimer"><strong>${esc(t('Made by RJ.'))}</strong> ${esc(t('This study guide does not replace your current worksite chart or UPS training.'))}</aside>
@@ -2390,7 +2393,6 @@ function showStudy() {
   const search = view.querySelector('#chart-search');
   const renderRows = () => {
     const section = searchChart(studyService, search.value);
-    view.querySelector('#service-title').textContent = language.service(studyService);
     view.querySelector('#chart-count').textContent = t('{shown} of {total} routes shown', { shown: section.main.length + section.exceptions.length, total: section.total });
     view.querySelector('#chart-rows').innerHTML =
       // #390: the app's own section label, gold in both themes. Still an h2:
