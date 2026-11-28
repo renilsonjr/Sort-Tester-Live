@@ -4,8 +4,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
+import { screensSource } from './helpers/screens-source.mjs';
 
-const app = readFileSync(new URL('../src/app.js', import.meta.url), 'utf8');
+const app = screensSource();
 const i18n = readFileSync(new URL('../src/i18n.js', import.meta.url), 'utf8');
 
 function fn(name) {
@@ -15,20 +16,20 @@ function fn(name) {
   return body.slice(0, body.indexOf('\n}\n'));
 }
 
-test('the picker shows a back control before the title and the list of tests', () => {
+test('the list of tests is the Practice tab, so it needs no Back', () => {
+  // #262 put a Back before the title because the ways out were under a
+  // 1665px list. Since 2026-11-27 the list IS the tab: the dock is on the
+  // screen and there is nowhere to go back to.
   const picker = fn('function showDeckPicker');
-  // The markup moved into the shared backLink() helper in #331, so the app
-  // has one Back rather than a copy per screen. What this test is about is
-  // unchanged: the picker's way out comes before the title and the list.
-  const back = picker.indexOf("backLink('picker-back')");
-  assert.notEqual(back, -1, 'the picker has no back control at the top');
-  assert.ok(back < picker.indexOf("t('Pick a test')"), 'back comes before the title');
-  assert.ok(back < picker.indexOf('class="decks"'), 'back comes before the list');
+  assert.doesNotMatch(picker, /backLink\(/);
+  assert.match(fn('function showPractice'), /showDeckPicker\(practiceName\)/);
+  assert.match(picker, /class="lab-screen screen-practice"/);
 });
 
-test('back returns to the Practice screen the player came from', () => {
-  const picker = fn('function showDeckPicker');
-  assert.match(picker, /#picker-back'\)\.addEventListener\('click', showPractice\)/);
+test('the name screen goes back to the list, and leaves the name alone', () => {
+  const name = fn('function showNameEntry');
+  assert.match(name, /\$\{backLink\('name-back'\)\}/);
+  assert.match(name, /#name-back'\)\.addEventListener\('click', showPractice\)/);
 });
 
 test('the back label is a translated word, with Spanish', () => {
@@ -46,8 +47,11 @@ test('the Profile sub-screens use the same Back, not a second one', () => {
     'the Profile built its own Back again');
 });
 
-test('the controls under the list stay, for a player who scrolled down', () => {
+test('what was under the list is one line: who is playing, the name, the log', () => {
   const picker = fn('function showDeckPicker');
-  assert.match(picker, /id="back"/);
-  assert.match(picker, /id="main-page"/);
+  assert.match(picker, /id="practice-name" class="practice-link"/);
+  assert.match(picker, /id="viewlog" class="practice-link"/);
+  assert.match(picker, /#practice-name'\)\.addEventListener\('click', \(\) => showNameEntry\(practiceName\)\)/);
+  // "Main page" duplicated the dock's first tab.
+  assert.doesNotMatch(picker, /id="main-page"/);
 });

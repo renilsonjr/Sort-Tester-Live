@@ -10,10 +10,11 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
+import { screensSource } from './helpers/screens-source.mjs';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const html = readFileSync(join(root, 'index.html'), 'utf8');
-const app = readFileSync(join(root, 'src/app.js'), 'utf8');
+const app = screensSource();
 const auth = readFileSync(join(root, 'src/auth.js'), 'utf8');
 const i18n = readFileSync(join(root, 'src/i18n.js'), 'utf8');
 
@@ -67,7 +68,9 @@ test('#331 Back is one shared compact control, not a full-width button', () => {
   assert.match(css, /\.lab-back \{[^}]*background: transparent/);
   assert.match(js, /function backLink\(id\)/);
   // Both places that had a Back go through it.
-  assert.match(js, /\$\{backLink\('picker-back'\)\}/);
+  // The picker became the Practice tab on 2026-11-27 and has no Back; the
+  // name screen, which is still a sub-screen, has the shared one.
+  assert.match(js, /\$\{backLink\('name-back'\)\}/);
   assert.match(js, /backLink\('profile-back'\)/);
 });
 
@@ -78,9 +81,10 @@ test('#332 the quiz-name screen has an eyebrow and a card', () => {
   assert.match(screen, /<p class="lab-eyebrow">\$\{esc\(t\('Practice'\)\)\}<\/p>\s*\n\s*<h1 class="lab-title">\$\{esc\(t\('Quiz yourself'\)\)\}<\/h1>/);
   assert.match(screen, /<div class="auth-card">[\s\S]*id="name"[\s\S]*id="begin"[\s\S]*<\/div>/);
   // Back is a way out, not part of the task the card holds, so it stays
-  // outside it.
-  assert.ok(screen.indexOf('id="back"') > screen.indexOf('</div>'),
+  // outside it -- before the title, like every other sub-screen.
+  assert.ok(screen.indexOf("backLink('name-back')") < screen.indexOf('<div class="auth-card">'),
     'Back was pulled inside the card');
+  assert.doesNotMatch(screen, /id="back"/);
 });
 
 test('#333 the Quiz Code can be copied, and a refusal says so', () => {

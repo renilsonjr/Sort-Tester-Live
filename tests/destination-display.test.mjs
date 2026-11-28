@@ -169,8 +169,10 @@ test('Home (guest) shows the sign-in invite and practice actions in both languag
 test('ordinary picker shows selected run sizes without changing deck grouping', () => {
   const app = appHarness(); app.evaluate("showDeckPicker('');");
   for (const [id, count] of [['common-twilight-1', 14], ['common-twilight-2', 14], ['mixed-missorts', 16]]) {
-    const card = app.markup.match(new RegExp(`data-deck="${id}"[\\s\\S]*?<small class="lab-choice-meta">([^<]+)`));
+    const card = app.markup.match(new RegExp(`data-deck="${id}"[\\s\\S]*?<small class="lab-choice-meta sr-only">([^<]+)`));
     assert.equal(card?.[1], `${count} cards · 15s each`);
+    // and the same count is the figure a sighted player reads on the row
+    assert.match(app.markup, new RegExp(`data-deck="${id}"[\\s\\S]*?<span class="deck-count" aria-hidden="true">${count}</span>`));
     assert.ok(app.markup.indexOf(`data-deck="${id}"`) > app.markup.indexOf('Current quizzes · Twilight'));
   }
 });

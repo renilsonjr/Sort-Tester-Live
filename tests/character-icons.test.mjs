@@ -24,10 +24,11 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
+import { screensSource } from './helpers/screens-source.mjs';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const html = readFileSync(join(root, 'index.html'), 'utf8');
-const app = readFileSync(join(root, 'src/app.js'), 'utf8');
+const app = screensSource();
 const owner = readFileSync(join(root, 'src/ownerScreens.js'), 'utf8');
 const css = html.replace(/\/\*[\s\S]*?\*\//g, '');
 
@@ -77,8 +78,7 @@ test('#404 the eight new marks exist and are drawn on the shared grid', () => {
 test('#404 the tie-break mark serves both ends of the tie-break', () => {
   // "Prize selection -- ties the rules send to you" is the owner's side of
   // the tie-break the player is invited to on Ranked. One idea, one mark.
-  assert.equal((app.match(/\$\{ICONS\.tiebreak\}/g) ?? []).length, 1);
-  assert.equal((owner.match(/\$\{ICONS\.tiebreak\}/g) ?? []).length, 1);
+  assert.equal((app.match(/\$\{ICONS\.tiebreak\}/g) ?? []).length, 2);
   const row = owner.indexOf("id=\"owner-select\"");
   assert.notEqual(row, -1, 'the Prize selection row is gone');
   assert.match(owner.slice(row, row + 260), /\$\{ICONS\.tiebreak\}/);

@@ -6,9 +6,10 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
+import { screensSource } from './helpers/screens-source.mjs';
 
 const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
-const app = readFileSync(new URL('../src/app.js', import.meta.url), 'utf8');
+const app = screensSource();
 const owner = readFileSync(new URL('../src/ownerScreens.js', import.meta.url), 'utf8');
 const i18n = readFileSync(new URL('../src/i18n.js', import.meta.url), 'utf8');
 
