@@ -1669,6 +1669,24 @@
   .tab-intro { margin: -6px 0 0; font-size: 13px; font-weight: 700; line-height: 1.45; }
   .home-stripe .lab-choice { margin-bottom: 0; }
 
+  /* Practice, regrouped: the tab is the list of tests. Each group is one
+     card of rows (22 around 16 with 6 of padding) instead of a card a test,
+     which took 113px each and made the list 1665px tall. */
+  .lab-main .decks-card { gap: 2px; margin: 0; padding: 6px; border-radius: var(--r-md); background: var(--glass-surface-sub); border: 1px solid var(--glass-border); box-shadow: var(--glass-shadow); }
+  .lab-main .decks-card .lab-choice { gap: 10px; margin: 0; padding: 10px; border: 0; border-radius: 16px; background: none; box-shadow: none; -webkit-backdrop-filter: none; backdrop-filter: none; }
+  .lab-main .decks-card .lab-choice > span:nth-child(2) { flex: 1; min-width: 0; }
+  .lab-main .decks-card .lab-choice-icon { width: 36px; height: 36px; flex: none; border-radius: 10px; font-size: 13px; }
+  .lab-main .decks-card .lab-choice-icon svg { width: 17px; height: 17px; }
+  .lab-main .decks-card .lab-choice strong { font-size: 15px; }
+  .lab-main .decks-card .lab-choice small { margin-top: 1px; }
+  .lab-main .decks-card .lab-arrow { font-size: 18px; }
+  .lab-main .decks-card .lab-choice.locked { border: 0; }
+  .deck-count { flex: none; color: var(--muted); font-size: 13px; font-weight: 800; font-variant-numeric: tabular-nums; }
+  @media (hover: hover) { .lab-main .decks-card button.lab-choice:hover { background: var(--soft); transform: none; box-shadow: none; } }
+  .practice-who { display: flex; flex-wrap: wrap; align-items: center; gap: 0 12px; margin: 0; color: var(--muted); font-size: 13px; font-weight: 700; }
+  .practice-who b { color: var(--ink); font-weight: 800; }
+  .practice-link { min-height: 44px; padding: 0 2px; border: 0; background: none; color: var(--gold-ring); font: inherit; font-weight: 800; cursor: pointer; }
+
   /* Ranked: season, balance, progress and the way to play in one card */
   .rk-bal { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
   .rk-bal .lab-study-meta { margin: 0; }
@@ -2521,7 +2539,9 @@
     }
     .screen-practice > .lab-eyebrow,
     .screen-practice > .lab-title,
-    .screen-practice > .lab-intro { grid-column: 1 / -1; }
+    .screen-practice > .lab-intro,
+    .screen-practice > .practice-learn,
+    .screen-practice > .practice-who { grid-column: 1 / -1; }
 
     /* ---- Know the chart: the controls beside the list -------------------
        The list is 91 rows and over 8000px tall. Putting the service tabs and
