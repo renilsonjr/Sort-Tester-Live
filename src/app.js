@@ -478,9 +478,25 @@ function beltChip(belt, className) {
 // Handler, the conveyor mini-game (#396). The page is a mount point and
 // nothing else: the game's screens, input, canvas and sound all live in
 // src/conveyor/, and this file only puts them on screen and takes them off.
+// The dock, while a Handler round is running. It is put back on the same
+// parent it came off, in the place it had: the shell's last child.
+function holdHandlerDock(view, live) {
+  const shell = view.querySelector('.lab-shell') ?? view;
+  if (live) {
+    handlerDock = shell.querySelector('.lab-nav') ?? handlerDock;
+    handlerDock?.remove();
+  } else if (handlerDock && !shell.querySelector('.lab-nav')) {
+    shell.append(handlerDock);
+  }
+  view.classList?.toggle('hd-live', live);
+  app.classList.toggle('hd-live', live);
+}
+let handlerDock = null;
+
 function showHandler() {
   stopTick();
   clock = null;
+  handlerDock = null;
   const best = createBestScores();
   const view = labPage(`
     <section class="lab-screen screen-handler">
@@ -499,6 +515,13 @@ function showHandler() {
     bestScores: best,
     board: createHandlerBoard(),
     avatarOf: avatarEmoji,
+    // The dock goes while the minute runs, the way it does under a Ranked
+    // attempt and a Versus duel: a dock under a timed round is a way to
+    // lose it with a thumb. The Handler mounts after the page shell is
+    // built, so it cannot carry the shell's own marker -- it says when a
+    // round is live and the dock is taken out and put back here. Any way
+    // OUT of the Handler redraws the whole page, which restores it anyway.
+    onRound: (live) => holdHandlerDock(view, live),
   });
   // The stored bests arrive after the first paint, so the mode list is
   // redrawn once they do. A guest's load() answers 401 and the screen says
