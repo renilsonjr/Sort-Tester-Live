@@ -36,6 +36,9 @@ test('it is styled as a small, quiet line with a visible keyboard focus', () => 
   assert.match(html, /\.auth-footer-link:focus-visible\s*\{[^}]*outline/);
 });
 
-test('the panel still imports nothing', () => {
-  assert.doesNotMatch(auth, /^import /m);
+test('the panel imports only common.js, which imports nothing', () => {
+  const imports = auth.match(/^import .+$/gm) ?? [];
+  assert.deepEqual(imports, ["import { escapeHtml, SECURITY_REPORT_URL } from './common.js';"]);
+  const common = readFileSync(new URL('../src/common.js', import.meta.url), 'utf8');
+  assert.doesNotMatch(common, /^import /m);
 });

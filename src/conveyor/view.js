@@ -13,6 +13,7 @@
 //     badge covered the code on the package coming down, and reading that code
 //     early is the whole skill the game trains.
 import { BELT_STYLE } from './../belts.js';
+import { escapeHtml as esc } from './../common.js';
 import { SERVICE_LABEL } from './../questions.js?v=chart-destination-20261108-r2';
 
 // Rule 19: icy cyan, chosen to sit far from the BLUE belt's navy (#1f4e9c) so
@@ -131,8 +132,6 @@ const ROUND_RECT = (ctx, x, y, w, h, r) => {
   ctx.arcTo(x, y, x + w, y, r);
   ctx.closePath();
 };
-
-const esc = value => String(value).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
 function memoryBest() {
   const held = new Map();

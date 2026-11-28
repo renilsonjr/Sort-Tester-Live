@@ -4,10 +4,10 @@ import { readFileSync } from 'node:fs';
 import { runInNewContext } from 'node:vm';
 import { loadAppModules } from './helpers/load-app-modules.mjs';
 
-const paths = ['src/quiz.js', 'src/i18n.js', 'src/shiftLog.js', 'src/questions.js', 'src/decks.js', 'src/belts.js', 'src/clock.js', 'src/destination.js', 'src/seasonNotice.js'];
+const paths = ['src/quiz.js', 'src/i18n.js', 'src/shiftLog.js', 'src/questions.js', 'src/decks.js', 'src/belts.js', 'src/clock.js', 'src/destination.js', 'src/seasonNotice.js', 'src/common.js'];
 const { modules, cleanup } = await loadAppModules(paths);
 after(cleanup);
-const [quiz, i18n, shiftLog, questions, decks, belts, clocks, destination, seasonNotice] = modules;
+const [quiz, i18n, shiftLog, questions, decks, belts, clocks, destination, seasonNotice, common] = modules;
 const { formatDestinationLabel } = destination;
 const plusOne = questions.COMMON_CORE.find(card => card.id === 'destination-plus-one-gnd');
 const ordinary = { ...plusOne, id: 'ordinary-control', destinationModifier: undefined, belt: 'ORANGE', why: 'Historical ordinary explanation.' };
@@ -60,6 +60,7 @@ function appHarness(values = new Map()) {
   };
   const context = {
     ...quiz, ...i18n, ...shiftLog, ...questions, ...decks, ...belts, ...clocks, ...destination, ...seasonNotice,
+    esc: common.escapeHtml, SECURITY_REPORT_URL: common.SECURITY_REPORT_URL,
     document, localStorage: storage, window: { scrollTo() {}, XLSX },
     requestAnimationFrame: callback => { frame = callback; return 1; }, cancelAnimationFrame() {},
     clearTimeout() {}, setTimeout: () => 1,

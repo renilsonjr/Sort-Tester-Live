@@ -1,6 +1,10 @@
 // Minimal client for login-ID authentication.
 // The session token lives in an HttpOnly cookie managed by the browser;
 // this module never stores it in localStorage.
+//
+// It imports one thing: common.js, which itself imports nothing. The
+// sign-in screen must not pull the app in behind it.
+import { escapeHtml, SECURITY_REPORT_URL } from './common.js';
 
 const API_BASE = (typeof window !== 'undefined' && window.SORT_TESTER_API_BASE)
   ? window.SORT_TESTER_API_BASE
@@ -55,15 +59,8 @@ export async function leaveRecoveryMessage(message) {
 // The rest of this panel is English only. These are the sentences added with
 // the recovery message (#251), in both of the app's languages. The table
 // lives here, not in i18n.js, because this file is loaded on its own and
-// imports nothing; the storage key is the one i18n.js keeps the choice in.
-// The public result of an outside security test of this site, shown at the
-// foot of the sign-in screen as ImmuniWeb's own badge, served from here. A
-// link and a local image: nothing from another site runs or loads on the
-// page where the Quiz Code is typed. The same address is in app.js
-// (Settings); this file imports nothing, so it is written in both, and a
-// test keeps the two the same.
-const SECURITY_REPORT_URL = 'https://www.immuniweb.com/websec/sortquiz.app/Df6GfdiI/';
-
+// must not import the app; the storage key is the one i18n.js keeps the
+// choice in.
 const FORGOT_ES = {
   'Forgot my Quiz Code?':
     '¿Olvidaste tu Quiz Code?',
@@ -162,17 +159,6 @@ function manualHref() {
   return `assets/manual/sortquiz-manual-${forgotText('How to play') === 'How to play' ? 'en' : 'es'}.pdf?v=${MANUAL_VERSION}`;
 }
 
-// Text placed into markup is escaped here, as app.js does with esc(). This
-// file imports nothing, so it keeps its own copy.
-function escapeHtml(value) {
-  return String(value ?? '')
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#39;');
-}
-
 function forgotText(source) {
   let spanish = false;
   try {
@@ -185,7 +171,7 @@ export function createAuthPanel(container, onContinueAsGuest, onLoggedIn) {
   // Keep entry choices compact; a form replaces them while it is open.
   container.innerHTML = `
     <div class="auth-screen">
-      ${/* #452: the season bubble. This panel imports nothing, so it only
+      ${/* #452: the season bubble. This panel does not import the app, so it only
             draws the empty bubble; app.js fills it (seasonNotice.js). */ ''}
       <section class="season-bubble" id="auth-season" hidden aria-live="polite">
         <i aria-hidden="true">!</i>
