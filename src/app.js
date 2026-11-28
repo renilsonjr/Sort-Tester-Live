@@ -1775,11 +1775,13 @@ async function fillLeaderboard(panel) {
       <span class="board-place">${row.place}</span>
       <span class="board-who">
         <b>${avatarEmoji(row.avatar) ? `<span class="board-avatar" aria-hidden="true">${avatarEmoji(row.avatar)}</span>` : ''}${esc(row.username)}</b>
-        <small>#${esc(row.tag)} · ${esc(row.badge)}${row.you ? ` · ${esc(t('your place'))}` : ''}</small>
+        <small>#${esc(row.tag)} · ${esc(row.badge)}${row.you ? ` · ${esc(t('your place'))}` : ''}${
+          /* The marker rides on the tag line. It was a line of its own under
+             the row, in a brown that only the day theme could read. */
+          row.hat ? ` <span class="board-marker board-marker-hat">${esc(t('Hat winner'))}</span>`
+            : (row.tied ? ` <span class="board-marker">${esc(t(board.prizes_final ? 'Tied on points, no hat' : 'Tied on points'))}</span>` : '')}</small>
       </span>
       <b class="board-points">${language.number(row.points)}</b>
-      ${row.hat ? `<span class="board-marker board-marker-hat">${esc(t('Hat winner'))}</span>`
-        : (row.tied ? `<span class="board-marker">${esc(t(board.prizes_final ? 'Tied on points, no hat' : 'Tied on points'))}</span>` : '')}
     </li>
   `).join('');
   const intro = board.prizes_final
@@ -1808,16 +1810,37 @@ async function fillLeaderboard(panel) {
     );
   // The podium and the list each get a stripe. The player's place rides on the
   // first stripe shown, so it is in view without looking for their own row.
-  const placeChip = board.your_place
-    ? `<span class="tab-chip">${esc(t('Your place'))}: ${esc(board.your_place)}</span>` : '';
+  // The player's place leads the screen, in a card of its own: it was a
+  // 10px chip beside an eyebrow. Their points and the gap to the next
+  // player up are added when their own row is among the rows the server
+  // sent; a player ranked past that cut gets the place alone.
+  // Only a player with strictly more points counts as the next one up: two
+  // players tied on points are not ranked against each other here either.
+  const mine = board.rows.find((row) => row.you);
+  const nextUp = mine ? board.rows.reduce((best, row) => (
+    row.points > mine.points && (!best || row.points < best.points) ? row : best), null) : null;
+  const behind = nextUp
+    ? t('{n} behind #{place}', { n: language.number(nextUp.points - mine.points), place: nextUp.place })
+    : '';
+  const placeCard = board.your_place ? `
+    <div class="board-mine" id="board-mine">
+      <div>
+        <p class="lab-study-meta">${esc(t('Your place'))}</p>
+        <p class="board-mine-place">#${esc(board.your_place)}</p>
+      </div>
+      ${mine ? `<div class="board-mine-pts">
+        <b>${language.number(mine.points)} ${esc(t('points'))}</b>
+        ${behind ? `<small>${esc(behind)}</small>` : ''}
+      </div>` : ''}
+    </div>` : '';
   const podiumStripe = podium ? `
     <section class="home-stripe">
-      <p class="lab-eyebrow">${esc(t('Top 3'))}${rows ? '' : placeChip}</p>
+      <p class="lab-eyebrow">${esc(t('Top 3'))}</p>
       <div class="podium-card">${podium}</div>
     </section>` : '';
   const listStripe = rows ? `
     <section class="home-stripe">
-      <p class="lab-eyebrow">${esc(t('Standings'))}${placeChip}</p>
+      <p class="lab-eyebrow">${esc(t('Standings'))}</p>
       <ol class="board">${rows}</ol>
     </section>` : '';
   // The wrapper is `display: contents` until the desktop breakpoint, so on a
@@ -1825,11 +1848,13 @@ async function fillLeaderboard(panel) {
   // sit side by side (#273).
   panel.innerHTML = `
     ${preSeasonLine}
-    <p class="lab-intro tab-intro">${esc(intro)}</p>
+    ${placeCard}
     <div class="board-split${rows ? ' board-split-two' : ''}">
       <div class="board-split-podium">${podiumStripe}</div>
       <div class="board-split-list">${listStripe}</div>
     </div>
+    ${/* How the standings are kept is a footnote to them, so it follows them. */ ''}
+    <p class="lab-intro tab-intro">${esc(intro)}</p>
     ${placeLine}
     ${board.eligible ? '' : notInStandings}
   `;

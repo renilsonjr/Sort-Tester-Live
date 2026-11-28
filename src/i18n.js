@@ -606,6 +606,7 @@ const ES = {
   'The duel could not start. Try again in a moment.': 'El duelo no pudo empezar. Inténtalo de nuevo en un momento.',
   'Level': 'Empatados',
   'You are ahead by {n}': 'Vas ganando por {n}',
+  '{n} behind #{place}': 'A {n} del #{place}',
   'You are behind by {n}': 'Vas perdiendo por {n}',
   'Leave duel': 'Salir del duelo',
   'Press again to leave. Leaving counts as a loss.': 'Pulsa otra vez para salir. Salir cuenta como derrota.',
