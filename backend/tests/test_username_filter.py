@@ -20,7 +20,7 @@ _TO_DIGIT = str.maketrans({"o": "0", "e": "3", "a": "4", "s": "5", "t": "7", "i"
 # Real first names, surnames and handles, English and Spanish, chosen
 # because a careless filter refuses them (a blocked fragment sits inside).
 ORDINARY = [
-    "maria_sorter", "lucia_sorter", "dock_owl", "jose", "pedro",
+    "maria_sorter", "lucia_sorter", "dock_owl", "jose", "pedro", "kike_r",
     "cassandra", "dickson", "hancock", "glasscock", "scunthorpe", "sussex",
     "essex", "basset", "titan", "constitution", "hoekstra", "therapist_amy",
     "computadora", "reputation", "vergara", "fukuda", "torpedo", "speedo",

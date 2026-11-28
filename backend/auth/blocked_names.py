@@ -14,6 +14,9 @@ WHOLE_WORD: matched only as one whole part of the name (the parts are what
 ``_`` separates, with leading and trailing digits dropped), or as the whole
 name. Short words that occur inside ordinary names belong here.
 ALLOW: whole names that would otherwise be caught by an ANYWHERE word.
+
+Owner decision 2026-11-28: the Spanish nickname for Enrique is allowed,
+although the same spelling is an English slur.
 """
 import codecs
 
@@ -33,9 +36,9 @@ ANYWHERE = _decode("""
 WHOLE_WORD = _decode("""
     nefr nff nffubyr onfgneq puvax pbpx pbab pbba penc phyb phz qnza qvpx
     qlxr rfghcvqn rfghcvqb snt sntf shx tbbx ubr ubrf ubzb vqvbgn wvmm wbgb
-    xvxr xvyy znzba znevpn zbatby anmv arten arteb cnwreb crqb creen cvwn
-    cvatn cvff cvgb cbyyn cbea cevpx chgn chgnf chgb chgbf encr encvfg
-    ergneq frk fcvp greebevfg grgn grgnf gvg gvgf gjng iretn jnax mbeen
+    xvyy znzba znevpn zbatby anmv arten arteb cnwreb crqb creen cvwn cvatn
+    cvff cvgb cbyyn cbea cevpx chgn chgnf chgb chgbf encr encvfg ergneq frk
+    fcvp greebevfg grgn grgnf gvg gvgf gjng iretn jnax mbeen
 """)
 
 ALLOW = _decode("""
