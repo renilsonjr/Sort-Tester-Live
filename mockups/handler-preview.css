@@ -1210,7 +1210,6 @@
      What it was missing is the tie to what it explains, so it is pulled up
      against the tiles and indented to their edge instead of sitting centred
      in the gap between two sections. */
-  .pf-climb { padding: 14px; border-radius: var(--r-md); background: var(--glass-surface-sub); border: 1px solid var(--glass-border); }
   .pf-badges { display: flex; justify-content: space-between; gap: 8px; margin-top: 9px; }
   .pf-badges img { width: 46px; height: 46px; object-fit: contain; filter: drop-shadow(0 3px 7px rgba(0, 0, 0, 0.4)); }
   /* Three states, not two. "done" is a badge already earned, so it keeps its
@@ -1447,7 +1446,6 @@
   .pf-stat { padding: 16px 12px; }
   .pf-stat b { font-size: 26px; letter-spacing: -.02em; font-variant-numeric: tabular-nums; }
   .pf-stat small { display: block; margin-top: 3px; font-size: 10px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; }
-  .pf-climb { padding: 14px 16px 16px; }
 
   /* Home: the notice, shift log and disclaimer follow the theme */
   .lab-launch { margin-top: 0; border-radius: var(--r-sm); background: var(--soft); border-color: var(--soft-line); }
@@ -1696,7 +1694,35 @@
   .pf-ident-text { min-width: 0; }
   .pf-ident .lab-title { font-size: 26px; overflow-wrap: anywhere; }
   .pf-ident .lab-intro { margin: 2px 0 0; font-size: 13px; font-weight: 700; }
-  .pf-climb .pf-badges { margin-top: 0; }
+
+  /* Profile, regrouped: one card for who you are and where you stand, then
+     three figures in a row. The card is the Ranked one (32 around 16), so
+     the name sits in it without a card of its own. */
+  .pf-hero .pf-ident { padding: 0; border: 0; border-radius: 0; background: none; box-shadow: none; }
+  .pf-hero .pf-ident .lab-title { font-size: 24px; }
+  .pf-hero .pf-ident-obj { width: 64px; height: 64px; }
+  .pf-hero .pf-ident-obj .home-obj-badge { width: 60px; height: 60px; }
+  .pf-standing:empty { display: none; }
+  .pf-standing { margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--glass-border); }
+  .pf-standing .lab-study-meta { margin: 0; }
+  .pf-standing .profile-points { margin: 2px 0 0; font-size: 40px; font-variant-numeric: tabular-nums; }
+  .pf-standing .profile-points i { font-style: normal; font-size: 15px; font-weight: 800; letter-spacing: 0; color: var(--muted); }
+  .pf-standing .home-meter { margin-top: 12px; }
+  .pf-standing .pf-badges { margin-top: 14px; }
+  .pf-standing .pf-badges img { width: 38px; height: 38px; }
+  .pf-stats { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+  .pf-stat { display: flex; flex-direction: column; justify-content: space-between; gap: 2px; padding: 12px; text-align: left; }
+  .pf-stat small { margin: 0; font-size: 11px; letter-spacing: 0; text-transform: none; overflow-wrap: anywhere; }
+  .pf-stat b { font-size: 22px; line-height: 30px; }
+  .pf-stat b.words { line-height: 30px; color: var(--muted); }
+  /* Under 360px a third of the row is 65px of text: "Clasificatorio" broke
+     mid-word and "Todavia no" took two lines. There the three become rows,
+     the label on the left and the figure on the right. */
+  @media (max-width: 359px) {
+    .pf-stats { grid-template-columns: minmax(0, 1fr); }
+    .pf-stat { flex-direction: row; align-items: center; gap: 12px; }
+    .pf-stat small { font-size: 13px; }
+  }
 
   /* Notices (not in the standings, could not load, tie-break restarted…) were
      a cream card with a faint title at night; they follow the theme now. */
@@ -2485,7 +2511,9 @@
       gap: 16px 18px;
       align-items: start;
     }
-    .screen-profile > #profile-panel > #pf-history { grid-column: 1 / -1; }
+    .screen-profile > #profile-panel > #pf-history,
+    .screen-profile > #profile-panel > .home-stripe,
+    .screen-profile > #profile-panel > .profile-promo { grid-column: 1 / -1; }
 
     /* Everything in the panel that is not one of the choices crosses both
        columns, so the choices pair from the first row down.

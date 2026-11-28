@@ -836,6 +836,11 @@ function showProfile(tab = 'overview') {
             and these are the Ranked attempts the server settled. */ ''}
       <h1 class="lab-title">${esc(t(tab === 'settings' ? 'Settings' : 'Ranked history'))}</h1>` : `
       ${seasonBubbleMarkup('launch-callout')}
+      ${/* One card says who the player is and where they stand: the name,
+            the balance, and the climb to the next badge. The points used to
+            be a tile further down and again in the line under the badges,
+            and the badge was drawn here and again in the row of five. */ ''}
+      <div class="home-spot pf-hero">
       <div class="pf-ident">
         <div class="home-obj pf-ident-obj" id="profile-badge"></div>
         <div class="pf-ident-text">
@@ -843,6 +848,8 @@ function showProfile(tab = 'overview') {
           <h1 class="lab-title" id="profile-name">${esc(session?.username ?? '\u2026')}</h1>
           <p class="lab-intro" id="profile-tag">${session?.tag ? esc(`${t('Tag')} #${session.tag}`) : ''}</p>
         </div>
+      </div>
+      <div class="pf-standing" id="profile-standing"></div>
       </div>`}
       <div id="profile-panel"><p class="lab-intro">${esc(t('Loading\u2026'))}</p></div>
     </section>
@@ -926,23 +933,37 @@ async function fillOverview(panel) {
   // "Not yet" / "Todavia no" at the 26px, weight-900 size the numbers use
   // overflows a quarter-width tile, so a worded value gets its own size.
   // The dash is not a word: it keeps the number size, as a placeholder.
-  const statCell = (value, label) => `<div class="pf-stat"><b${value === t('Not yet') ? ' class="words"' : ''}>${esc(value)}</b><small>${esc(label)}</small></div>`;
-  const tagEl = panel.closest('.lab-screen')?.querySelector('#profile-tag');
-  if (tagEl) tagEl.textContent = `${tagEl.textContent} \u00b7 ${entry.badge}`;
-    // The badge sits beside the name in the identity card above the panel.
+  // The label reads first and the figure under it, so three tiles in a row
+  // line their figures up even when a Spanish label takes two lines.
+  const statCell = (value, label) => `<div class="pf-stat"><small>${esc(label)}</small><b${value === t('Not yet') ? ' class="words"' : ''}>${esc(value)}</b></div>`;
+  // The badge sits beside the name in the card above the panel. Its name is
+  // not added to the tag line any more: the climb line in the same card
+  // already begins with it.
   const badgeSlot = panel.closest('.lab-screen')?.querySelector('#profile-badge');
   if (badgeSlot) {
     badgeSlot.innerHTML = `<span class="home-shine" aria-hidden="true"></span><img class="home-obj-badge" src="${badgeArt(entry.badge)}" alt="${esc(entry.badge)}">`;
   }
   const progress = badgeProgress(entry);
+  // The balance, how far the badge has to go, and the five badges, in the
+  // card that already carries the name.
+  const standing = panel.closest('.lab-screen')?.querySelector('#profile-standing');
+  if (standing) {
+    standing.innerHTML = `
+      <p class="lab-study-meta">${esc(t('Your balance'))}</p>
+      <p class="profile-points">${language.number(entry.points)} <i>${esc(t('points'))}</i></p>
+      ${progress === null ? '' : `<div class="profile-bar home-meter"><i style="width:${progress}%"></i></div>`}
+      <p class="home-climb-note">${esc(balanceLine(entry))}</p>
+      <div class="pf-badges">
+        ${badgeTrail(entry.badge)}
+      </div>`;
+  }
   panel.innerHTML = `
     <section class="home-stripe">
     <p class="lab-eyebrow">${esc(t('Your numbers'))}</p>
     <div class="pf-stats">
-      ${statCell(language.number(entry.points), t('Points'))}
       ${statCell(bestRanked, t('Best Ranked'))}
-      ${statCell(log.available ? practiceCountLabel(log.all()) : DASH, t('Practices'))}
       ${statCell(place, t('Place'))}
+      ${statCell(log.available ? practiceCountLabel(log.all()) : DASH, t('Practices'))}
     </div>
     </section>
     ${entry.mode === 'promotion' ? `
@@ -950,16 +971,6 @@ async function fillOverview(panel) {
       <h2>${esc(t('Promotion unlocked'))}</h2>
       <p>${esc(t('A perfect 15 out of 15 quiz moves you up. Start promotion is on the Ranked screen; nothing starts from here.'))}</p>
     </div>` : ''}
-    <section class="home-stripe">
-    <p class="lab-eyebrow">${esc(t('Your climb'))}</p>
-    <div class="pf-climb">
-      <div class="pf-badges">
-        ${badgeTrail(entry.badge)}
-      </div>
-      ${progress === null ? '' : `<div class="profile-bar home-meter"><i style="width:${progress}%"></i></div>`}
-      <p class="home-climb-note">${esc(balanceLine(entry))}</p>
-    </div>
-    </section>
     <button id="pf-history" class="lab-choice" type="button">
       <span class="lab-choice-icon" aria-hidden="true">${ICONS.history}</span>
       <span><strong>${esc(t('See history'))}</strong></span>

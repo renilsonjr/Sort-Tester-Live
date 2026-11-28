@@ -74,7 +74,8 @@ test('#336 a worded tile gets its own size and the four stay level', () => {
   assert.match(js, /value === t\('Not yet'\) \? ' class="words"' : ''/);
   // Every tile goes through the one cell helper, so they cannot drift.
   assert.doesNotMatch(js, /<div class="pf-stat"><b>/, 'a tile is being built by hand again');
-  assert.equal((js.match(/\$\{statCell\(/g) ?? []).length, 4);
+  // Three since 2026-11-27: the points moved up into the card with the name.
+  assert.equal((js.match(/\$\{statCell\(/g) ?? []).length, 3);
 });
 
 test('#337 the climb row has three states, not two', () => {
