@@ -40,10 +40,10 @@ test('#385 the Leaderboard uses the app\'s one Back, at the top', () => {
 });
 
 test('#385 the Back on a Ranked RESULT screen is left alone', () => {
-  // Those are not sub-screens: "Back to Ranked" is the only way forward
-  // after a quiz, so it is that screen's primary action and a full-width
-  // button is right. #385 is about a way OUT of a screen you opened to
-  // look at something.
+  // Those are not sub-screens: #385 is about a way OUT of a screen you
+  // opened to look at something, and a result is where a quiz ends. Back
+  // stays a real button there -- beside Leaderboard since 2026-11-27, and
+  // the main one whenever another quiz cannot start.
   assert.match(js, /<button id="rq-done" class="ghost">\$\{esc\(t\('Back'\)\)\}<\/button>/);
 });
 

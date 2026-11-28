@@ -1115,7 +1115,7 @@
   }
 
   /* Glass Cards across Ranked & Quiz */
-  .lab-choice, .auth-card, .rq-cmp, .sum, .profile-balance, .board li {
+  .lab-choice, .auth-card, .rq-cmp, .sum, .rq-climb, .profile-balance, .board li {
     background: var(--glass-surface-sub);
     backdrop-filter: var(--blur-md); -webkit-backdrop-filter: var(--blur-md);
     border: 1px solid var(--glass-border);
@@ -1173,7 +1173,7 @@
   :root { --r-md: 22px; --r-sm: 16px; }
 
   /* Crisper glass cards with a soft top highlight */
-  .lab-choice, .auth-card, .rq-cmp, .sum,
+  .lab-choice, .auth-card, .rq-cmp, .sum, .rq-climb,
   .profile-balance, .board li, .reauth-card, .owner-form, .cases li, .approved li {
     background: rgba(48, 32, 22, 0.62);
     border: 1px solid rgba(255, 255, 255, 0.11);
@@ -1399,6 +1399,7 @@
   html[data-theme="day"] .lab-choice,
   html[data-theme="day"] .auth-card,
   html[data-theme="day"] .rq-cmp, html[data-theme="day"] .sum,
+  html[data-theme="day"] .rq-climb,
   html[data-theme="day"] .profile-balance, html[data-theme="day"] .board li,
   html[data-theme="day"] .reauth-card, html[data-theme="day"] .owner-form,
   html[data-theme="day"] .cases li, html[data-theme="day"] .approved li {
@@ -1846,6 +1847,27 @@
   .sum b { font-size: 16px; font-variant-numeric: tabular-nums; }
   .sum .total { margin-top: 0; padding-top: 11px; border-top-style: solid; }
   .sum .total b { font-size: 22px; color: var(--gold); }
+
+  /* Ranked result, refined: what the match was worth beside the hits, the
+     climb to the next badge, and a way straight into another quiz. */
+  .rq-score-top { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 12px; margin-bottom: 12px; }
+  .rq-score-top .rq-score-line { margin: 0; }
+  .rq-gain { padding: 6px 12px; border-radius: 999px; font-size: 14px; font-weight: 900; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .rq-gain.good { background: rgba(108, 211, 154, 0.16); color: var(--good); }
+  .rq-gain.lost { background: rgba(240, 138, 138, 0.16); color: var(--bad); }
+  .rq-gain.flat { background: var(--glass-surface-sub); color: var(--muted); }
+  /* Day: the status greens and reds are 3:1 on cream, too thin for a word. */
+  html[data-theme="day"] .rq-gain.good { background: rgba(31, 122, 80, 0.12); color: #1b6b46; }
+  html[data-theme="day"] .rq-gain.lost { background: rgba(169, 58, 51, 0.12); color: #a2362f; }
+  .rq-climb { display: flex; align-items: center; gap: 12px; padding: 14px; border-radius: var(--r-md); }
+  .rq-climb-badge { width: 48px; height: 48px; flex: none; object-fit: contain; }
+  .rq-climb-body { flex: 1; min-width: 0; }
+  .rq-climb-line { margin: 0 0 10px; font-size: 14px; font-weight: 800; overflow-wrap: anywhere; }
+  .rq-climb-body .home-meter { margin: 0; }
+  .rq-next { min-height: 52px; }
+  .rq-next .primary { width: 100%; }
+  .rq-pair { display: grid; grid-template-columns: repeat(auto-fit, minmax(128px, 1fr)); gap: 8px; }
+  .rq-pair .ghost, .rq-pair .primary { padding-inline: 8px; }
 
   /* Practice quiz: its top line becomes a bar like the app header */
   .quiz-top { gap: 10px; }
