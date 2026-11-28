@@ -18,6 +18,7 @@ import { dirname, join } from 'node:path';
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const html = readFileSync(join(root, 'index.html'), 'utf8');
 const app = readFileSync(join(root, 'src/app.js'), 'utf8');
+const owner = readFileSync(join(root, 'src/ownerScreens.js'), 'utf8');
 const i18n = readFileSync(join(root, 'src/i18n.js'), 'utf8');
 const css = html.replace(/\/\*[\s\S]*?\*\//g, '');
 
@@ -99,7 +100,7 @@ test('the sub-labels that are NOT repetition stayed', () => {
     'Remove an account that should not exist.',
     'About one of your own Ranked attempts.',
   ]) {
-    assert.ok(app.includes(`t('${kept}')`), `should have stayed: ${kept}`);
+    assert.ok((app + owner).includes(`t('${kept}')`), `should have stayed: ${kept}`);
   }
 });
 

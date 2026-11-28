@@ -28,6 +28,7 @@ import { dirname, join } from 'node:path';
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const html = readFileSync(join(root, 'index.html'), 'utf8');
 const app = readFileSync(join(root, 'src/app.js'), 'utf8');
+const owner = readFileSync(join(root, 'src/ownerScreens.js'), 'utf8');
 const css = html.replace(/\/\*[\s\S]*?\*\//g, '');
 
 test('the stylesheet has no unbalanced comment', () => {
@@ -76,10 +77,11 @@ test('#404 the eight new marks exist and are drawn on the shared grid', () => {
 test('#404 the tie-break mark serves both ends of the tie-break', () => {
   // "Prize selection -- ties the rules send to you" is the owner's side of
   // the tie-break the player is invited to on Ranked. One idea, one mark.
-  assert.equal((app.match(/\$\{ICONS\.tiebreak\}/g) ?? []).length, 2);
-  const owner = app.indexOf("id=\"owner-select\"");
-  assert.notEqual(owner, -1, 'the Prize selection row is gone');
-  assert.match(app.slice(owner, owner + 260), /\$\{ICONS\.tiebreak\}/);
+  assert.equal((app.match(/\$\{ICONS\.tiebreak\}/g) ?? []).length, 1);
+  assert.equal((owner.match(/\$\{ICONS\.tiebreak\}/g) ?? []).length, 1);
+  const row = owner.indexOf("id=\"owner-select\"");
+  assert.notEqual(row, -1, 'the Prize selection row is gone');
+  assert.match(owner.slice(row, row + 260), /\$\{ICONS\.tiebreak\}/);
 });
 
 test('#404 both Create ticket rows carry the same mark', () => {

@@ -4,13 +4,19 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 
 const app = readFileSync(new URL('../src/app.js', import.meta.url), 'utf8');
+const owner = readFileSync(new URL('../src/ownerScreens.js', import.meta.url), 'utf8');
 const page = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
 
+// The owner's screens are in src/ownerScreens.js, inside a factory, so a
+// function there ends two spaces in; one in app.js ends at the margin.
 function fn(name) {
-  const start = app.indexOf(name);
-  assert.notEqual(start, -1, `${name} is missing`);
-  const body = app.slice(start);
-  return body.slice(0, body.indexOf('\n}\n'));
+  for (const [source, end] of [[owner, '\n  }\n'], [app, '\n}\n']]) {
+    const start = source.indexOf(name);
+    if (start === -1) continue;
+    const body = source.slice(start);
+    return body.slice(0, body.indexOf(end));
+  }
+  return assert.fail(`${name} is missing`);
 }
 
 test('a 428 asks for the Quiz Code and repeats the action exactly once', () => {
@@ -26,9 +32,9 @@ test('cancelling changes nothing and says so', () => {
 });
 
 test('the three guarded actions go through the prompt', () => {
-  assert.match(app, /apiSendOwner\('POST', '\/ranked\/owner\/approvals'/);
-  assert.match(app, /apiSendOwner\('DELETE', `\/ranked\/owner\/approvals\//);
-  assert.match(app, /apiSendOwner\('POST', `\/ranked\/owner\/recoveries\/\$\{request\.id\}\/handover`\)/);
+  assert.match(owner, /apiSendOwner\('POST', '\/ranked\/owner\/approvals'/);
+  assert.match(owner, /apiSendOwner\('DELETE', `\/ranked\/owner\/approvals\//);
+  assert.match(owner, /apiSendOwner\('POST', `\/ranked\/owner\/recoveries\/\$\{request\.id\}\/handover`\)/);
 });
 
 test('the Quiz Code field cannot be read over the owner’s shoulder', () => {

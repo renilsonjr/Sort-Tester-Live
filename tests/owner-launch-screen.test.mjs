@@ -6,13 +6,15 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 
-const app = readFileSync(new URL('../src/app.js', import.meta.url), 'utf8');
+// The owner's screens are in src/ownerScreens.js, inside a factory, so
+// each function starts two spaces in.
+const app = readFileSync(new URL('../src/ownerScreens.js', import.meta.url), 'utf8');
 const i18n = readFileSync(new URL('../src/i18n.js', import.meta.url), 'utf8');
 
 function body(name) {
   const start = app.indexOf(`function ${name}(`);
   assert.ok(start >= 0, `${name} not found`);
-  const end = app.indexOf('\nfunction ', start + 1);
+  const end = app.indexOf('\n  function ', start + 1);
   return app.slice(start, end === -1 ? undefined : end);
 }
 
