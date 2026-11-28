@@ -12,6 +12,7 @@ import { selectLevelCards } from './levels.js?v=sort-change-20261116-r1';
 import { createLanguage } from './i18n.js?v=chart-destination-20261108-r2';
 import * as support from './support.js';
 import { logout } from './auth.js';
+import { escapeHtml as esc, SECURITY_REPORT_URL } from './common.js';
 import { longDate, readSeasonNotice, seasonBubbleCopy, seasonBubbleMarkup, showSeasonBubble } from './seasonNotice.js';
 import { idleVerdict } from './idle.js';
 import { createAttemptClient } from './attemptClient.js';
@@ -145,12 +146,6 @@ function buildWorkbook(entries) {
   XLSX.utils.book_append_sheet(book, resultSheet, 'Results');
   XLSX.utils.book_append_sheet(book, missortSheet, 'Missorts');
   return XLSX.write(book, { bookType: 'xlsx', type: 'array' });
-}
-
-function esc(value) {
-  return String(value).replace(/[&<>"']/g, (c) => (
-    { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]
-  ));
 }
 
 function renderRoutingCode(value) {
@@ -321,11 +316,6 @@ function signedIn() {
 // The bottom navigation, which changes shape with the session. Study and
 // Quiz became one Practice tab in the approved navigation: both are ways of
 // practising, and the separate Ranked tab is what costs points.
-// The public result of an outside security test of this site, shown as the
-// badge ImmuniWeb issues for it (assets/immuniweb-badge.png, their own image,
-// served from here as their badge code expects). A link and a local image,
-// not a badge script: nothing from another site runs or loads on these pages.
-const SECURITY_REPORT_URL = 'https://www.immuniweb.com/websec/sortquiz.app/Df6GfdiI/';
 
 const ICONS = {
   home: '<svg viewBox="0 0 24 24"><path d="M3 10.5 12 3l9 7.5V20a1.5 1.5 0 0 1-1.5 1.5H15V15H9v6.5H4.5A1.5 1.5 0 0 1 3 20z"/></svg>',
@@ -3590,7 +3580,7 @@ async function fillHomeIdentity(view) {
 // login and profile). It reads the public notice, so guests see it too. The
 // wording for every state lives in seasonNotice.js, shared with the login
 // screen.
-// The login screen's bubble (#452). auth.js imports nothing, so it draws an
+// The login screen's bubble (#452). auth.js does not import the app, so it draws an
 // empty #auth-season and announces itself; this fills it.
 function fillAuthSeasonBubble() {
   const box = document.getElementById('auth-season');

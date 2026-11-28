@@ -1,12 +1,11 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
+import { loadAppModules } from './helpers/load-app-modules.mjs';
 
 test('auth.js parses and exports expected functions', async () => {
-  const source = readFileSync(new URL('../src/auth.js', import.meta.url), 'utf8');
-  // Quick parse check by wrapping in a module and importing via data URL.
-  const moduleUrl = `data:text/javascript;base64,${Buffer.from(source).toString('base64')}`;
-  const auth = await import(moduleUrl);
+  // Loaded as the browser loads it, from a file, so its one import resolves.
+  const { modules: [auth], cleanup } = await loadAppModules(['src/auth.js']);
+  await cleanup();
   assert.equal(typeof auth.registerAccount, 'function');
   assert.equal(typeof auth.loginWithId, 'function');
   assert.equal(typeof auth.logout, 'function');

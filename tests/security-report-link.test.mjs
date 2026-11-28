@@ -8,9 +8,10 @@ const app = readFileSync(new URL('../src/app.js', import.meta.url), 'utf8');
 const i18n = readFileSync(new URL('../src/i18n.js', import.meta.url), 'utf8');
 const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
 const auth = readFileSync(new URL('../src/auth.js', import.meta.url), 'utf8');
+const common = readFileSync(new URL('../src/common.js', import.meta.url), 'utf8');
 
 test('the badge links to the public ImmuniWeb result for this site', () => {
-  assert.match(app, /const SECURITY_REPORT_URL = 'https:\/\/www\.immuniweb\.com\/websec\/sortquiz\.app\/[A-Za-z0-9]+\/';/);
+  assert.match(common, /export const SECURITY_REPORT_URL = 'https:\/\/www\.immuniweb\.com\/websec\/sortquiz\.app\/[A-Za-z0-9]+\/';/);
 });
 
 const LINK = /<a class="security-badge-link" href="\$\{SECURITY_REPORT_URL\}" target="_blank" rel="noopener noreferrer"><img class="security-badge" src="assets\/immuniweb-badge\.png" width="150" height="50" alt="/;
@@ -51,7 +52,9 @@ test('the sign-in screen shows it in its footer, under the maker line', () => {
   assert.match(auth, /'Security tested: grade A by ImmuniWeb': 'Seguridad probada: calificación A de ImmuniWeb',/);
 });
 
-test('the sign-in screen and Settings link to the same report', () => {
-  const url = (source) => source.match(/const SECURITY_REPORT_URL = '([^']+)';/)[1];
-  assert.equal(url(auth), url(app));
+test('the sign-in screen and Settings take the address from the one place it is written', () => {
+  for (const source of [auth, app]) {
+    assert.match(source, /^import \{[^}]*\bSECURITY_REPORT_URL\b[^}]*\} from '\.\/common\.js';$/m);
+    assert.doesNotMatch(source, /SECURITY_REPORT_URL = /);
+  }
 });
