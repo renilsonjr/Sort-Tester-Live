@@ -1733,7 +1733,6 @@
   .tab-title { font-size: 24px; letter-spacing: -.04em; line-height: 1.12; }
   .tab-intro { margin: -6px 0 0; font-size: 13px; font-weight: 700; line-height: 1.45; }
   .home-stripe .lab-choice { margin-bottom: 0; }
-  .tab-chip { float: right; margin-top: -3px; padding: 3px 9px; border-radius: 999px; background: var(--soft); border: 1px solid var(--soft-line); color: var(--ink); font-size: 10px; letter-spacing: .06em; }
 
   /* Ranked: season, balance, progress and the way to play in one card */
   .rk-bal { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
@@ -1752,6 +1751,33 @@
   #board-panel > .lab-intro { margin-bottom: 0; }
   .podium-card { padding: 14px 12px 0; border-radius: var(--r-md); background: var(--glass-surface-sub); border: 1px solid var(--glass-border); box-shadow: var(--glass-shadow); overflow: hidden; }
   .podium-card .podium { margin: 0; }
+
+  /* Leaderboard, refined: the player's place first, a lower podium that can
+     be read, and the standings as one card of rows instead of a card each.
+     Scoped to the panel so nothing else that borrows these classes moves. */
+  .board-mine { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 16px; border-radius: var(--r-md); background: var(--glass-surface-sub); border: 1px solid var(--soft-line); box-shadow: var(--glass-shadow); }
+  .board-mine .lab-study-meta { margin: 0; }
+  .board-mine-place { margin: 0; font-size: 36px; font-weight: 900; line-height: 40px; letter-spacing: -.03em; font-variant-numeric: tabular-nums; }
+  .board-mine-pts { min-width: 0; text-align: right; }
+  .board-mine-pts b { display: block; font-size: 17px; font-weight: 800; font-variant-numeric: tabular-nums; }
+  .board-mine-pts small { display: block; margin-top: 2px; color: var(--muted); font-size: 13px; font-weight: 700; }
+  #board-panel > .tab-intro { margin: 0; }
+  #board-panel .pname { font-size: 13px; }
+  #board-panel .ppts { font-size: 13px; font-variant-numeric: tabular-nums; }
+  #board-panel .ppillar { font-size: 20px; }
+  #board-panel .pslot.p1 .ppillar { height: 54px; }
+  #board-panel .pslot.p2 .ppillar { height: 40px; }
+  #board-panel .pslot.p3 .ppillar { height: 32px; }
+  /* 22 around 16 with 6 of padding: the rows stay concentric with the card. */
+  #board-panel .board { gap: 2px; padding: 6px; border-radius: var(--r-md); background: var(--glass-surface-sub); border: 1px solid var(--glass-border); box-shadow: var(--glass-shadow); }
+  #board-panel .board li { padding: 9px 10px; border: 0; border-radius: 16px; background: none; box-shadow: none; -webkit-backdrop-filter: none; backdrop-filter: none; }
+  #board-panel .board li.board-you { background: var(--soft); }
+  #board-panel .board-who b, #board-panel .board-points { font-size: 15px; }
+  #board-panel .board-points { font-variant-numeric: tabular-nums; }
+  /* --gold-ring is the gold that may be a word: bright on night, 5.4:1 on
+     the day cream. The fixed #7a5200 was 2:1 on the night card. */
+  #board-panel .board-marker { display: inline; margin: 0; color: var(--gold-ring); font-size: 12px; font-weight: 800; white-space: nowrap; }
+  #board-panel .board-marker::before { content: "\00b7\00a0"; }
 
   /* Profile: identity card, then numbers, climb and history */
   .pf-ident { display: flex; align-items: center; gap: 12px; padding: 14px; border-radius: var(--r-md); background: var(--glass-surface-sub); border: 1px solid var(--glass-border); box-shadow: var(--glass-shadow); }
