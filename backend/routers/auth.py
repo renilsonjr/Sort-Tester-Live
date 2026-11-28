@@ -267,6 +267,26 @@ def me(account: dict = Depends(current_account)):
     }
 
 
+@router.get("/hat-notice")
+def hat_notice(account: dict = Depends(current_account)):
+    """Whether Home should show the one-time hat approval notice (#517)."""
+    from backend.auth import hat_notice as notice
+
+    with deps.db_connection() as conn:
+        return {"show": notice.pending(conn, account["id"])}
+
+
+@router.post("/hat-notice/seen", status_code=status.HTTP_204_NO_CONTENT)
+def hat_notice_seen(account: dict = Depends(current_account)):
+    """The player closed the notice: never show it again, on any device."""
+    from backend.auth import hat_notice as notice
+
+    with deps.db_connection() as conn:
+        notice.mark_seen(conn, account["id"])
+        conn.commit()
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+
 @router.put("/avatar", status_code=status.HTTP_204_NO_CONTENT)
 def set_avatar(
     payload: AvatarRequest,

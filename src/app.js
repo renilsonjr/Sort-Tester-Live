@@ -2080,6 +2080,7 @@ function showStart() {
     <section class="lab-screen home-screen">
       <h1 class="sr-only">${esc(t('Home'))}</h1>
       ${seasonBubbleMarkup('launch-callout')}
+      ${seasonBubbleMarkup('home-hat-notice')}
       <div id="home-tiebreak" hidden></div>
       <div class="home-split">
       <!-- One card says where the player stands and how to play: the balance
@@ -2158,6 +2159,7 @@ function showStart() {
   }
   view.querySelector('#viewlog').addEventListener('click', showLog);
   fillLaunchCallout(view);
+  if (signedIn()) fillHatNotice(view.querySelector('#home-hat-notice'));
   if (signedIn()) fillTiebreakCallout(view.querySelector('#home-tiebreak'), { onlyToPlay: true });
 }
 
@@ -2219,6 +2221,26 @@ function fillAuthSeasonBubble() {
 if (typeof document !== 'undefined') {
   document.addEventListener('sortquiz:auth-shown', fillAuthSeasonBubble);
   fillAuthSeasonBubble();
+}
+
+// The one-time hat approval notice (#517): Home only, once per approval.
+// The server keeps "seen", so closing it on the phone closes it on the
+// laptop too. Same bubble as the season's. It names the official season,
+// so a Pre-Season reader is not told that today's points count.
+async function fillHatNotice(box) {
+  if (!box) return;
+  const body = await apiRead('/auth/hat-notice');
+  if (!body?.show) return;
+  box.querySelector('[data-bubble-title]').textContent = t("You're approved for the UPS hat!");
+  box.querySelector('[data-bubble-text]').textContent =
+    t('Play Ranked in the official season (Dec 1-31, 2026) and finish in the top 3.');
+  const close = box.querySelector('[data-bubble-close]');
+  close.setAttribute('aria-label', t('Close'));
+  close.onclick = () => {
+    box.hidden = true;
+    apiSend('POST', '/auth/hat-notice/seen');
+  };
+  box.hidden = false;
 }
 
 async function fillLaunchCallout(view) {
