@@ -625,6 +625,8 @@ const ES = {
   'duels': 'duelos',
   'win': 'victoria',
   'wins': 'victorias',
+  'Leave': 'Salir',
+  'Winner': 'Ganador',
   'Duels won this season. Points separate players level on wins.': 'Duelos ganados esta temporada. Los puntos separan a quienes empatan en victorias.',
   'The season is over. This is how Versus finished.': 'La temporada terminó. Así quedó Versus.',
   'Sign in to see the Handler leaderboard.': 'Inicia sesión para ver la clasificación de Handler.',

@@ -1696,7 +1696,7 @@
   .board-mine-pts { min-width: 0; text-align: right; }
   .board-mine-pts b { display: block; font-size: 17px; font-weight: 800; font-variant-numeric: tabular-nums; }
   .board-mine-pts small { display: block; margin-top: 2px; color: var(--muted); font-size: 13px; font-weight: 700; }
-  #board-panel > .tab-intro { margin: 0; }
+  #board-panel > .tab-intro, #vs-board-panel > .tab-intro { margin: 0; }
   #board-panel .pname { font-size: 13px; }
   #board-panel .ppts { font-size: 13px; font-variant-numeric: tabular-nums; }
   #board-panel .ppillar { font-size: 20px; }
@@ -1704,11 +1704,14 @@
   #board-panel .pslot.p2 .ppillar { height: 40px; }
   #board-panel .pslot.p3 .ppillar { height: 32px; }
   /* 22 around 16 with 6 of padding: the rows stay concentric with the card. */
-  #board-panel .board { gap: 2px; padding: 6px; border-radius: var(--r-md); background: var(--glass-surface-sub); border: 1px solid var(--glass-border); box-shadow: var(--glass-shadow); }
-  #board-panel .board li { padding: 9px 10px; border: 0; border-radius: 16px; background: none; box-shadow: none; -webkit-backdrop-filter: none; backdrop-filter: none; }
-  #board-panel .board li.board-you { background: var(--soft); }
-  #board-panel .board-who b, #board-panel .board-points { font-size: 15px; }
-  #board-panel .board-points { font-variant-numeric: tabular-nums; }
+  #board-panel .board, #vs-board-panel .board { gap: 2px; padding: 6px; border-radius: var(--r-md); background: var(--glass-surface-sub); border: 1px solid var(--glass-border); box-shadow: var(--glass-shadow); }
+  #board-panel .board li, #vs-board-panel .board li { padding: 9px 10px; border: 0; border-radius: 16px; background: none; box-shadow: none; -webkit-backdrop-filter: none; backdrop-filter: none; }
+  #board-panel .board li.board-you, #vs-board-panel .board li.board-you { background: var(--soft); }
+  #board-panel .board-who b, #board-panel .board-points,
+  #vs-board-panel .board-who b, #vs-board-panel .board-points { font-size: 15px; }
+  #board-panel .board-points, #vs-board-panel .board-points { font-variant-numeric: tabular-nums; }
+  /* "4 wins", not a 4 with "wins" stacked under it. */
+  #vs-board-panel .board-points .vs-wins { display: inline; margin-left: 3px; }
   /* --gold-ring is the gold that may be a word: bright on night, 5.4:1 on
      the day cream. The fixed #7a5200 was 2:1 on the night card. */
   #board-panel .board-marker { display: inline; margin: 0; color: var(--gold-ring); font-size: 12px; font-weight: 800; white-space: nowrap; }
@@ -2136,6 +2139,22 @@
   .vs-final-name { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 13px; font-weight: 800; color: var(--muted); }
   .vs-final-score { font-size: 28px; line-height: 1.1; font-weight: 900; font-variant-numeric: tabular-nums; }
   .vs-final small { font-size: 11.5px; font-weight: 700; color: var(--muted); }
+
+  /* Versus, refined: the duel's answers reach the bottom and Leave sits
+     beside the clock; the standings and the result read like the Ranked
+     ones they sit beside. */
+  #app.attempt-live .screen-versus { flex: 1 0 auto; }
+  #vs-question { flex: 1 0 auto; display: flex; flex-direction: column; gap: 12px; }
+  #vs-question .rq-route { flex: 1 0 auto; display: flex; flex-direction: column; align-items: center; justify-content: center; margin: 0; }
+  #vs-question .belts .belt { min-height: clamp(70px, 15.6dvh, 132px); }
+  .vs-leave-warn { margin: 0; }
+  /* The score is what changes, so it is bigger than the name beside it. */
+  .vs-tug-you, .vs-tug-opp { font-size: 20px; }
+  /* A title inside a card, not a page heading. */
+  .screen-versus > .lab-title, .vs-result .lab-title { font-size: 24px; }
+  .vs-final-won { border-color: var(--soft-line); background: var(--soft); }
+  .vs-final-crown.is-blank { visibility: hidden; }
+  .vs-final-crown { padding: 2px 8px; border-radius: 999px; background: var(--gold); color: #2a1c10; font-size: 10px; font-weight: 900; letter-spacing: .08em; text-transform: uppercase; }
   .board-points .vs-wins { font-size: 11px; font-weight: 700; color: var(--muted); }
 
   /* ---------------------------------------------------------------------
@@ -2418,6 +2437,9 @@
        too -- `display: none` alone would leave 232px of empty page beside a
        live attempt. */
     #app.attempt-live .lab-shell { grid-template-columns: minmax(0, 1fr); grid-template-areas: "top" "main"; }
+    /* A desktop has the height for the question at its own size. */
+    #vs-question, #vs-question .rq-route { flex: 0 0 auto; }
+    #vs-question .belts .belt { min-height: clamp(70px, 12.5dvh, 104px); }
     /* No dock at the bottom any more, so none of its clearance either. */
     .lab-main { grid-area: main; padding-top: 4px; padding-inline: 30px; padding-bottom: 34px; }
 
