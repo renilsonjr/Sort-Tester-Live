@@ -35,7 +35,7 @@ test('the gap is measured to a player with strictly more points', () => {
 
 test('the note about how standings are kept follows them', () => {
   assert.ok(board.lastIndexOf('class="lab-intro tab-intro"') > board.indexOf('class="board-split'));
-  assert.match(html, /\n  #board-panel > \.tab-intro \{ margin: 0; \}/);
+  assert.match(html, /\n  #board-panel > \.tab-intro, #vs-board-panel > \.tab-intro \{ margin: 0; \}/);
 });
 
 test('the tie and hat markers ride on the tag line, in a gold that can be read', () => {
@@ -47,9 +47,11 @@ test('the tie and hat markers ride on the tag line, in a gold that can be read',
 });
 
 test('the standings are one card, and its rows are concentric with it', () => {
-  assert.match(html, /\n  #board-panel \.board \{ gap: 2px; padding: 6px; border-radius: var\(--r-md\);/);
-  assert.match(html, /\n  #board-panel \.board li \{ padding: 9px 10px; border: 0; border-radius: 16px; background: none;/);
-  assert.match(html, /\n  #board-panel \.board li\.board-you \{ background: var\(--soft\); \}/);
+  // The Versus board joined these rules on 2026-11-28, so the two boards
+  // in the app cannot drift apart again.
+  assert.match(html, /\n  #board-panel \.board, #vs-board-panel \.board \{ gap: 2px; padding: 6px; border-radius: var\(--r-md\);/);
+  assert.match(html, /\n  #board-panel \.board li, #vs-board-panel \.board li \{ padding: 9px 10px; border: 0; border-radius: 16px; background: none;/);
+  assert.match(html, /\n  #board-panel \.board li\.board-you, #vs-board-panel \.board li\.board-you \{ background: var\(--soft\); \}/);
 });
 
 test('podium names and points are no smaller than the body text beside them', () => {
